@@ -14,9 +14,11 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
     //数据库定义实体
     private Set<Correlation> correlations = new LinkedHashSet<>();
     private RDBDatabaseMetaData databaseMetaData;
+
     public RDBDatabaseMetaData getDatabaseMetaData() {
         return databaseMetaData;
     }
+
     public void setDatabaseMetaData(RDBDatabaseMetaData databaseMetaData) {
         this.databaseMetaData = databaseMetaData;
     }
@@ -33,7 +35,6 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
                 }
             }
             if (metaData != null) return metaData.findColumn(tmp[1]);
-            return null;
         }
         RDBColumnMetaData metaData = columnMetaDataMap.get(name);
         if (metaData == null)
@@ -94,6 +95,7 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
     public RDBTableMetaData addColumn(RDBColumnMetaData columnMetaData) {
         return super.addColumn(columnMetaData);
     }
+
     @Override
     public Set<RDBColumnMetaData> getColumns() {
         return super.getColumns();
