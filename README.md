@@ -2,7 +2,7 @@
 #### 数据库支持:oracle,mysql,h2
 #### 支持验证器,触发器 等可拓展功能 
 ## 快速上手
-0. 核心
+#### 核心
 
 ```java 
     Database database=...//如何创建,看下面
@@ -18,7 +18,7 @@
     table.createDelete().where("id",id).exec();
 ```
 
-1. 我已经有表了!
+#### 我已经有表了!
 
 ```java
     SqlExecutor sqlExecutor = ....;//可继承AbstractJdbcSqlExecutor
@@ -28,7 +28,7 @@
     Table user = database.getTable("s_user");//获取表,将自动解析数据库里的表s_user的结构,如果不存在或解析错误,将返回null
 ```
 
-2. 我要新建表
+#### 我要新建表
 
 ```java
      SqlExecutor sqlExecutor = ....;//可继承AbstractJdbcSqlExecutor
@@ -37,7 +37,7 @@
      //创建表结构.在实际应用中,可通过json,xml,bean等创建
      TableMetaData metaData = new TableMetaData();
      metaData.setName("s_user");
-     metaData.setAlias("user");'
+     metaData.setAlias("user");
      FieldMetaData userName = new FieldMetaData();
      userName.setName("user_name");
      userName.setAlias("userName");
@@ -51,14 +51,14 @@
      //metaData.putTable(metaData);
 ```
 
-3. 使用验证器
+#### 使用验证器
 ```java
      DatabaseMetaData databaseMetaData = new OracleDatabaseMeta();//oracle
      //在创建数据库定义对象的时候,自定义验证器工场类
      databaseMetaData.setValidatorFactory(yourFactory);
 ```
 
-4. 使用自定义返回查询结果包装器
+#### 使用自定义返回查询结果包装器
 ```java
      DatabaseMetaData databaseMetaData = new OracleDatabaseMeta();//oracle
      //在创建数据库定义对象的时候,自定义包装器工场类.不设置默认使用og.hsweb.ezorm.run.simple.wrapper.AdvancedMapWrapper 返回map结果
