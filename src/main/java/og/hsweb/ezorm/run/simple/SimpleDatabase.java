@@ -23,7 +23,6 @@ public class SimpleDatabase implements Database {
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private DatabaseMetaData metaData;
     private SqlExecutor sqlExecutor;
-    private TableMetaParser tableMetaParser;
 
     public SimpleDatabase(DatabaseMetaData metaData, SqlExecutor sqlExecutor) {
         this.metaData = metaData;
@@ -42,8 +41,8 @@ public class SimpleDatabase implements Database {
         Table table;
         TableMetaData tableMetaData = metaData.getTable(name);
         if (tableMetaData == null) {
-            if (tableMetaParser != null)
-                tableMetaData = tableMetaParser.parse(name);
+            if (metaData.getParser() != null)
+                tableMetaData = metaData.getParser().parse(name);
             if (tableMetaData != null) {
                 metaData.putTable(tableMetaData);
             } else
@@ -103,8 +102,20 @@ public class SimpleDatabase implements Database {
     }
 
     @Override
-    public <T> Table<T> alterTable(TableMetaData tableMetaData) {
-        throw new UnsupportedOperationException("开发进行中");
+    public <T> Table<T> alterTable(TableMetaData tableMetaData) throws SQLException {
+        SqlRender<Boolean> render = metaData.getRenderer(SqlRender.TYPE.META_ALTER);
+        Table old = getTable(tableMetaData.getName());
+        if (old == null) throw new NullPointerException("旧表不存在!");
+        int total = old.createQuery().total();
+        SQL sql = render.render(tableMetaData, total == 0);
+        try {
+            readWriteLock.writeLock().lock();
+            sqlExecutor.exec(sql);
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+        reloadTable(tableMetaData);
+        return getTable(tableMetaData.getName());
     }
 
     @Override
@@ -115,10 +126,6 @@ public class SimpleDatabase implements Database {
         } finally {
             readWriteLock.writeLock().unlock();
         }
-    }
-
-    public void setTableMetaParser(TableMetaParser tableMetaParser) {
-        this.tableMetaParser = tableMetaParser;
     }
 
     public Map<String, Object> getTriggerContextRoot() {

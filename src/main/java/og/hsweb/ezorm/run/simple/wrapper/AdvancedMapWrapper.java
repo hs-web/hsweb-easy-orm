@@ -26,7 +26,7 @@ public class AdvancedMapWrapper extends SimpleMapWrapper {
             super.wrapper(instance, index, attr, valueConverter.getValue(value));
             ValueConverter converter = metaData.getValueConverter();
             value = converter.getValue(value);
-            OptionConverter optionConverter = metaData.getOptionalMapper();
+            OptionConverter optionConverter = metaData.getOptionConverter();
             if (optionConverter != null) {
                 Object value1 = optionConverter.converterValue(value);
                 putValue(instance, optionConverter.getFieldName(), value1);

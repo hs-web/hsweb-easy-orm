@@ -47,7 +47,14 @@ public interface Database {
      */
     <T> Table<T> reloadTable(TableMetaData tableMetaData);
 
-    <T> Table<T> alterTable(TableMetaData tableMetaData);
+    /**
+     * 变更表结构,此操作将修改表结构,如果存在删除的字段,且表中无数据,将删除字段
+     * @param tableMetaData 表结构定义
+     * @param <T>           表数据泛型
+     * @return 修改后的表操作接口
+     * @throws SQLException 修改异常
+     */
+    <T> Table<T> alterTable(TableMetaData tableMetaData) throws SQLException;
 
     /**
      * 删除表,此操作只会删除结构定义,不会删除物理数据库中的表
