@@ -2,6 +2,7 @@ package og.hsweb.ezorm.meta;
 
 import og.hsweb.ezorm.meta.expand.ObjectWrapperFactory;
 import og.hsweb.ezorm.meta.expand.ValidatorFactory;
+import og.hsweb.ezorm.meta.parser.TableMetaParser;
 import og.hsweb.ezorm.render.Dialect;
 import og.hsweb.ezorm.render.SqlRender;
 
@@ -17,6 +18,7 @@ public abstract class DatabaseMetaData {
     private ObjectWrapperFactory objectWrapperFactory;
     private Map<String, TableMetaData> tables = new HashMap<>();
     private Map<String, TableMetaData> aliasTables = new HashMap<>();
+    private TableMetaParser parser;
 
     public abstract Dialect getDialect();
 
@@ -91,4 +93,11 @@ public abstract class DatabaseMetaData {
         this.objectWrapperFactory = objectWrapperFactory;
     }
 
+    public void setParser(TableMetaParser parser) {
+        this.parser = parser;
+    }
+
+    public TableMetaParser getParser() {
+        return parser;
+    }
 }

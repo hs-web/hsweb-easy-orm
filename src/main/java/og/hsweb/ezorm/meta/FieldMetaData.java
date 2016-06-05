@@ -5,8 +5,10 @@ import og.hsweb.ezorm.meta.expand.OptionConverter;
 import og.hsweb.ezorm.meta.expand.PropertyWrapper;
 import og.hsweb.ezorm.meta.expand.SimplePropertyWrapper;
 import og.hsweb.ezorm.meta.expand.ValueConverter;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.JDBCType;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,7 @@ import java.util.Set;
 /**
  * Created by zhouhao on 16-5-17.
  */
-public class FieldMetaData implements Serializable {
+public class FieldMetaData implements Serializable, Cloneable {
     private static final DefaultValueConverter DEFAULT_VALUE_CONVERTER = new DefaultValueConverter();
     private String name;
 
@@ -31,7 +33,7 @@ public class FieldMetaData implements Serializable {
 
     private TableMetaData tableMetaData;
 
-    private OptionConverter optionalMapper;
+    private OptionConverter optionConverter;
 
     private ValueConverter valueConverter = DEFAULT_VALUE_CONVERTER;
 
@@ -133,12 +135,12 @@ public class FieldMetaData implements Serializable {
         this.properties = properties;
     }
 
-    public OptionConverter getOptionalMapper() {
-        return optionalMapper;
+    public OptionConverter getOptionConverter() {
+        return optionConverter;
     }
 
-    public void setOptionalMapper(OptionConverter optionalMapper) {
-        this.optionalMapper = optionalMapper;
+    public void setOptionConverter(OptionConverter optionConverter) {
+        this.optionConverter = optionConverter;
     }
 
     public ValueConverter getValueConverter() {
@@ -147,5 +149,20 @@ public class FieldMetaData implements Serializable {
 
     public void setValueConverter(ValueConverter valueConverter) {
         this.valueConverter = valueConverter;
+    }
+
+    @Override
+    public FieldMetaData clone() {
+        FieldMetaData fieldMetaData = new FieldMetaData();
+        fieldMetaData.name = name;
+        fieldMetaData.alias = alias;
+        fieldMetaData.comment = comment;
+        fieldMetaData.javaType = javaType;
+        fieldMetaData.jdbcType = jdbcType;
+        fieldMetaData.dataType = dataType;
+        fieldMetaData.properties = properties;
+        fieldMetaData.optionConverter = optionConverter;
+        fieldMetaData.tableMetaData = tableMetaData;
+        return fieldMetaData;
     }
 }

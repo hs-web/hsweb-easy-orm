@@ -4,12 +4,13 @@ import og.hsweb.ezorm.param.Term;
 import og.hsweb.ezorm.param.TermType;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by zhouhao on 16-6-4.
  */
-public class Correlation {
+public class Correlation implements Cloneable {
 
     public Correlation() {
     }
@@ -31,7 +32,7 @@ public class Correlation {
 
     private boolean one2one = true;
 
-    private List<Term> terms;
+    private List<Term> terms = new LinkedList<>();
 
     private JOIN join = JOIN.LEFT;
 
@@ -94,6 +95,22 @@ public class Correlation {
     public Correlation FullJoin() {
         this.join = JOIN.FULL;
         return this;
+    }
+
+    public Correlation addTerm(Term term) {
+        terms.add(term);
+        return this;
+    }
+
+    @Override
+    protected Correlation clone() {
+        Correlation correlation = new Correlation();
+        correlation.setAlias(alias);
+        correlation.setJoin(join);
+        correlation.setOne2one(one2one);
+        correlation.setTargetTable(targetTable);
+        terms.forEach(term -> correlation.addTerm(term.clone()));
+        return correlation;
     }
 
     public enum JOIN {

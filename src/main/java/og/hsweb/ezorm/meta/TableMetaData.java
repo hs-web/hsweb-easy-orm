@@ -6,15 +6,17 @@ import og.hsweb.ezorm.meta.expand.PropertyWrapper;
 import og.hsweb.ezorm.meta.expand.SimplePropertyWrapper;
 import og.hsweb.ezorm.meta.expand.Trigger;
 import og.hsweb.ezorm.meta.expand.Validator;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
  * 表结构定义实体
  * Created by zhouhao on 16-5-17.
  */
-public class TableMetaData implements Serializable {
+public class TableMetaData implements Serializable, Cloneable {
     private boolean locked = false;
     //表名称
     private String name;
@@ -65,6 +67,10 @@ public class TableMetaData implements Serializable {
 
     public PropertyWrapper getProperty(String name, Object defaultValue) {
         return new SimplePropertyWrapper(properties.getOrDefault(name, defaultValue));
+    }
+
+    public PropertyWrapper removeProperty(String name) {
+        return new SimplePropertyWrapper(properties.remove(name));
     }
 
     public <T> T setProperty(String property, T value) {
@@ -157,24 +163,6 @@ public class TableMetaData implements Serializable {
         this.properties = properties;
     }
 
-    public Map<String, FieldMetaData> getAliasFieldMetaDataMap() {
-        return aliasFieldMetaDataMap;
-    }
-
-    public void setAliasFieldMetaDataMap(Map<String, FieldMetaData> aliasFieldMetaDataMap) {
-        checkWrite();
-        this.aliasFieldMetaDataMap = aliasFieldMetaDataMap;
-    }
-
-    public Map<String, FieldMetaData> getFieldMetaDataMap() {
-        return fieldMetaDataMap;
-    }
-
-    public void setFieldMetaDataMap(Map<String, FieldMetaData> fieldMetaDataMap) {
-        checkWrite();
-        this.fieldMetaDataMap = fieldMetaDataMap;
-    }
-
     public Set<String> getPrimaryKeys() {
         return primaryKeys;
     }
@@ -213,4 +201,22 @@ public class TableMetaData implements Serializable {
         if (locked) throw new UnsupportedOperationException("表定义已锁定,禁止修改操作");
     }
 
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    @Override
+    public TableMetaData clone() {
+        TableMetaData metaData = new TableMetaData();
+        metaData.setName(this.name);
+        metaData.setAlias(this.alias);
+        metaData.setComment(this.comment);
+        metaData.setValidator(this.validator);
+        metaData.setProperties(properties);
+        metaData.triggerBase = triggerBase;
+        metaData.setLocked(false);
+        correlations.forEach(correlation -> metaData.addCorrelation(correlation.clone()));
+        fieldMetaDataMap.values().forEach(fieldMetaData -> metaData.addField(fieldMetaData.clone()));
+        return metaData;
+    }
 }
