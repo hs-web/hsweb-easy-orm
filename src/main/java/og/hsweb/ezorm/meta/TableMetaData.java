@@ -57,6 +57,11 @@ public class TableMetaData implements Serializable, Cloneable {
         }
     }
 
+    public void removeField(String name) {
+        fieldMetaDataMap.remove(name);
+        aliasFieldMetaDataMap.remove(name);
+    }
+
     public boolean triggerIsSupport(String name) {
         return triggerBase.containsKey(name);
     }
