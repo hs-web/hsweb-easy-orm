@@ -2,6 +2,7 @@ package og.hsweb.ezorm.render.dialect;
 
 import og.hsweb.ezorm.render.Dialect;
 import og.hsweb.ezorm.render.SqlRender;
+import og.hsweb.ezorm.render.support.oracle.OracleMetaAlterRender;
 import og.hsweb.ezorm.render.support.oracle.OracleMetaCreateRender;
 
 public class OracleDatabaseMeta extends AbstractDatabaseMeta {
@@ -9,15 +10,16 @@ public class OracleDatabaseMeta extends AbstractDatabaseMeta {
 
     private String name;
 
+
+    public OracleDatabaseMeta() {
+        name = DEFAULT_NAME;
+    }
+
     @Override
     public void init() {
         super.init();
         renderMap.put(SqlRender.TYPE.META_CREATE, new OracleMetaCreateRender());
-    }
-
-    public OracleDatabaseMeta() {
-        name = DEFAULT_NAME;
-        init();
+        renderMap.put(SqlRender.TYPE.META_ALTER, new OracleMetaAlterRender(this));
     }
 
     public OracleDatabaseMeta(String name) {
