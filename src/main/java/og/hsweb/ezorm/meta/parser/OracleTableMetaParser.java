@@ -36,17 +36,17 @@ public class OracleTableMetaParser implements TableMetaParser {
         metaData.setAlias(name);
         metaData.setComment("");
         String filedMetaSql = "\nselect distinct(cols.column_name) as \"name\"" +
-                ",cols.table_name" +
-                ",cols.data_type" +
-                ",cols.data_length" +
-                ",cols.data_precision" +
+                ",cols.table_name as \"table_name\"" +
+                ",cols.data_type as \"data_type\"" +
+                ",cols.data_length as \"data_length\"" +
+                ",cols.data_precision as \"data_precision\"" +
                 ",acc.comments as \"comment\"" +
-                ",cols.column_id  from cols\n" +
-                " left join all_col_comments acc on acc.column_name=cols.COLUMN_NAME and acc.TABLE_NAME=cols.TABLE_NAME\n" +
-                " where cols.table_name=upper(#{tablename}) and acc.owner=#{oracleUser}\n" +
-                " order by cols.column_id\n";
+                ",cols.column_id from cols" +
+                "\nleft join all_col_comments acc on acc.column_name=cols.column_name and acc.table_name=cols.table_name" +
+                "\nwhere cols.table_name=#{tableName} and acc.owner=#{oracleUser}" +
+                "\norder by cols.column_id";
         Map<String, Object> param = new HashMap<>();
-        param.put("tablename", metaData.getName().toUpperCase());
+        param.put("tableName", metaData.getName().toUpperCase());
         param.put("oracleUser", oracleUser.toUpperCase());
         SimpleSQL simpleSQL = new SimpleSQL(metaData, filedMetaSql, param);
         List<FieldMetaData> fieldMetaData;
