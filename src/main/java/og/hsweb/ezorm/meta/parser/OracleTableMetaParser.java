@@ -6,6 +6,7 @@ import og.hsweb.ezorm.meta.TableMetaData;
 import og.hsweb.ezorm.meta.converter.ClobValueConverter;
 import og.hsweb.ezorm.meta.converter.DateTimeConverter;
 import og.hsweb.ezorm.meta.expand.ObjectWrapper;
+import og.hsweb.ezorm.meta.expand.SimpleMapWrapper;
 import og.hsweb.ezorm.render.support.simple.SimpleSQL;
 import org.webbuilder.utils.common.DateTimeUtils;
 import org.webbuilder.utils.common.StringUtils;
@@ -33,7 +34,7 @@ public class OracleTableMetaParser implements TableMetaParser {
         metaData.setName(name);
         metaData.setAlias(name);
         metaData.setComment("");
-        String filedMetaSql = "\nselect distinct(cols.column_name) as \"name\"" +
+        String filedMetaSqlStr = "\nselect distinct(cols.column_name) as \"name\"" +
                 ",cols.table_name as \"table_name\"" +
                 ",cols.data_type as \"data_type\"" +
                 ",cols.data_length as \"data_length\"" +
@@ -43,16 +44,24 @@ public class OracleTableMetaParser implements TableMetaParser {
                 "\nleft join all_col_comments acc on acc.column_name=cols.column_name and acc.table_name=cols.table_name" +
                 "\nwhere cols.table_name=#{tableName}" +
                 "\norder by cols.column_id";
+        String findTableCommentSqlStr = "select comments as \"comment\" from user_tab_comments where table_name=#{tableName}";
+
         Map<String, Object> param = new HashMap<>();
         param.put("tableName", metaData.getName().toUpperCase());
-        SimpleSQL simpleSQL = new SimpleSQL(metaData, filedMetaSql, param);
-        List<FieldMetaData> fieldMetaData;
+        SimpleSQL filedMetaSql = new SimpleSQL(metaData, filedMetaSqlStr, param);
         try {
-            fieldMetaData = sqlExecutor.list(simpleSQL, new FieldMetaDataWrapper());
+            sqlExecutor.single(new SimpleSQL(metaData, findTableCommentSqlStr, param), new SimpleMapWrapper() {
+                @Override
+                public void done(Map<String, Object> instance) {
+                    metaData.setComment((String) instance.get("comment"));
+                }
+            });
+            List<FieldMetaData> fieldMetaData = sqlExecutor.list(filedMetaSql, new FieldMetaDataWrapper());
+            fieldMetaData.forEach(meta -> metaData.addField(meta));
         } catch (SQLException e) {
             return null;
         }
-        fieldMetaData.forEach(meta -> metaData.addField(meta));
+
         return metaData;
     }
 
