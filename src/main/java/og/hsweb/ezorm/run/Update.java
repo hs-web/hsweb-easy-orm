@@ -15,7 +15,7 @@ public interface Update<T> {
     Update<T> where(String condition, Object value);
 
     Update<T> includes(String... fields);
-    
+
     Update<T> excludes(String... fields);
 
     Update<T> setParam(UpdateParam<T> param);
