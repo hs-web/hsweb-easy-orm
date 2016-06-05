@@ -4,7 +4,9 @@ import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by 浩 on 2016-01-16 0016.
@@ -102,11 +104,16 @@ public class QueryParam extends SqlParam<QueryParam> implements Serializable, Cl
     }
 
     @Override
-    public QueryParam clone() throws RuntimeException {
-        try {
-            return ((QueryParam) BeanUtils.cloneBean(this));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public QueryParam clone() {
+        QueryParam sqlParam = new QueryParam();
+        sqlParam.setExcludes(new LinkedHashSet<>(excludes));
+        sqlParam.setIncludes(new LinkedHashSet<>(includes));
+        List<Term> terms = this.terms.stream().map(term -> term.clone()).collect(Collectors.toList());
+        sqlParam.setTerms(terms);
+        sqlParam.setPageIndex(pageIndex);
+        sqlParam.setPageSize(pageSize);
+        sqlParam.setPaging(paging);
+        sqlParam.setSorts(sorts);
+        return sqlParam;
     }
 }

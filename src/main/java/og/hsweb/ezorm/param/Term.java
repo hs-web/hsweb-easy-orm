@@ -7,7 +7,7 @@ import java.util.List;
  * 执行条件
  * Created by zhouhao on 16-5-9.
  */
-public class Term {
+public class Term implements Cloneable {
 
     /**
      * 字段
@@ -55,6 +55,7 @@ public class Term {
     public Term nest() {
         return nest(null, null);
     }
+
     public Term orNest() {
         return orNest(null, null);
     }
@@ -82,7 +83,7 @@ public class Term {
     }
 
     public void setField(String field) {
-        if(field==null)return;
+        if (field == null) return;
         if (field.contains("$")) {
             setTermType(TermType.fromString(field));
             field = field.split("[\\$]")[0];
@@ -120,6 +121,22 @@ public class Term {
 
     public void setTerms(List<Term> terms) {
         this.terms = terms;
+    }
+
+    public Term addTerm(Term term) {
+        terms.add(term);
+        return this;
+    }
+
+    @Override
+    public Term clone() {
+        Term term = new Term();
+        term.setField(field);
+        term.setValue(value);
+        term.setTermType(termType);
+        term.setType(type);
+        terms.forEach(t -> term.addTerm(t.clone()));
+        return term;
     }
 
     public enum Type {
