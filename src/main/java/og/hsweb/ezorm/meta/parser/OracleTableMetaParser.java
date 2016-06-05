@@ -22,11 +22,9 @@ import java.util.Map;
  */
 public class OracleTableMetaParser implements TableMetaParser {
     private SqlExecutor sqlExecutor;
-    private String oracleUser;
 
-    public OracleTableMetaParser(SqlExecutor sqlExecutor, String oracleUser) {
+    public OracleTableMetaParser(SqlExecutor sqlExecutor) {
         this.sqlExecutor = sqlExecutor;
-        this.oracleUser = oracleUser;
     }
 
     @Override
@@ -41,13 +39,12 @@ public class OracleTableMetaParser implements TableMetaParser {
                 ",cols.data_length as \"data_length\"" +
                 ",cols.data_precision as \"data_precision\"" +
                 ",acc.comments as \"comment\"" +
-                ",cols.column_id from cols" +
+                ",cols.column_id from user_tab_columns cols" +
                 "\nleft join all_col_comments acc on acc.column_name=cols.column_name and acc.table_name=cols.table_name" +
-                "\nwhere cols.table_name=#{tableName} and acc.owner=#{oracleUser}" +
+                "\nwhere cols.table_name=#{tableName}" +
                 "\norder by cols.column_id";
         Map<String, Object> param = new HashMap<>();
         param.put("tableName", metaData.getName().toUpperCase());
-        param.put("oracleUser", oracleUser.toUpperCase());
         SimpleSQL simpleSQL = new SimpleSQL(metaData, filedMetaSql, param);
         List<FieldMetaData> fieldMetaData;
         try {
@@ -70,11 +67,6 @@ public class OracleTableMetaParser implements TableMetaParser {
         public void wrapper(FieldMetaData instance, int index, String attr, Object value) {
             if (attr.equalsIgnoreCase("name")) {
                 instance.setName(String.valueOf(value).toLowerCase());
-//                if (instance.getName().equals("u_id")) {
-//                    instance.setAlias("id");
-//                } else {
-//                    instance.setAlias(StringUtils.underScoreCase2CamelCase(instance.getName()));
-//                }
             } else if (attr.equalsIgnoreCase("comment")) {
                 instance.setComment(String.valueOf(value).toLowerCase());
             } else {
