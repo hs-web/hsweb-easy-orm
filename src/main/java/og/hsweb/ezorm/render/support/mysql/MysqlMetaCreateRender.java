@@ -23,7 +23,7 @@ public class MysqlMetaCreateRender implements SqlRender {
         fieldMetaDatas.forEach(fieldMetaData -> {
             appender.add("\n\t`", fieldMetaData.getName(), "` ").add(fieldMetaData.getDataType());
             if (fieldMetaData.getProperty("not-null", false).isTrue()) {
-                appender.add("not null ");
+                appender.add(" not null ");
             }
             //注释
             if (!StringUtils.isNullOrEmpty(fieldMetaData.getComment())) {

@@ -26,10 +26,10 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
         if (fieldMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
         createBody.add("\nCREATE TABLE ", metaData.getName(), "(");
         fieldMetaDatas.forEach(fieldMetaData -> {
-            createBody.add("\n\t`", fieldMetaData.getName(), "` ").add(fieldMetaData.getDataType());
+            createBody.add("\n\t", fieldMetaData.getName(), " ").add(fieldMetaData.getDataType());
             if (fieldMetaData.getProperty("not-null", false).isTrue()
                     || metaData.getPrimaryKeys().contains(fieldMetaData.getName())) {
-                createBody.add("not null ");
+                createBody.add(" not null ");
             }
             //注释
             if (!StringUtils.isNullOrEmpty(fieldMetaData.getComment())) {
