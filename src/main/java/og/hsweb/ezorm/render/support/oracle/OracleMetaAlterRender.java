@@ -38,7 +38,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         List<FieldMetaData> deletedField = new ArrayList<>();
 
         TableMetaData oldMeta = old;
-        if (!executeRemove)
+        if (executeRemove)
             oldMeta.getFields().forEach(oldField -> {
                 FieldMetaData newMeta = metaData.findFieldByName(oldField.getName());
                 if (newMeta == null) {
