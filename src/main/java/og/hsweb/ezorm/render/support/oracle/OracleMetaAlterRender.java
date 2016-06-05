@@ -59,11 +59,18 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 }
             }
         });
-        if (addedField.isEmpty() && changedField.isEmpty() && deletedField.isEmpty()) {
-            return new EmptySQL();
-        }
         LinkedList<BindSQL> bind = new LinkedList<>();
         List<String> comments = new ArrayList<>();
+        String newTableComment = metaData.getComment();
+        String oldTableComment = old.getComment();
+        if (newTableComment == null) newTableComment = "";
+        if (oldTableComment == null) oldTableComment = "";
+        if (!newTableComment.equals(oldTableComment)) {
+            comments.add(String.format("COMMENT ON TABLE %s IS '%s'", metaData.getName(), metaData.getComment()));
+        }
+        if (addedField.isEmpty() && changedField.isEmpty() && deletedField.isEmpty()&&comments.isEmpty()) {
+            return new EmptySQL();
+        }
         addedField.forEach(field -> {
             SqlAppender append = new SqlAppender();
             append.add("ALTER TABLE ", metaData.getName(), " ADD ", field.getName(), " ", field.getDataType());
@@ -71,9 +78,9 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 append.add(" not null");
             }
             if (StringUtils.isNullOrEmpty(field.getComment())) {
-                comments.add(String.format("comment on column %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
             } else {
-                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), field.getName(), field.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), field.getName(), field.getComment()));
             }
             SimpleSQL simpleSQL = new SimpleSQL(metaData, append.toString(), field);
             BindSQL bindSQL = new BindSQL();
@@ -120,6 +127,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             binSql.setSql(new SimpleSQL(metaData, s, s));
             return binSql;
         }).collect(Collectors.toList()));
+
         SQL sql = null;
         bind.addAll(commentSql);
         if (!bind.isEmpty()) {
