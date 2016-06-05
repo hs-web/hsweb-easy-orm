@@ -1,0 +1,49 @@
+package og.hsweb.ezorm.render.support.mysql;
+
+import og.hsweb.ezorm.executor.SQL;
+import og.hsweb.ezorm.meta.FieldMetaData;
+import og.hsweb.ezorm.meta.TableMetaData;
+import og.hsweb.ezorm.render.SqlAppender;
+import og.hsweb.ezorm.render.SqlRender;
+import og.hsweb.ezorm.render.support.simple.SimpleSQL;
+import org.webbuilder.utils.common.StringUtils;
+
+import java.util.Set;
+
+/**
+ * Created by zhouhao on 16-6-5.
+ */
+public class MysqlMetaCreateRender implements SqlRender {
+    @Override
+    public SQL render(TableMetaData metaData, Object param) {
+        SqlAppender appender = new SqlAppender();
+        Set<FieldMetaData> fieldMetaDatas = metaData.getFields();
+        if (fieldMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
+        appender.add("\nCREATE TABLE ", metaData.getName(), "(");
+        fieldMetaDatas.forEach(fieldMetaData -> {
+            appender.add("\n\t`", fieldMetaData.getName(), "` ").add(fieldMetaData.getDataType());
+            if (fieldMetaData.getProperty("not-null", false).isTrue()) {
+                appender.add("not null ");
+            }
+            //注释
+            if (!StringUtils.isNullOrEmpty(fieldMetaData.getComment())) {
+                appender.add(String.format(" COMMENT '%s'", fieldMetaData.getComment()));
+            } else {
+                appender.add(String.format(" COMMENT '%s%s'", "列:", fieldMetaData.getAlias()));
+            }
+            appender.add(",");
+        });
+        appender.removeLast();
+        if (!metaData.getPrimaryKeys().isEmpty()) {
+            appender.add(",", "\n\tprimary key (");
+            metaData.getPrimaryKeys().forEach(pk -> appender.add("`", pk, "`",","));
+            appender.removeLast();
+            appender.addEdSpc(")");
+        }
+        if (metaData.getComment() != null) {
+            appender.add("COMMENT=", "'", metaData.getComment(), "'");
+        }
+        appender.add("\n)");
+        return new SimpleSQL(metaData, appender.toString(), param);
+    }
+}
