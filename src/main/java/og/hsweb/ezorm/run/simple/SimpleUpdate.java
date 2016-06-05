@@ -52,6 +52,18 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport implements Update<T> {
     }
 
     @Override
+    public Update<T> includes(String... fields) {
+        updateParam.includes(fields);
+        return this;
+    }
+
+    @Override
+    public Update<T> excludes(String... fields) {
+        updateParam.excludes(fields);
+        return this;
+    }
+
+    @Override
     public Update<T> where(String condition, Object value) {
         updateParam.where(condition, value);
         return this;

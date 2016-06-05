@@ -10,9 +10,13 @@ import java.sql.SQLException;
 public interface Update<T> {
     Update<T> set(T data);
 
-    Update<T> set(String property,Object value);
+    Update<T> set(String property, Object value);
 
     Update<T> where(String condition, Object value);
+
+    Update<T> includes(String... fields);
+    
+    Update<T> excludes(String... fields);
 
     Update<T> setParam(UpdateParam<T> param);
 
