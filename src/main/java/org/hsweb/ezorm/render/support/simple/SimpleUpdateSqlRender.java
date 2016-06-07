@@ -1,5 +1,7 @@
 package org.hsweb.ezorm.render.support.simple;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.meta.FieldMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
@@ -25,6 +27,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
         private List<OperationField> updateField;
         private SqlAppender whereSql = new SqlAppender();
         private Set<String> conditionTable = new LinkedHashSet<>();
+        PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
         public SimpleUpdateSqlRenderProcess(TableMetaData metaData, UpdateParam param) {
             this.metaData = metaData;
@@ -48,15 +51,24 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                 if (fieldMetaData.getProperty("read-only").isTrue()) return;
                 try {
                     String dataProperty = fieldMetaData.getAlias();
-                    Object value = BeanUtils.getProperty(param.getData(), fieldMetaData.getAlias());
+                    Object value = null;
+                    try {
+                        value = propertyUtils.getProperty(param.getData(), dataProperty);
+                    } catch (Exception e) {
+                    }
                     if (value == null && !fieldMetaData.getAlias().equals(fieldMetaData.getName())) {
                         dataProperty = fieldMetaData.getName();
-                        value = BeanUtils.getProperty(param.getData(), fieldMetaData.getName());
+                        value = propertyUtils.getProperty(param.getData(), dataProperty);
                     }
                     if (value == null) {
                         if (logger.isDebugEnabled())
                             logger.debug("跳过修改列:[{}], 属性[{}]为null!", fieldMetaData.getName(), fieldMetaData.getAlias());
                         return;
+                    }
+                    if (fieldMetaData.getValueConverter() != null) {
+                        Object new_value = fieldMetaData.getValueConverter().getData(value);
+                        if (value != new_value && !value.equals(new_value))
+                            propertyUtils.setProperty(param.getData(), dataProperty, new_value);
                     }
                     appender.add(fieldMetaData.getName(), "=", "#{data.", dataProperty, "}", ",");
                     bytes[0]++;

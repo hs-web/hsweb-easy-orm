@@ -55,7 +55,7 @@ public abstract class DefaultDialect implements Dialect {
             if (mapper != null) {
                 return mapper.accept(wherePrefix, term, fieldMetaData, tableAlias);
             }
-            throw new UnsupportedOperationException("不支持的查询类型!");
+            return termTypeMappers.get(TermType.eq).accept(wherePrefix,term,fieldMetaData,tableAlias);
         });
 
         termTypeMappers.put(TermType.btw, (wherePrefix, term, fieldMetaData, tableAlias) -> {

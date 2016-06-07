@@ -1,17 +1,20 @@
 package org.hsweb.ezorm.executor;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.apache.commons.beanutils.BeanUtils;
+import org.hsweb.ezorm.param.QueryParam;
+import org.hsweb.ezorm.param.UpdateParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webbuilder.utils.common.StringUtils;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,7 +22,6 @@ import java.util.regex.Pattern;
  * 基于jdbc的通用sql执行器,继承改类,实现getConnection方法,返回JDBC链接,调用其它方法即可进行sql执行
  */
 public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
-
     /**
      * @return
      */
@@ -29,6 +31,8 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
 
     private static final Pattern APPEND_PATTERN = Pattern.compile("(?<=\\$\\{)(.+?)(?=\\})");
     private static final Pattern PREPARED_PATTERN = Pattern.compile("(?<=#\\{)(.+?)(?=\\})");
+
+    PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
     /**
      * 将sql模板编译为sql信息个
@@ -51,7 +55,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             String group = append_matcher.group();
             Object obj = null;
             try {
-                obj = BeanUtils.getProperty(param, group);
+                obj = propertyUtils.getProperty(param, group);
             } catch (Exception e) {
                 logger.error("");
             }
@@ -64,7 +68,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), "?");
             Object obj = null;
             try {
-                obj = BeanUtils.getProperty(param, group);
+                obj = propertyUtils.getProperty(param, group);
             } catch (Exception e) {
                 logger.error("", e);
             }

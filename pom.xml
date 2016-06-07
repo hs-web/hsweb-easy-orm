@@ -84,13 +84,6 @@
         </dependency>
         <!-- log end -->
 
-        <!--json-->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>${fastjson.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.webbuilder</groupId>
             <artifactId>wb-utils</artifactId>

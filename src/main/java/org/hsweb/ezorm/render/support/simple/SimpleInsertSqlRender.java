@@ -1,12 +1,17 @@
 package org.hsweb.ezorm.render.support.simple;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.param.InsertParam;
 import org.hsweb.ezorm.render.SqlAppender;
 import org.hsweb.ezorm.render.SqlRender;
 import org.apache.commons.beanutils.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +20,8 @@ import java.util.List;
  * Created by zhouhao on 16-6-4.
  */
 public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
+    PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public SQL render(TableMetaData metaData, InsertParam param) {
@@ -45,13 +52,30 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                 Object value = null;
                 try {
                     if (!fieldMetaData.getAlias().equals(fieldMetaData.getName())) {
-                        value = BeanUtils.getProperty(o, fieldMetaData.getAlias());
+                        try {
+                            value = propertyUtils.getProperty(o, dataProperty);
+                        } catch (Exception e) {
+                        }
                         if (value == null) {
-                            value = BeanUtils.getProperty(o, fieldMetaData.getName());
+                            value = propertyUtils.getProperty(o, fieldMetaData.getName());
                             if (value != null) dataProperty = fieldMetaData.getName();
                         }
                     }
                 } catch (Exception e) {
+                }
+                if (value == null) {
+                    value = fieldMetaData.getProperty("default-value").getValue();
+                    if (logger.isInfoEnabled())
+                        logger.info("{}将使用默认值{}", value, dataProperty);
+                }
+                if (value != null && fieldMetaData.getValueConverter() != null) {
+                    Object new_value = fieldMetaData.getValueConverter().getData(value);
+                    if (value != new_value && !value.equals(new_value))
+                        try {
+                            propertyUtils.setProperty(param.getData(), dataProperty, new_value);
+                        } catch (Exception e) {
+                            logger.warn("未成功完成属性转换", e);
+                        }
                 }
                 appender.add("#{data[", index, "].", dataProperty, "}", ",");
             });
@@ -60,6 +84,6 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         }
         InsertParam paramProxy = new InsertParam();
         paramProxy.setData(list);
-        return new SimpleSQL( appender.toString(), paramProxy);
+        return new SimpleSQL(appender.toString(), paramProxy);
     }
 }
