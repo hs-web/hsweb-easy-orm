@@ -132,6 +132,7 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public void setTermTypeMapper(String termType, Mapper mapper) {
+        termType=termType.toLowerCase();
         termTypeMappers.put(termType, mapper);
     }
 }

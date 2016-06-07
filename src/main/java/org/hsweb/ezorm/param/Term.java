@@ -110,7 +110,7 @@ public class Term implements Cloneable {
     }
 
     public String getTermType() {
-        return termType;
+        return termType.toLowerCase();
     }
 
     public void setTermType(String termType) {
