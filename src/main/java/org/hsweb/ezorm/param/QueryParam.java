@@ -2,6 +2,7 @@ package org.hsweb.ezorm.param;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class QueryParam<C extends QueryParam> extends SqlParam<C> implements Ser
     /**
      * 排序字段
      */
-    private Set<Sort> sorts = new LinkedHashSet<>();
+    private List<Sort> sorts = new LinkedList<>();
 
     public C select(String... fields) {
         return (C) this.includes(fields);
@@ -89,11 +90,11 @@ public class QueryParam<C extends QueryParam> extends SqlParam<C> implements Ser
         this.pageSize = pageSize;
     }
 
-    public Set<Sort> getSorts() {
+    public List<Sort> getSorts() {
         return sorts;
     }
 
-    public void setSorts(Set<Sort> sorts) {
+    public void setSorts(List<Sort> sorts) {
         this.sorts = sorts;
     }
 
