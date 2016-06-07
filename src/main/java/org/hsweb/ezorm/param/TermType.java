@@ -3,82 +3,67 @@ package org.hsweb.ezorm.param;
 /**
  * Created by zhouhao on 16-5-9.
  */
-public enum TermType {
+public interface TermType {
     /**
      * ==
      */
-    eq,
+    String eq = "eq";
     /**
      * !=
      */
-    not,
+    String not = "not";
     /**
      * like
      */
-    like,
-    notlike,
+    String like = "like";
+    String notlike = "notlike";
     /**
      * >
      */
-    gt,
+    String gt = "gt";
     /**
      * <
      */
-    lt,
+    String lt = "lt";
     /**
      * >=
      */
-    gtoreq,
+    String gtoreq = "gtoreq";
     /**
      * <=
      */
-    ltoreq,
+    String ltoreq = "ltoreq";
     /**
      * in
      */
-    in,
+    String in = "in";
     /**
      * notin
      */
-    notin,
+    String notin = "notin";
     /**
      * =''
      */
-    empty,
+    String empty = "empty";
     /**
      * !=''
      */
-    notempty,
+    String notempty = "notempty";
     /**
      * is null
      */
-    isnull,
+    String isnull = "isnull";
     /**
      * not null
      */
-    notnull,
+    String notnull = "notnull";
     /**
      * between
      */
-    btw,
+    String btw = "notnull";
     /**
      * not between
      */
-    notbtw,
-
-    func,
-
-    custom;
-
-    public static TermType fromString(String str) {
-        if (str == null || !str.contains("$")) {
-            return eq;
-        } else {
-            try {
-                return valueOf(str.split("[\\$]")[1].toLowerCase());
-            } catch (Exception e) {
-                return custom;
-            }
-        }
-    }
+    String notbtw = "notbtw";
+    String func = "func";
 }

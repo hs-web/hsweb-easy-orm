@@ -14,9 +14,7 @@ import java.util.*;
  */
 public abstract class DefaultDialect implements Dialect {
 
-    protected Map<TermType, Mapper> termTypeMappers = new HashMap<>();
-
-    protected Map<String, Mapper> customMappers = new HashMap<>();
+    protected Map<String, Mapper> termTypeMappers = new HashMap<>();
 
     public DefaultDialect() {
         termTypeMappers.put(TermType.eq, (wherePrefix, term, fieldMetaData, tableAlias) ->
@@ -49,14 +47,6 @@ public abstract class DefaultDialect implements Dialect {
 
         termTypeMappers.put(TermType.func, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(term.getValue()).toString());
-
-        termTypeMappers.put(TermType.custom, (wherePrefix, term, fieldMetaData, tableAlias) -> {
-            Mapper mapper = customMappers.get(term.getCustomTermType());
-            if (mapper != null) {
-                return mapper.accept(wherePrefix, term, fieldMetaData, tableAlias);
-            }
-            return termTypeMappers.get(TermType.eq).accept(wherePrefix,term,fieldMetaData,tableAlias);
-        });
 
         termTypeMappers.put(TermType.btw, (wherePrefix, term, fieldMetaData, tableAlias) -> {
             SqlAppender sqlAppender = new SqlAppender();
@@ -110,7 +100,9 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public String wrapperWhere(String wherePrefix, Term term, FieldMetaData fieldMetaData, String tableAlias) {
-        return termTypeMappers.get(term.getTermType()).accept(wherePrefix, term, fieldMetaData, tableAlias);
+        Mapper mapper = termTypeMappers.get(term.getTermType());
+        if (mapper == null) mapper = termTypeMappers.get(TermType.eq);
+        return mapper.accept(wherePrefix, term, fieldMetaData, tableAlias);
     }
 
     protected List<Object> param2list(Object value) {
@@ -139,7 +131,7 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public void setCustomMapper(String termType, Mapper mapper) {
-        customMappers.put(termType, mapper);
+    public void setTermTypeMapper(String termType, Mapper mapper) {
+        termTypeMappers.put(termType, mapper);
     }
 }

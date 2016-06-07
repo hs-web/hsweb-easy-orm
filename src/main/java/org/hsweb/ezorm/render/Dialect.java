@@ -34,8 +34,7 @@ public interface Dialect {
         String accept(String wherePrefix, Term term, FieldMetaData fieldMetaData, String tableAlias);
     }
 
-    void setCustomMapper(String termType, Mapper mapper);
-
+    void setTermTypeMapper(String termType, Mapper mapper);
 
     Dialect ORACLE = new DefaultDialect() {
         @Override

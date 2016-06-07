@@ -27,14 +27,13 @@ public class Term implements Cloneable {
     /**
      * 条件类型
      */
-    private TermType termType = TermType.eq;
+    private String termType = TermType.eq;
 
     /**
      * 嵌套的条件
      */
     private List<Term> terms = new LinkedList<>();
 
-    private String customTermType;
 
     public Term or(String term, Object value) {
         Term queryTerm = new Term();
@@ -88,10 +87,7 @@ public class Term implements Cloneable {
         if (field == null) return;
         if (field.contains("$")) {
             String tmp[] = field.split("[\\$]");
-            setTermType(TermType.fromString(field));
-            if (getTermType() == TermType.custom) {
-                setCustomTermType(tmp[1]);
-            }
+            setTermType(tmp[1]);
             field = tmp[0];
         }
         this.field = field;
@@ -113,11 +109,11 @@ public class Term implements Cloneable {
         this.type = type;
     }
 
-    public TermType getTermType() {
+    public String getTermType() {
         return termType;
     }
 
-    public void setTermType(TermType termType) {
+    public void setTermType(String termType) {
         this.termType = termType;
     }
 
@@ -134,15 +130,6 @@ public class Term implements Cloneable {
         return this;
     }
 
-    public void setCustomTermType(String customTermType) {
-        termType = TermType.custom;
-        this.customTermType = customTermType;
-    }
-
-    public String getCustomTermType() {
-        return customTermType;
-    }
-
     @Override
     public Term clone() {
         Term term = new Term();
@@ -150,7 +137,6 @@ public class Term implements Cloneable {
         term.setValue(value);
         term.setTermType(termType);
         term.setType(type);
-        term.setCustomTermType(customTermType);
         terms.forEach(t -> term.addTerm(t.clone()));
         return term;
     }

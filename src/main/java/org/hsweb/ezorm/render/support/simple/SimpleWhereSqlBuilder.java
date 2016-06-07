@@ -81,7 +81,7 @@ public abstract class SimpleWhereSqlBuilder {
         }
     }
 
-    protected Object transformationValue(JDBCType type, Object value, TermType termType) {
+    protected Object transformationValue(JDBCType type, Object value, String termType) {
         if (type == null) return value;
         switch (type) {
             case INTEGER:
