@@ -44,7 +44,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
         public SQL process() {
             SqlAppender appender = new SqlAppender();
-            appender.add("UPDATE ", metaData.getName(), " SET ");
+            appender.add("UPDATE ", metaData.getName()," ", metaData.getAlias(), " SET ");
             byte[] bytes = new byte[1];
             updateField.forEach(operationField -> {
                 FieldMetaData fieldMetaData = operationField.getFieldMetaData();

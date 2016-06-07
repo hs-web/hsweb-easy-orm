@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by zhouhao on 16-6-5.
  */
-class SimpleInsert<T> extends ValidatorAndTriggerSupport implements Insert<T> {
+class SimpleInsert<T> extends ValidatorAndTriggerSupport<Insert<T>> implements Insert<T> {
     private InsertParam insertParam;
     private SimpleTable<T> table;
     private SqlExecutor sqlExecutor;
@@ -41,8 +41,8 @@ class SimpleInsert<T> extends ValidatorAndTriggerSupport implements Insert<T> {
 
     @Override
     public int exec() throws SQLException {
-        boolean supportBefore = table.getMeta().triggerIsSupport(Trigger.insert_before);
-        boolean supportDone = table.getMeta().triggerIsSupport(Trigger.insert_done);
+        boolean supportBefore = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.insert_before);
+        boolean supportDone =  !triggerSkip &&table.getMeta().triggerIsSupport(Trigger.insert_done);
         Map<String, Object> context = table.getDatabase().getTriggerContextRoot();
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();

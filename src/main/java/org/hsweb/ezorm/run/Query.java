@@ -9,18 +9,18 @@ import java.util.List;
 /**
  * Created by zhouhao on 16-6-4.
  */
-public interface Query<T> {
-    Query<T>  setParam(QueryParam param);
+public interface Query<T> extends TriggerSkipSupport<Query<T>> {
+    Query<T> setParam(QueryParam param);
 
-    Query<T>  select(String... fields);
+    Query<T> select(String... fields);
 
-    Query<T>  selectExcludes(String... fields);
+    Query<T> selectExcludes(String... fields);
 
-    Query<T>  where(String condition, Object value);
+    Query<T> where(String condition, Object value);
 
-    Query<T>  and(String condition, Object value);
+    Query<T> and(String condition, Object value);
 
-    Query<T>  or(String condition, Object value);
+    Query<T> or(String condition, Object value);
 
     Term nest();
 
@@ -28,11 +28,11 @@ public interface Query<T> {
 
     Term orNest(String condition, Object value);
 
-    Query<T>  orderByAsc(String field);
+    Query<T> orderByAsc(String field);
 
-    Query<T>  orderByDesc(String field);
+    Query<T> orderByDesc(String field);
 
-    Query<T>  noPaging();
+    Query<T> noPaging();
 
     List<T> list() throws SQLException;
 

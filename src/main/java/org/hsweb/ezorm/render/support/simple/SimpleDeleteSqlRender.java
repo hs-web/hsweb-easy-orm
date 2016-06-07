@@ -36,7 +36,7 @@ public class SimpleDeleteSqlRender extends CommonSqlRender<SqlParam> {
 
         public SQL process() {
             SqlAppender appender = new SqlAppender();
-            appender.add("DELETE FROM ", metaData.getName());
+            appender.add("DELETE FROM ", metaData.getName()," ",metaData.getAlias());
             if (whereSql.isEmpty()) {
                 throw new UnsupportedOperationException("禁止执行未设置任何条件的删除操作!");
             }

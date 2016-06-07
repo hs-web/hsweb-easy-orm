@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by zhouhao on 16-6-4.
  */
-class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
+class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Query<T> {
     private SimpleTable<T> table;
 
     private QueryParam queryParam;
@@ -42,37 +42,37 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
     }
 
     @Override
-    public Query<T>  setParam(QueryParam param) {
+    public Query<T> setParam(QueryParam param) {
         this.queryParam = param;
         return this;
     }
 
     @Override
-    public Query<T>  select(String... fields) {
+    public Query<T> select(String... fields) {
         this.queryParam.select(fields);
         return this;
     }
 
     @Override
-    public Query<T>  selectExcludes(String... fields) {
+    public Query<T> selectExcludes(String... fields) {
         this.queryParam.excludes(fields);
         return this;
     }
 
     @Override
-    public Query<T>  where(String condition, Object value) {
+    public Query<T> where(String condition, Object value) {
         queryParam.where(condition, value);
         return this;
     }
 
     @Override
-    public Query<T>  and(String condition, Object value) {
+    public Query<T> and(String condition, Object value) {
         queryParam.and(condition, value);
         return this;
     }
 
     @Override
-    public Query<T>  or(String condition, Object value) {
+    public Query<T> or(String condition, Object value) {
         queryParam.or(condition, value);
         return this;
     }
@@ -93,19 +93,19 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
     }
 
     @Override
-    public Query<T>  orderByAsc(String field) {
+    public Query<T> orderByAsc(String field) {
         this.queryParam.orderBy(field).asc();
         return this;
     }
 
     @Override
-    public Query<T>  orderByDesc(String field) {
+    public Query<T> orderByDesc(String field) {
         this.queryParam.orderBy(field).desc();
         return this;
     }
 
     @Override
-    public Query<T>  noPaging() {
+    public Query<T> noPaging() {
         this.queryParam.setPaging(false);
         return this;
     }
@@ -114,8 +114,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
     public List<T> list() throws SQLException {
         QueryParam param = this.queryParam.clone();
         Map<String, Object> context = null;
-        boolean supportBefore = getTableMeta().triggerIsSupport(Trigger.select_before);
-        boolean supportDone = getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportBefore = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportDone = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);
@@ -140,8 +140,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
     public T single() throws SQLException {
         QueryParam param = this.queryParam.clone();
         Map<String, Object> context = null;
-        boolean supportBefore = getTableMeta().triggerIsSupport(Trigger.select_before);
-        boolean supportDone = getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportBefore = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportDone = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);
@@ -166,8 +166,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
     public List<T> list(int pageIndex, int pageSize) throws SQLException {
         QueryParam param = queryParam.clone();
         Map<String, Object> context = null;
-        boolean supportBefore = getTableMeta().triggerIsSupport(Trigger.select_before);
-        boolean supportDone = getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportBefore = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportDone = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);
@@ -192,8 +192,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport implements Query<T> {
     public int total() throws SQLException {
         QueryParam param = this.queryParam.clone();
         Map<String, Object> context = null;
-        boolean supportBefore = getTableMeta().triggerIsSupport(Trigger.select_before);
-        boolean supportDone = getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportBefore = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
+        boolean supportDone = !triggerSkip && getTableMeta().triggerIsSupport(Trigger.select_before);
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);

@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by zhouhao on 16-6-5.
  */
-class SimpleUpdate<T> extends ValidatorAndTriggerSupport implements Update<T> {
+class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements Update<T> {
     private static final Logger logger = LoggerFactory.getLogger(Update.class);
     private UpdateParam updateParam;
     private SimpleTable<T> table;
@@ -78,8 +78,8 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport implements Update<T> {
 
     @Override
     public int exec() throws SQLException {
-        boolean supportBefore = table.getMeta().triggerIsSupport(Trigger.update_before);
-        boolean supportDone = table.getMeta().triggerIsSupport(Trigger.update_done);
+        boolean supportBefore = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.update_before);
+        boolean supportDone = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.update_done);
         Map<String, Object> context = table.getDatabase().getTriggerContextRoot();
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();

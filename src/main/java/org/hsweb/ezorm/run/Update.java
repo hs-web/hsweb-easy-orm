@@ -7,7 +7,7 @@ import java.sql.SQLException;
 /**
  * Created by zhouhao on 16-6-4.
  */
-public interface Update<T> {
+public interface Update<T>extends TriggerSkipSupport<Update<T>> {
     Update<T> set(T data);
 
     Update<T> set(String property, Object value);

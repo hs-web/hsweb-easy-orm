@@ -17,8 +17,7 @@ import java.util.Map;
 /**
  * Created by zhouhao on 16-6-5.
  */
-class SimpleDelete implements Delete {
-    private static final Logger logger = LoggerFactory.getLogger(Update.class);
+class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete {
     private SqlParam param;
     private SimpleTable table;
     private SqlExecutor sqlExecutor;
@@ -46,8 +45,8 @@ class SimpleDelete implements Delete {
     @Override
     public int exec() throws SQLException {
         Map<String, Object> context = null;
-        boolean supportBefore = tableMetaData.triggerIsSupport(Trigger.delete_before);
-        boolean supportDone = tableMetaData.triggerIsSupport(Trigger.delete_done);
+        boolean supportBefore = !triggerSkip && tableMetaData.triggerIsSupport(Trigger.delete_before);
+        boolean supportDone = !triggerSkip && tableMetaData.triggerIsSupport(Trigger.delete_done);
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);
@@ -65,5 +64,10 @@ class SimpleDelete implements Delete {
             tableMetaData.on(Trigger.delete_done, context);
         }
         return size;
+    }
+
+    @Override
+    TableMetaData getTableMeta() {
+        return tableMetaData;
     }
 }
