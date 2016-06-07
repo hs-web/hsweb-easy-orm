@@ -44,6 +44,8 @@ public abstract class DefaultDialect implements Dialect {
 
         termTypeMappers.put(TermType.empty, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "=''").toString());
+        termTypeMappers.put(TermType.notempty, (wherePrefix, term, fieldMetaData, tableAlias) ->
+                new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "!=''").toString());
 
         termTypeMappers.put(TermType.func, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(term.getValue()).toString());
@@ -124,7 +126,7 @@ public abstract class DefaultDialect implements Dialect {
             } else if (value.getClass().isArray()) {
                 return Arrays.asList(((Object[]) value));
             } else {
-                return Arrays.asList(value);
+                return new ArrayList<>(Arrays.asList(value));
             }
         }
         return new ArrayList<>();

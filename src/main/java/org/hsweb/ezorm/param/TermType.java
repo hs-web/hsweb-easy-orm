@@ -60,7 +60,7 @@ public interface TermType {
     /**
      * between
      */
-    String btw = "notnull";
+    String btw = "btw";
     /**
      * not between
      */
