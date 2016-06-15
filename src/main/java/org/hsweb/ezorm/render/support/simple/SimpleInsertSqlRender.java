@@ -70,6 +70,9 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                 }
                 if (value != null && fieldMetaData.getValueConverter() != null) {
                     Object new_value = fieldMetaData.getValueConverter().getData(value);
+                    if (fieldMetaData.getOptionConverter() != null) {
+                        new_value = fieldMetaData.getOptionConverter().converterData(new_value);
+                    }
                     if (value != new_value && !value.equals(new_value))
                         try {
                             propertyUtils.setProperty(param.getData(), dataProperty, new_value);

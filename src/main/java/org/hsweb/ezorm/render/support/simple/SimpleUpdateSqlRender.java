@@ -44,7 +44,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
         public SQL process() {
             SqlAppender appender = new SqlAppender();
-            appender.add("UPDATE ", metaData.getName()," ", metaData.getAlias(), " SET ");
+            appender.add("UPDATE ", metaData.getName(), " ", metaData.getAlias(), " SET ");
             byte[] bytes = new byte[1];
             updateField.forEach(operationField -> {
                 FieldMetaData fieldMetaData = operationField.getFieldMetaData();
@@ -67,6 +67,9 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     }
                     if (fieldMetaData.getValueConverter() != null) {
                         Object new_value = fieldMetaData.getValueConverter().getData(value);
+                        if (fieldMetaData.getOptionConverter() != null) {
+                            new_value = fieldMetaData.getOptionConverter().converterData(new_value);
+                        }
                         if (value != new_value && !value.equals(new_value))
                             propertyUtils.setProperty(param.getData(), dataProperty, new_value);
                     }
