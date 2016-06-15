@@ -109,7 +109,10 @@ public abstract class DefaultDialect implements Dialect {
 
     protected List<Object> param2list(Object value) {
         if (value == null) return new ArrayList<>();
-        if (!(value instanceof Iterable)) {
+        if (value instanceof List) return ((List) value);
+        if (value instanceof Collection) return new ArrayList<>(((Collection) value));
+
+        if (!(value instanceof Collection)) {
             if (value instanceof String) {
                 String[] arr = ((String) value).split("[, ;]");
                 Object[] objArr = new Object[arr.length];
@@ -134,7 +137,7 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public void setTermTypeMapper(String termType, Mapper mapper) {
-        termType=termType.toLowerCase();
+        termType = termType.toLowerCase();
         termTypeMappers.put(termType, mapper);
     }
 }
