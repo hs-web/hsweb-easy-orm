@@ -1,11 +1,11 @@
 package org.hsweb.ezorm.render.dialect;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.meta.FieldMetaData;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
 import org.hsweb.ezorm.render.Dialect;
 import org.hsweb.ezorm.render.SqlAppender;
-import org.webbuilder.utils.common.StringUtils;
 
 import java.util.*;
 

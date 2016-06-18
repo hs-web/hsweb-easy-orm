@@ -1,9 +1,9 @@
 package org.hsweb.ezorm.meta.expand;
 
 import com.alibaba.fastjson.JSON;
-import org.webbuilder.utils.common.ClassUtils;
-import org.webbuilder.utils.common.DateTimeUtils;
-import org.webbuilder.utils.common.StringUtils;
+import org.hsweb.commons.ClassUtils;
+import org.hsweb.commons.DateTimeUtils;
+import org.hsweb.commons.StringUtils;
 
 import java.util.Date;
 import java.util.List;

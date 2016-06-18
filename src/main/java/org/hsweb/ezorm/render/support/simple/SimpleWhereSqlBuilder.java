@@ -1,5 +1,7 @@
 package org.hsweb.ezorm.render.support.simple;
 
+import org.hsweb.commons.DateTimeUtils;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.meta.Correlation;
 import org.hsweb.ezorm.meta.FieldMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
@@ -7,8 +9,6 @@ import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
 import org.hsweb.ezorm.render.Dialect;
 import org.hsweb.ezorm.render.SqlAppender;
-import org.webbuilder.utils.common.DateTimeUtils;
-import org.webbuilder.utils.common.StringUtils;
 
 import java.sql.JDBCType;
 import java.util.Date;

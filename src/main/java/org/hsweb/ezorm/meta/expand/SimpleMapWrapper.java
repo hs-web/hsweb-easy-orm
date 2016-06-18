@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.meta.expand;
 
-import org.webbuilder.utils.common.StringUtils;
+
+import org.hsweb.commons.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

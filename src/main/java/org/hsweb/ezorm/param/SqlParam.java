@@ -1,6 +1,5 @@
 package org.hsweb.ezorm.param;
 
-import com.alibaba.fastjson.JSON;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,11 +109,6 @@ public class SqlParam<R extends SqlParam> implements Cloneable{
 
     public void setTerms(List<Term> terms) {
         this.terms = terms;
-    }
-
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
     }
 
     @Override

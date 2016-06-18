@@ -127,6 +127,7 @@ public class SimpleTest {
                 .where("name", "张三")
                 .nest("name$LIKE", "张%").or("name$LIKE", "李%");
         query.orderByDesc("name");
+
         System.out.println(query.list());
     }
 

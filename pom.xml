@@ -83,11 +83,20 @@
             <optional>true</optional>
         </dependency>
         <!-- log end -->
-
         <dependency>
-            <groupId>org.webbuilder</groupId>
-            <artifactId>wb-utils</artifactId>
+            <groupId>org.hsweb</groupId>
+            <artifactId>hsweb-expands-script</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.6</version>
         </dependency>
     </dependencies>
 

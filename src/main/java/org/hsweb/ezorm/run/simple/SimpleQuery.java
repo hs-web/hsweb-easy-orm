@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.run.simple;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.executor.SQL;
@@ -10,7 +11,6 @@ import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.render.SqlRender;
 import org.hsweb.ezorm.run.Query;
 import org.hsweb.ezorm.run.simple.wrapper.TriggerWrapper;
-import org.webbuilder.utils.common.StringUtils;
 
 import java.sql.SQLException;
 import java.util.List;

@@ -2,19 +2,17 @@ package org.hsweb.ezorm.executor;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
-import org.apache.commons.beanutils.BeanUtils;
-import org.hsweb.ezorm.param.QueryParam;
-import org.hsweb.ezorm.param.UpdateParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.webbuilder.utils.common.StringUtils;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

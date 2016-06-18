@@ -1,10 +1,10 @@
 package org.hsweb.ezorm.run.simple.trigger;
 
+import org.hsweb.commons.StringUtils;
+import org.hsweb.expands.script.engine.DynamicScriptEngine;
+import org.hsweb.expands.script.engine.ExecuteResult;
 import org.hsweb.ezorm.exception.TriggerException;
 import org.hsweb.ezorm.meta.expand.Trigger;
-import org.webbuilder.utils.common.StringUtils;
-import org.webbuilder.utils.script.engine.DynamicScriptEngine;
-import org.webbuilder.utils.script.engine.ExecuteResult;
 
 import java.util.Map;
 

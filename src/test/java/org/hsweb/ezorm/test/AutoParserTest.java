@@ -51,7 +51,11 @@ public class AutoParserTest {
         SimpleDatabase database = new SimpleDatabase(metaData, sqlExecutor);
         metaData.setParser(new OracleTableMetaParser(sqlExecutor));
         metaData.init();
+
         Table user = database.getTable("s_user");
+
+        user.createQuery().select("username").where("name$like","张%").list();
+
         Table resources = database.getTable("s_resources");
         //设置表关联
         resources.getMeta().addCorrelation(

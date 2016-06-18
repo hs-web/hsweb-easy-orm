@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.render.support.oracle;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.executor.BindSQL;
 import org.hsweb.ezorm.executor.EmptySQL;
 import org.hsweb.ezorm.executor.SQL;
@@ -9,7 +10,6 @@ import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.render.SqlAppender;
 import org.hsweb.ezorm.render.SqlRender;
 import org.hsweb.ezorm.render.support.simple.SimpleSQL;
-import org.webbuilder.utils.common.StringUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

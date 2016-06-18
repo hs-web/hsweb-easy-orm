@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.meta.converter;
 
+import org.hsweb.commons.ClassUtils;
 import org.hsweb.ezorm.meta.expand.ValueConverter;
-import org.webbuilder.utils.common.ClassUtils;
 
 import java.math.BigDecimal;
 
