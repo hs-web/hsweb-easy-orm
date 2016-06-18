@@ -5,6 +5,7 @@ import org.hsweb.ezorm.meta.FieldMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.converter.ClobValueConverter;
 import org.hsweb.ezorm.meta.converter.DateTimeConverter;
+import org.hsweb.ezorm.meta.converter.NumberValueConverter;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.render.support.simple.SimpleSQL;
@@ -40,7 +41,7 @@ public class MysqlTableMetaParser implements TableMetaParser {
                 "        NUMERIC_PRECISION as `data_precision`,\n" +
                 "        COLUMN_COMMENT as `comment`\n" +
                 "        from information_schema.columns where table_name=#{tableName}";
-        String findTableCommentSqlStr=" select\n" +
+        String findTableCommentSqlStr = " select\n" +
                 "        table_comment as `comment`\n" +
                 "        from information_schema.tables where table_name=#{tableName}";
 
@@ -92,30 +93,31 @@ public class MysqlTableMetaParser implements TableMetaParser {
             JDBCType jdbcType = JDBCType.VARCHAR;
             Class javaType = String.class;
             switch (data_type) {
+                case "text":
                 case "varchar":
                     data_type = data_type + "(" + len + ")";
                     jdbcType = JDBCType.VARCHAR;
                     break;
-                case "number":
+                case "tinyint":
+                case "int":
+                    data_type = data_type + "(" + len + ")";
+                    jdbcType = JDBCType.INTEGER;
+                    javaType = Integer.class;
+                    instance.setValueConverter(new NumberValueConverter(javaType));
+                    break;
+                case "decimal":
+                case "float":
+                case "double":
                     data_type = data_type + "(" + len + "," + data_precision + ")";
-                    if (data_precision == 0) {
-                        jdbcType = JDBCType.INTEGER;
-                        javaType = Integer.class;
-                    } else {
-                        jdbcType = JDBCType.NUMERIC;
-                        javaType = Double.class;
-                    }
+                    jdbcType = JDBCType.NUMERIC;
+                    javaType = Double.class;
+                    instance.setValueConverter(new NumberValueConverter(javaType));
                     break;
                 case "datetime":
                 case "timestamp":
                 case "date":
                     javaType = Date.class;
                     instance.setValueConverter(new DateTimeConverter("yyyy-MM-dd HH:mm:ss", Date.class));
-                    break;
-                case "text":
-                    jdbcType = JDBCType.CLOB;
-                    javaType = String.class;
-                    instance.setValueConverter(new ClobValueConverter());
                     break;
             }
             instance.setDataType(data_type);
