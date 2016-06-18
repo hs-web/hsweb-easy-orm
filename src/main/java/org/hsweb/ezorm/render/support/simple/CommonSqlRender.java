@@ -77,8 +77,10 @@ public abstract class CommonSqlRender<R extends SqlParam> implements SqlRender<R
                     String tname = null;
                     if (null == table) {
                         Correlation correlation = metaData.getCorrelation(fieldInfo[0]);
-                        if (correlation != null) table = metaData.getDatabaseMetaData().getTable(correlation.getTargetTable());
-                        tname = correlation.getAlias();
+                        if (correlation != null){
+                            table = metaData.getDatabaseMetaData().getTable(correlation.getTargetTable());
+                            tname = correlation.getAlias();
+                        }
                     } else {
                         tname = table.getAlias();
                     }
