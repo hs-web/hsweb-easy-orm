@@ -53,9 +53,9 @@ class SimpleInsert<T> extends ValidatorAndTriggerSupport<Insert<T>> implements I
         if (supportBefore) {
             table.getMeta().on(Trigger.insert_before, context);
         }
-        tryValidate(insertParam.getData(), Validator.Operation.INSERT);
         SqlRender<InsertParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.INSERT);
         SQL sql = render.render(table.getMeta(), insertParam);
+        tryValidate(insertParam.getData(), Validator.Operation.INSERT);
         int total = sqlExecutor.insert(sql);
         if (supportDone) {
             context.put("total", total);

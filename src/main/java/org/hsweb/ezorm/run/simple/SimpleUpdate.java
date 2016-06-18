@@ -90,9 +90,9 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
         if (supportBefore) {
             table.getMeta().on(Trigger.update_before, context);
         }
-        tryValidate(updateParam.getData(), Validator.Operation.UPDATE);
         SqlRender<UpdateParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.UPDATE);
         SQL sql = render.render(table.getMeta(), updateParam);
+        tryValidate(updateParam.getData(), Validator.Operation.UPDATE);
         int total = sqlExecutor.update(sql);
         if (supportDone) {
             context.put("total", total);
