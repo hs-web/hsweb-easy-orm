@@ -1,11 +1,16 @@
 package org.hsweb.ezorm.meta.expand;
 
 
+import java.util.List;
+
 /**
  * 对象包装器，在执行查询时，通过包装器对查询结果进行初始化
  * Created by 浩 on 2015-11-09 0009.
  */
 public interface ObjectWrapper<T> {
+    default void setUp(List<String> columns) {
+    }
+
     /**
      * 创建对象实例
      *

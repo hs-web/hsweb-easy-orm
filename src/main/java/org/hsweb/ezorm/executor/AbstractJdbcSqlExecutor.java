@@ -101,6 +101,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         for (int i = 1; i <= count; i++) {
             headers.add(metaData.getColumnLabel(i));
         }
+        wrapper.setUp(headers);
         int index = 0;
         List<T> datas = new ArrayList<>();
         while (resultSet.next()) {
@@ -153,6 +154,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         for (int i = 1; i <= count; i++) {
             headers.add(metaData.getColumnLabel(i));
         }
+        wrapper.setUp(headers);
         int index = 0;
         T data = null;
         if (resultSet.next()) {
