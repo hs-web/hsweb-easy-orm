@@ -11,10 +11,7 @@ import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 
 import java.sql.JDBCType;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zhouhao on 16-6-5.
@@ -46,9 +43,9 @@ public class OracleTableMetaParser implements TableMetaParser {
 
         Map<String, Object> param = new HashMap<>();
         param.put("tableName", metaData.getName().toUpperCase());
-        SimpleSQL filedMetaSql = new SimpleSQL( filedMetaSqlStr, param);
+        SimpleSQL filedMetaSql = new SimpleSQL(filedMetaSqlStr, param);
         try {
-            sqlExecutor.single(new SimpleSQL( findTableCommentSqlStr, param), new SimpleMapWrapper() {
+            sqlExecutor.single(new SimpleSQL(findTableCommentSqlStr, param), new SimpleMapWrapper() {
                 @Override
                 public void done(Map<String, Object> instance) {
                     metaData.setComment((String) instance.get("comment"));
@@ -61,6 +58,22 @@ public class OracleTableMetaParser implements TableMetaParser {
         }
 
         return metaData;
+    }
+
+    @Override
+    public List<TableMetaData> parseAll() throws SQLException {
+        String sql = "select table_name as \"name\" from user_tab_comments where table_type='TABLE'";
+        List<TableMetaData> metaDatas = new LinkedList<>();
+        sqlExecutor.list(new SimpleSQL(sql), new SimpleMapWrapper() {
+            @Override
+            public void done(Map<String, Object> instance) {
+                String name = (String) instance.get("name");
+                TableMetaData metaData = parse(name);
+                metaDatas.add(metaData);
+                super.done(instance);
+            }
+        });
+        return metaDatas;
     }
 
     class FieldMetaDataWrapper implements ObjectWrapper<FieldMetaData> {
