@@ -66,7 +66,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                 if (value == null) {
                     value = fieldMetaData.getProperty("default-value").getValue();
                     if (logger.isInfoEnabled())
-                        logger.info("{}将使用默认值{}", value, dataProperty);
+                        logger.info("{}将使用默认值[default-value]:{}", dataProperty, value);
                 }
                 if (value != null && fieldMetaData.getValueConverter() != null) {
                     Object new_value = fieldMetaData.getValueConverter().getData(value);
