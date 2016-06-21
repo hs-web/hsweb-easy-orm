@@ -5,10 +5,13 @@ import org.hsweb.ezorm.executor.SqlExecutor;
 import org.hsweb.ezorm.meta.Correlation;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
+import org.hsweb.ezorm.meta.converter.ClobValueConverter;
+import org.hsweb.ezorm.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.meta.parser.MysqlTableMetaParser;
 import org.hsweb.ezorm.meta.parser.OracleTableMetaParser;
 import org.hsweb.ezorm.render.dialect.MysqlDatabaseMeta;
 import org.hsweb.ezorm.render.dialect.OracleDatabaseMeta;
+import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 import org.hsweb.ezorm.run.Table;
 import org.hsweb.ezorm.run.simple.SimpleDatabase;
 import org.junit.Before;
@@ -17,6 +20,7 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by zhouhao on 16-6-5.
@@ -48,6 +52,18 @@ public class MysqlAutoParserTest {
     }
 
     @Test
+    public void testParseAll() throws SQLException {
+//        List<TableMetaData> tableMetaDatas = new MysqlTableMetaParser(sqlExecutor).parseAll();
+//        tableMetaDatas.forEach(tableMetaData -> System.out.println(tableMetaData.getName()));
+        sqlExecutor.single(new SimpleSQL("select * from s_user where 1=2"), new SimpleMapWrapper() {
+            @Override
+            public void setUp(List<String> columns) {
+                System.out.println(columns);
+            }
+        });
+    }
+
+    @Test
     public void testParser() throws SQLException {
         DatabaseMetaData metaData = new MysqlDatabaseMeta();
         SimpleDatabase database = new SimpleDatabase(metaData, sqlExecutor);
@@ -55,7 +71,9 @@ public class MysqlAutoParserTest {
         metaData.init();
 
         Table user = database.getTable("s_user");
+        Table s_form = database.getTable("s_form");
 
+        System.out.println(s_form.createQuery().select("html").where("using", 1).list());
         user.createQuery().select("username").where("name$like", "张%").list();
 
         Table resources = database.getTable("s_resources");
@@ -72,17 +90,17 @@ public class MysqlAutoParserTest {
 
     @Test
     public void testAlter() throws Exception {
-        DatabaseMetaData metaData = new OracleDatabaseMeta();
+        DatabaseMetaData metaData = new MysqlDatabaseMeta();
         SimpleDatabase database = new SimpleDatabase(metaData, sqlExecutor);
-        metaData.setParser(new OracleTableMetaParser(sqlExecutor));
+        metaData.setParser(new MysqlTableMetaParser(sqlExecutor));
         metaData.init();
-        Table script = database.getTable("db_food_info");
+        Table script = database.getTable("s_script");
         TableMetaData metaData1 = script.getMeta().clone();
 
-//      metaData1.findFieldByName("model").setDataType("varchar2(128)");
-        metaData1.removeField("model");
+        metaData1.findFieldByName("name").setDataType("varchar(128)");
         metaData1.setComment("服务端脚本");
         database.alterTable(metaData1);
 
     }
+
 }
