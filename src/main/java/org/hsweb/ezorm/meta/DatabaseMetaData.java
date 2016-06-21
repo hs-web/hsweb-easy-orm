@@ -13,7 +13,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class DatabaseMetaData {
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    private String name;
     private ValidatorFactory validatorFactory;
     private ObjectWrapperFactory objectWrapperFactory;
     private Map<String, TableMetaData> tables = new HashMap<>();
