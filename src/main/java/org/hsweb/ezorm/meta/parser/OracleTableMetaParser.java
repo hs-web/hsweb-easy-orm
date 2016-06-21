@@ -34,6 +34,7 @@ public class OracleTableMetaParser implements TableMetaParser {
                 ",cols.data_type as \"data_type\"" +
                 ",cols.data_length as \"data_length\"" +
                 ",cols.data_precision as \"data_precision\"" +
+                ",cols.data_scale as \"data_scale\"" +
                 ",acc.comments as \"comment\"" +
                 ",cols.column_id from user_tab_columns cols" +
                 "\nleft join all_col_comments acc on acc.column_name=cols.column_name and acc.table_name=cols.table_name" +
@@ -52,6 +53,7 @@ public class OracleTableMetaParser implements TableMetaParser {
                 }
             });
             List<FieldMetaData> fieldMetaData = sqlExecutor.list(filedMetaSql, new FieldMetaDataWrapper());
+            if (fieldMetaData.isEmpty()) return null;
             fieldMetaData.forEach(meta -> metaData.addField(meta));
         } catch (SQLException e) {
             return null;
@@ -88,7 +90,7 @@ public class OracleTableMetaParser implements TableMetaParser {
             if (attr.equalsIgnoreCase("name")) {
                 instance.setName(String.valueOf(value).toLowerCase());
             } else if (attr.equalsIgnoreCase("comment")) {
-                instance.setComment(String.valueOf(value).toLowerCase());
+                instance.setComment(String.valueOf(value));
             } else {
                 instance.setProperty(attr.toLowerCase(), value);
             }
@@ -99,6 +101,7 @@ public class OracleTableMetaParser implements TableMetaParser {
             String data_type = instance.getProperty("data_type").toString().toLowerCase();
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();
+            int data_scale = instance.getProperty("data_scale").toInt();
             if (data_type == null) {
                 data_type = "varchar2";
             }
@@ -111,11 +114,12 @@ public class OracleTableMetaParser implements TableMetaParser {
                     jdbcType = JDBCType.VARCHAR;
                     break;
                 case "number":
-                    data_type = data_type + "(" + len + "," + data_precision + ")";
-                    if (data_precision == 0) {
+                    if (data_scale == 0) {
                         jdbcType = JDBCType.INTEGER;
                         javaType = Integer.class;
+                        data_type = data_type + "(" + data_precision + ")";
                     } else {
+                        data_type = data_type + "(" + data_precision + "," + data_scale + ")";
                         jdbcType = JDBCType.NUMERIC;
                         javaType = Double.class;
                     }

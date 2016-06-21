@@ -53,11 +53,11 @@ public class MysqlTableMetaParser implements TableMetaParser {
                 }
             });
             List<FieldMetaData> fieldMetaData = sqlExecutor.list(filedMetaSql, new FieldMetaDataWrapper());
+            if (fieldMetaData.isEmpty()) return null;
             fieldMetaData.forEach(meta -> metaData.addField(meta));
         } catch (SQLException e) {
             return null;
         }
-
         return metaData;
     }
 

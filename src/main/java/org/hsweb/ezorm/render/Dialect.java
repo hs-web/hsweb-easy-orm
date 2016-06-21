@@ -8,28 +8,6 @@ import org.hsweb.ezorm.render.dialect.DefaultDialect;
  * Created by zhouhao on 16-5-17.
  */
 public interface Dialect {
-    Dialect MYSQL = new DefaultDialect() {
-        @Override
-        public String getQuoteStart() {
-            return "`";
-        }
-
-        @Override
-        public String getQuoteEnd() {
-            return "`";
-        }
-
-        @Override
-        public String doPaging(String sql, int pageIndex, int pageSize) {
-            return new StringBuilder(sql)
-                    .append(" LIMIT ")
-                    .append(pageSize * pageIndex)
-                    .append(",")
-                    .append(pageSize * (pageIndex + 1)).toString();
-        }
-
-    };
-
     interface Mapper {
         String accept(String wherePrefix, Term term, FieldMetaData fieldMetaData, String tableAlias);
     }
@@ -61,6 +39,28 @@ public interface Dialect {
     };
 
     Dialect H2 = ORACLE;
+
+    Dialect MYSQL = new DefaultDialect() {
+        @Override
+        public String getQuoteStart() {
+            return "`";
+        }
+
+        @Override
+        public String getQuoteEnd() {
+            return "`";
+        }
+
+        @Override
+        public String doPaging(String sql, int pageIndex, int pageSize) {
+            return new StringBuilder(sql)
+                    .append(" LIMIT ")
+                    .append(pageSize * pageIndex)
+                    .append(",")
+                    .append(pageSize * (pageIndex + 1)).toString();
+        }
+
+    };
 
     String getQuoteStart();
 
