@@ -40,10 +40,10 @@ public class MysqlMetaCreateRender implements SqlRender {
             appender.removeLast();
             appender.addEdSpc(")");
         }
+        appender.add("\n)");
         if (metaData.getComment() != null) {
             appender.add("COMMENT=", "'", metaData.getComment(), "'");
         }
-        appender.add("\n)");
         return new SimpleSQL( appender.toString(), param);
     }
 }
