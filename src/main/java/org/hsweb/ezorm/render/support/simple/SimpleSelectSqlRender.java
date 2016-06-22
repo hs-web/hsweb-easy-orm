@@ -41,6 +41,10 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
         public SimpleSelectSqlRenderProcess(TableMetaData metaData, QueryParam<?> param) {
             this.metaData = metaData;
             this.param = param;
+            if (param.getIncludes().isEmpty() && param.getExcludes().isEmpty()) {
+                param.includes("*");
+                metaData.getCorrelations().forEach(correlation -> param.includes(correlation.getAlias() + ".*"));
+            }
             //解析要查询的字段
             this.selectField = parseOperationField(metaData, param);
             //解析查询条件
