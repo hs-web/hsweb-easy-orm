@@ -33,6 +33,8 @@ public class QueryParam<C extends QueryParam> extends SqlParam<C> implements Ser
      */
     private List<Sort> sorts = new LinkedList<>();
 
+    private boolean forUpdate = false;
+
     public C select(String... fields) {
         return (C) this.includes(fields);
     }
@@ -98,6 +100,14 @@ public class QueryParam<C extends QueryParam> extends SqlParam<C> implements Ser
         this.sorts = sorts;
     }
 
+    public void setForUpdate(boolean forUpdate) {
+        this.forUpdate = forUpdate;
+    }
+
+    public boolean isForUpdate() {
+        return forUpdate;
+    }
+
     @Override
     public C clone() {
         QueryParam sqlParam = new QueryParam();
@@ -109,6 +119,7 @@ public class QueryParam<C extends QueryParam> extends SqlParam<C> implements Ser
         sqlParam.setPageSize(pageSize);
         sqlParam.setPaging(paging);
         sqlParam.setSorts(sorts);
+        sqlParam.setForUpdate(forUpdate);
         return (C) sqlParam;
     }
 }

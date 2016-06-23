@@ -111,6 +111,12 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Que
     }
 
     @Override
+    public Query<T> forUpdate() {
+        this.queryParam.setForUpdate(true);
+        return this;
+    }
+
+    @Override
     public List<T> list() throws SQLException {
         QueryParam param = this.queryParam.clone();
         Map<String, Object> context = null;
@@ -152,7 +158,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Que
         if (supportBefore) {
             trigger(Trigger.select_before, context);
         }
-        param.doPaging(0, 1);
+        if (!param.isForUpdate())
+            param.doPaging(0, 1);
         SQL sql = render.render(table.getMeta(), param);
         T data = (T) sqlExecutor.single(sql, objectWrapper);
         if (supportDone) {

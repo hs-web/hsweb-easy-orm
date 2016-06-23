@@ -34,6 +34,8 @@ public interface Query<T> extends TriggerSkipSupport<Query<T>> {
 
     Query<T> noPaging();
 
+    Query<T> forUpdate();
+
     List<T> list() throws SQLException;
 
     List<T> list(int pageIndex, int pageSize) throws SQLException;
