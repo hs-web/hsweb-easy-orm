@@ -174,4 +174,14 @@ public class FieldMetaData implements Serializable, Cloneable {
         fieldMetaData.tableMetaData = tableMetaData;
         return fieldMetaData;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "name='" + name + '\'' +
+                ", alias='" + alias + '\'' +
+                ", comment='" + comment + '\'' +
+                ", dataType='" + dataType + '\'' +
+                '}';
+    }
 }

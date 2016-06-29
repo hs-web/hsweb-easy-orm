@@ -222,4 +222,9 @@ public class TableMetaData implements Serializable, Cloneable {
         fieldMetaDataMap.values().forEach(fieldMetaData -> metaData.addField(fieldMetaData.clone()));
         return metaData;
     }
+
+    @Override
+    public String toString() {
+        return name + " [" + alias + "]" + "(" + comment + ")";
+    }
 }
