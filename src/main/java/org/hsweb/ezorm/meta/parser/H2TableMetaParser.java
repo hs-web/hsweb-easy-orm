@@ -34,6 +34,7 @@ public class H2TableMetaParser implements TableMetaParser {
                 "character_maximum_length as \"data_length\",\n" +
                 "numeric_precision as \"data_precision\",\n" +
                 "numeric_scale as \"data_scale\",\n" +
+                "is_nullable as \"not-null\",\n" +
                 "remarks as \"comment\"\n" +
                 "FROM INFORMATION_SCHEMA.columns\n" +
                 "WHERE TABLE_NAME = #{tableName}";
@@ -85,9 +86,14 @@ public class H2TableMetaParser implements TableMetaParser {
         public void wrapper(FieldMetaData instance, int index, String attr, Object value) {
             if (attr.equalsIgnoreCase("name")) {
                 instance.setName(String.valueOf(value).toLowerCase());
+                instance.setProperty("old-name", instance.getName());
             } else if (attr.equalsIgnoreCase("comment")) {
                 instance.setComment(String.valueOf(value));
+
             } else {
+                if (attr.toLowerCase().equals("not-null")) {
+                    value = !"yes".equals(String.valueOf(value).toLowerCase());
+                }
                 instance.setProperty(attr.toLowerCase(), value);
             }
         }

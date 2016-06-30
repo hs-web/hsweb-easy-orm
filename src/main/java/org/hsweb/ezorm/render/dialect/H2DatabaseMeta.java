@@ -2,6 +2,7 @@ package org.hsweb.ezorm.render.dialect;
 
 import org.hsweb.ezorm.render.Dialect;
 import org.hsweb.ezorm.render.SqlRender;
+import org.hsweb.ezorm.render.support.h2.H2MetaAlterRender;
 import org.hsweb.ezorm.render.support.oracle.OracleMetaAlterRender;
 import org.hsweb.ezorm.render.support.oracle.OracleMetaCreateRender;
 
@@ -18,7 +19,7 @@ public class H2DatabaseMeta extends AbstractDatabaseMeta {
     public void init() {
         super.init();
         renderMap.put(SqlRender.TYPE.META_CREATE, new OracleMetaCreateRender());
-        renderMap.put(SqlRender.TYPE.META_ALTER, new OracleMetaAlterRender(this));
+        renderMap.put(SqlRender.TYPE.META_ALTER, new H2MetaAlterRender(this));
     }
 
     public H2DatabaseMeta(String name) {

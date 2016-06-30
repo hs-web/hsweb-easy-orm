@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.render.support.mysql;
 
 import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.executor.BindSQL;
 import org.hsweb.ezorm.executor.EmptySQL;
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
@@ -44,14 +45,17 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
                 }
             });
         metaData.getFields().forEach(newField -> {
-            FieldMetaData oldField = oldMeta.findFieldByName(newField.getName());
+            String oldName = newField.getProperty("old-name").getValue();
+            if (oldName == null) oldName = newField.getName();
+            FieldMetaData oldField = oldMeta.findFieldByName(oldName);
             if (oldField == null) {
                 //增加的字段
                 addedField.add(newField);
             } else {
                 if (!newField.getName().equals(oldField.getName()) ||
                         !newField.getDataType().equals(oldField.getDataType())
-                        || !newField.getComment().equals(oldField.getComment())) {
+                        || !newField.getComment().equals(oldField.getComment())
+                        || oldField.getProperty("not-null", false).getValue() != newField.getProperty("not-null", false).getValue()) {
                     changedField.add(newField);
                 }
             }
@@ -88,8 +92,10 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
             addSql.add(append);
         });
         changedField.forEach(field -> {
+            String oldName = field.getProperty("old-name").getValue();
+            if (oldName == null) oldName = field.getName();
             SqlAppender append = new SqlAppender();
-            append.addSpc("change", field.getName(), field.getName(), field.getDataType());
+            append.addSpc("change", oldName, field.getName(), field.getDataType());
             if (!StringUtils.isNullOrEmpty(field.getProperty("default-value").getValue())) {
                 append.add("default '", field.getProperty("default-value").getValue(), "'");
             }

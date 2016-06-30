@@ -106,6 +106,17 @@ public class TableMetaData implements Serializable, Cloneable {
         return metaData;
     }
 
+    public boolean renameField(String old, String newName) {
+        FieldMetaData oldField = fieldMetaDataMap.get(old);
+        if (oldField != null) {
+            fieldMetaDataMap.remove(old);
+            fieldMetaDataMap.put(newName, oldField);
+            oldField.setName(newName);
+            return true;
+        }
+        return false;
+    }
+
     public void setAlias(String alias) {
         this.alias = alias;
     }

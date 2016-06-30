@@ -36,6 +36,7 @@ public class OracleTableMetaParser implements TableMetaParser {
                 ",cols.data_precision as \"data_precision\"" +
                 ",cols.data_scale as \"data_scale\"" +
                 ",acc.comments as \"comment\"" +
+                ",cols.nullable as \"not-null\"" +
                 ",cols.column_id from user_tab_columns cols" +
                 "\nleft join all_col_comments acc on acc.column_name=cols.column_name and acc.table_name=cols.table_name" +
                 "\nwhere cols.table_name=#{tableName}" +
@@ -89,9 +90,13 @@ public class OracleTableMetaParser implements TableMetaParser {
         public void wrapper(FieldMetaData instance, int index, String attr, Object value) {
             if (attr.equalsIgnoreCase("name")) {
                 instance.setName(String.valueOf(value).toLowerCase());
+                instance.setProperty("old-name", instance.getName());
             } else if (attr.equalsIgnoreCase("comment")) {
                 instance.setComment(String.valueOf(value));
             } else {
+                if (attr.toLowerCase().equals("not-null")) {
+                    value = !"Y".equals(value);
+                }
                 instance.setProperty(attr.toLowerCase(), value);
             }
         }

@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.render.support.oracle;
+package org.hsweb.ezorm.render.support.h2;
 
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.executor.BindSQL;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 /**
  * Created by zhouhao on 16-6-5.
  */
-public class OracleMetaAlterRender implements SqlRender<Boolean> {
+public class H2MetaAlterRender implements SqlRender<Boolean> {
 
     private DatabaseMetaData databaseMetaData;
 
-    public OracleMetaAlterRender(DatabaseMetaData databaseMetaData) {
+    public H2MetaAlterRender(DatabaseMetaData databaseMetaData) {
         this.databaseMetaData = databaseMetaData;
     }
 
@@ -56,7 +56,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 if (!newField.getName().equals(oldField.getName()) ||
                         !newField.getDataType().equals(oldField.getDataType())
                         || !newField.getComment().equals(oldField.getComment())
-                        || oldField.getProperty("not-null", false).getValue() != newField.getProperty("not-null", false).getValue()) {
+                        || oldField.getProperty("not-null",false).getValue() != newField.getProperty("not-null",false).getValue()) {
                     changedField.add(newField);
                 }
             }
@@ -96,14 +96,14 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             FieldMetaData oldField = oldMeta.findFieldByName(oldName);
             if (!oldName.equals(field.getName())) {
                 SqlAppender renameSql = new SqlAppender();
-                renameSql.add("ALTER TABLE ", metaData.getName(), " RENAME COLUMN ", oldName, " TO ", field.getName());
+                renameSql.add("ALTER TABLE ", metaData.getName(), " ALTER COLUMN ", oldName, " RENAME TO ", field.getName());
                 BindSQL bindSQL = new BindSQL();
                 bindSQL.setSql(new SimpleSQL(renameSql.toString()));
                 bind.add(bindSQL);
                 metaData.renameField(oldName, field.getName());
             }
             if (!oldField.getDataType().equals(field.getDataType())
-                    || oldField.getProperty("not-null").getValue() != field.getProperty("not-null").getValue()) {
+                    || oldField.getProperty("not-null",false).getValue() != field.getProperty("not-null",false).getValue()) {
                 SqlAppender append = new SqlAppender();
                 append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", field.getName(), " ", field.getDataType());
                 if (field.getProperty("not-null").isTrue()) {
@@ -120,7 +120,6 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             if (nc == null) nc = "";
             if (oc == null) oc = "";
             if (nc.equals(oc)) return;
-
             if (StringUtils.isNullOrEmpty(nc)) {
                 comments.add(String.format("comment on column %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
             } else {

@@ -36,7 +36,8 @@ public class MysqlTableMetaParser implements TableMetaParser {
                 "        DATA_TYPE as `data_type`,\n" +
                 "        CHARACTER_MAXIMUM_LENGTH as `data_length`,\n" +
                 "        NUMERIC_PRECISION as `data_precision`,\n" +
-                "        COLUMN_COMMENT as `comment`\n" +
+                "        COLUMN_COMMENT as `comment`,\n" +
+                "        IS_NULLABLE as `not-null`\n" +
                 "        from information_schema.columns where table_name=#{tableName}";
         String findTableCommentSqlStr = " select\n" +
                 "        table_comment as `comment`\n" +
@@ -56,6 +57,7 @@ public class MysqlTableMetaParser implements TableMetaParser {
             if (fieldMetaData.isEmpty()) return null;
             fieldMetaData.forEach(meta -> metaData.addField(meta));
         } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
         return metaData;
@@ -88,9 +90,13 @@ public class MysqlTableMetaParser implements TableMetaParser {
         public void wrapper(FieldMetaData instance, int index, String attr, Object value) {
             if (attr.equalsIgnoreCase("name")) {
                 instance.setName(String.valueOf(value).toLowerCase());
+                instance.setProperty("old-name", instance.getName());
             } else if (attr.equalsIgnoreCase("comment")) {
                 instance.setComment(String.valueOf(value).toLowerCase());
             } else {
+                if (attr.toLowerCase().equals("not-null")) {
+                    value = !"yes".equals(String.valueOf(value).toLowerCase());
+                }
                 instance.setProperty(attr.toLowerCase(), value);
             }
         }

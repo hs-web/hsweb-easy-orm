@@ -84,8 +84,7 @@ public class MysqlAutoParserTest {
         resources.createUpdate().includes("name").set("name", "111").where("u_id", "aa").exec();
         resources.createDelete().where("u_id", "11").exec();
 
-        System.out.println(user.createQuery()
-                .select("u_id", "name", "creator.username").single());
+        System.out.println(user.createQuery().forUpdate().single());
     }
 
     @Test
@@ -94,12 +93,11 @@ public class MysqlAutoParserTest {
         SimpleDatabase database = new SimpleDatabase(metaData, sqlExecutor);
         metaData.setParser(new MysqlTableMetaParser(sqlExecutor));
         metaData.init();
-        Table script = database.getTable("s_script");
-        TableMetaData metaData1 = script.getMeta().clone();
-
-        metaData1.findFieldByName("name").setDataType("varchar(128)");
-        metaData1.setComment("服务端脚本");
-        database.alterTable(metaData1);
+        TableMetaData old = metaData.getParser().parse("s_script");
+        metaData.putTable(old);
+        TableMetaData newTable = metaData.getParser().parse("s_script");
+        newTable.findFieldByName("name2").setComment("test");
+        database.alterTable(newTable);
 
     }
 

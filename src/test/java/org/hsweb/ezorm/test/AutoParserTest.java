@@ -5,7 +5,9 @@ import org.hsweb.ezorm.executor.SqlExecutor;
 import org.hsweb.ezorm.meta.Correlation;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
+import org.hsweb.ezorm.meta.parser.MysqlTableMetaParser;
 import org.hsweb.ezorm.meta.parser.OracleTableMetaParser;
+import org.hsweb.ezorm.render.dialect.MysqlDatabaseMeta;
 import org.hsweb.ezorm.render.dialect.OracleDatabaseMeta;
 import org.hsweb.ezorm.run.Table;
 import org.hsweb.ezorm.run.simple.SimpleDatabase;
@@ -53,19 +55,20 @@ public class AutoParserTest {
         metaData.init();
 
         Table user = database.getTable("s_user");
-
-        user.createQuery().select("username").where("name$like","张%").list();
-
         Table resources = database.getTable("s_resources");
-        //设置表关联
-        resources.getMeta().addCorrelation(
-                new Correlation("s_user", "creator", "creator.u_id=s_resources.creator_id").leftJoin()
-        );
-        resources.createUpdate().includes("name").set("name", "111").where("u_id", "aa").exec();
-        resources.createDelete().where("u_id", "11").exec();
+//
+//        user.createQuery().select("username").where("name$like","张%").list();
+//
+//        //设置表关联
+//        resources.getMeta().addCorrelation(
+//                new Correlation("s_user", "creator", "creator.u_id=s_resources.creator_id").leftJoin()
+//        );
+//        resources.createUpdate().includes("name").set("name", "111").where("u_id", "aa").exec();
+//        resources.createDelete().where("u_id", "11").exec();
 
         System.out.println(resources.createQuery()
-                .select("u_id", "name", "creator.username").single());
+                .select("u_id", "name", "creator.username")
+                .noPaging().forUpdate().single());
     }
 
     @Test
@@ -74,13 +77,11 @@ public class AutoParserTest {
         SimpleDatabase database = new SimpleDatabase(metaData, sqlExecutor);
         metaData.setParser(new OracleTableMetaParser(sqlExecutor));
         metaData.init();
-        Table script = database.getTable("db_food_info");
-        TableMetaData metaData1 = script.getMeta().clone();
-
-//      metaData1.findFieldByName("model").setDataType("varchar2(128)");
-        metaData1.removeField("model");
-        metaData1.setComment("服务端脚本");
-        database.alterTable(metaData1);
+        TableMetaData old = metaData.getParser().parse("s_script");
+        metaData.putTable(old);
+        TableMetaData newTable = metaData.getParser().parse("s_script");
+        newTable.findFieldByName("name").setName("name2");
+        database.alterTable(newTable);
 
     }
 }

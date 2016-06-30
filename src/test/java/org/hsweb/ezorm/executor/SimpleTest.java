@@ -6,8 +6,10 @@ import org.hsweb.ezorm.meta.DatabaseMetaData;
 import org.hsweb.ezorm.meta.FieldMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.Trigger;
+import org.hsweb.ezorm.meta.parser.H2TableMetaParser;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
+import org.hsweb.ezorm.render.dialect.H2DatabaseMeta;
 import org.hsweb.ezorm.render.dialect.OracleDatabaseMeta;
 import org.hsweb.ezorm.run.Database;
 import org.hsweb.ezorm.run.Query;
@@ -51,7 +53,7 @@ public class SimpleTest {
 
     @Test
     public void testExec() throws Exception {
-        DatabaseMetaData databaseMetaData = new OracleDatabaseMeta();
+        DatabaseMetaData databaseMetaData = new H2DatabaseMeta();
         TableMetaData metaData = new TableMetaData();
         metaData.setName("s_user");
         metaData.setAlias("user");
@@ -83,12 +85,12 @@ public class SimpleTest {
         area_id.setName("id");
         area_id.setJavaType(String.class);
         area_id.setJdbcType(JDBCType.VARCHAR);
-        area_id.setDataType("varchar2(64)");
+        area_id.setDataType("varchar(64)");
         FieldMetaData area_name = new FieldMetaData();
         area_name.setName("name");
         area_name.setJavaType(String.class);
         area_name.setJdbcType(JDBCType.VARCHAR);
-        area_name.setDataType("varchar2(64)");
+        area_name.setDataType("varchar(64)");
 
         area.addField(area_id).addField(area_name);
 
@@ -97,12 +99,12 @@ public class SimpleTest {
         fieldMetaData.setAlias("userName");
         fieldMetaData.setJavaType(String.class);
         fieldMetaData.setJdbcType(JDBCType.VARCHAR);
-        fieldMetaData.setDataType("varchar2(64)");
+        fieldMetaData.setDataType("varchar(64)");
         FieldMetaData f2 = new FieldMetaData();
         f2.setName("name");
         f2.setJavaType(String.class);
         f2.setJdbcType(JDBCType.VARCHAR);
-        f2.setDataType("varchar2(64)");
+        f2.setDataType("varchar(64)");
         metaData.addField(fieldMetaData).addField(f2);
 
 //        databaseMetaData.putTable(metaData);
@@ -128,11 +130,20 @@ public class SimpleTest {
                 .nest("name$LIKE", "张%").or("name$LIKE", "李%");
         query.orderByDesc("name");
 
-        System.out.println(query.list());
+
+        H2TableMetaParser parser = new H2TableMetaParser(sqlExecutor);
+        TableMetaData metaData1 = parser.parse("s_user");
+        metaData1.getFields().forEach(System.out::println);
+        metaData1.findFieldByName("user_name").setName("test");
+        metaData1.findFieldByName("user_name").setProperty("not-null", true);
+        database.alterTable(metaData1);
+        metaData1 = parser.parse("s_user");
+        metaData1.findFieldByName("test").setProperty("not-null", false);
+        database.alterTable(metaData1);
     }
 
-    public void testAutoParser() {
-
+    @Test
+    public void testAutoParser() throws SQLException {
     }
 
 }
