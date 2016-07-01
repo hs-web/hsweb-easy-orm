@@ -14,6 +14,7 @@ import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 
@@ -40,6 +41,14 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         if (executeRemove)
             oldMeta.getFields().forEach(oldField -> {
                 FieldMetaData newMeta = metaData.findFieldByName(oldField.getName());
+                if (newMeta == null) {
+                    try {
+                        newMeta = metaData.getFields().stream()
+                                .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
+                                .findFirst().get();
+                    } catch (NoSuchElementException e) {
+                    }
+                }
                 if (newMeta == null) {
                     //删除的字段
                     deletedField.add(oldField);
@@ -77,7 +86,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             SqlAppender append = new SqlAppender();
             append.add("ALTER TABLE ", metaData.getName(), " ADD ", field.getName(), " ", field.getDataType());
             if (field.getProperty("not-null").isTrue()) {
-                append.add(" not null");
+                append.add(" NOT NULL");
             }
             if (StringUtils.isNullOrEmpty(field.getComment())) {
                 comments.add(String.format("COMMENT ON COLUMN %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
@@ -107,7 +116,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 SqlAppender append = new SqlAppender();
                 append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", field.getName(), " ", field.getDataType());
                 if (field.getProperty("not-null").isTrue()) {
-                    append.add(" not null");
+                    append.add(" NOT NULL");
                 }
                 SimpleSQL simpleSQL = new SimpleSQL(append.toString(), field);
                 BindSQL bindSQL = new BindSQL();

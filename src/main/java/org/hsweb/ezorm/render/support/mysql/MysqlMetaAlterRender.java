@@ -14,6 +14,7 @@ import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 /**
@@ -39,6 +40,14 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
         if (executeRemove)
             oldMeta.getFields().forEach(oldField -> {
                 FieldMetaData newMeta = metaData.findFieldByName(oldField.getName());
+                if (newMeta == null) {
+                    try {
+                        newMeta = metaData.getFields().stream()
+                                .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
+                                .findFirst().get();
+                    } catch (NoSuchElementException e) {
+                    }
+                }
                 if (newMeta == null) {
                     //删除的字段
                     deletedField.add(oldField);
@@ -77,7 +86,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
 
         addedField.forEach(field -> {
             SqlAppender append = new SqlAppender();
-            append.add("add column ", field.getName(), field.getDataType());
+            append.add("add column ", field.getName(), " ", field.getDataType());
             if (!StringUtils.isNullOrEmpty(field.getProperty("default-value").getValue())) {
                 append.add(" default '", field.getProperty("default-value").getValue(), "'");
             }

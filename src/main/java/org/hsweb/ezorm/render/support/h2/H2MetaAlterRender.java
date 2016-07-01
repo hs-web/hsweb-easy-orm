@@ -14,6 +14,7 @@ import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 
@@ -41,13 +42,20 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
             oldMeta.getFields().forEach(oldField -> {
                 FieldMetaData newMeta = metaData.findFieldByName(oldField.getName());
                 if (newMeta == null) {
+                    try {
+                        newMeta = metaData.getFields().stream()
+                                .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
+                                .findFirst().get();
+                    } catch (NoSuchElementException e) {
+                    }
+                }
+                if (newMeta == null) {
                     //删除的字段
                     deletedField.add(oldField);
                 }
             });
         metaData.getFields().forEach(newField -> {
-            String oldName = newField.getProperty("old-name").getValue();
-            if (oldName == null) oldName = newField.getName();
+            String oldName = newField.getProperty("old-name", newField.getName()).getValue();
             FieldMetaData oldField = oldMeta.findFieldByName(oldName);
             if (oldField == null) {
                 //增加的字段
@@ -56,7 +64,7 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
                 if (!newField.getName().equals(oldField.getName()) ||
                         !newField.getDataType().equals(oldField.getDataType())
                         || !newField.getComment().equals(oldField.getComment())
-                        || oldField.getProperty("not-null",false).getValue() != newField.getProperty("not-null",false).getValue()) {
+                        || oldField.getProperty("not-null", false).getValue() != newField.getProperty("not-null", false).getValue()) {
                     changedField.add(newField);
                 }
             }
@@ -103,11 +111,11 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
                 metaData.renameField(oldName, field.getName());
             }
             if (!oldField.getDataType().equals(field.getDataType())
-                    || oldField.getProperty("not-null",false).getValue() != field.getProperty("not-null",false).getValue()) {
+                    || oldField.getProperty("not-null", false).getValue() != field.getProperty("not-null", false).getValue()) {
                 SqlAppender append = new SqlAppender();
                 append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", field.getName(), " ", field.getDataType());
                 if (field.getProperty("not-null").isTrue()) {
-                    append.add(" not null");
+                    append.add(" NOT NULL");
                 }
                 SimpleSQL simpleSQL = new SimpleSQL(append.toString(), field);
                 BindSQL bindSQL = new BindSQL();
@@ -121,9 +129,9 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
             if (oc == null) oc = "";
             if (nc.equals(oc)) return;
             if (StringUtils.isNullOrEmpty(nc)) {
-                comments.add(String.format("comment on column %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s IS '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
             } else {
-                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), field.getName(), nc));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s IS '%s'", metaData.getName(), field.getName(), nc));
             }
         });
         deletedField.forEach(field -> {
@@ -150,4 +158,5 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
             ((SimpleSQL) sql).setBindSQLs(bind);
         return sql;
     }
+
 }
