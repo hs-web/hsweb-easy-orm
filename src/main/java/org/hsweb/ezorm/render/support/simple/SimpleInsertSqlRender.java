@@ -42,8 +42,8 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
             list.add(data);
         }
         param.setData(list);
-        Object o = list.get(0);
         for (int i = 0; i < list.size(); i++) {
+            Object o = list.get(i);
             int index = i;
             if (index > 0) appender.add(",");
             appender.add("(");
@@ -51,17 +51,16 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                 String dataProperty = fieldMetaData.getAlias();
                 Object value = null;
                 try {
-                    if (!fieldMetaData.getAlias().equals(fieldMetaData.getName())) {
-                        try {
-                            value = propertyUtils.getProperty(o, dataProperty);
-                        } catch (Exception e) {
-                        }
-                        if (value == null) {
-                            value = propertyUtils.getProperty(o, fieldMetaData.getName());
-                            if (value != null) dataProperty = fieldMetaData.getName();
-                        }
+                    try {
+                        value = propertyUtils.getProperty(o, dataProperty);
+                    } catch (Exception e) {
+                    }
+                    if (value == null) {
+                        value = propertyUtils.getProperty(o, fieldMetaData.getName());
+                        if (value != null) dataProperty = fieldMetaData.getName();
                     }
                 } catch (Exception e) {
+                    logger.debug("get property error", e);
                 }
                 if (value == null) {
                     value = fieldMetaData.getProperty("default-value").getValue();
@@ -75,7 +74,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                     }
                     if (value != new_value && !value.equals(new_value))
                         try {
-                            propertyUtils.setProperty(param.getData(), dataProperty, new_value);
+                            propertyUtils.setProperty(o, dataProperty, new_value);
                         } catch (Exception e) {
                             logger.warn("未成功完成属性转换", e);
                         }
