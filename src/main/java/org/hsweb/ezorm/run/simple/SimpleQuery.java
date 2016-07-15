@@ -186,7 +186,7 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Que
             trigger(Trigger.select_before, context);
         }
         param.doPaging(pageIndex, pageSize);
-        SQL sql = render.render(table.getMeta(), this.queryParam.clone().doPaging(pageIndex, pageSize));
+        SQL sql = render.render(table.getMeta(), param.doPaging(pageIndex, pageSize));
         List<T> list = sqlExecutor.list(sql, objectWrapper);
         if (supportDone) {
             context.put("data", list);
