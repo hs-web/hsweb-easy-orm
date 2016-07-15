@@ -29,7 +29,11 @@ public class AdvancedMapWrapper extends SimpleMapWrapper {
             OptionConverter optionConverter = metaData.getOptionConverter();
             if (optionConverter != null) {
                 Object value1 = optionConverter.converterValue(value);
-                putValue(instance, optionConverter.getFieldName(), value1);
+                String targetName = optionConverter.getFieldName();
+                if (attr.contains(".")) {
+                    targetName = attr.split("[.]")[0] + "." + targetName;
+                }
+                putValue(instance, targetName, value1);
             }
         } else {
             super.wrapper(instance, index, attr, value);
