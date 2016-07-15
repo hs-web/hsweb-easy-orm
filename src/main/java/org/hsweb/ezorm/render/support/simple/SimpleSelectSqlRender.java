@@ -90,21 +90,19 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
             });
             appender.removeLast();
             appender.add(" FROM ", metaData.getName(), " ", metaData.getAlias());
+
             //生成join
-            needSelectTable.forEach(table -> {
-                if (table.equals(metaData.getName())) return;
-                Correlation correlation = metaData.getCorrelation(table);
-                if (correlation != null) {
-                    appender.add(" ", correlation.getJoin(), " "
-                            , correlation.getTargetTable(), " ", correlation.getAlias()
-                            , " ON ");
-                    SqlAppender joinOn = new SqlAppender();
-                    buildWhere(metaData.getDatabaseMetaData().getTable(correlation.getTargetTable()),
-                            "", correlation.getTerms(), joinOn, new HashSet());
-                    if (!joinOn.isEmpty()) joinOn.removeFirst();
-                    appender.addAll(joinOn);
-                }
-            });
+            needSelectTable.stream()
+                    .filter(table -> !table.equals(metaData.getName()) && metaData.getCorrelation(table) != null)
+                    .map(table -> metaData.getCorrelation(table))
+                    .sorted()
+                    .forEach(correlation -> {
+                        appender.addSpc("", correlation.getJoin(), correlation.getTargetTable(), correlation.getAlias(), "ON");
+                        SqlAppender joinOn = new SqlAppender();
+                        buildWhere(metaData.getDatabaseMetaData().getTable(correlation.getTargetTable()), "", correlation.getTerms(), joinOn, new HashSet());
+                        if (!joinOn.isEmpty()) joinOn.removeFirst();
+                        appender.addAll(joinOn);
+                    });
             if (!whereSql.isEmpty())
                 appender.add(" WHERE ", "").addAll(whereSql);
             if (!sorts.isEmpty()) {

@@ -157,6 +157,7 @@ public class TableMetaData implements Serializable, Cloneable {
 
     public Correlation addCorrelation(Correlation correlation) {
         checkWrite();
+        correlation.setIndex(correlations.size());
         correlations.add(correlation);
         return correlation;
     }

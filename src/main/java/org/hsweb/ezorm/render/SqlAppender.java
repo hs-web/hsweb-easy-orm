@@ -39,9 +39,7 @@ public class SqlAppender extends LinkedList<String> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (String str : this) {
-            builder.append(str);
-        }
+        this.forEach(builder::append);
         return builder.toString();
     }
 }

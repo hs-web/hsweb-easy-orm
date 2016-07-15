@@ -10,7 +10,7 @@ import org.hsweb.ezorm.render.SqlAppender;
 import java.util.*;
 
 /**
- * Created by zhouhao on 16-6-4.
+ *
  */
 public abstract class DefaultDialect implements Dialect {
 
@@ -23,33 +23,26 @@ public abstract class DefaultDialect implements Dialect {
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "!=#{", wherePrefix, ".value}").toString());
         termTypeMappers.put(TermType.like, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), " LIKE #{", wherePrefix, ".value}").toString());
-        termTypeMappers.put(TermType.notlike, (wherePrefix, term, fieldMetaData, tableAlias) ->
+        termTypeMappers.put(TermType.nlike, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), " NOT LIKE #{", wherePrefix, ".value}").toString());
         termTypeMappers.put(TermType.isnull, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), " IS NULL").toString());
         termTypeMappers.put(TermType.notnull, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), " IS NOT NULL").toString());
-
         termTypeMappers.put(TermType.gt, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), ">#{", wherePrefix, ".value}").toString());
-
         termTypeMappers.put(TermType.lt, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "<#{", wherePrefix, ".value}").toString());
-
-        termTypeMappers.put(TermType.gtoreq, (wherePrefix, term, fieldMetaData, tableAlias) ->
+        termTypeMappers.put(TermType.gte, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), ">=#{", wherePrefix, ".value}").toString());
-
-        termTypeMappers.put(TermType.ltoreq, (wherePrefix, term, fieldMetaData, tableAlias) ->
+        termTypeMappers.put(TermType.lte, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "<=#{", wherePrefix, ".value}").toString());
-
         termTypeMappers.put(TermType.empty, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "=''").toString());
-        termTypeMappers.put(TermType.notempty, (wherePrefix, term, fieldMetaData, tableAlias) ->
+        termTypeMappers.put(TermType.nempty, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(tableAlias, ".", fieldMetaData.getName(), "!=''").toString());
-
         termTypeMappers.put(TermType.func, (wherePrefix, term, fieldMetaData, tableAlias) ->
                 new SqlAppender().add(term.getValue()).toString());
-
         termTypeMappers.put(TermType.btw, (wherePrefix, term, fieldMetaData, tableAlias) -> {
             SqlAppender sqlAppender = new SqlAppender();
             List<Object> objects = param2list(term.getValue());
@@ -61,7 +54,7 @@ public abstract class DefaultDialect implements Dialect {
                     .add(" AND ", "#{", wherePrefix, ".value[1]}");
             return sqlAppender.toString();
         });
-        termTypeMappers.put(TermType.notbtw, (wherePrefix, term, fieldMetaData, tableAlias) ->
+        termTypeMappers.put(TermType.nbtw, (wherePrefix, term, fieldMetaData, tableAlias) ->
         {
             SqlAppender sqlAppender = new SqlAppender();
             List<Object> objects = param2list(term.getValue());
@@ -85,7 +78,7 @@ public abstract class DefaultDialect implements Dialect {
             appender.add(")");
             return appender.toString();
         });
-        termTypeMappers.put(TermType.notin, (wherePrefix, term, fieldMetaData, tableAlias) -> {
+        termTypeMappers.put(TermType.nin, (wherePrefix, term, fieldMetaData, tableAlias) -> {
             List<Object> values = param2list(term.getValue());
             term.setValue(values);
             SqlAppender appender = new SqlAppender();

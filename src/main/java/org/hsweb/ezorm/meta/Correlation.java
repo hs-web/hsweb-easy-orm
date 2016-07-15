@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by zhouhao on 16-6-4.
  */
-public class Correlation implements Cloneable {
+public class Correlation implements Cloneable, Comparable<Correlation> {
 
     public Correlation() {
     }
@@ -33,6 +33,8 @@ public class Correlation implements Cloneable {
     private boolean one2one = true;
 
     private List<Term> terms = new LinkedList<>();
+
+    private Integer index = 0;
 
     private JOIN join = JOIN.LEFT;
 
@@ -108,9 +110,15 @@ public class Correlation implements Cloneable {
         correlation.setAlias(alias);
         correlation.setJoin(join);
         correlation.setOne2one(one2one);
+        correlation.setIndex(index);
         correlation.setTargetTable(targetTable);
         terms.forEach(term -> correlation.addTerm(term.clone()));
         return correlation;
+    }
+
+    @Override
+    public int compareTo(Correlation o) {
+        return index.compareTo(o.index);
     }
 
     public enum JOIN {
@@ -137,4 +145,11 @@ public class Correlation implements Cloneable {
         }
     }
 
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
 }
