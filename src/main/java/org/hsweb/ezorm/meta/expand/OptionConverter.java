@@ -17,6 +17,13 @@ package org.hsweb.ezorm.meta.expand;
 public interface OptionConverter {
 
     /**
+     * 获取所有选项
+     *
+     * @return 选项
+     */
+    Object getOptions();
+
+    /**
      * 获取转换后的字段名称
      *
      * @return 转换后的字段名称
