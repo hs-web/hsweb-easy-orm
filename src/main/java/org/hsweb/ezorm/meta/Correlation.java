@@ -38,6 +38,8 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
 
     private JOIN join = JOIN.LEFT;
 
+    private String comment;
+
     public String getTargetTable() {
         return targetTable;
     }
@@ -151,5 +153,13 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
 
     public Integer getIndex() {
         return index;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
