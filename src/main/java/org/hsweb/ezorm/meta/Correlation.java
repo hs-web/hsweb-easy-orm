@@ -1,11 +1,11 @@
 package org.hsweb.ezorm.meta;
 
+import org.hsweb.ezorm.meta.expand.PropertyWrapper;
+import org.hsweb.ezorm.meta.expand.SimplePropertyWrapper;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by zhouhao on 16-6-4.
@@ -39,6 +39,25 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
     private JOIN join = JOIN.LEFT;
 
     private String comment;
+
+    private Map<String, Object> properties = new HashMap<>();
+
+    public PropertyWrapper getProperty(String name) {
+        return new SimplePropertyWrapper(properties.get(name));
+    }
+
+    public PropertyWrapper getProperty(String name, Object defaultValue) {
+        return new SimplePropertyWrapper(properties.getOrDefault(name, defaultValue));
+    }
+
+    public PropertyWrapper removeProperty(String name) {
+        return new SimplePropertyWrapper(properties.remove(name));
+    }
+
+    public <T> T setProperty(String property, T value) {
+        properties.put(property, value);
+        return value;
+    }
 
     public String getTargetTable() {
         return targetTable;
