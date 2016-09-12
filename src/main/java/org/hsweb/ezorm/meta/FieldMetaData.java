@@ -8,6 +8,7 @@ import org.hsweb.ezorm.meta.expand.ValueConverter;
 
 import java.io.Serializable;
 import java.sql.JDBCType;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,7 @@ import java.util.Set;
 /**
  * Created by zhouhao on 16-5-17.
  */
-public class FieldMetaData implements Serializable, Cloneable {
+public class FieldMetaData implements Serializable, Cloneable, Comparable<FieldMetaData> {
     private static final DefaultValueConverter DEFAULT_VALUE_CONVERTER = new DefaultValueConverter();
 
     public FieldMetaData() {
@@ -47,6 +48,8 @@ public class FieldMetaData implements Serializable, Cloneable {
     private ValueConverter valueConverter = DEFAULT_VALUE_CONVERTER;
 
     private Set<String> validator;
+
+    private int sortIndex;
 
     private Map<String, Object> properties = new HashMap<>();
 
@@ -160,6 +163,19 @@ public class FieldMetaData implements Serializable, Cloneable {
         this.valueConverter = valueConverter;
     }
 
+    public int getSortIndex() {
+        return sortIndex;
+    }
+
+    public void setSortIndex(int sortIndex) {
+        this.sortIndex = sortIndex;
+    }
+
+    @Override
+    public int compareTo(FieldMetaData o) {
+        return Integer.compare(sortIndex, o.getSortIndex());
+    }
+
     @Override
     public FieldMetaData clone() {
         FieldMetaData fieldMetaData = new FieldMetaData();
@@ -172,6 +188,7 @@ public class FieldMetaData implements Serializable, Cloneable {
         fieldMetaData.properties = properties;
         fieldMetaData.optionConverter = optionConverter;
         fieldMetaData.tableMetaData = tableMetaData;
+        fieldMetaData.sortIndex = sortIndex;
         return fieldMetaData;
     }
 

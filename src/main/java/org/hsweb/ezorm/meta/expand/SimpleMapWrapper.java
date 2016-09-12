@@ -6,9 +6,6 @@ import org.hsweb.commons.StringUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Created by zhouhao on 16-6-4.
- */
 public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
     @Override
     public Map<String, Object> newInstance() {

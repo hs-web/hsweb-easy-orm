@@ -41,14 +41,12 @@ public interface TermType {
      * @since 1.0
      */
     String like = "like";
-
     /**
      * not like
      *
      * @since 1.0
      */
     String nlike = "nlike";
-
     /**
      * >
      *

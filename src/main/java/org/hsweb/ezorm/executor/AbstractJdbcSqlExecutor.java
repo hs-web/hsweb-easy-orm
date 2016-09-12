@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 http://github.com/hs-web
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.hsweb.ezorm.executor;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
@@ -17,29 +33,50 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 基于jdbc的通用sql执行器,继承改类,实现getConnection方法,返回JDBC链接,调用其它方法即可进行sql执行
+ * JDBC 通用sql执行器,用于执行sql.支持参数化预编译
+ *
+ * @author zhouhao
+ * @since 1.0
  */
 public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
     /**
-     * @return
+     * 获取jdbc链接,由子类实现
+     *
+     * @return jdbc 链接
      */
     public abstract Connection getConnection();
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    /**
+     * 直接拼接sql的编译表达式: ${}
+     *
+     * @since 1.0
+     */
     private static final Pattern APPEND_PATTERN = Pattern.compile("(?<=\\$\\{)(.+?)(?=\\})");
-    private static final Pattern PREPARED_PATTERN = Pattern.compile("(?<=#\\{)(.+?)(?=\\})");
-
-    PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
     /**
-     * 将sql模板编译为sql信息个
+     * 进行参数预编译的表达式:#{}
+     *
+     * @since 1.0
+     */
+    private static final Pattern PREPARED_PATTERN = Pattern.compile("(?<=#\\{)(.+?)(?=\\})");
+
+    /**
+     * 对象属性操作工具
+     *
+     * @see PropertyUtilsBean
+     */
+    protected PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
+
+    /**
+     * 将sql模板编译为sql信息
      * 模板语法:${}代表直接拼接sql,#{}使用预编译
      * 如: 模板参数为:{name:"张三",age:10},sql为:select * from user where name=#{name} and age=${age}
      * 将被编译为:select * from user where name=? and age=10。 参数列表:["张三"]
      *
-     * @param sql sql模板
-     * @return sql 信息
+     * @param sql sql模板 ,参考{@link org.hsweb.ezorm.render.support.simple.SimpleSQL}
+     * @return sql 编译好的信息
      */
     public SQLInfo compileSql(SQL sql) {
         SQLInfo sqlInfo = new SQLInfo();
@@ -78,7 +115,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
     }
 
     /**
-     * 释放连接
+     * 释放连接,在执行完sql后,将释放此链接
      */
     public abstract void releaseConnection(Connection connection) throws SQLException;
 
