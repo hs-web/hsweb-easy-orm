@@ -88,8 +88,13 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Que
     }
 
     @Override
+    public Term orNest() {
+        return queryParam.orNest();
+    }
+
+    @Override
     public Term orNest(String condition, Object value) {
-        return orNest(condition, value);
+        return queryParam.orNest(condition, value);
     }
 
     @Override

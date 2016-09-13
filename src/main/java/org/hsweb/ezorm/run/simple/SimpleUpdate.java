@@ -5,6 +5,7 @@ import org.hsweb.ezorm.executor.SqlExecutor;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.Trigger;
 import org.hsweb.ezorm.meta.expand.Validator;
+import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.UpdateParam;
 import org.hsweb.ezorm.render.SqlRender;
 import org.hsweb.ezorm.run.Update;
@@ -68,6 +69,38 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
     public Update<T> where(String condition, Object value) {
         updateParam.where(condition, value);
         return this;
+    }
+
+    @Override
+    public Update<T> and(String condition, Object value) {
+        updateParam.and(condition, value);
+        return this;
+    }
+
+    @Override
+    public Update<T> or(String condition, Object value) {
+        updateParam.or(condition, value);
+        return this;
+    }
+
+    @Override
+    public Term nest() {
+        return updateParam.nest();
+    }
+
+    @Override
+    public Term nest(String condition, Object value) {
+        return updateParam.nest(condition, value);
+    }
+
+    @Override
+    public Term orNest() {
+        return updateParam.orNest();
+    }
+
+    @Override
+    public Term orNest(String condition, Object value) {
+        return updateParam.orNest(condition, value);
     }
 
     @Override

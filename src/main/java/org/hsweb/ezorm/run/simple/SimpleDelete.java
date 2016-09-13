@@ -5,6 +5,7 @@ import org.hsweb.ezorm.executor.SqlExecutor;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.Trigger;
 import org.hsweb.ezorm.param.SqlParam;
+import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.render.SqlRender;
 import org.hsweb.ezorm.run.Delete;
 import org.hsweb.ezorm.run.Update;
@@ -34,6 +35,38 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
     public Delete where(String condition, Object value) {
         param.where(condition, value);
         return this;
+    }
+
+    @Override
+    public Delete and(String condition, Object value) {
+        param.and(condition, value);
+        return this;
+    }
+
+    @Override
+    public Delete or(String condition, Object value) {
+        param.or(condition, value);
+        return this;
+    }
+
+    @Override
+    public Term nest() {
+        return param.nest();
+    }
+
+    @Override
+    public Term nest(String condition, Object value) {
+        return param.nest(condition, value);
+    }
+
+    @Override
+    public Term orNest() {
+        return param.orNest();
+    }
+
+    @Override
+    public Term orNest(String condition, Object value) {
+        return param.orNest(condition, value);
     }
 
     @Override
