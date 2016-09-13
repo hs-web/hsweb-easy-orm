@@ -61,8 +61,8 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         value = propertyUtils.getProperty(param.getData(), dataProperty);
                     }
                     if (value == null) {
-                        if (logger.isDebugEnabled())
-                            logger.debug("跳过修改列:[{}], 属性[{}]为null!", fieldMetaData.getName(), fieldMetaData.getAlias());
+                        if (logger.isInfoEnabled())
+                            logger.info("跳过修改列:[{}], 属性[{}]为null!", fieldMetaData.getName(), fieldMetaData.getAlias());
                         return;
                     }
                     if (fieldMetaData.getValueConverter() != null) {
@@ -76,8 +76,8 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     appender.add(fieldMetaData.getName(), "=", "#{data.", dataProperty, "}", ",");
                     bytes[0]++;
                 } catch (Exception e) {
-                    if (logger.isDebugEnabled())
-                        logger.debug("跳过修改列:[{}], 可能属性[{}]不存在!", fieldMetaData.getName(), fieldMetaData.getAlias());
+                    if (logger.isInfoEnabled())
+                        logger.info("跳过修改列:[{}], 可能属性[{}]不存在!", fieldMetaData.getName(), fieldMetaData.getAlias());
                 }
             });
             if (bytes[0] == 0) throw new IndexOutOfBoundsException("没有列被修改!");
