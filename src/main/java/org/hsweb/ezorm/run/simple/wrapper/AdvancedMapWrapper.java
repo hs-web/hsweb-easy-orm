@@ -8,9 +8,6 @@ import org.hsweb.ezorm.meta.expand.ValueConverter;
 
 import java.util.Map;
 
-/**
- * Created by zhouhao on 16-6-4.
- */
 public class AdvancedMapWrapper extends SimpleMapWrapper {
     private TableMetaData tableMetaData;
 
