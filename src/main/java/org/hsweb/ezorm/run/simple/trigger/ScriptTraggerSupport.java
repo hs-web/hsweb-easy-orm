@@ -42,6 +42,12 @@ public class ScriptTraggerSupport implements Trigger {
                 }
             }
         } else {
+            Throwable throwable = result.getException();
+            while (throwable != null && (throwable = throwable.getCause()) != null) {
+                if (throwable instanceof RuntimeException) {
+                    throw (RuntimeException) throwable;
+                }
+            }
             throw new TriggerException(result.getMessage(), result.getException());
         }
     }
