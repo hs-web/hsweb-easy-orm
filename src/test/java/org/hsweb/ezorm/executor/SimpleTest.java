@@ -5,12 +5,14 @@ import org.hsweb.ezorm.meta.Correlation;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
 import org.hsweb.ezorm.meta.FieldMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
+import org.hsweb.ezorm.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.meta.expand.Trigger;
 import org.hsweb.ezorm.meta.parser.H2TableMetaParser;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
 import org.hsweb.ezorm.render.dialect.H2DatabaseMeta;
 import org.hsweb.ezorm.render.dialect.OracleDatabaseMeta;
+import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 import org.hsweb.ezorm.run.Database;
 import org.hsweb.ezorm.run.Query;
 import org.hsweb.ezorm.run.Table;
@@ -113,11 +115,12 @@ public class SimpleTest {
 
         databaseMetaData.init();
 
-        metaData.on(Trigger.select_wrapper_done, context -> System.out.println(context.get("instance")));
+        metaData.on(Trigger.select_wrapper_done, context -> System.out.println("触发器" + context.get("instance")));
         Database database = new SimpleDatabase(databaseMetaData, sqlExecutor);
         area.setPrimaryKeys(new HashSet<>(Arrays.asList("id", "name")));
         database.createTable(metaData);
         database.createTable(area);
+
 
         Table<Map<String, Object>> table = database.getTable("s_user");
         List<Map<String, Object>> datas = JSON.parseObject("[{\"userName\":\"admin\",\"name\":\"张三\"},{\"userName\":\"admin2\",\"name\":\"张2\"}]", List.class);
@@ -126,24 +129,36 @@ public class SimpleTest {
 
         Query<Map<String, Object>> query = table.createQuery();
         query.select("userName", "name", "area2.*")
-                .where("name", "张三")
-                .nest("name$LIKE", "张%").or("name$LIKE", "李%");
-        query.orderByDesc("name");
+                .nest().and("name$LIKE", "张%").or("name$LIKE", "李%");
+        query.where("name", "张三");
 
+        query.orderByDesc("name").noPaging().list();
 
-        H2TableMetaParser parser = new H2TableMetaParser(sqlExecutor);
-        TableMetaData metaData1 = parser.parse("s_user");
-        metaData1.getFields().forEach(System.out::println);
-        metaData1.findFieldByName("user_name").setName("test");
-        metaData1.findFieldByName("user_name").setProperty("not-null", true);
-        database.alterTable(metaData1);
-        metaData1 = parser.parse("s_user");
-        metaData1.findFieldByName("test").setProperty("not-null", false);
-        database.alterTable(metaData1);
+//        H2TableMetaParser parser = new H2TableMetaParser(sqlExecutor);
+//        TableMetaData metaData1 = parser.parse("s_user");
+//        metaData1.getFields().forEach(System.out::println);
+//        metaData1.findFieldByName("user_name").setName("test");
+//        metaData1.findFieldByName("user_name").setProperty("not-null", true);
+//        database.alterTable(metaData1);
+//        metaData1 = parser.parse("s_user");
+//        metaData1.findFieldByName("test").setProperty("not-null", false);
+//        database.alterTable(metaData1);
     }
 
     @Test
     public void testAutoParser() throws SQLException {
+        System.out.println(sqlExecutor.list(new SimpleSQL("select '1' as name , '2' as name "), new SimpleMapWrapper(){
+            @Override
+            public Map<String, Object> newInstance() {
+                return new IdentityHashMap<>();
+            }
+
+            @Override
+            public void wrapper(Map<String, Object> instance, int index, String attr, Object value) {
+                super.wrapper(instance, index, attr, value);
+            }
+        }));
+
     }
 
 }

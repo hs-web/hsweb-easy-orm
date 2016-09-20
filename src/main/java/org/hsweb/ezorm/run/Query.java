@@ -1,7 +1,6 @@
 package org.hsweb.ezorm.run;
 
 import org.hsweb.ezorm.param.QueryParam;
-import org.hsweb.ezorm.param.Term;
 
 import java.sql.SQLException;
 import java.util.List;

@@ -70,13 +70,13 @@ public class MysqlAutoParserTest {
         metaData.setParser(new MysqlTableMetaParser(sqlExecutor));
         metaData.init();
 
-        Table user = database.getTable("s_user");
-        Table s_form = database.getTable("s_form");
+        Table<Object> user = database.getTable("s_user");
+        Table<Object> s_form = database.getTable("s_form");
 
         System.out.println(s_form.createQuery().select("html").where("using", 1).list());
         user.createQuery().select("username").where("name$like", "张%").list();
 
-        Table resources = database.getTable("s_resources");
+        Table<Object> resources = database.getTable("s_resources");
         //设置表关联
         resources.getMeta().addCorrelation(
                 new Correlation("s_user", "creator", "creator.u_id=s_resources.creator_id").leftJoin()

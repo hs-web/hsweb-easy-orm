@@ -9,6 +9,7 @@ import org.hsweb.ezorm.meta.parser.MysqlTableMetaParser;
 import org.hsweb.ezorm.meta.parser.OracleTableMetaParser;
 import org.hsweb.ezorm.render.dialect.MysqlDatabaseMeta;
 import org.hsweb.ezorm.render.dialect.OracleDatabaseMeta;
+import org.hsweb.ezorm.run.Query;
 import org.hsweb.ezorm.run.Table;
 import org.hsweb.ezorm.run.simple.SimpleDatabase;
 import org.junit.Before;
@@ -54,10 +55,18 @@ public class AutoParserTest {
         metaData.setParser(new OracleTableMetaParser(sqlExecutor));
         metaData.init();
 
-        Table user = database.getTable("s_user");
+        Table<Object> user = database.getTable("s_user");
+        Query query = user.createQuery().select("username").where("name$like", "张%");
+        query.list();
+
+        user.createQuery()
+                .select("*")
+                .where("name$like", "1").and("name", 2)
+                .nest("name", "1").or("name", 2);
+
         Table resources = database.getTable("s_resources");
 //
-//        user.createQuery().select("username").where("name$like","张%").list();
+
 //
 //        //设置表关联
 //        resources.getMeta().addCorrelation(
