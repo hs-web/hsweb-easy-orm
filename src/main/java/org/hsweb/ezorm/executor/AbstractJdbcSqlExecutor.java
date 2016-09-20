@@ -144,10 +144,14 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         while (resultSet.next()) {
             //调用包装器,将查询结果包装为对象
             T data = wrapper.newInstance();
-            for (String header : headers) {
-                Object value = resultSet.getObject(header);
-                wrapper.wrapper(data, index, header, value);
+            for (int i = 0; i < headers.size(); i++) {
+                Object value = resultSet.getObject(i + 1);
+                wrapper.wrapper(data, index, headers.get(i), value);
             }
+//            for (String header : headers) {
+//                Object value = resultSet.getObject(header);
+//                wrapper.wrapper(data, index, header, value);
+//            }
             index++;
             wrapper.done(data);
             datas.add(data);
@@ -196,10 +200,14 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         T data = null;
         if (resultSet.next()) {
             data = wrapper.newInstance();
-            for (String header : headers) {
-                Object value = resultSet.getObject(header);
-                wrapper.wrapper(data, index, header, value);
+            for (int i = 0; i < headers.size(); i++) {
+                Object value = resultSet.getObject(i+1);
+                wrapper.wrapper(data, index, headers.get(i), value);
             }
+//            for (String header : headers) {
+//                Object value = resultSet.getObject(header);
+//                wrapper.wrapper(data, index, header, value);
+//            }
             index++;
             wrapper.done(data);
         }
