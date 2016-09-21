@@ -8,6 +8,8 @@ import org.hsweb.ezorm.meta.converter.DateTimeConverter;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.render.support.simple.SimpleSQL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -18,6 +20,8 @@ import java.util.*;
  */
 public class OracleTableMetaParser implements TableMetaParser {
     private SqlExecutor sqlExecutor;
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public OracleTableMetaParser(SqlExecutor sqlExecutor) {
         this.sqlExecutor = sqlExecutor;
@@ -57,6 +61,7 @@ public class OracleTableMetaParser implements TableMetaParser {
             if (fieldMetaData.isEmpty()) return null;
             fieldMetaData.forEach(meta -> metaData.addField(meta));
         } catch (SQLException e) {
+            logger.error("解析表结构{}失败", name, e);
             return null;
         }
 
@@ -72,7 +77,8 @@ public class OracleTableMetaParser implements TableMetaParser {
             public void done(Map<String, Object> instance) {
                 String name = (String) instance.get("name");
                 TableMetaData metaData = parse(name);
-                metaDatas.add(metaData);
+                if (metaData != null)
+                    metaDatas.add(metaData);
                 super.done(instance);
             }
         });

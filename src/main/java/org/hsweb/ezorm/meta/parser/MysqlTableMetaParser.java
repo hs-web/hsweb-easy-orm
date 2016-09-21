@@ -72,7 +72,8 @@ public class MysqlTableMetaParser implements TableMetaParser {
             public void done(Map<String, Object> instance) {
                 String name = (String) instance.get("name");
                 TableMetaData metaData = parse(name);
-                metaDatas.add(metaData);
+                if (metaData != null)
+                    metaDatas.add(metaData);
                 super.done(instance);
             }
         });
