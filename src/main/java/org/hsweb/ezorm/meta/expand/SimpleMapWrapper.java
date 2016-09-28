@@ -2,11 +2,16 @@ package org.hsweb.ezorm.meta.expand;
 
 
 import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.meta.converter.BlobValueConverter;
 
+import java.sql.Blob;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
+
+    private static final BlobValueConverter blobValueConverter = new BlobValueConverter();
+
     @Override
     public Map<String, Object> newInstance() {
         return new LinkedHashMap<>();
@@ -23,7 +28,15 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
 
     }
 
+    public Object convertValue(Object value) {
+        if (value instanceof Blob)
+            return blobValueConverter.getValue(value);
+
+        return value;
+    }
+
     public void putValue(Map<String, Object> instance, String attr, Object value) {
+        value = convertValue(value);
         if (attr.contains(".")) {
             String[] attrs = StringUtils.splitFirst(attr, "[.]");
             String attr_ob_name = attrs[0];
