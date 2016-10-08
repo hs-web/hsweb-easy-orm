@@ -14,6 +14,24 @@ public interface Dialect {
 
     void setTermTypeMapper(String termType, Mapper mapper);
 
+    Dialect MSSQL = new DefaultDialect() {
+        @Override
+        public String getQuoteStart() {
+            return "[";
+        }
+
+        @Override
+        public String getQuoteEnd() {
+            return "]";
+        }
+
+        @Override
+        public String doPaging(String sql, int pageIndex, int pageSize) {
+            // TODO: 16-9-29
+            throw new UnsupportedOperationException();
+        }
+    };
+
     Dialect ORACLE = new DefaultDialect() {
         @Override
         public String getQuoteStart() {
