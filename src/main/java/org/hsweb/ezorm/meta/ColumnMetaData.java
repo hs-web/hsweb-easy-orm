@@ -8,21 +8,17 @@ import org.hsweb.ezorm.meta.expand.ValueConverter;
 
 import java.io.Serializable;
 import java.sql.JDBCType;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by zhouhao on 16-5-17.
- */
-public class FieldMetaData implements Serializable, Cloneable, Comparable<FieldMetaData> {
+public class ColumnMetaData implements Serializable, Cloneable, Comparable<ColumnMetaData> {
     private static final DefaultValueConverter DEFAULT_VALUE_CONVERTER = new DefaultValueConverter();
 
-    public FieldMetaData() {
+    public ColumnMetaData() {
     }
 
-    public FieldMetaData(String name, Class javaType, String dataType, JDBCType jdbcType) {
+    public ColumnMetaData(String name, Class javaType, String dataType, JDBCType jdbcType) {
         this.name = name;
         this.javaType = javaType;
         this.dataType = dataType;
@@ -36,6 +32,27 @@ public class FieldMetaData implements Serializable, Cloneable, Comparable<FieldM
     private String comment;
 
     private String dataType;
+
+    /**
+     * 长度
+     *
+     * @since 1.1
+     */
+    private int length;
+
+    /**
+     * 精度
+     *
+     * @since 1.1
+     */
+    private int precision;
+
+    /**
+     * 小数位数
+     *
+     * @since 1.1
+     */
+    private int scale;
 
     private JDBCType jdbcType;
 
@@ -172,24 +189,51 @@ public class FieldMetaData implements Serializable, Cloneable, Comparable<FieldM
     }
 
     @Override
-    public int compareTo(FieldMetaData o) {
+    public int compareTo(ColumnMetaData o) {
         return Integer.compare(sortIndex, o.getSortIndex());
     }
 
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public int getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(int precision) {
+        this.precision = precision;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
     @Override
-    public FieldMetaData clone() {
-        FieldMetaData fieldMetaData = new FieldMetaData();
-        fieldMetaData.name = name;
-        fieldMetaData.alias = alias;
-        fieldMetaData.comment = comment;
-        fieldMetaData.javaType = javaType;
-        fieldMetaData.jdbcType = jdbcType;
-        fieldMetaData.dataType = dataType;
-        fieldMetaData.properties = properties;
-        fieldMetaData.optionConverter = optionConverter;
-        fieldMetaData.tableMetaData = tableMetaData;
-        fieldMetaData.sortIndex = sortIndex;
-        return fieldMetaData;
+    public ColumnMetaData clone() {
+        ColumnMetaData columnMetaData = new ColumnMetaData();
+        columnMetaData.name = name;
+        columnMetaData.alias = alias;
+        columnMetaData.comment = comment;
+        columnMetaData.javaType = javaType;
+        columnMetaData.jdbcType = jdbcType;
+        columnMetaData.dataType = dataType;
+        columnMetaData.properties = properties;
+        columnMetaData.optionConverter = optionConverter;
+        columnMetaData.tableMetaData = tableMetaData;
+        columnMetaData.sortIndex = sortIndex;
+        columnMetaData.length = length;
+        columnMetaData.scale = scale;
+        columnMetaData.precision = precision;
+        return columnMetaData;
     }
 
     @Override

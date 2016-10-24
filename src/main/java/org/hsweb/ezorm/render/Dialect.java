@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.render;
 
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.render.dialect.DefaultDialect;
 
@@ -9,7 +9,7 @@ import org.hsweb.ezorm.render.dialect.DefaultDialect;
  */
 public interface Dialect {
     interface Mapper {
-        String accept(String wherePrefix, Term term, FieldMetaData fieldMetaData, String tableAlias);
+        String accept(String wherePrefix, Term term, ColumnMetaData columnMetaData, String tableAlias);
     }
 
     void setTermTypeMapper(String termType, Mapper mapper);
@@ -84,7 +84,7 @@ public interface Dialect {
 
     String getQuoteEnd();
 
-    String wrapperWhere(String wherePrefix, Term term, FieldMetaData fieldMetaData, String tableAlias);
+    String wrapperWhere(String wherePrefix, Term term, ColumnMetaData columnMetaData, String tableAlias);
 
     String doPaging(String sql, int pageIndex, int pageSize);
 }

@@ -3,13 +3,12 @@ package org.hsweb.ezorm.render.support.simple;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.ezorm.executor.SQL;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.UpdateParam;
 import org.hsweb.ezorm.render.Dialect;
 import org.hsweb.ezorm.render.SqlAppender;
-import org.apache.commons.beanutils.BeanUtils;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -47,37 +46,37 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             appender.add("UPDATE ", metaData.getName(), " ", metaData.getAlias(), " SET ");
             byte[] bytes = new byte[1];
             updateField.forEach(operationField -> {
-                FieldMetaData fieldMetaData = operationField.getFieldMetaData();
-                if (fieldMetaData.getProperty("read-only").isTrue()) return;
+                ColumnMetaData columnMetaData = operationField.getColumnMetaData();
+                if (columnMetaData.getProperty("read-only").isTrue()) return;
                 try {
-                    String dataProperty = fieldMetaData.getAlias();
+                    String dataProperty = columnMetaData.getAlias();
                     Object value = null;
                     try {
                         value = propertyUtils.getProperty(param.getData(), dataProperty);
                     } catch (Exception e) {
                     }
-                    if (value == null && !fieldMetaData.getAlias().equals(fieldMetaData.getName())) {
-                        dataProperty = fieldMetaData.getName();
+                    if (value == null && !columnMetaData.getAlias().equals(columnMetaData.getName())) {
+                        dataProperty = columnMetaData.getName();
                         value = propertyUtils.getProperty(param.getData(), dataProperty);
                     }
                     if (value == null) {
                         if (logger.isInfoEnabled())
-                            logger.info("跳过修改列:[{}], 属性[{}]为null!", fieldMetaData.getName(), fieldMetaData.getAlias());
+                            logger.info("跳过修改列:[{}], 属性[{}]为null!", columnMetaData.getName(), columnMetaData.getAlias());
                         return;
                     }
-                    if (fieldMetaData.getValueConverter() != null) {
-                        Object new_value = fieldMetaData.getValueConverter().getData(value);
-                        if (fieldMetaData.getOptionConverter() != null) {
-                            new_value = fieldMetaData.getOptionConverter().converterData(new_value);
+                    if (columnMetaData.getValueConverter() != null) {
+                        Object new_value = columnMetaData.getValueConverter().getData(value);
+                        if (columnMetaData.getOptionConverter() != null) {
+                            new_value = columnMetaData.getOptionConverter().converterData(new_value);
                         }
                         if (value != new_value && !value.equals(new_value))
                             propertyUtils.setProperty(param.getData(), dataProperty, new_value);
                     }
-                    appender.add(fieldMetaData.getName(), "=", "#{data.", dataProperty, "}", ",");
+                    appender.add(columnMetaData.getName(), "=", "#{data.", dataProperty, "}", ",");
                     bytes[0]++;
                 } catch (Exception e) {
                     if (logger.isInfoEnabled())
-                        logger.info("跳过修改列:[{}], 可能属性[{}]不存在!", fieldMetaData.getName(), fieldMetaData.getAlias());
+                        logger.info("跳过修改列:[{}], 可能属性[{}]不存在!", columnMetaData.getName(), columnMetaData.getAlias());
                 }
             });
             if (bytes[0] == 0) throw new IndexOutOfBoundsException("没有列被修改!");

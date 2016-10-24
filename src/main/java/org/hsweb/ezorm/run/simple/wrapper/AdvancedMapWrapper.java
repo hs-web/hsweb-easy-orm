@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.run.simple.wrapper;
 
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.OptionConverter;
 import org.hsweb.ezorm.meta.expand.SimpleMapWrapper;
@@ -17,7 +17,7 @@ public class AdvancedMapWrapper extends SimpleMapWrapper {
 
     @Override
     public void wrapper(Map<String, Object> instance, int index, String attr, Object value) {
-        FieldMetaData metaData = tableMetaData.findFieldByName(attr);
+        ColumnMetaData metaData = tableMetaData.findColumnByName(attr);
         if (null != metaData) {
             ValueConverter valueConverter = metaData.getValueConverter();
             super.wrapper(instance, index, attr, valueConverter.getValue(value));

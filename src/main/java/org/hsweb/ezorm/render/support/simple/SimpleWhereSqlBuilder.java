@@ -3,7 +3,7 @@ package org.hsweb.ezorm.render.support.simple;
 import org.hsweb.commons.DateTimeUtils;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.meta.Correlation;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
@@ -38,7 +38,7 @@ public abstract class SimpleWhereSqlBuilder {
         for (Term term : terms) {
             index++;
             boolean nullTerm = StringUtils.isNullOrEmpty(term.getField());
-            FieldMetaData field = metaData.findFieldByName(term.getField());
+            ColumnMetaData field = metaData.findColumnByName(term.getField());
             //不是空条件 也不是可选字段
             if (!nullTerm && field == null && term.getTermType() != TermType.func) continue;
             //不是空条件，值为空

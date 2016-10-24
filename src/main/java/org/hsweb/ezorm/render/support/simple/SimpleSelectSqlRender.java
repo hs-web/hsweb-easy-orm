@@ -2,7 +2,7 @@ package org.hsweb.ezorm.render.support.simple;
 
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.meta.Correlation;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.param.QueryParam;
 import org.hsweb.ezorm.param.Sort;
@@ -55,11 +55,11 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 needSelectTable.add(field.getTableName());
             });
             param.getSorts().forEach(sort -> {
-                FieldMetaData fieldMetaData = metaData.findFieldByName(sort.getField());
-                if (fieldMetaData.getName() == null) return;
+                ColumnMetaData columnMetaData = metaData.findColumnByName(sort.getField());
+                if (columnMetaData.getName() == null) return;
                 String tableName = getTableAlias(metaData, sort.getField());
                 needSelectTable.add(tableName);
-                sort.setField(tableName + "." + fieldMetaData.getName());
+                sort.setField(tableName + "." + columnMetaData.getName());
                 sorts.add(sort);
             });
         }
@@ -69,20 +69,20 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
             appender.add("SELECT ");
             if (selectField.isEmpty()) appender.add(" * ");
             selectField.forEach(operationField -> {
-                FieldMetaData fieldMetaData = operationField.getFieldMetaData();
-                String tableName = fieldMetaData.getTableMetaData().getName();
+                ColumnMetaData columnMetaData = operationField.getColumnMetaData();
+                String tableName = columnMetaData.getTableMetaData().getName();
                 Correlation correlation = metaData.getCorrelation(tableName);
                 if (correlation == null) {
-                    appender.add(operationField.getTableName(), ".", fieldMetaData.getName(), " AS "
+                    appender.add(operationField.getTableName(), ".", columnMetaData.getName(), " AS "
                             , dialect.getQuoteStart()
-                            , fieldMetaData.getAlias()
+                            , columnMetaData.getAlias()
                             , dialect.getQuoteEnd());
                 } else {
                     //关联的另外一张表
                     if (correlation.isOne2one()) {
-                        appender.add(operationField.getTableName(), ".", fieldMetaData.getName(), " AS "
+                        appender.add(operationField.getTableName(), ".", columnMetaData.getName(), " AS "
                                 , dialect.getQuoteStart()
-                                , operationField.getTableName(), ".", fieldMetaData.getAlias()
+                                , operationField.getTableName(), ".", columnMetaData.getAlias()
                                 , dialect.getQuoteEnd());
                     }
                 }

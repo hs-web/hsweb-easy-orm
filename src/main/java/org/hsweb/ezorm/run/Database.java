@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.run;
 
+import org.hsweb.ezorm.meta.builder.TableBuilder;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.parser.TableMetaParser;
@@ -49,6 +50,7 @@ public interface Database {
 
     /**
      * 变更表结构,此操作将修改表结构,如果存在删除的字段,且表中无数据,将删除字段
+     *
      * @param tableMetaData 表结构定义
      * @param <T>           表数据泛型
      * @return 修改后的表操作接口
@@ -63,5 +65,8 @@ public interface Database {
      * @return
      */
     boolean removeTable(String name);
+
+    TableBuilder createOrAlter(String name);
+
 
 }

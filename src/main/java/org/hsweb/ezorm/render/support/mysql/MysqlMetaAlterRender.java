@@ -1,11 +1,10 @@
 package org.hsweb.ezorm.render.support.mysql;
 
 import org.hsweb.commons.StringUtils;
-import org.hsweb.ezorm.executor.BindSQL;
 import org.hsweb.ezorm.executor.EmptySQL;
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.render.SqlAppender;
 import org.hsweb.ezorm.render.SqlRender;
@@ -32,14 +31,14 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
     public SQL render(TableMetaData metaData, Boolean executeRemove) {
         TableMetaData old = databaseMetaData.getTable(metaData.getName());
         if (old == null) throw new UnsupportedOperationException("旧表不存在!");
-        List<FieldMetaData> changedField = new ArrayList<>();
-        List<FieldMetaData> addedField = new ArrayList<>();
-        List<FieldMetaData> deletedField = new ArrayList<>();
+        List<ColumnMetaData> changedField = new ArrayList<>();
+        List<ColumnMetaData> addedField = new ArrayList<>();
+        List<ColumnMetaData> deletedField = new ArrayList<>();
 
         TableMetaData oldMeta = old;
         if (executeRemove)
             oldMeta.getFields().forEach(oldField -> {
-                FieldMetaData newMeta = metaData.findFieldByName(oldField.getName());
+                ColumnMetaData newMeta = metaData.findColumnByName(oldField.getName());
                 if (newMeta == null) {
                     try {
                         newMeta = metaData.getFields().stream()
@@ -56,7 +55,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
         metaData.getFields().forEach(newField -> {
             String oldName = newField.getProperty("old-name").getValue();
             if (oldName == null) oldName = newField.getName();
-            FieldMetaData oldField = oldMeta.findFieldByName(oldName);
+            ColumnMetaData oldField = oldMeta.findColumnByName(oldName);
             if (oldField == null) {
                 //增加的字段
                 addedField.add(newField);

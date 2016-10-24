@@ -23,16 +23,16 @@ public class TableMetaData implements Serializable, Cloneable {
     //备注
     private String comment;
     //主键
-    private Set<String> primaryKeys = new HashSet<>();
+    private Set<String>                 primaryKeys           = new HashSet<>();
     //表字段
-    private Map<String, FieldMetaData> fieldMetaDataMap = new LinkedHashMap<>();
-    private Map<String, FieldMetaData> aliasFieldMetaDataMap = new LinkedHashMap<>();
+    private Map<String, ColumnMetaData> fieldMetaDataMap      = new LinkedHashMap<>();
+    private Map<String, ColumnMetaData> aliasFieldMetaDataMap = new LinkedHashMap<>();
     //数据库定义实体
     private DatabaseMetaData databaseMetaData;
-    private Validator validator;
-    private Set<Correlation> correlations = new LinkedHashSet<>();
-    private Map<String, Object> properties = new HashMap<>();
-    private Map<String, Trigger> triggerBase = new HashMap<>();
+    private Validator        validator;
+    private Set<Correlation>     correlations = new LinkedHashSet<>();
+    private Map<String, Object>  properties   = new HashMap<>();
+    private Map<String, Trigger> triggerBase  = new HashMap<>();
 
     public String getName() {
         return name;
@@ -86,7 +86,7 @@ public class TableMetaData implements Serializable, Cloneable {
         return alias;
     }
 
-    public FieldMetaData findFieldByName(String name) {
+    public ColumnMetaData findColumnByName(String name) {
         if (name == null) return null;
         if (name.contains(".")) {
             String[] tmp = name.split("[.]");
@@ -97,17 +97,17 @@ public class TableMetaData implements Serializable, Cloneable {
                     metaData = databaseMetaData.getTable(correlation.getTargetTable());
                 }
             }
-            if (metaData != null) return metaData.findFieldByName(tmp[1]);
+            if (metaData != null) return metaData.findColumnByName(tmp[1]);
             return null;
         }
-        FieldMetaData metaData = fieldMetaDataMap.get(name);
+        ColumnMetaData metaData = fieldMetaDataMap.get(name);
         if (metaData == null)
             metaData = aliasFieldMetaDataMap.get(name);
         return metaData;
     }
 
     public boolean renameField(String old, String newName) {
-        FieldMetaData oldField = fieldMetaDataMap.get(old);
+        ColumnMetaData oldField = fieldMetaDataMap.get(old);
         if (oldField != null) {
             fieldMetaDataMap.remove(old);
             fieldMetaDataMap.put(newName, oldField);
@@ -129,7 +129,7 @@ public class TableMetaData implements Serializable, Cloneable {
         this.comment = comment;
     }
 
-    public Set<FieldMetaData> getFields() {
+    public Set<ColumnMetaData> getFields() {
         return new LinkedHashSet<>(fieldMetaDataMap.values());
     }
 
@@ -196,11 +196,11 @@ public class TableMetaData implements Serializable, Cloneable {
         this.validator = validator;
     }
 
-    public TableMetaData addField(FieldMetaData fieldMetaData) {
-        fieldMetaData.setTableMetaData(this);
-        fieldMetaDataMap.put(fieldMetaData.getName(), fieldMetaData);
-        if (!fieldMetaData.getName().equals(fieldMetaData.getAlias()))
-            aliasFieldMetaDataMap.put(fieldMetaData.getAlias(), fieldMetaData);
+    public TableMetaData addColumn(ColumnMetaData columnMetaData) {
+        columnMetaData.setTableMetaData(this);
+        fieldMetaDataMap.put(columnMetaData.getName(), columnMetaData);
+        if (!columnMetaData.getName().equals(columnMetaData.getAlias()))
+            aliasFieldMetaDataMap.put(columnMetaData.getAlias(), columnMetaData);
         return this;
     }
 
@@ -231,7 +231,7 @@ public class TableMetaData implements Serializable, Cloneable {
         metaData.triggerBase = triggerBase;
         metaData.setLocked(false);
         correlations.forEach(correlation -> metaData.addCorrelation(correlation.clone()));
-        fieldMetaDataMap.values().forEach(fieldMetaData -> metaData.addField(fieldMetaData.clone()));
+        fieldMetaDataMap.values().forEach(fieldMetaData -> metaData.addColumn(fieldMetaData.clone()));
         return metaData;
     }
 

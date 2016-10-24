@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.meta.parser;
 
 import org.hsweb.ezorm.executor.SqlExecutor;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.converter.ClobValueConverter;
 import org.hsweb.ezorm.meta.converter.DateTimeConverter;
@@ -49,9 +49,9 @@ public class H2TableMetaParser implements TableMetaParser {
                     metaData.setComment((String) instance.get("comment"));
                 }
             });
-            List<FieldMetaData> fieldMetaData = sqlExecutor.list(filedMetaSql, new FieldMetaDataWrapper());
-            if (fieldMetaData.isEmpty()) return null;
-            fieldMetaData.forEach(meta -> metaData.addField(meta));
+            List<ColumnMetaData> columnMetaData = sqlExecutor.list(filedMetaSql, new FieldMetaDataWrapper());
+            if (columnMetaData.isEmpty()) return null;
+            columnMetaData.forEach(meta -> metaData.addColumn(meta));
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -76,15 +76,15 @@ public class H2TableMetaParser implements TableMetaParser {
         return metaDatas;
     }
 
-    class FieldMetaDataWrapper implements ObjectWrapper<FieldMetaData> {
+    class FieldMetaDataWrapper implements ObjectWrapper<ColumnMetaData> {
 
         @Override
-        public FieldMetaData newInstance() {
-            return new FieldMetaData();
+        public ColumnMetaData newInstance() {
+            return new ColumnMetaData();
         }
 
         @Override
-        public void wrapper(FieldMetaData instance, int index, String attr, Object value) {
+        public void wrapper(ColumnMetaData instance, int index, String attr, Object value) {
             if (attr.equalsIgnoreCase("name")) {
                 instance.setName(String.valueOf(value).toLowerCase());
                 instance.setProperty("old-name", instance.getName());
@@ -100,7 +100,7 @@ public class H2TableMetaParser implements TableMetaParser {
         }
 
         @Override
-        public void done(FieldMetaData instance) {
+        public void done(ColumnMetaData instance) {
             String data_type = instance.getProperty("data_type").toString().toLowerCase();
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();

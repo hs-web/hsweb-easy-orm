@@ -3,7 +3,7 @@ package org.hsweb.ezorm.render.support.oracle;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.executor.BindSQL;
 import org.hsweb.ezorm.executor.SQL;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.render.SqlAppender;
 import org.hsweb.ezorm.render.SqlRender;
@@ -22,10 +22,10 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
     public SQL render(TableMetaData metaData, Object param) {
         SqlAppender createBody = new SqlAppender();
         List<String> comments = new ArrayList<>();
-        Set<FieldMetaData> fieldMetaDatas = metaData.getFields();
-        if (fieldMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
+        Set<ColumnMetaData> columnMetaDatas = metaData.getFields();
+        if (columnMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
         createBody.add("\nCREATE TABLE ", metaData.getName(), "(");
-        fieldMetaDatas.forEach(fieldMetaData -> {
+        columnMetaDatas.forEach(fieldMetaData -> {
             createBody.add("\n\t", fieldMetaData.getName(), " ").add(fieldMetaData.getDataType());
             if (fieldMetaData.getProperty("not-null", false).isTrue()
                     || metaData.getPrimaryKeys().contains(fieldMetaData.getName())) {

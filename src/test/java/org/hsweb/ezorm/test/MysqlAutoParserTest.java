@@ -96,7 +96,7 @@ public class MysqlAutoParserTest {
         TableMetaData old = metaData.getParser().parse("s_script");
         metaData.putTable(old);
         TableMetaData newTable = metaData.getParser().parse("s_script");
-        newTable.findFieldByName("name2").setComment("test");
+        newTable.findColumnByName("name2").setComment("test");
         database.alterTable(newTable);
 
     }

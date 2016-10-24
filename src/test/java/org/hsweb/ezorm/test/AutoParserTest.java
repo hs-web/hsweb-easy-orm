@@ -89,7 +89,7 @@ public class AutoParserTest {
         TableMetaData old = metaData.getParser().parse("s_script");
         metaData.putTable(old);
         TableMetaData newTable = metaData.getParser().parse("s_script");
-        newTable.findFieldByName("name").setName("name2");
+        newTable.findColumnByName("name").setName("name2");
         database.alterTable(newTable);
 
     }

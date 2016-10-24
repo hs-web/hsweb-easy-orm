@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.render.dialect;
 
 import org.hsweb.commons.StringUtils;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
 import org.hsweb.ezorm.render.Dialect;
@@ -94,10 +94,10 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public String wrapperWhere(String wherePrefix, Term term, FieldMetaData fieldMetaData, String tableAlias) {
+    public String wrapperWhere(String wherePrefix, Term term, ColumnMetaData columnMetaData, String tableAlias) {
         Mapper mapper = termTypeMappers.get(term.getTermType());
         if (mapper == null) mapper = termTypeMappers.get(TermType.eq);
-        return mapper.accept(wherePrefix, term, fieldMetaData, tableAlias);
+        return mapper.accept(wherePrefix, term, columnMetaData, tableAlias);
     }
 
     protected List<Object> param2list(Object value) {

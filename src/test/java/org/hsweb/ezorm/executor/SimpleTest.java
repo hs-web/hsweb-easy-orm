@@ -3,15 +3,13 @@ package org.hsweb.ezorm.executor;
 import com.alibaba.fastjson.JSON;
 import org.hsweb.ezorm.meta.Correlation;
 import org.hsweb.ezorm.meta.DatabaseMetaData;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.meta.expand.Trigger;
-import org.hsweb.ezorm.meta.parser.H2TableMetaParser;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.TermType;
 import org.hsweb.ezorm.render.dialect.H2DatabaseMeta;
-import org.hsweb.ezorm.render.dialect.OracleDatabaseMeta;
 import org.hsweb.ezorm.render.support.simple.SimpleSQL;
 import org.hsweb.ezorm.run.Database;
 import org.hsweb.ezorm.run.Query;
@@ -83,31 +81,31 @@ public class SimpleTest {
         area.setName("s_area");
         area.setAlias("area");
         databaseMetaData.putTable(area);
-        FieldMetaData area_id = new FieldMetaData();
+        ColumnMetaData area_id = new ColumnMetaData();
         area_id.setName("id");
         area_id.setJavaType(String.class);
         area_id.setJdbcType(JDBCType.VARCHAR);
         area_id.setDataType("varchar(64)");
-        FieldMetaData area_name = new FieldMetaData();
+        ColumnMetaData area_name = new ColumnMetaData();
         area_name.setName("name");
         area_name.setJavaType(String.class);
         area_name.setJdbcType(JDBCType.VARCHAR);
         area_name.setDataType("varchar(64)");
 
-        area.addField(area_id).addField(area_name);
+        area.addColumn(area_id).addColumn(area_name);
 
-        FieldMetaData fieldMetaData = new FieldMetaData();
-        fieldMetaData.setName("user_name");
-        fieldMetaData.setAlias("userName");
-        fieldMetaData.setJavaType(String.class);
-        fieldMetaData.setJdbcType(JDBCType.VARCHAR);
-        fieldMetaData.setDataType("varchar(64)");
-        FieldMetaData f2 = new FieldMetaData();
+        ColumnMetaData columnMetaData = new ColumnMetaData();
+        columnMetaData.setName("user_name");
+        columnMetaData.setAlias("userName");
+        columnMetaData.setJavaType(String.class);
+        columnMetaData.setJdbcType(JDBCType.VARCHAR);
+        columnMetaData.setDataType("varchar(64)");
+        ColumnMetaData f2 = new ColumnMetaData();
         f2.setName("name");
         f2.setJavaType(String.class);
         f2.setJdbcType(JDBCType.VARCHAR);
         f2.setDataType("varchar(64)");
-        metaData.addField(fieldMetaData).addField(f2);
+        metaData.addColumn(columnMetaData).addColumn(f2);
 
 //        databaseMetaData.putTable(metaData);
 
@@ -129,25 +127,33 @@ public class SimpleTest {
 
         Query<Map<String, Object>> query = table.createQuery();
         query.select("userName", "name", "area2.*")
-                .nest().and("name$LIKE", "张%").or("name$LIKE", "李%");
+                .where("name$LIKE", "张%").nest("name$LIKE", "李%").or("name", "1");
         query.where("name", "张三");
 
         query.orderByDesc("name").noPaging().list();
 
+        database.createOrAlter("s_user")
+                .addColumn().name("id").primaryKey().jdbcType(JDBCType.VARCHAR).length(32).comment("ID").commit()
+                .addColumn().name("name").notNull().jdbcType(JDBCType.VARCHAR).length(256).comment("姓名").commit()
+                .addColumn().name("age").notNull().jdbcType(JDBCType.INTEGER).length(4, 0).comment("年龄").commit()
+                .comment("用户表")
+                .commit();
+
+
 //        H2TableMetaParser parser = new H2TableMetaParser(sqlExecutor);
 //        TableMetaData metaData1 = parser.parse("s_user");
 //        metaData1.getFields().forEach(System.out::println);
-//        metaData1.findFieldByName("user_name").setName("test");
-//        metaData1.findFieldByName("user_name").setProperty("not-null", true);
+//        metaData1.findColumnByName("user_name").setName("test");
+//        metaData1.findColumnByName("user_name").setProperty("not-null", true);
 //        database.alterTable(metaData1);
 //        metaData1 = parser.parse("s_user");
-//        metaData1.findFieldByName("test").setProperty("not-null", false);
+//        metaData1.findColumnByName("test").setProperty("not-null", false);
 //        database.alterTable(metaData1);
     }
 
     @Test
     public void testAutoParser() throws SQLException {
-        System.out.println(sqlExecutor.list(new SimpleSQL("select '1' as name , '2' as name "), new SimpleMapWrapper(){
+        System.out.println(sqlExecutor.list(new SimpleSQL("select '1' as name , '2' as name "), new SimpleMapWrapper() {
             @Override
             public Map<String, Object> newInstance() {
                 return new IdentityHashMap<>();

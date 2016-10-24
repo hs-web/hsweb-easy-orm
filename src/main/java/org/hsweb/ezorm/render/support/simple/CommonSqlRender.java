@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.render.support.simple;
 
 import org.hsweb.ezorm.meta.Correlation;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.param.SqlParam;
 import org.hsweb.ezorm.render.SqlRender;
@@ -19,21 +19,21 @@ public abstract class CommonSqlRender<R extends SqlParam> implements SqlRender<R
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected class OperationField {
-        private String tableName;
-        private FieldMetaData fieldMetaData;
+        private String         tableName;
+        private ColumnMetaData columnMetaData;
 
-        public OperationField(String tableName, FieldMetaData fieldMetaData) {
+        public OperationField(String tableName, ColumnMetaData columnMetaData) {
             this.tableName = tableName;
-            this.fieldMetaData = fieldMetaData;
-            if (tableName == null) this.tableName = fieldMetaData.getTableMetaData().getAlias();
+            this.columnMetaData = columnMetaData;
+            if (tableName == null) this.tableName = columnMetaData.getTableMetaData().getAlias();
         }
 
         public String getTableName() {
             return tableName;
         }
 
-        public FieldMetaData getFieldMetaData() {
-            return fieldMetaData;
+        public ColumnMetaData getColumnMetaData() {
+            return columnMetaData;
         }
     }
 
@@ -96,7 +96,7 @@ public abstract class CommonSqlRender<R extends SqlParam> implements SqlRender<R
                         });
                         return;
                     } else {
-                        FieldMetaData field = metaData.findFieldByName(include);
+                        ColumnMetaData field = metaData.findColumnByName(include);
                         if (null != field) {
                             if (excludes.contains(field.getFullAliasName()) || excludes.contains(field.getFullName()))
                                 return;
@@ -104,7 +104,7 @@ public abstract class CommonSqlRender<R extends SqlParam> implements SqlRender<R
                         }
                     }
                 } else {
-                    FieldMetaData field = metaData.findFieldByName(include);
+                    ColumnMetaData field = metaData.findColumnByName(include);
                     if (null != field) {
                         if (excludes.contains(field.getAlias()) || excludes.contains(field.getName()))
                             return;

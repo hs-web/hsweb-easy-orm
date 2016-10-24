@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.run.simple;
 
+import org.hsweb.ezorm.meta.builder.TableBuilder;
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.executor.SqlExecutor;
@@ -129,5 +130,10 @@ public class SimpleDatabase implements Database {
 
     public Map<String, Object> getTriggerContextRoot() {
         return new HashMap<>();
+    }
+
+    @Override
+    public TableBuilder createOrAlter(String name) {
+        return null;
     }
 }

@@ -18,7 +18,7 @@ package org.hsweb.ezorm.run.simple.wrapper;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.meta.expand.ValueConverter;
@@ -44,7 +44,7 @@ public class BeanWrapper<T> implements ObjectWrapper<T> {
 
     @Override
     public void wrapper(T instance, int index, String attr, Object value) {
-        FieldMetaData metaData = tableMetaData.findFieldByName(attr);
+        ColumnMetaData metaData = tableMetaData.findColumnByName(attr);
         if (metaData != null) {
             try {
                 ValueConverter valueConverter = metaData.getValueConverter();

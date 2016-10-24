@@ -2,7 +2,7 @@ package org.hsweb.ezorm.render.support.mysql;
 
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.executor.SQL;
-import org.hsweb.ezorm.meta.FieldMetaData;
+import org.hsweb.ezorm.meta.ColumnMetaData;
 import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.render.SqlAppender;
 import org.hsweb.ezorm.render.SqlRender;
@@ -17,10 +17,10 @@ public class MysqlMetaCreateRender implements SqlRender {
     @Override
     public SQL render(TableMetaData metaData, Object param) {
         SqlAppender appender = new SqlAppender();
-        Set<FieldMetaData> fieldMetaDatas = metaData.getFields();
-        if (fieldMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
+        Set<ColumnMetaData> columnMetaDatas = metaData.getFields();
+        if (columnMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
         appender.add("\nCREATE TABLE ", metaData.getName(), "(");
-        fieldMetaDatas.forEach(fieldMetaData -> {
+        columnMetaDatas.forEach(fieldMetaData -> {
             appender.add("\n\t`", fieldMetaData.getName(), "` ").add(fieldMetaData.getDataType());
             if (fieldMetaData.getProperty("not-null", false).isTrue()) {
                 appender.add(" not null ");
