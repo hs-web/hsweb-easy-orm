@@ -54,6 +54,23 @@ public class ColumnMetaData implements Serializable, Cloneable, Comparable<Colum
      */
     private int scale;
 
+    /**
+     * 是否是索引字段
+     *
+     * @since 1.1
+     */
+    private boolean index;
+
+    /**
+     * 是否不能为空
+     */
+    private boolean notNull;
+
+    /**
+     * 是否主键
+     */
+    private boolean primaryKey;
+
     private JDBCType jdbcType;
 
     private Class javaType;
@@ -217,6 +234,30 @@ public class ColumnMetaData implements Serializable, Cloneable, Comparable<Colum
         this.scale = scale;
     }
 
+    public boolean isIndex() {
+        return index;
+    }
+
+    public void setIndex(boolean index) {
+        this.index = index;
+    }
+
+    public boolean isNotNull() {
+        return notNull;
+    }
+
+    public void setNotNull(boolean notNull) {
+        this.notNull = notNull;
+    }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(boolean primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
     @Override
     public ColumnMetaData clone() {
         ColumnMetaData columnMetaData = new ColumnMetaData();
@@ -233,6 +274,9 @@ public class ColumnMetaData implements Serializable, Cloneable, Comparable<Colum
         columnMetaData.length = length;
         columnMetaData.scale = scale;
         columnMetaData.precision = precision;
+        columnMetaData.index = index;
+        columnMetaData.notNull = notNull;
+        columnMetaData.primaryKey = primaryKey;
         return columnMetaData;
     }
 

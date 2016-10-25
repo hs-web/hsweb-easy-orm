@@ -1,14 +1,14 @@
 package org.hsweb.ezorm.run.simple;
 
 import org.hsweb.commons.StringUtils;
-import org.hsweb.ezorm.meta.TableMetaData;
-import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.executor.SQL;
 import org.hsweb.ezorm.executor.SqlExecutor;
+import org.hsweb.ezorm.meta.TableMetaData;
+import org.hsweb.ezorm.meta.expand.ObjectWrapper;
 import org.hsweb.ezorm.meta.expand.Trigger;
 import org.hsweb.ezorm.param.QueryParam;
-import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.render.SqlRender;
+import org.hsweb.ezorm.run.NestConditional;
 import org.hsweb.ezorm.run.Query;
 import org.hsweb.ezorm.run.simple.wrapper.TriggerWrapper;
 
@@ -31,6 +31,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Que
     private SqlRender<QueryParam> totalRender;
 
     private ObjectWrapper objectWrapper;
+
+    private Accepter accepter = this::and;
 
     public SimpleQuery(SimpleTable<T> table, SqlExecutor sqlExecutor, ObjectWrapper<T> objectWrapper) {
         this.table = table;
@@ -60,41 +62,54 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements Que
     }
 
     @Override
-    public Query<T> where(String condition, Object value) {
-        queryParam.where(condition, value);
+    public Query<T> and() {
+        accepter = this::and;
         return this;
     }
 
     @Override
-    public Query<T> and(String condition, Object value) {
-        queryParam.and(condition, value);
+    public Query<T> or() {
+        accepter = this::or;
         return this;
     }
 
     @Override
-    public Query<T> or(String condition, Object value) {
-        queryParam.or(condition, value);
+    public Accepter getAccepter() {
+        return accepter;
+    }
+
+    @Override
+    public Query<T> and(String condition, String termType, Object value) {
+        and();
+        queryParam.and(condition, termType, value);
         return this;
     }
 
     @Override
-    public Term nest() {
-        return queryParam.nest();
+    public Query<T> or(String condition, String termType, Object value) {
+        or();
+        queryParam.or(condition, termType, value);
+        return this;
     }
 
     @Override
-    public Term nest(String condition, Object value) {
-        return queryParam.nest(condition, value);
+    public NestConditional<Query<T>> nest() {
+        return new SimpleNestConditional(this, this.queryParam.nest());
     }
 
     @Override
-    public Term orNest() {
-        return queryParam.orNest();
+    public NestConditional<Query<T>> nest(String column, Object value) {
+        return new SimpleNestConditional(this, this.queryParam.nest(column, value));
     }
 
     @Override
-    public Term orNest(String condition, Object value) {
-        return queryParam.orNest(condition, value);
+    public NestConditional<Query<T>> orNest() {
+        return new SimpleNestConditional(this, this.queryParam.orNest());
+    }
+
+    @Override
+    public NestConditional<Query<T>> orNest(String column, Object value) {
+        return new SimpleNestConditional(this, this.queryParam.orNest(column, value));
     }
 
     @Override

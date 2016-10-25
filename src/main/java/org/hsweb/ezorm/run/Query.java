@@ -27,4 +27,5 @@ public interface Query<T> extends Conditional<Query<T>>, TriggerSkipSupport<Quer
     T single() throws SQLException;
 
     int total() throws SQLException;
+
 }

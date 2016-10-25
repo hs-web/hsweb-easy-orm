@@ -38,7 +38,7 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
         private Set<String> needSelectTable = new LinkedHashSet<>();
         private List<Sort> sorts = new ArrayList<>();
 
-        public SimpleSelectSqlRenderProcess(TableMetaData metaData, QueryParam<?> param) {
+        public SimpleSelectSqlRenderProcess(TableMetaData metaData, QueryParam param) {
             this.metaData = metaData;
             this.param = param;
             if (param.getIncludes().isEmpty() && param.getExcludes().isEmpty()) {
@@ -55,11 +55,11 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 needSelectTable.add(field.getTableName());
             });
             param.getSorts().forEach(sort -> {
-                ColumnMetaData columnMetaData = metaData.findColumnByName(sort.getField());
+                ColumnMetaData columnMetaData = metaData.findColumnByName(sort.getName());
                 if (columnMetaData.getName() == null) return;
-                String tableName = getTableAlias(metaData, sort.getField());
+                String tableName = getTableAlias(metaData, sort.getName());
                 needSelectTable.add(tableName);
-                sort.setField(tableName + "." + columnMetaData.getName());
+                sort.setName(tableName + "." + columnMetaData.getName());
                 sorts.add(sort);
             });
         }
@@ -107,7 +107,7 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 appender.add(" WHERE ", "").addAll(whereSql);
             if (!sorts.isEmpty()) {
                 appender.add(" ORDER BY ");
-                sorts.forEach(sort -> appender.add(sort.getField(), " ", sort.getDir(), ","));
+                sorts.forEach(sort -> appender.add(sort.getName(), " ", sort.getDir(), ","));
                 appender.removeLast();
             }
             String sql = appender.toString();

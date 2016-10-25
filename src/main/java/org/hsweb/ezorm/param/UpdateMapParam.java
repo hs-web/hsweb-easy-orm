@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Created by zhouhao on 16-4-21.
  */
-public class UpdateMapParam extends UpdateParam<Map<String, Object>,UpdateMapParam> {
+public class UpdateMapParam extends UpdateParam<Map<String, Object>> {
     public UpdateMapParam() {
         this(new HashMap<>());
     }

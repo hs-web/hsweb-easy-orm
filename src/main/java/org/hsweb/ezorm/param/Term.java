@@ -5,14 +5,13 @@ import java.util.List;
 
 /**
  * 执行条件
- * Created by zhouhao on 16-5-9.
  */
 public class Term implements Cloneable {
 
     /**
      * 字段
      */
-    private String field;
+    private String column;
 
     /**
      * 值
@@ -36,17 +35,27 @@ public class Term implements Cloneable {
 
 
     public Term or(String term, Object value) {
+        return or(term, TermType.eq,value);
+    }
+
+    public Term and(String term, Object value) {
+        return and(term, TermType.eq,value);
+    }
+
+    public Term or(String term, String termType, Object value) {
         Term queryTerm = new Term();
-        queryTerm.setField(term);
+        queryTerm.setColumn(term);
+        queryTerm.setTermType(termType);
         queryTerm.setValue(value);
         queryTerm.setType(Type.or);
         terms.add(queryTerm);
         return this;
     }
 
-    public Term and(String term, Object value) {
+    public Term and(String term, String termType, Object value) {
         Term queryTerm = new Term();
-        queryTerm.setField(term);
+        queryTerm.setColumn(term);
+        queryTerm.setTermType(termType);
         queryTerm.setValue(value);
         queryTerm.setType(Type.and);
         terms.add(queryTerm);
@@ -63,7 +72,7 @@ public class Term implements Cloneable {
 
     public Term nest(String term, Object value) {
         Term queryTerm = new Term();
-        queryTerm.setField(term);
+        queryTerm.setColumn(term);
         queryTerm.setValue(value);
         queryTerm.setType(Type.and);
         terms.add(queryTerm);
@@ -72,25 +81,25 @@ public class Term implements Cloneable {
 
     public Term orNest(String term, Object value) {
         Term queryTerm = new Term();
-        queryTerm.setField(term);
+        queryTerm.setColumn(term);
         queryTerm.setValue(value);
         queryTerm.setType(Type.or);
         terms.add(queryTerm);
         return queryTerm;
     }
 
-    public String getField() {
-        return field;
+    public String getColumn() {
+        return column;
     }
 
-    public void setField(String field) {
-        if (field == null) return;
-        if (field.contains("$")) {
-            String tmp[] = field.split("[\\$]");
+    public void setColumn(String column) {
+        if (column == null) return;
+        if (column.contains("$")) {
+            String tmp[] = column.split("[$]");
             setTermType(tmp[1]);
-            field = tmp[0];
+            column = tmp[0];
         }
-        this.field = field;
+        this.column = column;
     }
 
     public Object getValue() {
@@ -133,7 +142,7 @@ public class Term implements Cloneable {
     @Override
     public Term clone() {
         Term term = new Term();
-        term.setField(field);
+        term.setColumn(column);
         term.setValue(value);
         term.setTermType(termType);
         term.setType(type);

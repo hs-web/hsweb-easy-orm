@@ -7,8 +7,7 @@ import org.hsweb.ezorm.meta.expand.Trigger;
 import org.hsweb.ezorm.param.SqlParam;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.render.SqlRender;
-import org.hsweb.ezorm.run.Delete;
-import org.hsweb.ezorm.run.Update;
+import org.hsweb.ezorm.run.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +18,11 @@ import java.util.Map;
  * Created by zhouhao on 16-6-5.
  */
 class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete {
-    private SqlParam param;
-    private SimpleTable table;
-    private SqlExecutor sqlExecutor;
+    private SqlParam      param;
+    private SimpleTable   table;
+    private SqlExecutor   sqlExecutor;
     private TableMetaData tableMetaData;
+    private Accepter<Delete> accepter = this::and;
 
     public SimpleDelete(SimpleTable table, SqlExecutor sqlExecutor) {
         this.table = table;
@@ -32,41 +32,52 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
     }
 
     @Override
-    public Delete where(String condition, Object value) {
-        param.where(condition, value);
+    public Delete and(String condition, String termType, Object value) {
+        param.and(condition, termType, value);
         return this;
     }
 
     @Override
-    public Delete and(String condition, Object value) {
-        param.and(condition, value);
+    public Delete or(String condition, String termType, Object value) {
+        param.or(condition, termType, value);
         return this;
     }
 
     @Override
-    public Delete or(String condition, Object value) {
-        param.or(condition, value);
+    public Delete and() {
+        accepter = this::and;
         return this;
     }
 
     @Override
-    public Term nest() {
-        return param.nest();
+    public Delete or() {
+        accepter = this::or;
+        return this;
     }
 
     @Override
-    public Term nest(String condition, Object value) {
-        return param.nest(condition, value);
+    public Accepter getAccepter() {
+        return accepter;
     }
 
     @Override
-    public Term orNest() {
-        return param.orNest();
+    public NestConditional<Delete> nest() {
+        return new SimpleNestConditional<>(this, param.nest());
     }
 
     @Override
-    public Term orNest(String condition, Object value) {
-        return param.orNest(condition, value);
+    public NestConditional<Delete> nest(String column, Object value) {
+        return new SimpleNestConditional<>(this, param.nest(column, value));
+    }
+
+    @Override
+    public NestConditional<Delete> orNest() {
+        return new SimpleNestConditional<>(this, param.orNest());
+    }
+
+    @Override
+    public NestConditional<Delete> orNest(String column, Object value) {
+        return new SimpleNestConditional<>(this, param.orNest(column, value));
     }
 
     @Override

@@ -8,6 +8,9 @@ import org.hsweb.ezorm.meta.expand.Validator;
 import org.hsweb.ezorm.param.Term;
 import org.hsweb.ezorm.param.UpdateParam;
 import org.hsweb.ezorm.render.SqlRender;
+import org.hsweb.ezorm.run.Delete;
+import org.hsweb.ezorm.run.NestConditional;
+import org.hsweb.ezorm.run.Query;
 import org.hsweb.ezorm.run.Update;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
@@ -22,9 +25,9 @@ import java.util.Map;
  */
 class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements Update<T> {
     private static final Logger logger = LoggerFactory.getLogger(Update.class);
-    private UpdateParam updateParam;
+    private UpdateParam    updateParam;
     private SimpleTable<T> table;
-    private SqlExecutor sqlExecutor;
+    private SqlExecutor    sqlExecutor;
 
     public SimpleUpdate(SimpleTable<T> table, SqlExecutor sqlExecutor) {
         this.table = table;
@@ -66,41 +69,54 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
     }
 
     @Override
-    public Update<T> where(String condition, Object value) {
-        updateParam.where(condition, value);
+    public Update<T> and(String condition, String termType, Object value) {
+        updateParam.and(condition, termType, value);
         return this;
     }
 
     @Override
-    public Update<T> and(String condition, Object value) {
-        updateParam.and(condition, value);
+    public Update<T> or(String condition, String termType, Object value) {
+        updateParam.or(condition, termType, value);
+        return this;
+    }
+
+    private Accepter accepter;
+
+    @Override
+    public Update<T> and() {
+        accepter = this::and;
         return this;
     }
 
     @Override
-    public Update<T> or(String condition, Object value) {
-        updateParam.or(condition, value);
+    public Update<T> or() {
+        accepter = this::or;
         return this;
     }
 
     @Override
-    public Term nest() {
-        return updateParam.nest();
+    public Accepter getAccepter() {
+        return accepter;
     }
 
     @Override
-    public Term nest(String condition, Object value) {
-        return updateParam.nest(condition, value);
+    public NestConditional<Update<T>> nest() {
+        return new SimpleNestConditional<>(this, updateParam.nest());
     }
 
     @Override
-    public Term orNest() {
-        return updateParam.orNest();
+    public NestConditional<Update<T>> nest(String column, Object value) {
+        return new SimpleNestConditional<>(this, updateParam.nest(column, value));
     }
 
     @Override
-    public Term orNest(String condition, Object value) {
-        return updateParam.orNest(condition, value);
+    public NestConditional<Update<T>> orNest() {
+        return new SimpleNestConditional<>(this, updateParam.orNest());
+    }
+
+    @Override
+    public NestConditional<Update<T>> orNest(String column, Object value) {
+        return new SimpleNestConditional<>(this, updateParam.orNest(column, value));
     }
 
     @Override

@@ -37,8 +37,8 @@ public abstract class SimpleWhereSqlBuilder {
         String prefixTmp = StringUtils.concat(prefix, StringUtils.isNullOrEmpty(prefix) ? "" : ".");
         for (Term term : terms) {
             index++;
-            boolean nullTerm = StringUtils.isNullOrEmpty(term.getField());
-            ColumnMetaData field = metaData.findColumnByName(term.getField());
+            boolean nullTerm = StringUtils.isNullOrEmpty(term.getColumn());
+            ColumnMetaData field = metaData.findColumnByName(term.getColumn());
             //不是空条件 也不是可选字段
             if (!nullTerm && field == null && term.getTermType() != TermType.func) continue;
             //不是空条件，值为空
@@ -47,7 +47,7 @@ public abstract class SimpleWhereSqlBuilder {
             if (nullTerm && term.getTerms().isEmpty()) continue;
             String tableAlias = null;
             if (field != null) {
-                tableAlias = getTableAlias(metaData, term.getField());
+                tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
                 //转换参数的值
                 term.setValue(transformationValue(field.getJdbcType(), term.getValue(), term.getTermType()));

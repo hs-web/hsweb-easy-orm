@@ -4,11 +4,9 @@ import org.hsweb.ezorm.meta.TableMetaData;
 import org.hsweb.ezorm.meta.expand.Validator;
 import org.hsweb.ezorm.run.TriggerSkipSupport;
 
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by zhouhao on 16-6-5.
- */
 public abstract class ValidatorAndTriggerSupport<O> implements TriggerSkipSupport<O> {
     protected boolean triggerSkip = false;
 

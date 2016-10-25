@@ -1,21 +1,35 @@
 package org.hsweb.ezorm.param;
 
 /**
- * Created by zhouhao on 16-5-14.
+ * 排序
+ *
+ * @author zhouhao
+ * @since 1.0
  */
 public class Sort<Q extends QueryParam> {
-    private String field;
+    @Deprecated
+    private String name;
+
+    /**
+     * 自定义列
+     *
+     * @see this#name
+     * @since 1.1
+     */
+    private Column column;
 
     private String dir = "asc";
 
     private transient Q queryParam;
 
-    public String getField() {
-        return field;
+    @Deprecated
+    public String getName() {
+        return name;
     }
 
-    public void setField(String field) {
-        this.field = field;
+    @Deprecated
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDir() {
@@ -29,13 +43,30 @@ public class Sort<Q extends QueryParam> {
     public Sort() {
     }
 
-    public Sort(Q queryParam, String field) {
+    @Deprecated
+    public Sort(Q queryParam, String name) {
         this.queryParam = queryParam;
-        this.field = field;
+        this.name = name;
     }
 
-    public Sort(String field) {
-        this.field = field;
+    public Sort(Q queryParam, Column column) {
+        this.queryParam = queryParam;
+        this.column = column;
+    }
+
+    public Column getColumn() {
+        if (column == null) {
+            column = Column.build(getName());
+        }
+        return column;
+    }
+
+    public void setColumn(Column column) {
+        this.column = column;
+    }
+
+    public Sort(String name) {
+        this.name = name;
     }
 
     public Q asc() {
@@ -54,7 +85,7 @@ public class Sort<Q extends QueryParam> {
 
     @Override
     public int hashCode() {
-        return String.valueOf(field).concat(dir).hashCode();
+        return String.valueOf(name).concat(dir).hashCode();
     }
 
     @Override
@@ -62,4 +93,5 @@ public class Sort<Q extends QueryParam> {
         if (obj == null) return false;
         return this.hashCode() == obj.hashCode();
     }
+
 }

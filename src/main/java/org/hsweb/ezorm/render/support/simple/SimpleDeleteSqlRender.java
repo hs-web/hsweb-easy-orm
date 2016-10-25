@@ -27,7 +27,7 @@ public class SimpleDeleteSqlRender extends CommonSqlRender<SqlParam> {
             this.metaData = metaData;
             this.param = param;
             List<Term> terms = param.getTerms();
-            terms = terms.stream().filter(term -> !term.getField().contains(".")).collect(Collectors.toList());
+            terms = terms.stream().filter(term -> !term.getColumn().contains(".")).collect(Collectors.toList());
             param.setTerms(terms);
             //解析查询条件
             buildWhere(metaData, "", terms, whereSql, new HashSet<>());

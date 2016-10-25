@@ -21,7 +21,7 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
         terms = new ArrayList<>();
         Term term = new Term();
         term.setTermType(TermType.func);
-        term.setField(condition);
+        term.setColumn(condition);
         term.setValue(condition);
         terms.add(term);
     }
