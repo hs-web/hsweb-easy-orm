@@ -19,6 +19,7 @@ package org.hsweb.ezorm.core;
 import org.hsweb.ezorm.core.param.TermType;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public interface Conditional<T extends Conditional> extends TermTypeConditionalSupport {
 
@@ -80,6 +81,14 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return accept(column, TermType.in, value);
     }
 
+    default T in(String column, Object... values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default T in(String column, Collection values) {
+        return accept(column, TermType.in, values);
+    }
+
     default T notIn(String column, Object value) {
         return accept(column, TermType.nin, value);
     }
@@ -88,8 +97,16 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return accept(column, TermType.empty, 1);
     }
 
+    default T notEmpty(String column) {
+        return accept(column, TermType.nempty, 1);
+    }
+
     default T isNull(String column) {
         return accept(column, TermType.isnull, 1);
+    }
+
+    default T notNull(String column) {
+        return accept(column, TermType.notnull, 1);
     }
 
     default T not(String column, Object value) {

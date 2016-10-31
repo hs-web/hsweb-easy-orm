@@ -3,6 +3,7 @@ package org.hsweb.ezorm.core;
 import org.hsweb.ezorm.core.param.TermType;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public interface NestConditional<T extends TermTypeConditionalSupport> extends TermTypeConditionalSupport {
 
@@ -58,8 +59,16 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
         return accept(column, TermType.lte, value);
     }
 
+    default NestConditional<T> in(String column, Object... values) {
+        return accept(column, TermType.in, values);
+    }
+
     default NestConditional<T> in(String column, Object value) {
         return accept(column, TermType.in, value);
+    }
+
+    default NestConditional<T> in(String column, Collection values) {
+        return accept(column, TermType.in, values);
     }
 
     default NestConditional<T> notIn(String column, Object value) {
@@ -70,8 +79,16 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
         return accept(column, TermType.empty, 1);
     }
 
+    default NestConditional<T> notEmpty(String column) {
+        return accept(column, TermType.nempty, 1);
+    }
+
     default NestConditional<T> isNull(String column) {
         return accept(column, TermType.isnull, 1);
+    }
+
+    default NestConditional<T> notNull(String column) {
+        return accept(column, TermType.notnull, 1);
     }
 
     default NestConditional<T> not(String column, Object value) {

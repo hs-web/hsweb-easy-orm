@@ -20,6 +20,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
+import org.hsweb.ezorm.core.param.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +82,6 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
     public SQLInfo compileSql(SQL sql) {
         SQLInfo sqlInfo = new SQLInfo();
         String sqlTemplate = sql.getSql();
-        String loggerSql = sqlTemplate;
         Object param = sql.getParams();
         Matcher prepared_matcher = PREPARED_PATTERN.matcher(sqlTemplate);
         Matcher append_matcher = APPEND_PATTERN.matcher(sqlTemplate);
@@ -92,11 +92,14 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             Object obj = null;
             try {
                 obj = propertyUtils.getProperty(param, group);
+                if (obj instanceof Term)
+                    obj = ((Term) obj).getValue();
             } catch (Exception e) {
                 logger.error("");
             }
             sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), String.valueOf(obj));
         }
+        String loggerSql = sqlTemplate;
         //参数预编译sql
         while (prepared_matcher.find()) {
             String group = prepared_matcher.group();
@@ -104,6 +107,8 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             Object obj = null;
             try {
                 obj = propertyUtils.getProperty(param, group);
+                if (obj instanceof Term)
+                    obj = ((Term) obj).getValue();
             } catch (Exception e) {
                 logger.error("", e);
             }
@@ -183,7 +188,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
     protected void closeStatement(Statement statement) {
         try {
             if (null != statement)
-            statement.close();
+                statement.close();
         } catch (SQLException e) {
             logger.error("close ResultSet error", e);
         }

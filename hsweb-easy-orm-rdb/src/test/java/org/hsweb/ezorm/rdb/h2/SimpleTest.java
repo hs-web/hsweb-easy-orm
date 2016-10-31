@@ -54,7 +54,7 @@ public class SimpleTest {
                 table.createQuery().where("name", "1").and("name", "2")
                         .nest().nest()
                         .like("name", "3").like("name", "4").like("name", "5").end()
-                        .orNest().like("name", "6").like("name", "7").like("name", "8").end()
+                        .orNest().like("name", "6").like("name", "7").like("name", "8").end().or().in("age","1,2,3")
                         .end()
                         .and()
                         .between("age", 18, 28).list(0, 10);

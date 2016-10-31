@@ -1,6 +1,8 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
+import org.hsweb.commons.ClassUtils;
 import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.core.meta.ColumnMetaData;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
@@ -21,6 +23,8 @@ public abstract class DefaultDialect implements Dialect {
     protected Map<String, TermTypeMapper>   termTypeMappers       = new HashMap<>();
     protected Map<JDBCType, DataTypeMapper> dataTypeMappers       = new HashMap<>();
     protected DataTypeMapper                defaultDataTypeMapper = null;
+
+    static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
 
     public DefaultDialect() {
         //默认查询条件支持
@@ -52,7 +56,7 @@ public abstract class DefaultDialect implements Dialect {
                 new SqlAppender().add(term.getValue()).toString());
         termTypeMappers.put(TermType.btw, (wherePrefix, term, fieldMetaData, tableAlias) -> {
             SqlAppender sqlAppender = new SqlAppender();
-            List<Object> objects = param2list(term.getValue());
+            List<Object> objects = param2list(term.getValue(), fieldMetaData);
             if (objects.size() == 1)
                 objects.add(objects.get(0));
             term.setValue(objects);
@@ -64,7 +68,7 @@ public abstract class DefaultDialect implements Dialect {
         termTypeMappers.put(TermType.nbtw, (wherePrefix, term, fieldMetaData, tableAlias) ->
         {
             SqlAppender sqlAppender = new SqlAppender();
-            List<Object> objects = param2list(term.getValue());
+            List<Object> objects = param2list(term.getValue(), fieldMetaData);
             if (objects.size() == 1)
                 objects.add(objects.get(0));
             term.setValue(objects);
@@ -74,7 +78,7 @@ public abstract class DefaultDialect implements Dialect {
             return sqlAppender.toString();
         });
         termTypeMappers.put(TermType.in, (wherePrefix, term, fieldMetaData, tableAlias) -> {
-            List<Object> values = param2list(term.getValue());
+            List<Object> values = param2list(term.getValue(), fieldMetaData);
             term.setValue(values);
             SqlAppender appender = new SqlAppender();
             appender.add(tableAlias, ".").addSpc(fieldMetaData.getName()).add("IN(");
@@ -86,7 +90,7 @@ public abstract class DefaultDialect implements Dialect {
             return appender.toString();
         });
         termTypeMappers.put(TermType.nin, (wherePrefix, term, fieldMetaData, tableAlias) -> {
-            List<Object> values = param2list(term.getValue());
+            List<Object> values = param2list(term.getValue(), fieldMetaData);
             term.setValue(values);
             SqlAppender appender = new SqlAppender();
             appender.add(tableAlias, ".").addSpc(fieldMetaData.getName()).add("NOT IN(");
@@ -106,11 +110,10 @@ public abstract class DefaultDialect implements Dialect {
         return mapper.accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
     }
 
-    protected List<Object> param2list(Object value) {
+    protected List<Object> param2list(Object value, RDBColumnMetaData columnMetaData) {
         if (value == null) return new ArrayList<>();
         if (value instanceof List) return ((List) value);
         if (value instanceof Collection) return new ArrayList<>(((Collection) value));
-
         if (!(value instanceof Collection)) {
             if (value instanceof String) {
                 String[] arr = ((String) value).split("[, ;]");
@@ -118,10 +121,13 @@ public abstract class DefaultDialect implements Dialect {
                 for (int i = 0; i < arr.length; i++) {
                     String str = arr[i];
                     Object val = str;
-                    if (StringUtils.isInt(str))
-                        val = StringUtils.toInt(str);
-                    else if (StringUtils.isDouble(str))
-                        val = StringUtils.toDouble(str);
+                    //数字类型
+                    if (numberJdbcType.contains(columnMetaData.getJdbcType())) {
+                        if (StringUtils.isInt(str))
+                            val = StringUtils.toInt(str);
+                        else if (StringUtils.isDouble(str))
+                            val = StringUtils.toDouble(str);
+                    }
                     objArr[i] = val;
                 }
                 return Arrays.asList(objArr);
