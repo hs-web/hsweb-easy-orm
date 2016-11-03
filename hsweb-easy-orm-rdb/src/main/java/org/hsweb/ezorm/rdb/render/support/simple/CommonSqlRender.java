@@ -12,17 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by zhouhao on 16-6-4.
- */
 public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected class OperationField {
+    protected class OperationColumn {
         private String            tableName;
         private RDBColumnMetaData RDBColumnMetaData;
 
-        public OperationField(String tableName, RDBColumnMetaData RDBColumnMetaData) {
+        public OperationColumn(String tableName, RDBColumnMetaData RDBColumnMetaData) {
             this.tableName = tableName;
             this.RDBColumnMetaData = RDBColumnMetaData;
             if (tableName == null) this.tableName = RDBColumnMetaData.getTableMetaData().getAlias();
@@ -37,14 +34,14 @@ public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
         }
     }
 
-    protected List<OperationField> parseOperationField(RDBTableMetaData metaData, R param) {
+    protected List<OperationColumn> parseOperationField(RDBTableMetaData metaData, R param) {
         Set<String> includes = param.getIncludes(),
                 excludes = param.getExcludes();
         boolean includesIsEmpty = includes.isEmpty(),
                 excludesIsEmpty = excludes.isEmpty();
-        List<OperationField> tmp = new ArrayList<>();
+        List<OperationColumn> tmp = new ArrayList<>();
         if ((includesIsEmpty && excludesIsEmpty)) {
-            metaData.getColumns().forEach(field -> tmp.add(new OperationField(null, field)));
+            metaData.getColumns().forEach(column -> tmp.add(new OperationColumn(null, column)));
             return tmp;
         }
         //指定了exclude,没有指定include
@@ -64,51 +61,51 @@ public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
             includes.forEach(include -> {
                 if (excludes.contains(include)) return;
                 if ("*".equals(include)) {
-                    metaData.getColumns().forEach(field -> {
-                        if (excludes.contains(field.getAlias()) || excludes.contains(field.getName()))
+                    metaData.getColumns().forEach(column -> {
+                        if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
                             return;
-                        tmp.add(new OperationField(null, field));
+                        tmp.add(new OperationColumn(null, column));
                     });
                     return;
                 }
                 if (include.contains(".")) {
-                    String[] fieldInfo = include.split("[.]");
-                    RDBTableMetaData table = metaData.getDatabaseMetaData().getTable(fieldInfo[0]);
+                    String[] columnInfo = include.split("[.]");
+                    RDBTableMetaData table = metaData.getDatabaseMetaData().getTableMetaData(columnInfo[0]);
                     String tname = null;
                     if (null == table) {
-                        Correlation correlation = metaData.getCorrelation(fieldInfo[0]);
-                        if (correlation != null){
-                            table = metaData.getDatabaseMetaData().getTable(correlation.getTargetTable());
+                        Correlation correlation = metaData.getCorrelation(columnInfo[0]);
+                        if (correlation != null) {
+                            table = metaData.getDatabaseMetaData().getTableMetaData(correlation.getTargetTable());
                             tname = correlation.getAlias();
                         }
                     } else {
                         tname = table.getAlias();
                     }
                     if (null == table) return;
-                    if (fieldInfo[1].equals("*")) {
+                    if (columnInfo[1].equals("*")) {
                         String finalName = tname;
-                        table.getColumns().forEach(field -> {
-                            if (excludes.contains(field.getFullAliasName()) || excludes.contains(field.getFullName())
-                                    || excludes.contains(finalName + "." + field.getName())
-                                    || excludes.contains(finalName + "." + field.getAlias()))
+                        table.getColumns().forEach(column -> {
+                            if (excludes.contains(column.getFullAliasName()) || excludes.contains(column.getFullName())
+                                    || excludes.contains(finalName + "." + column.getName())
+                                    || excludes.contains(finalName + "." + column.getAlias()))
                                 return;
-                            tmp.add(new OperationField(finalName, field));
+                            tmp.add(new OperationColumn(finalName, column));
                         });
                         return;
                     } else {
-                        RDBColumnMetaData field = metaData.findColumn(include);
-                        if (null != field) {
-                            if (excludes.contains(field.getFullAliasName()) || excludes.contains(field.getFullName()))
+                        RDBColumnMetaData column = metaData.findColumn(include);
+                        if (null != column) {
+                            if (excludes.contains(column.getFullAliasName()) || excludes.contains(column.getFullName()))
                                 return;
-                            tmp.add(new OperationField(tname, field));
+                            tmp.add(new OperationColumn(tname, column));
                         }
                     }
                 } else {
-                    RDBColumnMetaData field = metaData.findColumn(include);
-                    if (null != field) {
-                        if (excludes.contains(field.getAlias()) || excludes.contains(field.getName()))
+                    RDBColumnMetaData column = metaData.findColumn(include);
+                    if (null != column) {
+                        if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
                             return;
-                        tmp.add(new OperationField(field.getTableMetaData().getAlias(), field));
+                        tmp.add(new OperationColumn(column.getTableMetaData().getAlias(), column));
                     }
                 }
             });

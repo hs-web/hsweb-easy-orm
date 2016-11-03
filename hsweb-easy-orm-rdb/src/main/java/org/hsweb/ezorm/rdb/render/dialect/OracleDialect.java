@@ -5,7 +5,7 @@ import org.hsweb.commons.StringUtils;
 import java.sql.JDBCType;
 
 public class OracleDialect extends DefaultDialect {
-    public OracleDialect() {
+    protected OracleDialect() {
         setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar2(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");

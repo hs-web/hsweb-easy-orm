@@ -1,10 +1,10 @@
-package org.hsweb.ezorm.rdb.run.simple.wrapper;
+package org.hsweb.ezorm.rdb.simple.wrapper;
 
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.core.Trigger;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
-import org.hsweb.ezorm.rdb.run.RDBDatabase;
-import org.hsweb.ezorm.rdb.run.RDBTable;
+import org.hsweb.ezorm.rdb.RDBDatabase;
+import org.hsweb.ezorm.rdb.RDBTable;
 
 import java.util.HashMap;
 import java.util.Map;

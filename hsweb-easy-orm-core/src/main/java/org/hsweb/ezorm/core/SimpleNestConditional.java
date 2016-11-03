@@ -1,7 +1,5 @@
-package org.hsweb.ezorm.rdb.run.simple;
+package org.hsweb.ezorm.core;
 
-import org.hsweb.ezorm.core.NestConditional;
-import org.hsweb.ezorm.core.TermTypeConditionalSupport;
 import org.hsweb.ezorm.core.param.Term;
 
 public class SimpleNestConditional<T extends TermTypeConditionalSupport> implements NestConditional<T> {

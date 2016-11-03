@@ -11,5 +11,11 @@
 
     <artifactId>hsweb-easy-orm-core</artifactId>
 
-    
+    <dependencies>
+        <dependency>
+            <groupId>org.hsweb</groupId>
+            <artifactId>hsweb-commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

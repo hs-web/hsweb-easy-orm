@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hsweb.ezorm.rdb.run.simple.wrapper;
+package org.hsweb.ezorm.rdb.simple.wrapper;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;

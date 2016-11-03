@@ -6,7 +6,7 @@ import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.core.param.Sort;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.util.*;
@@ -31,9 +31,9 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
     }
 
     class SimpleSelectSqlRenderProcess extends SimpleWhereSqlBuilder {
-        private RDBTableMetaData     metaData;
-        private QueryParam           param;
-        private List<OperationField> selectField;
+        private RDBTableMetaData      metaData;
+        private QueryParam            param;
+        private List<OperationColumn> selectField;
         private SqlAppender whereSql        = new SqlAppender();
         private Set<String> needSelectTable = new LinkedHashSet<>();
         private List<Sort>  sorts           = new ArrayList<>();
@@ -59,7 +59,7 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 if (rDBColumnMetaData.getName() == null) return;
                 String tableName = getTableAlias(metaData, sort.getName());
                 needSelectTable.add(tableName);
-                sort.setName(getDialect().createColumnName(tableName, rDBColumnMetaData.getName()));
+                sort.setName(getDialect().buildColumnName(tableName, rDBColumnMetaData.getName()));
                 sorts.add(sort);
             });
         }
@@ -68,12 +68,12 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
             SqlAppender appender = new SqlAppender();
             appender.add("SELECT ");
             if (selectField.isEmpty()) appender.add(" * ");
-            selectField.forEach(operationField -> {
-                RDBColumnMetaData rDBColumnMetaData = operationField.getRDBColumnMetaData();
+            selectField.forEach(operationColumn -> {
+                RDBColumnMetaData rDBColumnMetaData = operationColumn.getRDBColumnMetaData();
                 String tableName = rDBColumnMetaData.getTableMetaData().getName();
                 Correlation correlation = metaData.getCorrelation(tableName);
                 if (correlation == null) {
-                    appender.add(getDialect().createColumnName(operationField.getTableName(), rDBColumnMetaData.getName())
+                    appender.add(getDialect().buildColumnName(operationColumn.getTableName(), rDBColumnMetaData.getName())
                             , " AS "
                             , dialect.getQuoteStart()
                             , rDBColumnMetaData.getAlias()
@@ -81,10 +81,10 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 } else {
                     //关联的另外一张表
                     if (correlation.isOne2one()) {
-                        appender.add(getDialect().createColumnName(operationField.getTableName(), rDBColumnMetaData.getName())
+                        appender.add(getDialect().buildColumnName(operationColumn.getTableName(), rDBColumnMetaData.getName())
                                 , " AS "
                                 , dialect.getQuoteStart()
-                                , operationField.getTableName(), ".", rDBColumnMetaData.getAlias()
+                                , operationColumn.getTableName(), ".", rDBColumnMetaData.getAlias()
                                 , dialect.getQuoteEnd());
                     }
                 }
@@ -100,7 +100,7 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                     .forEach(correlation -> {
                         appender.addSpc("", correlation.getJoin(), correlation.getTargetTable(), correlation.getAlias(), "ON");
                         SqlAppender joinOn = new SqlAppender();
-                        buildWhere(metaData.getDatabaseMetaData().getTable(correlation.getTargetTable()), "", correlation.getTerms(), joinOn, new HashSet());
+                        buildWhere(metaData.getDatabaseMetaData().getTableMetaData(correlation.getTargetTable()), "", correlation.getTerms(), joinOn, new HashSet());
                         if (!joinOn.isEmpty()) joinOn.removeFirst();
                         appender.addAll(joinOn);
                     });

@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run.simple.wrapper;
+package org.hsweb.ezorm.rdb.simple.wrapper;
 
 import org.hsweb.ezorm.core.OptionConverter;
 import org.hsweb.ezorm.core.ValueConverter;

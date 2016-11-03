@@ -8,7 +8,7 @@ import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
 import java.sql.JDBCType;
 
 public class H2Dialect extends DefaultDialect {
-    public H2Dialect() {
+    protected H2Dialect() {
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         setDataTypeMapper(JDBCType.TIME, (meta) -> "timestamp");

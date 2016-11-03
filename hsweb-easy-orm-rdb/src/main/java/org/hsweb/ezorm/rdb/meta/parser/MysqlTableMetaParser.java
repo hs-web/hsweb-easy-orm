@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.dialect.MysqlDialect;
 
 import java.sql.JDBCType;
@@ -26,8 +26,6 @@ public class MysqlTableMetaParser extends AbstractTableMetaParser {
 
     String ALL_TABLE_SQL = "select table_name as `name` from information_schema.`TABLES` where table_schema=database()";
 
-    Dialect dialect = new MysqlDialect();
-
     public MysqlTableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
         jdbcTypeMap.put("int", JDBCType.INTEGER);
@@ -38,7 +36,7 @@ public class MysqlTableMetaParser extends AbstractTableMetaParser {
 
     @Override
     Dialect getDialect() {
-        return dialect;
+        return Dialect.MYSQL;
     }
 
     @Override

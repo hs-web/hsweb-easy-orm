@@ -3,7 +3,7 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.core.param.QueryParam;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.util.*;
@@ -54,7 +54,7 @@ public class SimpleSelectTotalSqlRender extends CommonSqlRender<QueryParam> {
                     .forEach(correlation -> {
                         appender.addSpc("", correlation.getJoin(), correlation.getTargetTable(), correlation.getAlias(), "ON");
                         SqlAppender joinOn = new SqlAppender();
-                        buildWhere(metaData.getDatabaseMetaData().getTable(correlation.getTargetTable()), "", correlation.getTerms(), joinOn, new HashSet());
+                        buildWhere(metaData.getDatabaseMetaData().getTableMetaData(correlation.getTargetTable()), "", correlation.getTerms(), joinOn, new HashSet());
                         if (!joinOn.isEmpty()) joinOn.removeFirst();
                         appender.addAll(joinOn);
                     });

@@ -1,7 +1,8 @@
-package org.hsweb.ezorm.rdb.run.simple;
+package org.hsweb.ezorm.rdb.simple;
 
 import org.hsweb.ezorm.core.Delete;
 import org.hsweb.ezorm.core.NestConditional;
+import org.hsweb.ezorm.core.SimpleNestConditional;
 import org.hsweb.ezorm.core.Trigger;
 import org.hsweb.ezorm.core.param.Param;
 import org.hsweb.ezorm.rdb.executor.SQL;

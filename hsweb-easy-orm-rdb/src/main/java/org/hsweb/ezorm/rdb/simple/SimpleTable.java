@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run.simple;
+package org.hsweb.ezorm.rdb.simple;
 
 import org.hsweb.ezorm.core.Delete;
 import org.hsweb.ezorm.core.Insert;
@@ -6,8 +6,8 @@ import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.core.Update;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
-import org.hsweb.ezorm.rdb.run.RDBQuery;
-import org.hsweb.ezorm.rdb.run.RDBTable;
+import org.hsweb.ezorm.rdb.RDBQuery;
+import org.hsweb.ezorm.rdb.RDBTable;
 
 /**
  * Created by zhouhao on 16-6-4.

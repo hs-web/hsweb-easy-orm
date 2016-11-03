@@ -1,8 +1,7 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
-import org.hsweb.ezorm.rdb.render.Dialect;
-import org.hsweb.ezorm.rdb.render.dialect.H2Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
 public class H2TableMetaParser extends AbstractTableMetaParser {
     static final String TABLE_META_SQL    =
@@ -22,8 +21,6 @@ public class H2TableMetaParser extends AbstractTableMetaParser {
             "select table_name as \"name\" " +
                     "FROM information_schema.tables where table_type='TABLE'";
 
-    private Dialect dialect = new H2Dialect();
-
     public H2TableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
 
@@ -36,7 +33,7 @@ public class H2TableMetaParser extends AbstractTableMetaParser {
 
     @Override
     Dialect getDialect() {
-        return dialect;
+        return Dialect.H2;
     }
 
     @Override

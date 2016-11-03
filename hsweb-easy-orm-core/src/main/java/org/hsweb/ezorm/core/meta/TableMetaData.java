@@ -4,18 +4,21 @@ import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.core.PropertyWrapper;
 import org.hsweb.ezorm.core.Trigger;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * @author zhouhao
  */
-public interface TableMetaData {
+public interface TableMetaData extends Serializable {
     String getName();
 
     String getComment();
 
-    <T extends DatabaseMetaData> T getDatabase();
+    String getAlias();
+
+    <T extends DatabaseMetaData> T getDatabaseMetaData();
 
     <T extends ColumnMetaData> Set<T> getColumns();
 

@@ -5,7 +5,7 @@ import org.hsweb.ezorm.rdb.render.support.mysql.MysqlDeleteSqlRender;
 import org.hsweb.ezorm.rdb.render.support.mysql.MysqlMetaAlterRender;
 import org.hsweb.ezorm.rdb.render.support.mysql.MysqlMetaCreateRender;
 
-public class MysqlDatabaseMeta extends AbstractDatabaseMeta {
+public class MysqlRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     private static final String DEFAULT_NAME = "mysql";
 
     private String name;
@@ -18,8 +18,8 @@ public class MysqlDatabaseMeta extends AbstractDatabaseMeta {
         renderMap.put(SqlRender.TYPE.META_ALTER, new MysqlMetaAlterRender(this));
     }
 
-    public MysqlDatabaseMeta() {
-        super(new MysqlDialect());
+    public MysqlRDBDatabaseMetaData() {
+        super(Dialect.MYSQL);
         name = DEFAULT_NAME;
         init();
     }

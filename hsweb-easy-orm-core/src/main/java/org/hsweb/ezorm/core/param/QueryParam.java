@@ -35,13 +35,6 @@ public class QueryParam extends Param implements Serializable, Cloneable {
      */
     private List<Sort> sorts = new LinkedList<>();
 
-    /**
-     * 自定义列,指定此数据时,includes失效
-     *
-     * @see this#includes
-     * @since 1.1
-     */
-    private List<Column> columns = new LinkedList<>();
 
     private boolean forUpdate = false;
 
@@ -118,15 +111,6 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         return forUpdate;
     }
 
-    public List<Column> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<Column> columns) {
-        this.columns = columns;
-    }
-
-
     @Override
     public QueryParam clone() {
         QueryParam sqlParam = new QueryParam();
@@ -139,7 +123,6 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         sqlParam.setPaging(paging);
         sqlParam.setSorts(sorts);
         sqlParam.setForUpdate(forUpdate);
-        sqlParam.setColumns(columns);
         return sqlParam;
     }
 }

@@ -6,7 +6,7 @@ import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.expand.SimpleMapWrapper;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
 
 import java.sql.JDBCType;

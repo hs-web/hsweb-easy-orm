@@ -7,7 +7,7 @@ import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.TermType;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.sql.JDBCType;
@@ -15,9 +15,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by zhouhao on 16-5-17.
- */
 public abstract class SimpleWhereSqlBuilder {
 
     protected String getTableAlias(RDBTableMetaData metaData, String field) {
@@ -71,12 +68,12 @@ public abstract class SimpleWhereSqlBuilder {
                 }
                 appender.add("(");
                 if (!nullTerm)
-                    appender.add(getDialect().wrapperWhere(prefix, term, field, tableAlias));
+                    appender.add(getDialect().buildCondition(prefix, term, field, tableAlias));
                 appender.addAll(nest);
                 appender.add(")");
             } else {
                 if (!nullTerm)
-                    appender.add(getDialect().wrapperWhere(prefix, term, field, tableAlias));
+                    appender.add(getDialect().buildCondition(prefix, term, field, tableAlias));
             }
         }
     }

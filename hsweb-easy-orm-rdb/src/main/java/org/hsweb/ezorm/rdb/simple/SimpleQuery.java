@@ -1,17 +1,14 @@
-package org.hsweb.ezorm.rdb.run.simple;
+package org.hsweb.ezorm.rdb.simple;
 
 import org.hsweb.commons.StringUtils;
-import org.hsweb.ezorm.core.NestConditional;
-import org.hsweb.ezorm.core.ObjectWrapper;
-import org.hsweb.ezorm.core.Query;
-import org.hsweb.ezorm.core.Trigger;
+import org.hsweb.ezorm.core.*;
 import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlRender;
-import org.hsweb.ezorm.rdb.run.RDBQuery;
-import org.hsweb.ezorm.rdb.run.simple.wrapper.TriggerWrapper;
+import org.hsweb.ezorm.rdb.RDBQuery;
+import org.hsweb.ezorm.rdb.simple.wrapper.TriggerWrapper;
 
 import java.sql.SQLException;
 import java.util.List;

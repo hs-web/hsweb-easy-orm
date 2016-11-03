@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run;
+package org.hsweb.ezorm.rdb;
 
 import org.hsweb.ezorm.core.Database;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;

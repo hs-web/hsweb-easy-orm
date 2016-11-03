@@ -4,7 +4,7 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.core.param.Param;
 import org.hsweb.ezorm.core.param.Term;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.util.*;

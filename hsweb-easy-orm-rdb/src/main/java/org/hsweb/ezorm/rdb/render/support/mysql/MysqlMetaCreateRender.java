@@ -22,21 +22,22 @@ public class MysqlMetaCreateRender implements SqlRender {
         appender.add("\nCREATE TABLE ", metaData.getName(), "(");
         RDBColumnMetaDatas.forEach(fieldMetaData -> {
             appender.add("\n\t`", fieldMetaData.getName(), "` ").add(fieldMetaData.getDataType());
-            if (fieldMetaData.getProperty("not-null", false).isTrue()) {
-                appender.add(" not null ");
+            if (fieldMetaData.isNotNull()) {
+                appender.add(" not null");
+            }
+            if (fieldMetaData.isPrimaryKey()) {
+                appender.add(" primary key");
             }
             //注释
             if (!StringUtils.isNullOrEmpty(fieldMetaData.getComment())) {
                 appender.add(String.format(" COMMENT '%s'", fieldMetaData.getComment()));
-            } else {
-                appender.add(String.format(" COMMENT '%s%s'", "列:", fieldMetaData.getAlias()));
             }
             appender.add(",");
         });
         appender.removeLast();
         if (!metaData.getPrimaryKeys().isEmpty()) {
             appender.add(",", "\n\tprimary key (");
-            metaData.getPrimaryKeys().forEach(pk -> appender.add("`", pk, "`",","));
+            metaData.getPrimaryKeys().forEach(pk -> appender.add("`", pk, "`", ","));
             appender.removeLast();
             appender.addEdSpc(")");
         }
@@ -44,6 +45,6 @@ public class MysqlMetaCreateRender implements SqlRender {
         if (metaData.getComment() != null) {
             appender.add("COMMENT=", "'", metaData.getComment(), "'");
         }
-        return new SimpleSQL( appender.toString(), param);
+        return new SimpleSQL(appender.toString(), param);
     }
 }

@@ -31,7 +31,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
 
     @Override
     public SQL render(RDBTableMetaData metaData, Boolean executeRemove) {
-        RDBTableMetaData old = databaseMetaData.getTable(metaData.getName());
+        RDBTableMetaData old = databaseMetaData.getTableMetaData(metaData.getName());
         if (old == null) throw new UnsupportedOperationException("旧表不存在!");
         List<RDBColumnMetaData> changedField = new ArrayList<>();
         List<RDBColumnMetaData> addedField = new ArrayList<>();
@@ -44,7 +44,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 if (newMeta == null) {
                     try {
                         newMeta = metaData.getColumns().stream()
-                                .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
+                                .filter(columnMetaData -> oldField.getName().equals(columnMetaData.getProperty("old-name").getValue()))
                                 .findFirst().get();
                     } catch (NoSuchElementException e) {
                     }
@@ -65,7 +65,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 if (!newField.getName().equals(oldField.getName()) ||
                         !newField.getDataType().equals(oldField.getDataType())
                         || !newField.getComment().equals(oldField.getComment())
-                        || oldField.getProperty("not-null", false).getValue() != newField.getProperty("not-null", false).getValue()) {
+                        || oldField.isNotNull() != newField.isNotNull()) {
                     changedField.add(newField);
                 }
             }
@@ -82,66 +82,68 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         if (addedField.isEmpty() && changedField.isEmpty() && deletedField.isEmpty() && comments.isEmpty()) {
             return new EmptySQL();
         }
-        addedField.forEach(field -> {
+        addedField.forEach(column -> {
             SqlAppender append = new SqlAppender();
-            append.add("ALTER TABLE ", metaData.getName(), " ADD ", field.getName(), " ", field.getDataType());
-            if (field.getProperty("not-null").isTrue()) {
+            append.add("ALTER TABLE ", metaData.getName(), " ADD ", column.getName(), " ", column.getDataType());
+            if (column.isNotNull()) {
                 append.add(" NOT NULL");
             }
-            if (StringUtils.isNullOrEmpty(field.getComment())) {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
+            if (StringUtils.isNullOrEmpty(column.getComment())) {
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), column.getName(), column.getAlias()));
             } else {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), field.getName(), field.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), column.getName(), column.getComment()));
             }
-            SimpleSQL simpleSQL = new SimpleSQL(append.toString(), field);
+            SimpleSQL simpleSQL = new SimpleSQL(append.toString(), column);
             BindSQL bindSQL = new BindSQL();
             bindSQL.setSql(simpleSQL);
-            bindSQL.setToField(field.getName());
+            bindSQL.setToField(column.getName());
             bind.add(bindSQL);
         });
-        changedField.forEach(field -> {
-            String oldName = field.getProperty("old-name").getValue();
-            if (oldName == null) oldName = field.getName();
-            RDBColumnMetaData oldField = oldMeta.findColumn(oldName);
-            if (!oldName.equals(field.getName())) {
+        changedField.forEach(column -> {
+            String oldName = column.getProperty("old-name").getValue();
+            if (oldName == null) oldName = column.getName();
+            RDBColumnMetaData oldColumn = oldMeta.findColumn(oldName);
+            if (!oldName.equals(column.getName())) {
                 SqlAppender renameSql = new SqlAppender();
-                renameSql.add("ALTER TABLE ", metaData.getName(), " RENAME COLUMN ", oldName, " TO ", field.getName());
+                renameSql.add("ALTER TABLE ", metaData.getName(), " RENAME COLUMN ", oldName, " TO ", column.getName());
                 BindSQL bindSQL = new BindSQL();
                 bindSQL.setSql(new SimpleSQL(renameSql.toString()));
                 bind.add(bindSQL);
-                metaData.renameColumn(oldName, field.getName());
+                metaData.renameColumn(oldName, column.getName());
             }
-            if (!oldField.getDataType().equals(field.getDataType())
-                    || oldField.getProperty("not-null").getValue() != field.getProperty("not-null").getValue()) {
+            if (!oldColumn.getDataType().equals(column.getDataType())
+                    || oldColumn.isNotNull() != column.isNotNull()) {
                 SqlAppender append = new SqlAppender();
-                append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", field.getName(), " ", field.getDataType());
-                if (field.getProperty("not-null").isTrue()) {
+                append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", column.getName(), " ", column.getDataType());
+                if (column.isNotNull()) {
                     append.add(" NOT NULL");
+                } else {
+                    append.add(" NULL");
                 }
-                SimpleSQL simpleSQL = new SimpleSQL(append.toString(), field);
+                SimpleSQL simpleSQL = new SimpleSQL(append.toString(), column);
                 BindSQL bindSQL = new BindSQL();
                 bindSQL.setSql(simpleSQL);
-                bindSQL.setToField(field.getName());
+                bindSQL.setToField(column.getName());
                 bind.add(bindSQL);
             }
-            String nc = field.getComment();
-            String oc = oldField.getComment();
+            String nc = column.getComment();
+            String oc = oldColumn.getComment();
             if (nc == null) nc = "";
             if (oc == null) oc = "";
             if (nc.equals(oc)) return;
 
             if (StringUtils.isNullOrEmpty(nc)) {
-                comments.add(String.format("comment on column %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
+//                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), column.getName(), column.getAlias()));
             } else {
-                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), field.getName(), nc));
+                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), column.getName(), nc));
             }
         });
-        deletedField.forEach(field -> {
-            String dropSql = String.format("ALTER TABLE %s DROP COLUMN %s", metaData.getName(), field.getName());
-            SimpleSQL simpleSQL = new SimpleSQL(dropSql, field);
+        deletedField.forEach(column -> {
+            String dropSql = String.format("ALTER TABLE %s DROP COLUMN %s", metaData.getName(), column.getName());
+            SimpleSQL simpleSQL = new SimpleSQL(dropSql, column);
             BindSQL bindSQL = new BindSQL();
             bindSQL.setSql(simpleSQL);
-            bindSQL.setToField(field.getName());
+            bindSQL.setToField(column.getName());
             bind.add(bindSQL);
         });
         LinkedList<BindSQL> commentSql = new LinkedList<>(comments.stream().map(s -> {

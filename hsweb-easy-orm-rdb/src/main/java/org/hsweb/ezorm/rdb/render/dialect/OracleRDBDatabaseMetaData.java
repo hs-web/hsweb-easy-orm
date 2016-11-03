@@ -4,14 +4,13 @@ import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.render.support.oracle.OracleMetaAlterRender;
 import org.hsweb.ezorm.rdb.render.support.oracle.OracleMetaCreateRender;
 
-public class OracleDatabaseMeta extends AbstractDatabaseMeta {
+public class OracleRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     private static final String DEFAULT_NAME = "oracle";
 
     private String name;
 
-
-    public OracleDatabaseMeta() {
-        super(new OracleDialect());
+    public OracleRDBDatabaseMetaData() {
+        super(Dialect.ORACLE);
         name = DEFAULT_NAME;
         init();
     }

@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run.simple.trigger;
+package org.hsweb.ezorm.rdb.simple.trigger;
 
 import org.hsweb.commons.StringUtils;
 import org.hsweb.expands.script.engine.DynamicScriptEngine;

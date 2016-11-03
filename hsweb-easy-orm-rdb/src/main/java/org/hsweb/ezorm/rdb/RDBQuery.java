@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run;
+package org.hsweb.ezorm.rdb;
 
 import org.hsweb.ezorm.core.Query;
 import org.hsweb.ezorm.core.param.QueryParam;

@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run.simple;
+package org.hsweb.ezorm.rdb.simple;
 
 import org.hsweb.ezorm.core.Insert;
 import org.hsweb.ezorm.core.Trigger;

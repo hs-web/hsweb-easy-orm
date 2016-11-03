@@ -1,4 +1,4 @@
-package org.hsweb.ezorm.rdb.run.simple;
+package org.hsweb.ezorm.rdb.simple;
 
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.core.ObjectWrapperFactory;
@@ -9,10 +9,9 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.builder.TableBuilder;
 import org.hsweb.ezorm.rdb.meta.builder.simple.SimpleTableBuilder;
 import org.hsweb.ezorm.rdb.render.SqlRender;
-import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
-import org.hsweb.ezorm.rdb.run.RDBDatabase;
-import org.hsweb.ezorm.rdb.run.RDBTable;
-import org.hsweb.ezorm.rdb.run.simple.wrapper.AdvancedMapWrapper;
+import org.hsweb.ezorm.rdb.RDBDatabase;
+import org.hsweb.ezorm.rdb.RDBTable;
+import org.hsweb.ezorm.rdb.simple.wrapper.AdvancedMapWrapper;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ public class SimpleDatabase implements RDBDatabase {
     @Override
     public <T> RDBTable<T> getTable(String name) {
         RDBTable table;
-        RDBTableMetaData tableMetaData = metaData.getTable(name);
+        RDBTableMetaData tableMetaData = metaData.getTableMetaData(name);
         if (tableMetaData == null) {
             if (metaData.getParser() != null)
                 tableMetaData = metaData.getParser().parse(name);
@@ -120,7 +119,8 @@ public class SimpleDatabase implements RDBDatabase {
     public boolean removeTable(String name) {
         try {
             readWriteLock.writeLock().lock();
-            return metaData.remove(name) != null;
+            metaData.removeTable(name);
+            return true;
         } finally {
             readWriteLock.writeLock().unlock();
         }

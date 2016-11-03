@@ -29,7 +29,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
 
     @Override
     public SQL render(RDBTableMetaData metaData, Boolean executeRemove) {
-        RDBTableMetaData old = databaseMetaData.getTable(metaData.getName());
+        RDBTableMetaData old = databaseMetaData.getTableMetaData(metaData.getName());
         if (old == null) throw new UnsupportedOperationException("旧表不存在!");
         List<RDBColumnMetaData> changedField = new ArrayList<>();
         List<RDBColumnMetaData> addedField = new ArrayList<>();
@@ -63,7 +63,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
                 if (!newField.getName().equals(oldField.getName()) ||
                         !newField.getDataType().equals(oldField.getDataType())
                         || !newField.getComment().equals(oldField.getComment())
-                        || oldField.getProperty("not-null", false).getValue() != newField.getProperty("not-null", false).getValue()) {
+                        || oldField.isNotNull() != newField.isNotNull()) {
                     changedField.add(newField);
                 }
             }
@@ -89,7 +89,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
             if (!StringUtils.isNullOrEmpty(field.getProperty("default-value").getValue())) {
                 append.add(" default '", field.getProperty("default-value").getValue(), "'");
             }
-            if (field.getProperty("not-null").isTrue()) {
+            if (field.isNotNull()) {
                 append.add(" not null ");
             } else {
                 append.add(" null ");
@@ -107,7 +107,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
             if (!StringUtils.isNullOrEmpty(field.getProperty("default-value").getValue())) {
                 append.add("default '", field.getProperty("default-value").getValue(), "'");
             }
-            if (field.getProperty("not-null").isTrue()) {
+            if (field.isNotNull()) {
                 append.add(" not null ");
             } else {
                 append.add(" null ");
@@ -118,7 +118,6 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
             changedSql.add(append);
         });
         deletedField.forEach(field -> deleteSql.add(new SqlAppender().add("drop column ", field.getName())));
-
         List<SqlAppender> allSql = new LinkedList<>();
         allSql.add(new SqlAppender().addSpc(String.format("alter table `%s`", metaData.getName())));
         allSql.addAll(deleteSql);

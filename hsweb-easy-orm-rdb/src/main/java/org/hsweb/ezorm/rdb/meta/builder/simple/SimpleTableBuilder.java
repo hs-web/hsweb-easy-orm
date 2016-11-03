@@ -6,7 +6,7 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hsweb.ezorm.rdb.meta.builder.TableBuilder;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
-import org.hsweb.ezorm.rdb.run.RDBDatabase;
+import org.hsweb.ezorm.rdb.RDBDatabase;
 
 import java.sql.SQLException;
 import java.util.Set;

@@ -7,7 +7,7 @@ import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.UpdateParam;
-import org.hsweb.ezorm.rdb.render.Dialect;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.util.LinkedHashSet;
@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
     class SimpleUpdateSqlRenderProcess extends SimpleWhereSqlBuilder {
-        private RDBTableMetaData     metaData;
-        private UpdateParam          param;
-        private List<OperationField> updateField;
+        private RDBTableMetaData      metaData;
+        private UpdateParam           param;
+        private List<OperationColumn> updateField;
         private SqlAppender whereSql       = new SqlAppender();
         private Set<String> conditionTable = new LinkedHashSet<>();
         PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
@@ -45,8 +45,8 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             SqlAppender appender = new SqlAppender();
             appender.add("UPDATE ", metaData.getName(), " ", metaData.getAlias(), " SET ");
             byte[] bytes = new byte[1];
-            updateField.forEach(operationField -> {
-                RDBColumnMetaData RDBColumnMetaData = operationField.getRDBColumnMetaData();
+            updateField.forEach(operationColumn -> {
+                RDBColumnMetaData RDBColumnMetaData = operationColumn.getRDBColumnMetaData();
                 if (RDBColumnMetaData.getProperty("read-only").isTrue()) return;
                 try {
                     String dataProperty = RDBColumnMetaData.getAlias();

@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.meta;
 
+import org.hsweb.ezorm.core.meta.AbstractColumnMetaData;
 import org.hsweb.ezorm.core.meta.ColumnMetaData;
 import org.hsweb.ezorm.core.OptionConverter;
 import org.hsweb.ezorm.core.PropertyWrapper;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneable, Comparable<RDBColumnMetaData> {
+public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnMetaData, Serializable, Cloneable, Comparable<RDBColumnMetaData> {
     private static final DefaultValueConverter DEFAULT_VALUE_CONVERTER = new DefaultValueConverter();
 
     public RDBColumnMetaData() {
@@ -25,12 +26,6 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
         this.dataType = dataType;
         this.jdbcType = jdbcType;
     }
-
-    private String name;
-
-    private String alias;
-
-    private String comment;
 
     private String dataType;
 
@@ -56,13 +51,6 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
     private int scale;
 
     /**
-     * 是否是索引字段
-     *
-     * @since 1.1
-     */
-    private boolean index;
-
-    /**
      * 是否不能为空
      */
     private boolean notNull;
@@ -73,16 +61,6 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
     private boolean primaryKey;
 
     private JDBCType jdbcType;
-
-    private Class javaType;
-
-    private RDBTableMetaData tableMetaData;
-
-    private OptionConverter optionConverter;
-
-    private ValueConverter valueConverter = DEFAULT_VALUE_CONVERTER;
-
-    private Set<String> validator;
 
     private int sortIndex;
 
@@ -100,31 +78,6 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
         return new SimplePropertyWrapper(properties.put(property, value));
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAlias() {
-        if (alias == null) alias = name;
-        return alias;
-    }
-
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public String getDataType() {
         return dataType;
     }
@@ -133,28 +86,16 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
         this.dataType = dataType;
     }
 
-    public Class getJavaType() {
-        return javaType;
-    }
-
-    public void setJavaType(Class javaType) {
-        this.javaType = javaType;
-    }
-
     public RDBTableMetaData getTableMetaData() {
-        return tableMetaData;
-    }
-
-    public void setTableMetaData(RDBTableMetaData tableMetaData) {
-        this.tableMetaData = tableMetaData;
+        return super.getTableMetaData();
     }
 
     public String getFullName() {
-        return tableMetaData.getName() + "." + getName();
+        return tableMetaData == null ? getName() : tableMetaData.getName() + "." + getName();
     }
 
     public String getFullAliasName() {
-        return tableMetaData.getAlias() + "." + getAlias();
+        return tableMetaData == null ? getAlias() : tableMetaData.getAlias() + "." + getAlias();
     }
 
     public JDBCType getJdbcType() {
@@ -165,44 +106,18 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
         this.jdbcType = jdbcType;
     }
 
-    public Set<String> getValidator() {
-        return validator;
-    }
-
-    public void setValidator(Set<String> validator) {
-        this.validator = validator;
-    }
-
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Map<String, Object> properties) {
-        this.properties = properties;
-    }
-
-    public OptionConverter getOptionConverter() {
-        return optionConverter;
-    }
-
-    public void setOptionConverter(OptionConverter optionConverter) {
-        this.optionConverter = optionConverter;
-    }
-
-    public ValueConverter getValueConverter() {
-        return valueConverter;
-    }
-
-    public void setValueConverter(ValueConverter valueConverter) {
-        this.valueConverter = valueConverter;
-    }
-
     public int getSortIndex() {
         return sortIndex;
     }
 
     public void setSortIndex(int sortIndex) {
         this.sortIndex = sortIndex;
+    }
+
+    @Override
+    public ValueConverter getValueConverter() {
+        if (valueConverter == null) valueConverter = DEFAULT_VALUE_CONVERTER;
+        return super.getValueConverter();
     }
 
     @Override
@@ -234,15 +149,8 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
         this.scale = scale;
     }
 
-    public boolean isIndex() {
-        return index;
-    }
-
-    public void setIndex(boolean index) {
-        this.index = index;
-    }
-
     public boolean isNotNull() {
+        if (!notNull && isPrimaryKey()) notNull = true;
         return notNull;
     }
 
@@ -274,7 +182,6 @@ public class RDBColumnMetaData implements ColumnMetaData, Serializable, Cloneabl
         RDBColumnMetaData.length = length;
         RDBColumnMetaData.scale = scale;
         RDBColumnMetaData.precision = precision;
-        RDBColumnMetaData.index = index;
         RDBColumnMetaData.notNull = notNull;
         RDBColumnMetaData.primaryKey = primaryKey;
         return RDBColumnMetaData;

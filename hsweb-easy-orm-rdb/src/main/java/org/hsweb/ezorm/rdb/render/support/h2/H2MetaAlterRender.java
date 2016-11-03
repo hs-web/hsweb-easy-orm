@@ -31,7 +31,7 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
 
     @Override
     public SQL render(RDBTableMetaData metaData, Boolean executeRemove) {
-        RDBTableMetaData old = databaseMetaData.getTable(metaData.getName());
+        RDBTableMetaData old = databaseMetaData.getTableMetaData(metaData.getName());
         if (old == null) throw new UnsupportedOperationException("旧表不存在!");
         List<RDBColumnMetaData> changedField = new ArrayList<>();
         List<RDBColumnMetaData> addedField = new ArrayList<>();
@@ -84,11 +84,11 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
         addedField.forEach(field -> {
             SqlAppender append = new SqlAppender();
             append.add("ALTER TABLE ", metaData.getName(), " ADD ", field.getName(), " ", field.getDataType());
-            if (field.getProperty("not-null").isTrue()) {
+            if (field.isNotNull()) {
                 append.add(" not null");
             }
             if (StringUtils.isNullOrEmpty(field.getComment())) {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '新建字段:%s'", metaData.getName(), field.getName(), field.getAlias()));
+//                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), field.getName(), field.getAlias()));
             } else {
                 comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), field.getName(), field.getComment()));
             }
@@ -111,12 +111,16 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
                 metaData.renameColumn(oldName, field.getName());
             }
             if (!oldField.getDataType().equals(field.getDataType())
-                    || oldField.getProperty("not-null", false).getValue() != field.getProperty("not-null", false).getValue()) {
+                    || oldField.isNotNull() != field.isNotNull()) {
                 SqlAppender append = new SqlAppender();
                 append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", field.getName(), " ", field.getDataType());
-                if (field.getProperty("not-null").isTrue()) {
+                if (field.isNotNull()) {
                     append.add(" NOT NULL");
+                } else {
+                    append.add(" NULL");
                 }
+                if (field.isPrimaryKey()) append.add(" primary key");
+
                 SimpleSQL simpleSQL = new SimpleSQL(append.toString(), field);
                 BindSQL bindSQL = new BindSQL();
                 bindSQL.setSql(simpleSQL);

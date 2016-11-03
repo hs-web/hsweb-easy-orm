@@ -65,12 +65,6 @@ public class SimpleColumnBuilder implements ColumnBuilder {
     }
 
     @Override
-    public ColumnBuilder index() {
-        columnMetaData.setIndex(true);
-        return this;
-    }
-
-    @Override
     public ColumnBuilder length(int len) {
         columnMetaData.setLength(len);
         return this;
