@@ -15,7 +15,7 @@ import java.util.Set;
 public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected class OperationColumn {
+    public class OperationColumn {
         private String            tableName;
         private RDBColumnMetaData RDBColumnMetaData;
 
@@ -34,7 +34,7 @@ public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
         }
     }
 
-    protected List<OperationColumn> parseOperationField(RDBTableMetaData metaData, R param) {
+    public List<OperationColumn> parseOperationField(RDBTableMetaData metaData, R param) {
         Set<String> includes = param.getIncludes(),
                 excludes = param.getExcludes();
         boolean includesIsEmpty = includes.isEmpty(),

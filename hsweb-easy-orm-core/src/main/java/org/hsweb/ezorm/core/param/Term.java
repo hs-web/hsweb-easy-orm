@@ -72,18 +72,18 @@ public class Term implements Cloneable {
 
     public Term nest(String term, Object value) {
         Term queryTerm = new Term();
+        queryTerm.setType(Type.and);
         queryTerm.setColumn(term);
         queryTerm.setValue(value);
-        queryTerm.setType(Type.and);
         terms.add(queryTerm);
         return queryTerm;
     }
 
     public Term orNest(String term, Object value) {
         Term queryTerm = new Term();
+        queryTerm.setType(Type.or);
         queryTerm.setColumn(term);
         queryTerm.setValue(value);
-        queryTerm.setType(Type.or);
         terms.add(queryTerm);
         return queryTerm;
     }

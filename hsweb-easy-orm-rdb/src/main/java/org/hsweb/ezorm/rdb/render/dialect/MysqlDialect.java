@@ -9,6 +9,7 @@ import java.sql.JDBCType;
 
 public class MysqlDialect extends DefaultDialect {
     protected MysqlDialect() {
+        defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
         setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime");

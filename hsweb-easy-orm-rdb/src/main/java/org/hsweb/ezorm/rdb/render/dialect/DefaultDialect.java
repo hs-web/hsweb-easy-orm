@@ -16,40 +16,40 @@ import java.util.*;
  *
  */
 public abstract class DefaultDialect implements Dialect {
-    protected Map<String, TermTypeMapper>   termTypeMappers       = new HashMap<>();
-    protected Map<JDBCType, DataTypeMapper> dataTypeMappers       = new HashMap<>();
-    protected DataTypeMapper                defaultDataTypeMapper = null;
+    protected Map<String, TermTypeMapper> termTypeMappers       = new HashMap<>();
+    protected Map<String, DataTypeMapper> dataTypeMappers       = new HashMap<>();
+    protected DataTypeMapper              defaultDataTypeMapper = null;
 
     static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
 
     public DefaultDialect() {
         //默认查询条件支持
         termTypeMappers.put(TermType.eq, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=#{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=#{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.not, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.like, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.nlike, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " NOT LIKE #{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " NOT LIKE #{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.isnull, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NULL").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NULL"));
         termTypeMappers.put(TermType.notnull, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NOT NULL").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NOT NULL"));
         termTypeMappers.put(TermType.gt, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">#{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">#{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.lt, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<#{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<#{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.gte, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">=#{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">=#{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.lte, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<=#{", wherePrefix, ".value}").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<=#{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.empty, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=''").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=''"));
         termTypeMappers.put(TermType.nempty, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=''").toString());
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=''"));
         termTypeMappers.put(TermType.func, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(term.getValue()).toString());
+                new SqlAppender().add(term.getValue()));
         termTypeMappers.put(TermType.btw, (wherePrefix, term, column, tableAlias) -> {
             SqlAppender sqlAppender = new SqlAppender();
             List<Object> objects = param2list(term.getValue(), column);
@@ -59,7 +59,7 @@ public abstract class DefaultDialect implements Dialect {
             sqlAppender.add(buildColumnName(tableAlias, column.getName()), " ").addSpc("BETWEEN")
                     .add("#{", wherePrefix, ".value[0]}")
                     .add(" AND ", "#{", wherePrefix, ".value[1]}");
-            return sqlAppender.toString();
+            return sqlAppender;
         });
         termTypeMappers.put(TermType.nbtw, (wherePrefix, term, column, tableAlias) ->
         {
@@ -71,7 +71,7 @@ public abstract class DefaultDialect implements Dialect {
             sqlAppender.add(buildColumnName(tableAlias, column.getName()), " ").addSpc("NOT BETWEEN")
                     .add("#{", wherePrefix, ".value[0]}")
                     .add(" AND ", "#{", wherePrefix, ".value[1]}");
-            return sqlAppender.toString();
+            return sqlAppender;
         });
         termTypeMappers.put(TermType.in, (wherePrefix, term, column, tableAlias) -> {
             List<Object> values = param2list(term.getValue(), column);
@@ -83,7 +83,7 @@ public abstract class DefaultDialect implements Dialect {
             }
             appender.removeLast();
             appender.add(")");
-            return appender.toString();
+            return appender;
         });
         termTypeMappers.put(TermType.nin, (wherePrefix, term, column, tableAlias) -> {
             List<Object> values = param2list(term.getValue(), column);
@@ -95,12 +95,15 @@ public abstract class DefaultDialect implements Dialect {
             }
             appender.removeLast();
             appender.add(")");
-            return appender.toString();
+            return appender;
         });
     }
 
     @Override
-    public String buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias) {
+    public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias) {
+        if (term.getValue() instanceof TermTypeMapper) {
+            return ((TermTypeMapper) term.getValue()).accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
+        }
         TermTypeMapper mapper = termTypeMappers.get(term.getTermType());
         if (mapper == null) mapper = termTypeMappers.get(TermType.eq);
         return mapper.accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
@@ -144,7 +147,7 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
-        dataTypeMappers.put(jdbcType, mapper);
+        dataTypeMappers.put(jdbcType.getName(), mapper);
     }
 
     @Override
@@ -154,7 +157,8 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public String buildDataType(RDBColumnMetaData columnMetaData) {
-        DataTypeMapper mapper = dataTypeMappers.get(columnMetaData.getJdbcType());
+        if (columnMetaData.getJdbcType() == null) return null;
+        DataTypeMapper mapper = dataTypeMappers.get(columnMetaData.getJdbcType().getName());
         if (null == mapper) mapper = defaultDataTypeMapper;
         return mapper.getDataType(columnMetaData);
     }

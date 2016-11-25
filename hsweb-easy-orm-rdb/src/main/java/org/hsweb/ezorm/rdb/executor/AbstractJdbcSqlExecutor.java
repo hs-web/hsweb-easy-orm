@@ -54,14 +54,14 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
      *
      * @since 1.0
      */
-    private static final Pattern APPEND_PATTERN = Pattern.compile("(?<=\\$\\{)(.+?)(?=\\})");
+    public static final Pattern APPEND_PATTERN = Pattern.compile("(?<=\\$\\{)(.+?)(?=\\})");
 
     /**
      * 进行参数预编译的表达式:#{}
      *
      * @since 1.0
      */
-    private static final Pattern PREPARED_PATTERN = Pattern.compile("(?<=#\\{)(.+?)(?=\\})");
+    public static final Pattern PREPARED_PATTERN = Pattern.compile("(?<=#\\{)(.+?)(?=\\})");
 
     /**
      * 对象属性操作工具
@@ -69,6 +69,18 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
      * @see PropertyUtilsBean
      */
     protected PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
+
+    protected Object getSqlParamValue(Object param, String paramName) {
+        try {
+            Object obj = propertyUtils.getProperty(param, paramName);
+            if (obj instanceof Term)
+                obj = ((Term) obj).getValue();
+            return obj;
+        } catch (Exception e) {
+            logger.warn("获取sql参数失败", e);
+        }
+        return null;
+    }
 
     /**
      * 将sql模板编译为sql信息
@@ -86,17 +98,11 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         Matcher prepared_matcher = PREPARED_PATTERN.matcher(sqlTemplate);
         Matcher append_matcher = APPEND_PATTERN.matcher(sqlTemplate);
         List<Object> params = new LinkedList<>();
+
         //直接拼接sql
         while (append_matcher.find()) {
             String group = append_matcher.group();
-            Object obj = null;
-            try {
-                obj = propertyUtils.getProperty(param, group);
-                if (obj instanceof Term)
-                    obj = ((Term) obj).getValue();
-            } catch (Exception e) {
-                logger.error("");
-            }
+            Object obj = getSqlParamValue(param, group);
             sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), String.valueOf(obj));
         }
         String loggerSql = sqlTemplate;
@@ -104,14 +110,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         while (prepared_matcher.find()) {
             String group = prepared_matcher.group();
             sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), "?");
-            Object obj = null;
-            try {
-                obj = propertyUtils.getProperty(param, group);
-                if (obj instanceof Term)
-                    obj = ((Term) obj).getValue();
-            } catch (Exception e) {
-                logger.error("", e);
-            }
+            Object obj = getSqlParamValue(param, group);
             if (logger.isDebugEnabled()) {
                 loggerSql = loggerSql.replaceFirst(StringUtils.concat("\\#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), obj == null ? "null" : obj instanceof Number ? String.valueOf(obj) : "'".concat(String.valueOf(obj)).concat("'"));
             }

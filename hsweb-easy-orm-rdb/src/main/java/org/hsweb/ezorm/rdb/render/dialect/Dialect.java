@@ -1,16 +1,51 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
+import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.sql.JDBCType;
+import java.util.regex.Matcher;
+
+import static org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor.APPEND_PATTERN;
+import static org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor.PREPARED_PATTERN;
 
 public interface Dialect {
     interface TermTypeMapper {
-        String accept(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias);
+        SqlAppender accept(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias);
+
+        static TermTypeMapper sql(String sql) {
+            return (wherePrefix, term, column, tableAlias) -> new SqlAppender(sql);
+        }
+
+        static TermTypeMapper sql(String sql, Object param) {
+            return (wherePrefix, term, column, tableAlias) -> {
+                String template = sql;
+                Matcher prepared_matcher = PREPARED_PATTERN.matcher(template);
+                Matcher append_matcher = APPEND_PATTERN.matcher(template);
+                term.setValue(param);
+                while (append_matcher.find()) {
+                    String group = append_matcher.group();
+                    String reg = StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "}");
+                    String target = StringUtils.concat("\\$\\{", wherePrefix, group.startsWith("[") ? ".value" : ".value.", group, "}");
+                    template = template.replaceFirst(reg, target);
+
+                }
+                while (prepared_matcher.find()) {
+                    String group = prepared_matcher.group();
+                    template = template.replaceFirst(StringUtils.concat("#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "}"),
+                            StringUtils.concat("#\\{", wherePrefix, group.startsWith("[") ? ".value" : ".value.", group, "}"));
+                }
+                return new SqlAppender(template);
+            };
+        }
+
     }
 
     interface DataTypeMapper {
@@ -31,7 +66,7 @@ public interface Dialect {
 
     String getQuoteEnd();
 
-    String buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias);
+    SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias);
 
     String buildDataType(RDBColumnMetaData columnMetaData);
 

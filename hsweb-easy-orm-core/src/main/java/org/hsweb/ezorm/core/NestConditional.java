@@ -1,9 +1,12 @@
 package org.hsweb.ezorm.core;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.TermType;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
 
 public interface NestConditional<T extends TermTypeConditionalSupport> extends TermTypeConditionalSupport {
 
@@ -37,6 +40,24 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
 
     default NestConditional<T> like(String column, Object value) {
         return accept(column, TermType.like, value);
+    }
+
+    default NestConditional<T> like$(String column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat(value, "%"));
+    }
+
+    default NestConditional<T> $like(String column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat("%", value));
+    }
+
+    default NestConditional<T> $like$(String column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat("%", value, "%"));
     }
 
     default NestConditional<T> notLike(String column, Object value) {
@@ -108,4 +129,23 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
     }
 
     Accepter<NestConditional<T>> getAccepter();
+
+    default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
+        if (null != list)
+            list.forEach(o -> accepter.apply(this).accept(column, o));
+        return this;
+    }
+
+    default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter, Function<Object, Object> valueMapper) {
+        if (null != list)
+            list.forEach(o -> accepter.apply(this).accept(column, valueMapper.apply(o)));
+        return this;
+    }
+
+    default NestConditional<T> each(Map<String, Object> mapParam, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
+        if (null != mapParam)
+            mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));
+        return this;
+    }
+
 }

@@ -5,7 +5,7 @@ import org.hsweb.ezorm.core.param.QueryParam;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface Query<T> extends Conditional<Query<T>>, TriggerSkipSupport<Query<T>> {
+public interface Query<T> extends Conditional<Query<T>>{
     <Q extends Query<T>> Q setParam(QueryParam param);
 
     <Q extends Query<T>> Q select(String... fields);

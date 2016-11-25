@@ -9,8 +9,11 @@ import java.sql.JDBCType;
 
 public class H2Dialect extends DefaultDialect {
     protected H2Dialect() {
+        defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
+        setDataTypeMapper(JDBCType.SMALLINT, (meta) -> "smallint");
+        setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.TIME, (meta) -> "timestamp");
         setDataTypeMapper(JDBCType.DATE, (meta) -> "date");
         setDataTypeMapper(JDBCType.CLOB, (meta) -> "clob");
@@ -18,7 +21,6 @@ public class H2Dialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.INTEGER, (meta) -> "int");
         setDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
         setDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
-        setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
     }

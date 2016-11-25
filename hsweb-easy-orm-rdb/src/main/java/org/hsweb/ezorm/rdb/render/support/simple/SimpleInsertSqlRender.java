@@ -2,7 +2,9 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.rdb.executor.SQL;
+import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.core.param.InsertParam;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
@@ -14,9 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Created by zhouhao on 16-6-4.
- */
 public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
     PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -58,7 +57,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                         if (value != null) dataProperty = fieldMetaData.getName();
                     }
                 } catch (Exception e) {
-                    logger.debug("get property error", e);
+                   // logger.debug("get property error", e);
                 }
                 if (value == null) {
                     value = fieldMetaData.getProperty("default-value").getValue();
@@ -77,7 +76,8 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                             logger.warn("未成功完成属性转换", e);
                         }
                 }
-                appender.add("#{data[", index, "].", dataProperty, "}", ",");
+                appender.addAll(getParamString(StringUtils.concat("data[", index, "].", dataProperty), fieldMetaData));
+                appender.add(",");
             });
             appender.removeLast();
             appender.add(")");
@@ -85,5 +85,9 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         InsertParam paramProxy = new InsertParam();
         paramProxy.setData(list);
         return new SimpleSQL(appender.toString(), paramProxy);
+    }
+
+    protected SqlAppender getParamString(String paramName, RDBColumnMetaData rdbColumnMetaData) {
+        return new SqlAppender().add("#{", paramName, "}");
     }
 }

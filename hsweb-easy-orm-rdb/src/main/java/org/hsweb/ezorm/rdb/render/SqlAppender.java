@@ -6,6 +6,12 @@ import java.util.LinkedList;
  * Created by 浩 on 2015-11-07 0007.
  */
 public class SqlAppender extends LinkedList<String> {
+    public SqlAppender() {
+    }
+
+    public SqlAppender(String sql) {
+        add(sql);
+    }
 
     public SqlAppender add(Object... str) {
         for (Object s : str) {

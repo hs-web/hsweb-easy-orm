@@ -16,10 +16,15 @@
 
 package org.hsweb.ezorm.core;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.TermType;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
 
 public interface Conditional<T extends Conditional> extends TermTypeConditionalSupport {
 
@@ -45,6 +50,14 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return and(column, TermType.eq, value);
     }
 
+    default T where(String column) {
+        return and(column, TermType.eq);
+    }
+
+    default T where() {
+        return (T) this;
+    }
+
     default T and(String column, Object value) {
         return and(column, TermType.eq, value);
     }
@@ -55,6 +68,24 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
 
     default T like(String column, Object value) {
         return accept(column, TermType.like, value);
+    }
+
+    default T like$(String column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat(value, "%"));
+    }
+
+    default T $like(String column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat("%", value));
+    }
+
+    default T $like$(String column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat("%", value, "%"));
     }
 
     default T notLike(String column, Object value) {
@@ -123,6 +154,24 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
 
     default T accept(String column, String termType, Object value) {
         return getAccepter().accept(column, termType, value);
+    }
+
+    default T each(String column, Collection list, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepter) {
+        if (null != list)
+            list.forEach(o -> accepter.apply(this).accept(column, o));
+        return (T) this;
+    }
+
+    default T each(String column, Collection list, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepter, Function<Object, Object> valueMapper) {
+        if (null != list)
+            list.forEach(o -> accepter.apply(this).accept(column, valueMapper.apply(o)));
+        return (T) this;
+    }
+
+    default T each(Map<String, Object> mapParam, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepter) {
+        if (null != mapParam)
+            mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));
+        return (T) this;
     }
 
 }

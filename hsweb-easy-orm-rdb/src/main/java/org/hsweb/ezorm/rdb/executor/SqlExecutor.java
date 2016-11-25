@@ -18,9 +18,12 @@ package org.hsweb.ezorm.rdb.executor;
 
 
 import org.hsweb.ezorm.core.ObjectWrapper;
+import org.hsweb.ezorm.rdb.meta.expand.SimpleMapWrapper;
+import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SQL执行器,用于执行sql
@@ -29,6 +32,8 @@ import java.util.List;
  * @since 1.0
  */
 public interface SqlExecutor {
+
+    SimpleMapWrapper mapWrapper = new SimpleMapWrapper();
 
     /**
      * 传入SQL对象和对象包装器执行查询,将查询结果通过对象包装器进行包装后返回
@@ -88,5 +93,56 @@ public interface SqlExecutor {
      */
     int insert(SQL sql) throws SQLException;
 
-    boolean tableExists(String tname) throws SQLException;
+
+    boolean tableExists(String tableName) throws SQLException;
+
+    default List<Map<String, Object>> list(SQL sql) throws SQLException {
+        return list(sql, mapWrapper);
+    }
+
+    default List<Map<String, Object>> list(String sql, Object params) throws SQLException {
+        return list(new SimpleSQL(sql, params));
+    }
+
+    default List<Map<String, Object>> list(String sql) throws SQLException {
+        return list(new SimpleSQL(sql));
+    }
+
+    default Map<String, Object> single(SQL sql) throws SQLException {
+        return single(sql, mapWrapper);
+    }
+
+    default Map<String, Object> single(String sql, Object params) throws SQLException {
+        return single(new SimpleSQL(sql, params));
+    }
+
+    default Map<String, Object> single(String sql) throws SQLException {
+        return single(new SimpleSQL(sql));
+    }
+
+    default int insert(String sql, Object params) throws SQLException {
+        return insert(new SimpleSQL(sql, params));
+    }
+
+    default int update(String sql, Object params) throws SQLException {
+        return update(new SimpleSQL(sql, params));
+    }
+
+    default int update(String sql) throws SQLException {
+        return update(new SimpleSQL(sql));
+    }
+
+    default int delete(String sql, Object params) throws SQLException {
+        return delete(new SimpleSQL(sql, params));
+    }
+
+    default int delete(String sql) throws SQLException {
+        return delete(new SimpleSQL(sql));
+    }
+
+    default void exec(String sql) throws SQLException {
+        exec(new SimpleSQL(sql));
+    }
+
+
 }

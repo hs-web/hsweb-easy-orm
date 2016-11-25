@@ -32,7 +32,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             this.metaData = metaData;
             this.param = param;
             List<Term> terms = param.getTerms();
-            terms = terms.stream().filter(term -> !term.getColumn().contains(".")).collect(Collectors.toList());
+            terms = terms.stream().filter(term -> term.getColumn() == null || !term.getColumn().contains(".")).collect(Collectors.toList());
             param.setTerms(terms);
             //解析要操作的字段
             this.updateField = parseOperationField(metaData, param);
@@ -57,7 +57,10 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     }
                     if (value == null && !RDBColumnMetaData.getAlias().equals(RDBColumnMetaData.getName())) {
                         dataProperty = RDBColumnMetaData.getName();
-                        value = propertyUtils.getProperty(param.getData(), dataProperty);
+                        try {
+                            value = propertyUtils.getProperty(param.getData(), dataProperty);
+                        } catch (Exception e) {
+                        }
                     }
                     if (value == null) {
                         if (logger.isInfoEnabled())
@@ -72,7 +75,9 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         if (value != new_value && !value.equals(new_value))
                             propertyUtils.setProperty(param.getData(), dataProperty, new_value);
                     }
-                    appender.add(RDBColumnMetaData.getName(), "=", "#{data.", dataProperty, "}", ",");
+                    appender.add(RDBColumnMetaData.getName(), "=")
+                            .addAll(getParamString("data.".concat(dataProperty), RDBColumnMetaData));
+                    appender.add(",");
                     bytes[0]++;
                 } catch (Exception e) {
                     if (logger.isInfoEnabled())
@@ -94,6 +99,10 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
         public Dialect getDialect() {
             return dialect;
         }
+    }
+
+    protected SqlAppender getParamString(String paramName, RDBColumnMetaData rdbColumnMetaData) {
+        return new SqlAppender().add("#{", paramName, "}");
     }
 
     @Override
