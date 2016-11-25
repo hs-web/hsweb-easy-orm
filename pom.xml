@@ -10,7 +10,6 @@
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
-        <module>hsweb-easy-orm-all</module>
         <module>hsweb-easy-orm-es</module>
     </modules>
     <properties>
