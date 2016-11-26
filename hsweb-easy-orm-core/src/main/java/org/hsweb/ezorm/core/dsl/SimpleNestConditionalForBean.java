@@ -1,19 +1,29 @@
 package org.hsweb.ezorm.core.dsl;
 
 import org.hsweb.ezorm.core.NestConditionalFromBean;
+import org.hsweb.ezorm.core.SqlConditionSupport;
 import org.hsweb.ezorm.core.TermTypeConditionalFromBeanSupport;
 import org.hsweb.ezorm.core.TermTypeConditionalSupport;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
 
-public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanSupport> implements NestConditionalFromBean<T> {
+public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanSupport>
+        extends SqlConditionSupport<SimpleNestConditionalForBean<T>>
+        implements NestConditionalFromBean<T> {
 
     protected T proxy;
-    TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>> accepter = this::and;
+    protected TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>> accepter = this::and;
     protected Term term;
 
     public SimpleNestConditionalForBean(T proxy, Term term) {
         this.proxy = proxy;
         this.term = term;
+    }
+
+    @Override
+    protected SimpleNestConditionalForBean<T> addSqlTerm(SqlTerm term) {
+        this.term.addTerm(term);
+        return this;
     }
 
     @Override
@@ -43,26 +53,26 @@ public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanS
 
     @Override
     public NestConditionalFromBean<T> and() {
+        setAnd();
         accepter = this::and;
         return this;
     }
 
     @Override
     public NestConditionalFromBean<T> or() {
+        setOr();
         accepter = this::or;
         return this;
     }
 
     @Override
     public NestConditionalFromBean<T> and(String column, String termType) {
-        and();
         term.and(column, termType, getValue(column));
         return this;
     }
 
     @Override
     public NestConditionalFromBean<T> or(String column, String termType) {
-        and();
         term.or(column, termType, getValue(column));
         return this;
     }

@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
 import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
@@ -101,6 +102,10 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias) {
+        if (term instanceof SqlTerm) {
+            TermTypeMapper mapper = TermTypeMapper.sql(term.getColumn(), term.getValue());
+            return mapper.accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
+        }
         if (term.getValue() instanceof TermTypeMapper) {
             return ((TermTypeMapper) term.getValue()).accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
         }

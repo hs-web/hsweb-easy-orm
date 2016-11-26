@@ -1,16 +1,14 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
-import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hsweb.commons.StringUtils;
-import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
+import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 
 import java.sql.JDBCType;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 
 import static org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor.APPEND_PATTERN;
@@ -25,11 +23,25 @@ public interface Dialect {
         }
 
         static TermTypeMapper sql(String sql, Object param) {
+
             return (wherePrefix, term, column, tableAlias) -> {
+                Object finalParam = param;
                 String template = sql;
+                //?方式预编译
+                if (template.contains("?")) {
+                    int index = 0;
+                    while (template.contains("?")) {
+                        template = template.replaceFirst("\\?", "#\\{[" + index++ + "]}");
+                    }
+                } else if (finalParam instanceof Object[]) {
+                    Object[] array = ((Object[]) finalParam);
+                    if (array.length == 1) {
+                        finalParam = array[0];
+                    }
+                }
                 Matcher prepared_matcher = PREPARED_PATTERN.matcher(template);
                 Matcher append_matcher = APPEND_PATTERN.matcher(template);
-                term.setValue(param);
+                term.setValue(finalParam);
                 while (append_matcher.find()) {
                     String group = append_matcher.group();
                     String reg = StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "}");

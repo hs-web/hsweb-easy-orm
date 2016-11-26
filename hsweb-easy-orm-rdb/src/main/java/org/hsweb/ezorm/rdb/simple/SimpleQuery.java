@@ -3,6 +3,7 @@ package org.hsweb.ezorm.rdb.simple;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.*;
 import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
@@ -60,13 +61,21 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
     }
 
     @Override
+    protected Query<T> addSqlTerm(SqlTerm term) {
+        queryParam.addTerm(term);
+        return this;
+    }
+
+    @Override
     public RDBQuery<T> and() {
+        setAnd();
         accepter = this::and;
         return this;
     }
 
     @Override
     public RDBQuery<T> or() {
+        setOr();
         accepter = this::or;
         return this;
     }
@@ -78,14 +87,12 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
 
     @Override
     public RDBQuery<T> and(String condition, String termType, Object value) {
-        and();
         queryParam.and(condition, termType, value);
         return this;
     }
 
     @Override
     public RDBQuery<T> or(String condition, String termType, Object value) {
-        or();
         queryParam.or(condition, termType, value);
         return this;
     }

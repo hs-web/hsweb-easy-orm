@@ -42,6 +42,8 @@ public interface NestConditionalFromBean<T extends TermTypeConditionalFromBeanSu
         return accept(column, TermType.like);
     }
 
+    NestConditionalFromBean<T> sql(String sql, Object... params);
+
     default NestConditionalFromBean<T> like$(String column) {
         Object value = getValue(column);
         if (value == null)

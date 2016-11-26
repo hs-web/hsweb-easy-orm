@@ -1,8 +1,11 @@
 package org.hsweb.ezorm.core;
 
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
 
-public class SimpleNestConditional<T extends TermTypeConditionalSupport> implements NestConditional<T> {
+public class SimpleNestConditional<T extends TermTypeConditionalSupport>
+        extends SqlConditionSupport<SimpleNestConditional<T>>
+        implements NestConditional<T> {
     Term term;
     T    target;
     Accepter<NestConditional<T>> accepter = this::and;
@@ -13,18 +16,27 @@ public class SimpleNestConditional<T extends TermTypeConditionalSupport> impleme
     }
 
     @Override
+    protected SimpleNestConditional<T> addSqlTerm(SqlTerm term) {
+        this.term.addTerm(term);
+        return this;
+    }
+
+    @Override
     public T end() {
         return target;
     }
 
+
     @Override
     public NestConditional<T> and() {
+        setAnd();
         accepter = this::and;
         return this;
     }
 
     @Override
     public NestConditional<T> or() {
+        setOr();
         accepter = this::or;
         return this;
     }
@@ -56,14 +68,12 @@ public class SimpleNestConditional<T extends TermTypeConditionalSupport> impleme
 
     @Override
     public NestConditional<T> and(String column, String termType, Object value) {
-        and();
         term.and(column, termType, value);
         return this;
     }
 
     @Override
     public NestConditional<T> or(String column, String termType, Object value) {
-        or();
         term.or(column, termType, value);
         return this;
     }

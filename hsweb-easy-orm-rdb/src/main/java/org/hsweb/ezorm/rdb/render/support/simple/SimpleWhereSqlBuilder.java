@@ -2,6 +2,7 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.hsweb.commons.DateTimeUtils;
 import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -37,7 +38,7 @@ public abstract class SimpleWhereSqlBuilder {
             boolean nullTerm = StringUtils.isNullOrEmpty(term.getColumn());
             RDBColumnMetaData field = metaData.findColumn(term.getColumn());
             //不是空条件 也不是可选字段
-            if (!nullTerm && field == null && term.getTermType() != TermType.func) continue;
+            if (!nullTerm && field == null && term.getTermType() != TermType.func && !(term instanceof SqlTerm)) continue;
             //不是空条件，值为空
             if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
             //是空条件，但是无嵌套

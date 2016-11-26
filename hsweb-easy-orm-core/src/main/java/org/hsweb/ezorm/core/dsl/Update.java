@@ -2,26 +2,20 @@ package org.hsweb.ezorm.core.dsl;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.hsweb.ezorm.core.Conditional;
-import org.hsweb.ezorm.core.NestConditional;
-import org.hsweb.ezorm.core.SimpleNestConditional;
-import org.hsweb.ezorm.core.TermTypeConditionalFromBeanSupport;
-import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.*;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.UpdateParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * @author zhouhao
  */
-public final class Update<T, Q extends UpdateParam<T>> implements Conditional<Update<T, Q>>, TermTypeConditionalFromBeanSupport {
+public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSupport<Update<T, Q>> implements Conditional<Update<T, Q>>, TermTypeConditionalFromBeanSupport {
     private Q        param    = null;
     private Accepter accepter = this::and;
     private Executor<Q> executor;
@@ -47,6 +41,11 @@ public final class Update<T, Q extends UpdateParam<T>> implements Conditional<Up
         param.setData(bean);
         this.bean = bean;
         return new UpdateFromBean<>(this);
+    }
+
+    @Override
+    protected Update<T, Q> addSqlTerm(SqlTerm term) {
+        return null;
     }
 
     public Update<T, Q> set(String property, Object value) {
@@ -108,12 +107,14 @@ public final class Update<T, Q extends UpdateParam<T>> implements Conditional<Up
 
     @Override
     public Update<T, Q> and() {
+        setAnd();
         this.accepter = this::and;
         return this;
     }
 
     @Override
     public Update<T, Q> or() {
+        setOr();
         this.accepter = this::or;
         return this;
     }

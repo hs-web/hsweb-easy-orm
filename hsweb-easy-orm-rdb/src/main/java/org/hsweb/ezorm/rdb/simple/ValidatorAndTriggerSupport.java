@@ -2,17 +2,18 @@ package org.hsweb.ezorm.rdb.simple;
 
 import org.hsweb.ezorm.core.TriggerSkipSupport;
 import org.hsweb.ezorm.core.Validator;
+import org.hsweb.ezorm.core.SqlConditionSupport;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 
 import java.util.Map;
 
-public abstract class ValidatorAndTriggerSupport<O> implements TriggerSkipSupport<O> {
+public abstract class ValidatorAndTriggerSupport<O> extends SqlConditionSupport<O> implements TriggerSkipSupport<O> {
     protected boolean triggerSkip = false;
 
-    void tryValidate(Object date, Validator.Operation operation) {
+    void tryValidate(Object data, Validator.Operation operation) {
         Validator validator = getTableMeta().getValidator();
         if (validator != null) {
-            validator.validate(date, operation);
+            validator.validate(data, operation);
         }
     }
 

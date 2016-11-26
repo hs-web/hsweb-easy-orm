@@ -4,6 +4,7 @@ import org.hsweb.ezorm.core.ConditionalFromBean;
 import org.hsweb.ezorm.core.NestConditionalFromBean;
 import org.hsweb.ezorm.core.TermTypeConditionalSupport;
 import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.UpdateParam;
 
 import java.util.List;
@@ -11,7 +12,8 @@ import java.util.List;
 /**
  * @author zhouhao
  */
-public final class UpdateFromBean<T, Q extends UpdateParam<T>> implements ConditionalFromBean<UpdateFromBean<T, Q>> {
+public final class UpdateFromBean<T, Q extends UpdateParam<T>>
+        implements ConditionalFromBean<UpdateFromBean<T, Q>> {
     private TermTypeConditionalSupport.Accepter accepter = this::and;
     private Update<T, Q>                        proxy    = null;
 
@@ -26,6 +28,12 @@ public final class UpdateFromBean<T, Q extends UpdateParam<T>> implements Condit
 
     public Update<T, Q> fromCustom() {
         return proxy;
+    }
+
+    @Override
+    public UpdateFromBean<T, Q> sql(String sql, Object... params) {
+        proxy.sql(sql, params);
+        return this;
     }
 
     @Override
@@ -50,24 +58,22 @@ public final class UpdateFromBean<T, Q extends UpdateParam<T>> implements Condit
 
     @Override
     public UpdateFromBean<T, Q> and() {
-        accepter = this::and;
+        proxy.and();
         return this;
     }
 
     @Override
     public UpdateFromBean<T, Q> or() {
-        accepter = this::or;
+        proxy.or();
         return this;
     }
 
     public UpdateFromBean<T, Q> and(String column, String termType, Object value) {
-        and();
         proxy.and(column, termType, value);
         return this;
     }
 
     public UpdateFromBean<T, Q> or(String column, String termType, Object value) {
-        or();
         proxy.or(column, termType, value);
         return this;
     }

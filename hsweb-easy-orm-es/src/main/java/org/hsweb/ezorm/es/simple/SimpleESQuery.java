@@ -29,7 +29,6 @@ class SimpleESQuery<T> implements ESQuery<T> {
         return StringUtils.concat("/", table.getMeta().getDatabaseMetaData().getName(), "/", table.getMeta().getAlias(), "/");
     }
 
-    @Override
     public Query<T> skipTrigger() {
         return this;
     }

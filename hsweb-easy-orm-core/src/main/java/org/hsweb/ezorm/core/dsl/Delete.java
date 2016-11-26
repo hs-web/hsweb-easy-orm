@@ -3,13 +3,14 @@ package org.hsweb.ezorm.core.dsl;
 import org.hsweb.ezorm.core.Conditional;
 import org.hsweb.ezorm.core.NestConditional;
 import org.hsweb.ezorm.core.SimpleNestConditional;
+import org.hsweb.ezorm.core.SqlConditionSupport;
 import org.hsweb.ezorm.core.param.Param;
-import org.hsweb.ezorm.core.param.Param;
+import org.hsweb.ezorm.core.param.SqlTerm;
 
 /**
  * @author zhouhao
  */
-public final class Delete implements Conditional<Delete> {
+public final class Delete extends SqlConditionSupport<Delete> implements Conditional<Delete> {
     private Param    param    = null;
     private Accepter accepter = this::and;
     private Executor<Param> executor;
@@ -62,12 +63,14 @@ public final class Delete implements Conditional<Delete> {
 
     @Override
     public Delete and() {
+        setAnd();
         this.accepter = this::and;
         return this;
     }
 
     @Override
     public Delete or() {
+        setOr();
         this.accepter = this::or;
         return this;
     }
@@ -92,6 +95,12 @@ public final class Delete implements Conditional<Delete> {
     @Override
     public Accepter<Delete> getAccepter() {
         return accepter;
+    }
+
+    @Override
+    protected Delete addSqlTerm(SqlTerm term) {
+        param.addTerm(term);
+        return this;
     }
 
     @FunctionalInterface

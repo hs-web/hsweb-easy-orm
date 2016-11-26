@@ -5,6 +5,7 @@ import org.hsweb.ezorm.core.NestConditional;
 import org.hsweb.ezorm.core.SimpleNestConditional;
 import org.hsweb.ezorm.core.Trigger;
 import org.hsweb.ezorm.core.param.Param;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
@@ -31,6 +32,12 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
     }
 
     @Override
+    protected Delete addSqlTerm(SqlTerm term) {
+        param.addTerm(term);
+        return this;
+    }
+
+    @Override
     public Delete and(String condition, String termType, Object value) {
         param.and(condition, termType, value);
         return this;
@@ -44,12 +51,14 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
 
     @Override
     public Delete and() {
+        setAnd();
         accepter = this::and;
         return this;
     }
 
     @Override
     public Delete or() {
+        setOr();
         accepter = this::or;
         return this;
     }

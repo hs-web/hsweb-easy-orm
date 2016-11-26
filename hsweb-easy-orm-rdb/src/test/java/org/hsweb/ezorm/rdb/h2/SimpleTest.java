@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.hsweb.ezorm.rdb.render.dialect.Dialect.TermTypeMapper.sql;
 
 public class SimpleTest {
     SqlExecutor sqlExecutor;
@@ -67,39 +66,43 @@ public class SimpleTest {
 //                        .and()
 //                        .between("age", 18, 28).list(0, 10);
 
+//
+//        QueryParam queryParam = new Query<>(new QueryParam())
+//                .fromBean(Collections.singletonMap("name", "aa"))
+//                .like("name").like("name")
+//                .nest().like("name").end()
+//                .getParam();
+//
+//        new Update<>(new UpdateParam<>())
+//                .setExecutor((param) -> {
+//                    try {
+//                        return table.createUpdate().setParam(param).exec();
+//                    } catch (SQLException e) {
+//                    }
+//                    return 0;
+//                })
+//                .fromBean(Collections.singletonMap("name", "aa"))
+//                .where("name")
+//                .nest().like("name").end()
+//                .exec();
+//
+//        table.createQuery().setParam(queryParam).list();
+
         Function<Object, Object> append = (value) -> "," + value + ",";
-        QueryParam queryParam = new Query<>(new QueryParam())
-                .fromBean(Collections.singletonMap("name", "aa"))
-                .like("name").like("name")
-                .nest().like("name").end()
-                .getParam();
-
-        new Update<>(new UpdateParam<>())
-                .setExecutor((param) -> {
-                    try {
-                        return table.createUpdate().setParam(param).exec();
-                    } catch (SQLException e) {
-                    }
-                    return 0;
-                })
-                .fromBean(Collections.singletonMap("name", "aa"))
-                .where("name")
-                .nest().like("name").end()
-                .exec();
-
-        table.createQuery().setParam(queryParam).list();
 
         table.createQuery()
+                .sql("age >? or age <?", 1, 5)
                 .nest()
                     .nest()
-                        .and("age", sql("age > 10"))
-                        .and("age", sql("age > #{age}", Collections.singletonMap("age", 10)))
+                        .sql("age > 10")
+                        .sql("age > #{age}", Collections.singletonMap("age", 10))
+                        .sql("age > #{[0]}", Arrays.asList(1))
                     .end()
-                .or("age", sql("age > #{[0]}", Arrays.asList(1, 2, 3)))
-                    .end()
+                    .or().sql("age > ?", 1)
+                .end()
                     .nest()
-                        .or().each("name", Arrays.asList(1, 2, 3), query -> query::$like$, append)
-                    .end()
+                    .or().each("age", Arrays.asList(1, 2, 3), query -> query::or, append)
+                .end()
                 .list();
 
 

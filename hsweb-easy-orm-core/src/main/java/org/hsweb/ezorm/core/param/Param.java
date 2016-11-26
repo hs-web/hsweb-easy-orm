@@ -129,6 +129,11 @@ public class Param implements Cloneable {
         this.terms = terms;
     }
 
+    public <T extends Param> T addTerm(Term term) {
+        terms.add(term);
+        return (T) this;
+    }
+
     @Override
     public Param clone() {
         Param param = new Param();

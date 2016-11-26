@@ -60,6 +60,21 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
         return accept(column, TermType.like, StringUtils.concat("%", value, "%"));
     }
 
+    /**
+     * 直接拼接sql,参数支持预编译
+     * 例如
+     * <ul>
+     * <li>query.sql("name=?","admin")</li>
+     * <li>query.sql("name=#{name}",{name:"admin"})</li>
+     * <li>query.sql("name=#{[0]}",["admin"])</li>
+     * </ul>
+     *
+     * @param sql    sql字符串
+     * @param params 参数
+     * @return {@link T}
+     */
+    NestConditional<T> sql(String sql, Object... params);
+
     default NestConditional<T> notLike(String column, Object value) {
         return accept(column, TermType.nlike, value);
     }
@@ -130,18 +145,65 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
 
     Accepter<NestConditional<T>> getAccepter();
 
-    default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
+
+    /**
+     * 遍历一个集合，进行条件追加
+     * 例如:<br>
+     * query.or().each("areaId",[1,2,3],(query)->query::$like$)<br>
+     * 将追加sql<br>
+     * areaId like '%1%' or areaId like '%2%' or areaId like '%3%'
+     *
+     * @param column         要追加到的列名
+     * @param list           集合
+     * @param accepterGetter 追加方式函数
+     * @return {@link T}
+     * @see Function
+     * @see Conditional
+     * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
+     */
+    default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepterGetter) {
         if (null != list)
-            list.forEach(o -> accepter.apply(this).accept(column, o));
+            list.forEach(o -> accepterGetter.apply(this).accept(column, o));
         return this;
     }
 
-    default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter, Function<Object, Object> valueMapper) {
+    /**
+     * 参照 {@link Conditional#each(String, Collection, Function)}
+     * 提供了一个valueMapper进行值转换如:
+     * <br>
+     * query.or().each("areaId",[1,2,3],(query)->query::$like$,(value)->","+value+",")<br>
+     * 将追加sql<br>
+     * areaId like '%,1,%' or areaId like '%,2,%' or areaId like '%,3,%'
+     *
+     * @param column         要追加到的列名
+     * @param list           集合
+     * @param accepterGetter 追加方式函数
+     * @param valueMapper    值转换函数 {@link Function}
+     * @return {@link T}
+     * @see Function
+     * @see Conditional
+     * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
+     */
+    default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
         if (null != list)
-            list.forEach(o -> accepter.apply(this).accept(column, valueMapper.apply(o)));
+            list.forEach(o -> accepterGetter.apply(this).accept(column, valueMapper.apply(o)));
         return this;
     }
 
+    /**
+     * 遍历一个Map,进行条件追加
+     * 例如:<br>
+     * query.or().each({name:"admin"},(query)->query::$like$)<br>
+     * 将追加sql<br>
+     * name like '%admin%'
+     *
+     * @param mapParam map参数
+     * @param accepter 追加方式函数
+     * @return {@link T}
+     * @see Function
+     * @see Conditional
+     * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
+     */
     default NestConditional<T> each(Map<String, Object> mapParam, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
         if (null != mapParam)
             mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));

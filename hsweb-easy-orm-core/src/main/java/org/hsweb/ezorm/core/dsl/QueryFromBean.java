@@ -4,6 +4,7 @@ import org.hsweb.ezorm.core.ConditionalFromBean;
 import org.hsweb.ezorm.core.NestConditionalFromBean;
 import org.hsweb.ezorm.core.TermTypeConditionalSupport;
 import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.param.SqlTerm;
 
 import java.util.List;
 
@@ -11,8 +12,7 @@ import java.util.List;
  * @author zhouhao
  */
 public final class QueryFromBean<T, Q extends QueryParam> implements ConditionalFromBean<QueryFromBean<T, Q>> {
-    private TermTypeConditionalSupport.Accepter accepter = this::and;
-    private Query<T, Q>                         proxy    = null;
+    private Query<T, Q> proxy = null;
 
     public QueryFromBean(Query<T, Q> proxy) {
         this.proxy = proxy;
@@ -48,25 +48,29 @@ public final class QueryFromBean<T, Q extends QueryParam> implements Conditional
     }
 
     @Override
+    public QueryFromBean<T, Q> sql(String sql, Object... params) {
+        proxy.sql(sql, params);
+        return this;
+    }
+
+    @Override
     public QueryFromBean<T, Q> and() {
-        accepter = this::and;
+        proxy.and();
         return this;
     }
 
     @Override
     public QueryFromBean<T, Q> or() {
-        accepter = this::or;
+        proxy.or();
         return this;
     }
 
     public QueryFromBean<T, Q> and(String column, String termType, Object value) {
-        and();
         proxy.and(column, termType, value);
         return this;
     }
 
     public QueryFromBean<T, Q> or(String column, String termType, Object value) {
-        or();
         proxy.or(column, termType, value);
         return this;
     }
@@ -85,7 +89,10 @@ public final class QueryFromBean<T, Q extends QueryParam> implements Conditional
 
     @Override
     public TermTypeConditionalSupport.Accepter<QueryFromBean<T, Q>> getAccepter() {
-        return accepter;
+        return (c, t, v) -> {
+            proxy.getAccepter().accept(c, t, v);
+            return this;
+        };
     }
 
     public QueryFromBean<T, Q> selectExcludes(String... columns) {

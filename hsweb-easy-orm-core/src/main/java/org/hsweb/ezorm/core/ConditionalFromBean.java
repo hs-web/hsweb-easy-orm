@@ -126,6 +126,7 @@ public interface ConditionalFromBean<T extends TermTypeConditionalFromBeanSuppor
         return accept(column, TermType.nin, values);
     }
 
+    T sql(String sql, Object... params);
 
     default T notIn(String column) {
         return accept(column, TermType.nin);

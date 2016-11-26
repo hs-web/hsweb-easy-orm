@@ -1,10 +1,8 @@
 package org.hsweb.ezorm.core.dsl;
 
-import org.hsweb.ezorm.core.Conditional;
-import org.hsweb.ezorm.core.NestConditional;
-import org.hsweb.ezorm.core.SimpleNestConditional;
-import org.hsweb.ezorm.core.TermTypeConditionalFromBeanSupport;
+import org.hsweb.ezorm.core.*;
 import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.param.SqlTerm;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -12,23 +10,13 @@ import java.util.function.Supplier;
 /**
  * @author zhouhao
  */
-public final class Query<T, Q extends QueryParam> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
-    private Q        param    = null;
-    private Accepter accepter = this::and;
-    private   ListExecutor<T, Q>   listExecutor;
-    private   TotalExecutor<Q>     totalExecutor;
-    private   SingleExecutor<T, Q> singleExecutor;
-    protected Object               bean;
-
-    @Override
-    public Object getBean() {
-        return bean;
-    }
-
-    public QueryFromBean<T, Q> fromBean(Object bean) {
-        this.bean = bean;
-        return new QueryFromBean(this);
-    }
+public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
+    private Q                    param          = null;
+    private Accepter             accepter       = this::and;
+    private ListExecutor<T, Q>   listExecutor   = null;
+    private TotalExecutor<Q>     totalExecutor  = null;
+    private SingleExecutor<T, Q> singleExecutor = null;
+    private Object               bean           = null;
 
     public Query(Q param) {
         this.param = param;
@@ -49,6 +37,22 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         return this;
     }
 
+    @Override
+    public Object getBean() {
+        return bean;
+    }
+
+    public QueryFromBean<T, Q> fromBean(Object bean) {
+        this.bean = bean;
+        return new QueryFromBean(this);
+    }
+
+    @Override
+    protected Query<T, Q> addSqlTerm(SqlTerm term) {
+        param.addTerm(term);
+        return this;
+    }
+
     public Q getParam() {
         return param;
     }
@@ -57,7 +61,6 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         this.param = param;
         return this;
     }
-
 
     public Query<T, Q> orderByAsc(String column) {
         param.orderBy(column).asc();
@@ -78,7 +81,6 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         param.setPaging(false);
         return this;
     }
-
 
     public List<T> list(int pageIndex, int pageSize) {
         doPaging(pageIndex, pageSize);
@@ -117,7 +119,7 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
     }
 
     public int total(TotalExecutor<QueryParam> executor) {
-        return totalExecutor.doExecute(param);
+        return executor.doExecute(param);
     }
 
     public NestConditional<Query<T, Q>> nest() {
@@ -140,12 +142,14 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
 
     @Override
     public Query<T, Q> and() {
+        setAnd();
         this.accepter = this::and;
         return this;
     }
 
     @Override
     public Query<T, Q> or() {
+        setOr();
         this.accepter = this::or;
         return this;
     }

@@ -2,6 +2,7 @@ package org.hsweb.ezorm.rdb.simple;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.hsweb.ezorm.core.*;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.UpdateParam;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
@@ -51,6 +52,12 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
     }
 
     @Override
+    protected Update<T> addSqlTerm(SqlTerm term) {
+        updateParam.addTerm(term);
+        return this;
+    }
+
+    @Override
     public Update<T> includes(String... fields) {
         updateParam.includes(fields);
         return this;
@@ -78,12 +85,14 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
 
     @Override
     public Update<T> and() {
+        setAnd();
         accepter = this::and;
         return this;
     }
 
     @Override
     public Update<T> or() {
+        setOr();
         accepter = this::or;
         return this;
     }
