@@ -11,4 +11,6 @@
     query.where("name","张三")
          .nest("name","李四").or("name","王五").end()
          .list();
+    // where name like ?
+    query.where().sql("name like ?","张三").list();    
 ```
