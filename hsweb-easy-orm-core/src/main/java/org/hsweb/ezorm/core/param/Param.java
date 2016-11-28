@@ -99,7 +99,7 @@ public class Param implements Cloneable {
     }
 
     public <T extends Param> T where(String key, String termType, Object value) {
-        and(key, value);
+        and(key, termType, value);
         return (T) this;
     }
 
