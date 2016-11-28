@@ -41,7 +41,7 @@ public class H2Dialect extends DefaultDialect {
                 .append(" limit ")
                 .append(pageSize * pageIndex)
                 .append(",")
-                .append(pageSize * (pageIndex + 1)).toString();
+                .append(pageSize).toString();
     }
 
     @Override

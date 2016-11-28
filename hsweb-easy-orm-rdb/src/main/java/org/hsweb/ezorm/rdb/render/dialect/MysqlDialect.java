@@ -45,7 +45,7 @@ public class MysqlDialect extends DefaultDialect {
                 .append(" limit ")
                 .append(pageSize * pageIndex)
                 .append(",")
-                .append(pageSize * (pageIndex + 1)).toString();
+                .append(pageSize).toString();
     }
 
     @Override
