@@ -27,6 +27,11 @@ public class SimpleColumnBuilder implements ColumnBuilder {
         columnMetaData.setName(name);
         return this;
     }
+    @Override
+    public ColumnBuilder alias(String name) {
+        columnMetaData.setAlias(name);
+        return this;
+    }
 
     @Override
     public ColumnBuilder dataType(String dataType) {
@@ -75,6 +80,12 @@ public class SimpleColumnBuilder implements ColumnBuilder {
         columnMetaData.setLength(precision);
         columnMetaData.setScale(scale);
         columnMetaData.setPrecision(precision);
+        return this;
+    }
+
+    @Override
+    public ColumnBuilder property(String propertyName, Object value) {
+        columnMetaData.setProperty(propertyName, value);
         return this;
     }
 

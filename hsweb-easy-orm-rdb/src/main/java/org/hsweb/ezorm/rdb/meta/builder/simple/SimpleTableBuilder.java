@@ -30,6 +30,7 @@ public class SimpleTableBuilder implements TableBuilder {
         }
     }
 
+
     @Override
     public TableBuilder addColumn(Set<RDBColumnMetaData> columns) {
         columns.forEach(rdbTableMetaData::addColumn);
@@ -46,6 +47,18 @@ public class SimpleTableBuilder implements TableBuilder {
     @Override
     public TableBuilder comment(String comment) {
         rdbTableMetaData.setComment(comment);
+        return this;
+    }
+
+    @Override
+    public TableBuilder property(String propertyName, Object value) {
+        rdbTableMetaData.setProperty(propertyName, value);
+        return this;
+    }
+
+    @Override
+    public TableBuilder alias(String name) {
+        rdbTableMetaData.setAlias(name);
         return this;
     }
 

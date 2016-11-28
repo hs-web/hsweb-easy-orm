@@ -44,8 +44,8 @@ public class Term implements Cloneable {
 
     public Term or(String term, String termType, Object value) {
         Term queryTerm = new Term();
-        queryTerm.setColumn(term);
         queryTerm.setTermType(termType);
+        queryTerm.setColumn(term);
         queryTerm.setValue(value);
         queryTerm.setType(Type.or);
         terms.add(queryTerm);
@@ -54,8 +54,8 @@ public class Term implements Cloneable {
 
     public Term and(String term, String termType, Object value) {
         Term queryTerm = new Term();
-        queryTerm.setColumn(term);
         queryTerm.setTermType(termType);
+        queryTerm.setColumn(term);
         queryTerm.setValue(value);
         queryTerm.setType(Type.and);
         terms.add(queryTerm);

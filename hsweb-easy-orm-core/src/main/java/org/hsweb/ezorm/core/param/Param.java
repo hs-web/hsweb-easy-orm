@@ -37,9 +37,9 @@ public class Param implements Cloneable {
 
     public <T extends Param> T or(String column, String termType, Object value) {
         Term term = new Term();
+        term.setTermType(termType);
         term.setColumn(column);
         term.setValue(value);
-        term.setTermType(termType);
         term.setType(Term.Type.or);
         terms.add(term);
         return (T) this;
@@ -47,9 +47,9 @@ public class Param implements Cloneable {
 
     public <T extends Param> T and(String column, String termType, Object value) {
         Term term = new Term();
+        term.setTermType(termType);
         term.setColumn(column);
         term.setValue(value);
-        term.setTermType(termType);
         term.setType(Term.Type.and);
         terms.add(term);
         return (T) this;

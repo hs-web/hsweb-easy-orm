@@ -101,7 +101,7 @@ public class SimpleTest {
                     .or().sql("age > ?", 1)
                 .end()
                     .nest()
-                    .or().each("age", Arrays.asList(1, 2, 3), query -> query::or, append)
+                    .or().each("age", Arrays.asList(1, 2, 3), query -> query::$like$, append)
                 .end()
                 .list();
 

@@ -13,5 +13,8 @@ public interface TableBuilder {
 
     TableBuilder comment(String comment);
 
+    TableBuilder property(String propertyName, Object value);
+    TableBuilder alias(String name);
+
     void commit() throws SQLException;
 }

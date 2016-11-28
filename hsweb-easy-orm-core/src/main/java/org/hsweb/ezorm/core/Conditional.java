@@ -48,10 +48,6 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return and(column, TermType.eq, value);
     }
 
-    default T where(String column) {
-        return and(column, TermType.eq);
-    }
-
     default T where() {
         return (T) this;
     }

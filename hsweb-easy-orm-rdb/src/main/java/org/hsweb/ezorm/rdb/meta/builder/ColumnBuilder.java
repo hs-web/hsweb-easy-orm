@@ -5,6 +5,8 @@ import java.sql.JDBCType;
 public interface ColumnBuilder {
     ColumnBuilder name(String name);
 
+    ColumnBuilder alias(String name);
+
     ColumnBuilder dataType(String dataType);
 
     ColumnBuilder jdbcType(JDBCType jdbcType);
@@ -49,6 +51,8 @@ public interface ColumnBuilder {
     default ColumnBuilder tinyint() {
         return jdbcType(JDBCType.TINYINT);
     }
+
+    ColumnBuilder property(String propertyName, Object value);
 
     ColumnBuilder length(int len);
 
