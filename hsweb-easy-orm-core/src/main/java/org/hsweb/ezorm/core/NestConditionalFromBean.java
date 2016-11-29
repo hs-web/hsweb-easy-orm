@@ -6,6 +6,8 @@ import org.hsweb.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface NestConditionalFromBean<T extends TermTypeConditionalFromBeanSupport> extends TermTypeConditionalFromBeanSupport {
@@ -152,6 +154,57 @@ public interface NestConditionalFromBean<T extends TermTypeConditionalFromBeanSu
     default NestConditionalFromBean<T> each(Map<String, Object> mapParam, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<NestConditionalFromBean<T>>> accepter) {
         mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));
         return this;
+    }
+
+    default NestConditionalFromBean<T> each(String column, String termType, Collection list, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>>> accepter) {
+        list.forEach(o -> accepter.apply(this).accept(column, termType, o));
+        return this;
+    }
+
+    default NestConditionalFromBean<T> each(String column, String termType, Collection list, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>>> accepter, Function<Object, Object> valueMapper) {
+        list.forEach(o -> accepter.apply(this).accept(column, termType, valueMapper.apply(o)));
+        return this;
+    }
+
+    default NestConditionalFromBean<T> each(Map<String, Object> mapParam, String termType, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>>> accepter) {
+        mapParam.forEach((k, v) -> accepter.apply(this).accept(k, termType, v));
+        return this;
+    }
+
+
+    default NestConditionalFromBean<T> when(boolean condition, Consumer<NestConditionalFromBean<T>> consumer) {
+        if (condition) {
+            consumer.accept(this);
+        }
+        return this;
+    }
+
+    default NestConditionalFromBean<T> when(BooleanSupplier condition, Consumer<NestConditionalFromBean<T>> consumer) {
+        return when(condition.getAsBoolean(), consumer);
+    }
+
+    default NestConditionalFromBean<T> when(boolean condition, String column, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<NestConditionalFromBean<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, getValue(column));
+        }
+        return this;
+    }
+
+    default NestConditionalFromBean<T> when(String column, Function<Object, Boolean> condition, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<NestConditionalFromBean<T>>> accepter) {
+        Object value = getValue(column);
+        return when(condition.apply(value), column, accepter);
+    }
+
+    default NestConditionalFromBean<T> when(boolean condition, String column, String termType, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, termType, getValue(column));
+        }
+        return this;
+    }
+
+    default NestConditionalFromBean<T> when(String column, String termType, Function<Object, Boolean> condition, Function<NestConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>>> accepter) {
+        Object value = getValue(column);
+        return when(condition.apply(value), column, termType, accepter);
     }
 
 }

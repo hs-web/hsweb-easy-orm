@@ -43,12 +43,6 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
         createBody.removeLast();
         createBody.add("\n)");
         SimpleSQL simpleSQL = new SimpleSQL(createBody.toString(), param);
-        if (!metaData.getPrimaryKeys().isEmpty()) {
-            String pkList = metaData.getPrimaryKeys().stream().reduce((s, s2) -> s + "," + s2).get();
-            String pkStr = String.format("ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY(%s)",
-                    metaData.getName(), metaData.getName() + "_pk", pkList);
-            comments.add(pkStr);
-        }
         List<BindSQL> bindSQLs = comments.stream().map(s -> {
             BindSQL sql = new BindSQL();
             sql.setSql(new SimpleSQL(s, param));

@@ -6,11 +6,17 @@ import org.hsweb.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface NestConditional<T extends TermTypeConditionalSupport> extends TermTypeConditionalSupport {
 
     T end();
+
+    default NestConditional<T> is(String column, Object value) {
+        return accept(column, TermType.eq, value);
+    }
 
     NestConditional<NestConditional<T>> nest();
 
@@ -147,19 +153,7 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
 
 
     /**
-     * 遍历一个集合，进行条件追加
-     * 例如:<br>
-     * query.or().each("areaId",[1,2,3],(query)->query::$like$)<br>
-     * 将追加sql<br>
-     * areaId like '%1%' or areaId like '%2%' or areaId like '%3%'
-     *
-     * @param column         要追加到的列名
-     * @param list           集合
-     * @param accepterGetter 追加方式函数
-     * @return {@link T}
-     * @see Function
-     * @see Conditional
-     * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
+     * @see Conditional#each(String, Collection, Function)
      */
     default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepterGetter) {
         if (null != list)
@@ -168,21 +162,16 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
     }
 
     /**
-     * 参照 {@link Conditional#each(String, Collection, Function)}
-     * 提供了一个valueMapper进行值转换如:
-     * <br>
-     * query.or().each("areaId",[1,2,3],(query)->query::$like$,(value)->","+value+",")<br>
-     * 将追加sql<br>
-     * areaId like '%,1,%' or areaId like '%,2,%' or areaId like '%,3,%'
-     *
-     * @param column         要追加到的列名
-     * @param list           集合
-     * @param accepterGetter 追加方式函数
-     * @param valueMapper    值转换函数 {@link Function}
-     * @return {@link T}
-     * @see Function
-     * @see Conditional
-     * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
+     * @see Conditional#each(String, String, Collection, Function)
+     */
+    default NestConditional<T> each(String column, String termType, Collection list, Function<NestConditional<T>, Accepter<NestConditional<T>>> accepterGetter) {
+        if (null != list)
+            list.forEach(o -> accepterGetter.apply(this).accept(column, termType, o));
+        return this;
+    }
+
+    /**
+     * @see Conditional#each(String, Collection, Function)
      */
     default NestConditional<T> each(String column, Collection list, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
         if (null != list)
@@ -191,23 +180,81 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
     }
 
     /**
-     * 遍历一个Map,进行条件追加
-     * 例如:<br>
-     * query.or().each({name:"admin"},(query)->query::$like$)<br>
-     * 将追加sql<br>
-     * name like '%admin%'
-     *
-     * @param mapParam map参数
-     * @param accepter 追加方式函数
-     * @return {@link T}
-     * @see Function
-     * @see Conditional
-     * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
+     * @see Conditional#each(String, String, Collection, Function)
+     */
+    default NestConditional<T> each(String column, String termType, Collection list, Function<NestConditional<T>, Accepter<NestConditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
+        if (null != list)
+            list.forEach(o -> accepterGetter.apply(this).accept(column, termType, valueMapper.apply(o)));
+        return this;
+    }
+
+    /**
+     * @see Conditional#each(Map, Function)
      */
     default NestConditional<T> each(Map<String, Object> mapParam, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
         if (null != mapParam)
             mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));
         return this;
+    }
+
+    /**
+     * @see Conditional#each(Map, String, Function)
+     */
+    default NestConditional<T> each(Map<String, Object> mapParam, String termType, Function<NestConditional<T>, Accepter<NestConditional<T>>> accepter) {
+        if (null != mapParam)
+            mapParam.forEach((k, v) -> accepter.apply(this).accept(k, termType, v));
+        return this;
+    }
+
+    /**
+     * @see Conditional#when(boolean, Consumer)
+     */
+    default NestConditional<T> when(boolean condition, Consumer<NestConditional<T>> consumer) {
+        if (condition) {
+            consumer.accept(this);
+        }
+        return this;
+    }
+
+    /**
+     * @see Conditional#when(BooleanSupplier, Consumer)
+     */
+    default NestConditional<T> when(BooleanSupplier condition, Consumer<NestConditional<T>> consumer) {
+        return when(condition.getAsBoolean(), consumer);
+    }
+
+    /**
+     * @see Conditional#when(boolean, String, Object, Function)
+     */
+    default NestConditional<T> when(boolean condition, String column, Object value, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, value);
+        }
+        return this;
+    }
+
+    /**
+     * @see Conditional#when(String, Object, Function, Function)
+     */
+    default <V> NestConditional<T> when(String column, V value, Function<V, Boolean> condition, Function<NestConditional<T>, SimpleAccepter<NestConditional<T>>> accepter) {
+        return when(condition.apply(value), column, value, accepter);
+    }
+
+    /**
+     * @see Conditional#when(boolean, String, String, Object, Function)
+     */
+    default NestConditional<T> when(boolean condition, String column, String termType, Object value, Function<NestConditional<T>, Accepter<NestConditional<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, termType, value);
+        }
+        return this;
+    }
+
+    /**
+     * @see Conditional#when(String, String, Object, Function, Function)
+     */
+    default <V> NestConditional<T> when(String column, String termType, V value, Function<V, Boolean> condition, Function<NestConditional<T>, Accepter<NestConditional<T>>> accepter) {
+        return when(condition.apply(value), column, termType, value, accepter);
     }
 
 }

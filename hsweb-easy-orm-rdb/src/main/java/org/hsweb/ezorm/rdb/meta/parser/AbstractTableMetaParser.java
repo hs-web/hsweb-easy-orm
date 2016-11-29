@@ -36,6 +36,10 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
 
     @Override
     public RDBTableMetaData parse(String name) {
+        try {
+            if (!sqlExecutor.tableExists(name)) return null;
+        } catch (SQLException e) {
+        }
         RDBTableMetaData metaData = new RDBTableMetaData();
         metaData.setName(name);
         metaData.setAlias(name);

@@ -28,79 +28,79 @@ public interface TermType {
      *
      * @since 1.0
      */
-    String eq = "eq";
+    String eq      = "eq";
     /**
      * !=
      *
      * @since 1.0
      */
-    String not = "not";
+    String not     = "not";
     /**
      * like
      *
      * @since 1.0
      */
-    String like = "like";
+    String like    = "like";
     /**
      * not like
      *
      * @since 1.0
      */
-    String nlike = "nlike";
+    String nlike   = "nlike";
     /**
      * >
      *
      * @since 1.0
      */
-    String gt = "gt";
+    String gt      = "gt";
     /**
      * <
      *
      * @since 1.0
      */
-    String lt = "lt";
+    String lt      = "lt";
     /**
      * >=
      *
      * @since 1.0
      */
-    String gte = "gte";
+    String gte     = "gte";
     /**
      * <=
      *
      * @since 1.0
      */
-    String lte = "lte";
+    String lte     = "lte";
     /**
      * in
      *
      * @since 1.0
      */
-    String in = "in";
+    String in      = "in";
     /**
      * notin
      *
      * @since 1.0
      */
-    String nin = "nin";
+    String nin     = "nin";
     /**
      * =''
      *
      * @since 1.0
      */
-    String empty = "empty";
+    String empty   = "empty";
     /**
      * !=''
      *
      * @since 1.0
      */
-    String nempty = "nempty";
+    String nempty  = "nempty";
     /**
      * is null
      *
      * @since 1.0
      */
-    String isnull = "isnull";
+    String isnull  = "isnull";
     /**
      * not null
      *
@@ -112,18 +112,21 @@ public interface TermType {
      *
      * @since 1.0
      */
-    String btw = "btw";
+    String btw     = "btw";
     /**
      * not between
      *
      * @since 1.0
      */
-    String nbtw = "nbtw";
+    String nbtw    = "nbtw";
 
     /**
      * 此类型将直接执行sql.在类型是从客户端参数中获取的场景中,应该屏蔽此类型
      *
+     * @see SqlTerm
      * @since 1.0
+     * @deprecated 此属性已弃用，如果想直接拼接sql，请使用 {@link SqlTerm}
      */
+    @Deprecated
     String func = "func";
 }

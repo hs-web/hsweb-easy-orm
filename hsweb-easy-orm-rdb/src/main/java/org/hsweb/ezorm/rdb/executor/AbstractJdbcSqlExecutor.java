@@ -92,34 +92,34 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
      * @return sql 编译好的信息
      */
     public SQLInfo compileSql(SQL sql) {
-        SQLInfo sqlInfo = new SQLInfo();
         String sqlTemplate = sql.getSql();
-        Object param = sql.getParams();
-        Matcher prepared_matcher = PREPARED_PATTERN.matcher(sqlTemplate);
-        Matcher append_matcher = APPEND_PATTERN.matcher(sqlTemplate);
-        List<Object> params = new LinkedList<>();
-
-        //直接拼接sql
-        while (append_matcher.find()) {
-            String group = append_matcher.group();
-            Object obj = getSqlParamValue(param, group);
-            sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), String.valueOf(obj));
-        }
-        String loggerSql = sqlTemplate;
-        //参数预编译sql
-        while (prepared_matcher.find()) {
-            String group = prepared_matcher.group();
-            sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), "?");
-            Object obj = getSqlParamValue(param, group);
-            if (logger.isDebugEnabled()) {
-                loggerSql = loggerSql.replaceFirst(StringUtils.concat("\\#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), obj == null ? "null" : obj instanceof Number ? String.valueOf(obj) : "'".concat(String.valueOf(obj)).concat("'"));
+        try {
+            SQLInfo sqlInfo = new SQLInfo();
+            Object param = sql.getParams();
+            Matcher prepared_matcher = PREPARED_PATTERN.matcher(sqlTemplate);
+            Matcher append_matcher = APPEND_PATTERN.matcher(sqlTemplate);
+            List<Object> params = new LinkedList<>();
+            //直接拼接sql
+            while (append_matcher.find()) {
+                String group = append_matcher.group();
+                Object obj = getSqlParamValue(param, group);
+                sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), String.valueOf(obj));
             }
-            params.add(obj);
+            //参数预编译sql
+            while (prepared_matcher.find()) {
+                String group = prepared_matcher.group();
+                sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), "?");
+                Object obj = getSqlParamValue(param, group);
+                params.add(obj);
+            }
+            sqlInfo.setSql(sqlTemplate);
+            sqlInfo.setParam(params.toArray());
+            return sqlInfo;
+        } catch (Exception e) {
+            logger.error("compile sql  {}  error", sqlTemplate, e);
+            throw e;
         }
-        sqlInfo.setSqlLogger(loggerSql);
-        sqlInfo.setSql(sqlTemplate);
-        sqlInfo.setParam(params.toArray());
-        return sqlInfo;
+
     }
 
     /**
@@ -353,13 +353,18 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             logger.debug("==>  Preparing: {}", info.getSql());
             if (info.getParam() != null && info.getParam().length > 0) {
                 logger.debug("==> Parameters: {}", info.paramsString());
-                logger.debug("==>  Simulated: {}", info.sqlLogger);
+                String sim = info.getSql();
+                Object[] param = info.getParam();
+                for (int i = 0; i < param.length; i++) {
+                    Object obj = param[0];
+                    sim = sim.replaceFirst("\\?", obj instanceof Number ? String.valueOf(obj) : "'".concat(String.valueOf(obj)).concat("'"));
+                }
+                logger.debug("==>  Simulated: {}", sim);
             }
         }
     }
 
     public static class SQLInfo {
-        private String sqlLogger;
         /**
          * sql语句
          */
@@ -389,10 +394,6 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
 
         public void setParam(Object[] param) {
             this.param = param;
-        }
-
-        public void setSqlLogger(String sqlLogger) {
-            this.sqlLogger = sqlLogger;
         }
 
         public String paramsString() {

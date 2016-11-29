@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.h2;
 
+import org.hsweb.ezorm.core.Conditional;
 import org.hsweb.ezorm.core.dsl.Query;
 import org.hsweb.ezorm.core.dsl.Update;
 import org.hsweb.ezorm.core.param.QueryParam;
@@ -20,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 
@@ -89,19 +91,20 @@ public class SimpleTest {
 //        table.createQuery().setParam(queryParam).list();
 
         Function<Object, Object> append = (value) -> "," + value + ",";
-
         table.createQuery()
+                .where()
                 .sql("age >? or age <?", 1, 5)
+                .when("age", 10, age -> age > 10, query -> query.or()::like)
                 .nest()
-                    .nest()
-                        .sql("age > 10")
-                        .sql("age > #{age}", Collections.singletonMap("age", 10))
-                        .sql("age > #{[0]}", Arrays.asList(1))
-                    .end()
-                    .or().sql("age > ?", 1)
+                .nest()
+                .sql("age > 10")
+                .sql("age > #{age}", Collections.singletonMap("age", 10))
+                .sql("age > #{[0]} or age > #{[0]}", Arrays.asList(1))
                 .end()
-                    .nest()
-                    .or().each("age", Arrays.asList(1, 2, 3), query -> query::$like$, append)
+                .or().sql("age > ?", 1)
+                .end()
+                .nest()
+                .or().each("age", Arrays.asList(1, 2, 3), query -> query::$like$, append)
                 .end()
                 .list();
 

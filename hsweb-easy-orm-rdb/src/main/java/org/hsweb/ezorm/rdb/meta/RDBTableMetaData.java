@@ -11,8 +11,6 @@ import java.util.*;
  * 表结构定义实体
  */
 public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> implements TableMetaData, Serializable, Cloneable {
-    //主键
-    private Set<String>      primaryKeys  = new HashSet<>();
     //数据库定义实体
     private Set<Correlation> correlations = new LinkedHashSet<>();
     private RDBDatabaseMetaData databaseMetaData;
@@ -44,7 +42,7 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
     }
 
     public boolean renameColumn(String old, String newName) {
-        RDBColumnMetaData oldField = (RDBColumnMetaData) columnMetaDataMap.get(old);
+        RDBColumnMetaData oldField = columnMetaDataMap.get(old);
         if (oldField != null) {
             columnMetaDataMap.remove(old);
             columnMetaDataMap.put(newName, oldField);
@@ -90,14 +88,6 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
 
     public void setCorrelations(Set<Correlation> correlations) {
         this.correlations = correlations;
-    }
-
-    public Set<String> getPrimaryKeys() {
-        return primaryKeys;
-    }
-
-    public void setPrimaryKeys(Set<String> primaryKeys) {
-        this.primaryKeys = primaryKeys;
     }
 
     @Override

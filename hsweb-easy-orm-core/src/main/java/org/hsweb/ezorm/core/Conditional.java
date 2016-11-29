@@ -23,6 +23,9 @@ import org.hsweb.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface Conditional<T extends Conditional> extends TermTypeConditionalSupport {
@@ -54,6 +57,10 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
 
     default T and(String column, Object value) {
         return and(column, TermType.eq, value);
+    }
+
+    default T is(String column, Object value) {
+        return accept(column, TermType.eq, value);
     }
 
     default T or(String column, Object value) {
@@ -186,6 +193,12 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return (T) this;
     }
 
+    default T each(String column, String termType, Collection list, Function<Conditional<T>, Accepter<Conditional<T>>> accepterGetter) {
+        if (null != list)
+            list.forEach(o -> accepterGetter.apply(this).accept(column, termType, o));
+        return (T) this;
+    }
+
     /**
      * 参照 {@link Conditional#each(String, Collection, Function)}
      * 提供了一个valueMapper进行值转换如:
@@ -209,6 +222,12 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return (T) this;
     }
 
+    default T each(String column, String termType, Collection list, Function<Conditional<T>, Accepter<Conditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
+        if (null != list)
+            list.forEach(o -> accepterGetter.apply(this).accept(column, termType, valueMapper.apply(o)));
+        return (T) this;
+    }
+
     /**
      * 遍历一个Map,进行条件追加
      *
@@ -223,6 +242,108 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         if (null != mapParam)
             mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));
         return (T) this;
+    }
+
+    default T each(Map<String, Object> mapParam, String termType, Function<Conditional<T>, Accepter<Conditional<T>>> accepter) {
+        if (null != mapParam)
+            mapParam.forEach((k, v) -> accepter.apply(this).accept(k, termType, v));
+        return (T) this;
+    }
+
+    /**
+     * 指定一个前置条件,当条件满足的时候,调用回调进行自定义参数<br>
+     * 如: query(age>10,query->query.gt("age",10))
+     *
+     * @param condition 前置条件
+     * @param consumer  回调
+     * @return {@link T}
+     */
+    default T when(boolean condition, Consumer<Conditional<T>> consumer) {
+        if (condition) {
+            consumer.accept(this);
+        }
+        return (T) this;
+    }
+
+    /**
+     * 通过BooleanSupplier获取条件,例如<br>
+     * query.when(()->age>10,query->query.gt("age",10));
+     *
+     * @see Conditional#when(boolean, Consumer)
+     * @see BooleanSupplier
+     */
+    default T when(BooleanSupplier condition, Consumer<Conditional<T>> consumer) {
+        return when(condition.getAsBoolean(), consumer);
+    }
+
+    /**
+     * 指定前置条件,列名,参数值,条件构造函数。当条件满足的时候，执行构造器添加条件.例如<br>
+     * query.when(age>10,"age",10,query->query::gt);<br>
+     * 等同于<br>
+     * if(age>10)query.gt(age,10);<br>
+     *
+     * @param condition 前置条件
+     * @param column    要查询的列名
+     * @param value     参数值
+     * @param accepter  条件构造函数
+     * @return {@link T}
+     */
+    default T when(boolean condition, String column, Object value, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, value);
+        }
+        return (T) this;
+    }
+
+    /**
+     * 指定列名，参数值，条件判断函数，条件构造函数进行条件添加。如<br>
+     * query.when("age",10,value->value>10,query->query::gt)
+     *
+     * @param column    列名
+     * @param value     值
+     * @param condition 条件判断函数
+     * @param accepter  条件构造函数
+     * @return {@link T}
+     * @see Conditional#when(boolean, String, Object, Function)
+     */
+    default <V> T when(String column, V value, Function<V, Boolean> condition, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepter) {
+        return when(condition.apply(value), column, value, accepter);
+    }
+
+    /**
+     * 功能与{@link Conditional#when(boolean, String, Object, Function)} 类似,可自定义termType 如:<br>
+     * query.when(true,"age","like",10,query->query::or)
+     *
+     * @param condition 条件
+     * @param column    列名
+     * @param termType  条件类型
+     * @param value     参数
+     * @param accepter  条件构造函数
+     * @return {@link T}
+     * @see Conditional#when(boolean, String, Object, Function)
+     */
+    default T when(boolean condition, String column, String termType, Object value, Function<Conditional<T>, Accepter<Conditional<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, termType, value);
+        }
+        return (T) this;
+    }
+
+    /**
+     * 功能与{@link Conditional#when(String, Object, Function, Function)} 类似,可自定义termType 如:<br>
+     * query.when("age","like",10,value->value==10,query->query::or)
+     *
+     * @param condition 条件
+     * @param column    列名
+     * @param termType  条件类型
+     * @param value     参数
+     * @param accepter  条件构造函数
+     * @return {@link T}
+     * @see Conditional#when(boolean, String, Object, Function)
+     * @see TermType
+     */
+    default <V> T when(String column, String termType, V value, Function<V, Boolean> condition, Function<Conditional<T>, Accepter<Conditional<T>>> accepter) {
+        return when(condition.apply(value), column, termType, value, accepter);
     }
 
 }

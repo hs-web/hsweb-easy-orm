@@ -1,8 +1,13 @@
 package org.hsweb.ezorm.rdb.meta.builder;
 
+import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
+
 import java.sql.JDBCType;
+import java.util.function.Consumer;
 
 public interface ColumnBuilder {
+    ColumnBuilder custom(Consumer<RDBColumnMetaData> consumer);
+
     ColumnBuilder name(String name);
 
     ColumnBuilder alias(String name);

@@ -10,6 +10,7 @@ import org.hsweb.ezorm.rdb.RDBDatabase;
 
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * @author zhouhao
@@ -30,6 +31,10 @@ public class SimpleTableBuilder implements TableBuilder {
         }
     }
 
+    public TableBuilder custom(Consumer<RDBTableMetaData> consumer) {
+        consumer.accept(rdbTableMetaData);
+        return this;
+    }
 
     @Override
     public TableBuilder addColumn(Set<RDBColumnMetaData> columns) {

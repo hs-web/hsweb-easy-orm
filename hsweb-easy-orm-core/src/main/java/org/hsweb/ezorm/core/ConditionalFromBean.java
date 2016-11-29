@@ -22,6 +22,8 @@ import org.hsweb.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface ConditionalFromBean<T extends TermTypeConditionalFromBeanSupport> extends TermTypeConditionalFromBeanSupport {
@@ -117,7 +119,6 @@ public interface ConditionalFromBean<T extends TermTypeConditionalFromBeanSuppor
         return accept(column, TermType.in, values);
     }
 
-
     default T notIn(String column, Object... values) {
         return accept(column, TermType.nin, values);
     }
@@ -168,19 +169,105 @@ public interface ConditionalFromBean<T extends TermTypeConditionalFromBeanSuppor
         return getAccepter().accept(column, termType, value);
     }
 
+    /**
+     * @see Conditional#each(String, Collection, Function)
+     */
     default T each(String column, Collection list, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<ConditionalFromBean<T>>> accepter) {
         list.forEach(o -> accepter.apply(this).accept(column, o));
         return (T) this;
     }
 
+
+    /**
+     * @see Conditional#each(String, String, Collection, Function)
+     */
     default T each(String column, Collection list, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<ConditionalFromBean<T>>> accepter, Function<Object, Object> valueMapper) {
         list.forEach(o -> accepter.apply(this).accept(column, valueMapper.apply(o)));
         return (T) this;
     }
 
+    /**
+     * @see Conditional#each(String, Collection, Function)
+     */
     default T each(Map<String, Object> mapParam, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<ConditionalFromBean<T>>> accepter) {
         mapParam.forEach((k, v) -> accepter.apply(this).accept(k, v));
         return (T) this;
     }
 
+    /**
+     * @see Conditional#each(String, String, Collection, Function)
+     */
+    default T each(String column, String termType, Collection list, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<ConditionalFromBean<T>>> accepter) {
+        list.forEach(o -> accepter.apply(this).accept(column, termType, o));
+        return (T) this;
+    }
+
+    /**
+     * @see Conditional#each(Map, Function)
+     */
+    default T each(String column, String termType, Collection list, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<ConditionalFromBean<T>>> accepter, Function<Object, Object> valueMapper) {
+        list.forEach(o -> accepter.apply(this).accept(column, termType, valueMapper.apply(o)));
+        return (T) this;
+    }
+
+    /**
+     * @see Conditional#each(Map, String, Function)
+     */
+    default T each(Map<String, Object> mapParam, String termType, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<ConditionalFromBean<T>>> accepter) {
+        mapParam.forEach((k, v) -> accepter.apply(this).accept(k, termType, v));
+        return (T) this;
+    }
+
+    /**
+     * @see Conditional#when(boolean, Consumer)
+     */
+    default T when(boolean condition, Consumer<ConditionalFromBean<T>> consumer) {
+        if (condition) {
+            consumer.accept(this);
+        }
+        return (T) this;
+    }
+
+    /**
+     * @see Conditional#when(BooleanSupplier, Consumer)
+     */
+    default T when(BooleanSupplier condition, Consumer<ConditionalFromBean<T>> consumer) {
+        return when(condition.getAsBoolean(), consumer);
+    }
+
+    /**
+     * @see Conditional#when(boolean, String, Object, Function)
+     */
+    default T when(boolean condition, String column, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<ConditionalFromBean<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, getValue(column));
+        }
+        return (T) this;
+    }
+
+    /**
+     * @see Conditional#when(String, Object, Function, Function)
+     */
+    default T when(String column, Function<Object, Boolean> condition, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.SimpleAccepter<ConditionalFromBean<T>>> accepter) {
+        Object value = getValue(column);
+        return when(condition.apply(value), column, accepter);
+    }
+
+    /**
+     * @see Conditional#when(boolean, String, String, Object, Function)
+     */
+    default T when(boolean condition, String column, String termType, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<ConditionalFromBean<T>>> accepter) {
+        if (condition) {
+            accepter.apply(this).accept(column, termType, getValue(column));
+        }
+        return (T) this;
+    }
+
+    /**
+     * @see Conditional#when(String, String, Object, Function, Function)
+     */
+    default T when(String column, String termType, Function<Object, Boolean> condition, Function<ConditionalFromBean<T>, TermTypeConditionalSupport.Accepter<ConditionalFromBean<T>>> accepter) {
+        Object value = getValue(column);
+        return when(condition.apply(value), column, termType, accepter);
+    }
 }

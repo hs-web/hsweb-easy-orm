@@ -88,6 +88,9 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             if (column.isNotNull()) {
                 append.add(" NOT NULL");
             }
+            if(column.isPrimaryKey()){
+                append.add(" PRIMARY KEY ");
+            }
             if (StringUtils.isNullOrEmpty(column.getComment())) {
                 comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), column.getName(), column.getAlias()));
             } else {
@@ -115,10 +118,12 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                     || oldColumn.isNotNull() != column.isNotNull()) {
                 SqlAppender append = new SqlAppender();
                 append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", column.getName(), " ", column.getDataType());
-                if (column.isNotNull()) {
-                    append.add(" NOT NULL");
-                } else {
-                    append.add(" NULL");
+                if (oldColumn.isNotNull() != column.isNotNull()) {
+                    if (column.isNotNull()) {
+                        append.add(" NOT NULL");
+                    } else {
+                        append.add(" NULL");
+                    }
                 }
                 SimpleSQL simpleSQL = new SimpleSQL(append.toString(), column);
                 BindSQL bindSQL = new BindSQL();

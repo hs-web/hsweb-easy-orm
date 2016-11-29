@@ -59,7 +59,9 @@ public class MysqlTest {
                         .orNest().like("name", "6").like("name", "7").like("name", "8").end()
                         .end()
                         .and()
-                        .between("age", 18, 28).list(0, 10);
+                        .between("age", 18, 28)
+                        .list(0, 10);
+
         database.createOrAlter("s_user")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
                 .addColumn().name("name").varchar(256).notNull().comment("姓名").commit()

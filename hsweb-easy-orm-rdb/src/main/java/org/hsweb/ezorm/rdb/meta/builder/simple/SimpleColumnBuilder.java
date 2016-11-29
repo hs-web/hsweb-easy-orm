@@ -6,10 +6,10 @@ import org.hsweb.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hsweb.ezorm.rdb.meta.builder.TableBuilder;
 
 import java.sql.JDBCType;
+import java.util.function.Consumer;
 
 /**
  * @author zhouhao
- * @TODO
  */
 public class SimpleColumnBuilder implements ColumnBuilder {
     RDBColumnMetaData columnMetaData;
@@ -27,6 +27,13 @@ public class SimpleColumnBuilder implements ColumnBuilder {
         columnMetaData.setName(name);
         return this;
     }
+
+    @Override
+    public ColumnBuilder custom(Consumer<RDBColumnMetaData> consumer) {
+        consumer.accept(columnMetaData);
+        return this;
+    }
+
     @Override
     public ColumnBuilder alias(String name) {
         columnMetaData.setAlias(name);

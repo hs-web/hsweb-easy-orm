@@ -3,6 +3,8 @@ package org.hsweb.ezorm.rdb.meta.parser;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
+import java.sql.JDBCType;
+
 // TODO: 16-10-28
 public class OracleTableMetaParser extends AbstractTableMetaParser {
 
@@ -23,7 +25,6 @@ public class OracleTableMetaParser extends AbstractTableMetaParser {
 
     final static String ALL_TABLE_SQL = "select table_name as \"name\" from user_tab_comments where table_type='TABLE'";
 
-
     @Override
     Dialect getDialect() {
         return Dialect.ORACLE;
@@ -31,6 +32,9 @@ public class OracleTableMetaParser extends AbstractTableMetaParser {
 
     public OracleTableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
+        jdbcTypeMap.put("varchar2", JDBCType.VARCHAR);
+        jdbcTypeMap.put("number", JDBCType.NUMERIC);
+        jdbcTypeMap.put("date", JDBCType.TIMESTAMP);
     }
 
     @Override

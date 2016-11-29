@@ -35,12 +35,6 @@ public class MysqlMetaCreateRender implements SqlRender {
             appender.add(",");
         });
         appender.removeLast();
-        if (!metaData.getPrimaryKeys().isEmpty()) {
-            appender.add(",", "\n\tprimary key (");
-            metaData.getPrimaryKeys().forEach(pk -> appender.add("`", pk, "`", ","));
-            appender.removeLast();
-            appender.addEdSpc(")");
-        }
         appender.add("\n)");
         if (metaData.getComment() != null) {
             appender.add("COMMENT=", "'", metaData.getComment(), "'");
