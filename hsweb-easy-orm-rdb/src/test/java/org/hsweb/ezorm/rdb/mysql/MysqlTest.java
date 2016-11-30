@@ -1,5 +1,7 @@
 package org.hsweb.ezorm.rdb.mysql;
 
+import org.hsweb.ezorm.core.dsl.Update;
+import org.hsweb.ezorm.core.param.UpdateParam;
 import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBDatabaseMetaData;
@@ -16,6 +18,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.JDBCType;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +55,20 @@ public class MysqlTest {
                 .comment("用户表")
                 .commit();
         RDBTable<Map<String, Object>> table = database.getTable("s_user");
+
+        new Update<>(new UpdateParam<>())
+                .setExecutor((param) -> {
+                    try {
+                        return table.createUpdate().setParam(param).exec();
+                    } catch (SQLException e) {
+                    }
+                    return 0;
+                })
+                .fromBean(Collections.singletonMap("name", "aa"))
+                .where("name")
+                .nest().like("name").end()
+                .exec();
+
         List<Map<String, Object>> aa =
                 table.createQuery().where("name", "1").and("name", "2")
                         .nest().nest()
