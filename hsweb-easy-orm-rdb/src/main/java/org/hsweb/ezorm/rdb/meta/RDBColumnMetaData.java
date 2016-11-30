@@ -64,20 +64,6 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
 
     private int sortIndex;
 
-    private Map<String, Object> properties = new HashMap<>();
-
-    public PropertyWrapper getProperty(String name) {
-        return new SimplePropertyWrapper(properties.get(name));
-    }
-
-    public PropertyWrapper getProperty(String name, Object defaultValue) {
-        return new SimplePropertyWrapper(properties.getOrDefault(name, defaultValue));
-    }
-
-    public PropertyWrapper setProperty(String property, Object value) {
-        return new SimplePropertyWrapper(properties.put(property, value));
-    }
-
     public String getDataType() {
         return dataType;
     }
