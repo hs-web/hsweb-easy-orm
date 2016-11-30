@@ -88,7 +88,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             if (column.isNotNull()) {
                 append.add(" NOT NULL");
             }
-            if(column.isPrimaryKey()){
+            if (column.isPrimaryKey()) {
                 append.add(" PRIMARY KEY ");
             }
             if (StringUtils.isNullOrEmpty(column.getComment())) {
@@ -158,6 +158,9 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         }).collect(Collectors.toList()));
 
         SQL sql = null;
+        if (bind.isEmpty()) {
+            return new EmptySQL();
+        }
         bind.addAll(commentSql);
         if (!bind.isEmpty()) {
             sql = bind.get(0).getSql();
