@@ -2,13 +2,13 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hsweb.ezorm.core.param.Term;
+import org.hsweb.ezorm.core.param.UpdateParam;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
-import org.hsweb.ezorm.core.param.Term;
-import org.hsweb.ezorm.core.param.UpdateParam;
-import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,17 +46,17 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             appender.add("UPDATE ", metaData.getName(), " ", metaData.getAlias(), " SET ");
             byte[] bytes = new byte[1];
             updateField.forEach(operationColumn -> {
-                RDBColumnMetaData RDBColumnMetaData = operationColumn.getRDBColumnMetaData();
-                if (RDBColumnMetaData.getProperty("read-only").isTrue()) return;
+                RDBColumnMetaData column = operationColumn.getRDBColumnMetaData();
+                if (column.getProperty("read-only").isTrue()) return;
                 try {
-                    String dataProperty = RDBColumnMetaData.getAlias();
+                    String dataProperty = column.getAlias();
                     Object value = null;
                     try {
                         value = propertyUtils.getProperty(param.getData(), dataProperty);
                     } catch (Exception e) {
                     }
-                    if (value == null && !RDBColumnMetaData.getAlias().equals(RDBColumnMetaData.getName())) {
-                        dataProperty = RDBColumnMetaData.getName();
+                    if (value == null && !column.getAlias().equals(column.getName())) {
+                        dataProperty = column.getName();
                         try {
                             value = propertyUtils.getProperty(param.getData(), dataProperty);
                         } catch (Exception e) {
@@ -64,24 +64,25 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     }
                     if (value == null) {
                         if (logger.isInfoEnabled())
-                            logger.info("跳过修改列:[{}], 属性[{}]为null!", RDBColumnMetaData.getName(), RDBColumnMetaData.getAlias());
+                            logger.info("跳过修改列:[{}], 属性[{}]为null!", column.getName(), column.getAlias());
                         return;
                     }
-                    if (RDBColumnMetaData.getValueConverter() != null) {
-                        Object new_value = RDBColumnMetaData.getValueConverter().getData(value);
-                        if (RDBColumnMetaData.getOptionConverter() != null) {
-                            new_value = RDBColumnMetaData.getOptionConverter().converterData(new_value);
+                    if (column.getValueConverter() != null) {
+                        Object new_value = column.getValueConverter().getData(value);
+                        if (column.getOptionConverter() != null) {
+                            new_value = column.getOptionConverter().converterData(new_value);
                         }
                         if (value != new_value && !value.equals(new_value))
                             propertyUtils.setProperty(param.getData(), dataProperty, new_value);
                     }
-                    appender.add(RDBColumnMetaData.getName(), "=")
-                            .addAll(getParamString("data.".concat(dataProperty), RDBColumnMetaData));
+
+                    appender.add(dialect.buildColumnName(null, column.getName()), "=")
+                            .addAll(getParamString("data.".concat(dataProperty), column));
                     appender.add(",");
                     bytes[0]++;
                 } catch (Exception e) {
                     if (logger.isInfoEnabled())
-                        logger.info("跳过修改列:[{}], 可能属性[{}]不存在!", RDBColumnMetaData.getName(), RDBColumnMetaData.getAlias());
+                        logger.info("跳过修改列:[{}], 可能属性[{}]不存在!", column.getName(), column.getAlias());
                 }
             });
             if (bytes[0] == 0) throw new IndexOutOfBoundsException("没有列被修改!");

@@ -9,6 +9,7 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.core.param.InsertParam;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.SqlRender;
+import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,9 +28,8 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         appender.add("(");
         Object data = param.getData();
         if (data == null) throw new NullPointerException("不能插入为null的数据!");
-        metaData.getColumns().forEach(fieldMetaData -> {
-            appender.add(fieldMetaData.getName(), ",");
-        });
+        Dialect dialect = metaData.getDatabaseMetaData().getDialect();
+        metaData.getColumns().forEach(column -> appender.add(dialect.buildColumnName(null, column.getName()), ","));
         appender.removeLast();
         appender.add(")values");
         List<Object> list = new ArrayList<>();
@@ -57,7 +57,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                         if (value != null) dataProperty = fieldMetaData.getName();
                     }
                 } catch (Exception e) {
-                   // logger.debug("get property error", e);
+                    // logger.debug("get property error", e);
                 }
                 if (value == null) {
                     value = fieldMetaData.getProperty("default-value").getValue();

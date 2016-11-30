@@ -10,9 +10,6 @@ import org.hsweb.ezorm.rdb.render.SqlAppender;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by zhouhao on 16-6-4.
- */
 public class SimpleDeleteSqlRender extends CommonSqlRender<Param> {
     public SimpleDeleteSqlRender(Dialect dialect) {
         setDialect(dialect);
