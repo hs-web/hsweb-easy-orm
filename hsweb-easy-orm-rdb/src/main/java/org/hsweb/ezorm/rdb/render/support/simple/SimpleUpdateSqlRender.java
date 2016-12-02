@@ -10,9 +10,7 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,7 +28,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
         public SimpleUpdateSqlRenderProcess(RDBTableMetaData metaData, UpdateParam param) {
             this.metaData = metaData;
-            this.param = param;
+            this.param = param.clone();
             List<Term> terms = param.getTerms();
             terms = terms.stream().filter(term -> term.getColumn() == null || !term.getColumn().contains(".")).collect(Collectors.toList());
             param.setTerms(terms);
@@ -45,6 +43,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             SqlAppender appender = new SqlAppender();
             appender.add("UPDATE ", metaData.getName(), " ", metaData.getAlias(), " SET ");
             byte[] bytes = new byte[1];
+            Map<String, Object> valueProxy = new HashMap<>();
             updateField.forEach(operationColumn -> {
                 RDBColumnMetaData column = operationColumn.getRDBColumnMetaData();
                 if (column.getProperty("read-only").isTrue()) return;
@@ -72,10 +71,12 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         if (column.getOptionConverter() != null) {
                             new_value = column.getOptionConverter().converterData(new_value);
                         }
-                        if (value != new_value && !value.equals(new_value))
-                            propertyUtils.setProperty(param.getData(), dataProperty, new_value);
+                        if (value != new_value && !value.equals(new_value)) {
+                            // propertyUtils.setProperty(param.getData(), dataProperty, new_value);
+                            value = new_value;
+                        }
                     }
-
+                    valueProxy.put(dataProperty, value);
                     appender.add(dialect.buildColumnName(null, column.getName()), "=")
                             .addAll(getParamString("data.".concat(dataProperty), column));
                     appender.add(",");
@@ -92,6 +93,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             }
             appender.add(" WHERE ", "").addAll(whereSql);
             String sql = appender.toString();
+            param.setData(valueProxy);
             SimpleSQL simpleSQL = new SimpleSQL(sql, param);
             return simpleSQL;
         }

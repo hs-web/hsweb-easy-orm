@@ -1,11 +1,16 @@
 package org.hsweb.ezorm.rdb.meta.builder.simple;
 
+import org.hsweb.commons.ClassUtils;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hsweb.ezorm.rdb.meta.builder.TableBuilder;
+import org.hsweb.ezorm.rdb.meta.converter.BooleanValueConverter;
+import org.hsweb.ezorm.rdb.meta.converter.DateTimeConverter;
+import org.hsweb.ezorm.rdb.meta.converter.NumberValueConverter;
 
 import java.sql.JDBCType;
+import java.util.Date;
 import java.util.function.Consumer;
 
 /**
@@ -101,6 +106,14 @@ public class SimpleColumnBuilder implements ColumnBuilder {
         if (columnMetaData.getDataType() == null) {
             String dataType = tableMetaData.getDatabaseMetaData().getDialect().buildDataType(columnMetaData);
             columnMetaData.setDataType(dataType);
+        }
+        if (columnMetaData.getJavaType() != null) {
+            if (ClassUtils.instanceOf(columnMetaData.getJavaType(), Number.class)) {
+                columnMetaData.setValueConverter(new NumberValueConverter(columnMetaData.getJavaType()));
+            }
+            if (columnMetaData.getJavaType() == Boolean.class || columnMetaData.getJavaType() == boolean.class) {
+                columnMetaData.setValueConverter(new BooleanValueConverter());
+            }
         }
         tableMetaData.addColumn(columnMetaData);
         return tableBuilder;
