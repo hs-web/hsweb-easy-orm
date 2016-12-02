@@ -33,6 +33,7 @@ public abstract class AbstractColumnMetaData implements ColumnMetaData {
 
     @Override
     public String getComment() {
+        if (comment == null) comment = "";
         return comment;
     }
 
