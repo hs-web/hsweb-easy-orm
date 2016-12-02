@@ -23,7 +23,7 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
         if (RDBColumnMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
         createBody.add("\nCREATE TABLE ", metaData.getName(), "(");
         RDBColumnMetaDatas.forEach(column -> {
-            createBody.add("\n\t", column.getName(), " ").add(column.getDataType());
+            createBody.add("\n\t\"", column.getName().toUpperCase(), "\" ").add(column.getDataType());
             if (column.isNotNull()
                     || column.isPrimaryKey()) {
                 createBody.add(" NOT NULL ");
@@ -32,9 +32,9 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
                 createBody.add("PRIMARY KEY ");
             //注释
             if (!StringUtils.isNullOrEmpty(column.getComment())) {
-                comments.add(String.format("COMMENT ON COLUMN %s IS '%s'", column.getFullName(), column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" IS '%s'", metaData.getName(), (column.getName().toUpperCase()), column.getComment()));
             } else {
-                comments.add(String.format("COMMENT ON COLUMN %s IS '%s'", column.getFullName(), column.getAlias()));
+                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" IS '%s'", metaData.getName(), (column.getName().toUpperCase()), column.getAlias()));
 
             }
             createBody.add(",");

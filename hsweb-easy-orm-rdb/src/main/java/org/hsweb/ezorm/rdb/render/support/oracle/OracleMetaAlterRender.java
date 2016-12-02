@@ -84,7 +84,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         }
         addedField.forEach(column -> {
             SqlAppender append = new SqlAppender();
-            append.add("ALTER TABLE ", metaData.getName(), " ADD ", column.getName(), " ", column.getDataType());
+            append.add("ALTER TABLE ", metaData.getName(), " ADD \"", column.getName().toUpperCase(), "\" ", column.getDataType());
             if (column.isNotNull()) {
                 append.add(" NOT NULL");
             }
@@ -92,9 +92,9 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 append.add(" PRIMARY KEY ");
             }
             if (StringUtils.isNullOrEmpty(column.getComment())) {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), column.getName(), column.getAlias()));
+                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", metaData.getName(), column.getName().toUpperCase(), column.getAlias()));
             } else {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", metaData.getName(), column.getName(), column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", metaData.getName(), column.getName().toUpperCase(), column.getComment()));
             }
             SimpleSQL simpleSQL = new SimpleSQL(append.toString(), column);
             BindSQL bindSQL = new BindSQL();
@@ -108,7 +108,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             RDBColumnMetaData oldColumn = oldMeta.findColumn(oldName);
             if (!oldName.equals(column.getName())) {
                 SqlAppender renameSql = new SqlAppender();
-                renameSql.add("ALTER TABLE ", metaData.getName(), " RENAME COLUMN ", oldName, " TO ", column.getName());
+                renameSql.add("ALTER TABLE ", metaData.getName(), " RENAME COLUMN \"", oldName.toUpperCase(), "\" TO \"", column.getName().toUpperCase(), "\"");
                 BindSQL bindSQL = new BindSQL();
                 bindSQL.setSql(new SimpleSQL(renameSql.toString()));
                 bind.add(bindSQL);
@@ -117,7 +117,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             if (!oldColumn.getDataType().equals(column.getDataType())
                     || oldColumn.isNotNull() != column.isNotNull()) {
                 SqlAppender append = new SqlAppender();
-                append.add("ALTER TABLE ", metaData.getName(), " MODIFY ", column.getName(), " ", column.getDataType());
+                append.add("ALTER TABLE ", metaData.getName(), " MODIFY \"", column.getName().toUpperCase(), "\" ", column.getDataType());
                 if (oldColumn.isNotNull() != column.isNotNull()) {
                     if (column.isNotNull()) {
                         append.add(" NOT NULL");
@@ -140,11 +140,11 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             if (StringUtils.isNullOrEmpty(nc)) {
 //                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), column.getName(), column.getAlias()));
             } else {
-                comments.add(String.format("comment on column %s.%s is '%s'", metaData.getName(), column.getName(), nc));
+                comments.add(String.format("comment on column %s.\"%s\" is '%s'", metaData.getName(), column.getName().toUpperCase(), nc));
             }
         });
         deletedField.forEach(column -> {
-            String dropSql = String.format("ALTER TABLE %s DROP COLUMN %s", metaData.getName(), column.getName());
+            String dropSql = String.format("ALTER TABLE %s DROP COLUMN \"%s\"", metaData.getName(), column.getName().toUpperCase());
             SimpleSQL simpleSQL = new SimpleSQL(dropSql, column);
             BindSQL bindSQL = new BindSQL();
             bindSQL.setSql(simpleSQL);
