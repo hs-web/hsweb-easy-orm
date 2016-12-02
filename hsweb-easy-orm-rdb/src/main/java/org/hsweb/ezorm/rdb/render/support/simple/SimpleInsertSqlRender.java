@@ -38,6 +38,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         } else {
             list.add(data);
         }
+        param.setData(list);
         for (int i = 0; i < list.size(); i++) {
             Object obj = list.get(i);
             int index = i;
