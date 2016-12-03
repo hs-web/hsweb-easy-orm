@@ -64,7 +64,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
         return tables.stream()
                 .map(map -> (String) map.get("name"))
                 .filter(Objects::nonNull)
-                .map(this::parse)
+                .map(this::parse).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
