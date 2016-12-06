@@ -21,9 +21,8 @@ public class AdvancedMapWrapper extends SimpleMapWrapper {
         RDBColumnMetaData metaData = tableMetaData.findColumn(attr);
         if (null != metaData) {
             ValueConverter valueConverter = metaData.getValueConverter();
-            super.wrapper(instance, index, attr, valueConverter.getValue(value));
-            ValueConverter converter = metaData.getValueConverter();
-            value = converter.getValue(value);
+            value = valueConverter.getValue(value);
+            super.wrapper(instance, index, attr, value);
             OptionConverter optionConverter = metaData.getOptionConverter();
             if (optionConverter != null) {
                 Object value1 = optionConverter.converterValue(value);
