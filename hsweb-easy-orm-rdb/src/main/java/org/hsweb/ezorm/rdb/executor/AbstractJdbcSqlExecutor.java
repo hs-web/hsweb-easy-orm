@@ -356,7 +356,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
                 String sim = info.getSql();
                 Object[] param = info.getParam();
                 for (int i = 0; i < param.length; i++) {
-                    Object obj = param[0];
+                    Object obj = param[i];
                     sim = sim.replaceFirst("\\?", obj instanceof Number ? String.valueOf(obj) : "'".concat(String.valueOf(obj)).concat("'"));
                 }
                 logger.debug("==>  Simulated: {}", sim);
