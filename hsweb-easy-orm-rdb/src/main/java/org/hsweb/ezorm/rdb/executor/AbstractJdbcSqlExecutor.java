@@ -103,12 +103,12 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             while (append_matcher.find()) {
                 String group = append_matcher.group();
                 Object obj = getSqlParamValue(param, group);
-                sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("\\$\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), String.valueOf(obj));
+                sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("\\$\\{", escapeExprSpecialWord(group), "\\}"), String.valueOf(obj));
             }
             //参数预编译sql
             while (prepared_matcher.find()) {
                 String group = prepared_matcher.group();
-                sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("#\\{", group.replace("$", "\\$").replace("[", "\\[").replace("]", "\\]"), "\\}"), "?");
+                sqlTemplate = sqlTemplate.replaceFirst(StringUtils.concat("#\\{", escapeExprSpecialWord(group), "\\}"), "?");
                 Object obj = getSqlParamValue(param, group);
                 params.add(obj);
             }
@@ -357,11 +357,26 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
                 Object[] param = info.getParam();
                 for (int i = 0; i < param.length; i++) {
                     Object obj = param[i];
-                    sim = sim.replaceFirst("\\?", obj instanceof Number ? String.valueOf(obj) : "'".concat(String.valueOf(obj)).concat("'"));
+                    try {
+                        sim = sim.replaceFirst("\\?", obj instanceof Number ? String.valueOf(obj) : "'".concat(escapeExprSpecialWord(String.valueOf(obj))).concat("'"));
+                    } catch (Exception e) {
+                    }
                 }
                 logger.debug("==>  Simulated: {}", sim);
             }
         }
+    }
+
+    public static String escapeExprSpecialWord(String keyword) {
+        if (!StringUtils.isNullOrEmpty(keyword)) {
+            String[] fbsArr = {"\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|"};
+            for (String key : fbsArr) {
+                if (keyword.contains(key)) {
+                    keyword = keyword.replace(key, "\\" + key);
+                }
+            }
+        }
+        return keyword;
     }
 
     public static class SQLInfo {
