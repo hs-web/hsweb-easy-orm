@@ -15,9 +15,8 @@ public class ClobValueConverter implements ValueConverter {
     @Override
     public Object getValue(Object data) {
         if (data instanceof Clob) {
-            try {
-                Clob clobData = ((Clob) data);
-                Reader reader = clobData.getCharacterStream();
+            Clob clobData = ((Clob) data);
+            try (Reader reader = clobData.getCharacterStream()) {
                 char[] chars = new char[(int) clobData.length()];
                 reader.read(chars);
                 data = new String(chars);

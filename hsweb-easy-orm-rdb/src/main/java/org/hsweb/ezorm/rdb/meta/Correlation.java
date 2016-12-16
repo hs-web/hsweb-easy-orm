@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.rdb.meta;
 
 import org.hsweb.ezorm.core.PropertyWrapper;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.rdb.meta.expand.SimplePropertyWrapper;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.TermType;
@@ -16,8 +17,7 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
         this.targetTable = target;
         this.alias = alias;
         terms = new ArrayList<>();
-        Term term = new Term();
-        term.setTermType(TermType.func);
+        SqlTerm term = new SqlTerm();
         term.setColumn(condition);
         term.setValue(condition);
         terms.add(term);

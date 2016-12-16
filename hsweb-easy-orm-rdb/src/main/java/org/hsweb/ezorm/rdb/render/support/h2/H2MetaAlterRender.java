@@ -42,12 +42,9 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
             oldMeta.getColumns().forEach(oldField -> {
                 RDBColumnMetaData newMeta = metaData.findColumn(oldField.getName());
                 if (newMeta == null) {
-                    try {
-                        newMeta = metaData.getColumns().stream()
-                                .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
-                                .findFirst().get();
-                    } catch (NoSuchElementException e) {
-                    }
+                    newMeta = metaData.getColumns().stream()
+                            .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
+                            .findFirst().orElse(null);
                 }
                 if (newMeta == null) {
                     //删除的字段
@@ -164,7 +161,7 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
             sql = bind.get(0).getSql();
             bind.removeFirst();
         }
-        if (!bind.isEmpty())
+        if (sql != null && !bind.isEmpty())
             ((SimpleSQL) sql).setBindSQLs(bind);
         return sql;
     }

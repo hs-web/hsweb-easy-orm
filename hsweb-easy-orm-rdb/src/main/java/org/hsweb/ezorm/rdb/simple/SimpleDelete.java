@@ -111,7 +111,7 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
         SqlRender<Param> render = tableMetaData.getDatabaseMetaData().getRenderer(SqlRender.TYPE.DELETE);
         SQL sql = render.render(table.getMeta(), param);
         int size = sqlExecutor.delete(sql);
-        if (supportDone) {
+        if (supportDone && context != null) {
             context.put("total", size);
             tableMetaData.on(Trigger.delete_done, context);
         }

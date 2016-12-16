@@ -50,8 +50,7 @@ public class BlobValueConverter implements ValueConverter {
         if (data == null) return null;
         if (data instanceof Blob) {
             Blob blobValue = ((Blob) data);
-            try {
-                InputStream inputStream = blobValue.getBinaryStream();
+            try (InputStream inputStream = blobValue.getBinaryStream()) {
                 //尝试转为对象
                 try {
                     ObjectInputStream inputStream1 = new ObjectInputStream(inputStream);
@@ -63,7 +62,7 @@ public class BlobValueConverter implements ValueConverter {
                 }
                 //转为bytes
                 return blobValue.getBytes(0, (int) blobValue.length());
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 logger.warn("blob data error", e);
             }
         }

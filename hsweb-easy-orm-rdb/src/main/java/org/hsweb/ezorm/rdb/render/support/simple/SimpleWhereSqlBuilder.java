@@ -36,19 +36,19 @@ public abstract class SimpleWhereSqlBuilder {
         for (Term term : terms) {
             index++;
             boolean nullTerm = StringUtils.isNullOrEmpty(term.getColumn());
-            RDBColumnMetaData field = metaData.findColumn(term.getColumn());
+            RDBColumnMetaData column = metaData.findColumn(term.getColumn());
             //不是空条件 也不是可选字段
-            if (!nullTerm && field == null && term.getTermType() != TermType.func && !(term instanceof SqlTerm)) continue;
+            if (!nullTerm && column == null && term.getTermType() != TermType.func && !(term instanceof SqlTerm)) continue;
             //不是空条件，值为空
             if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
             //是空条件，但是无嵌套
             if (nullTerm && term.getTerms().isEmpty()) continue;
             String tableAlias = null;
-            if (field != null) {
+            if (column != null) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
                 //转换参数的值
-                term.setValue(transformationValue(field.getJdbcType(), term.getValue(), term.getTermType()));
+                term.setValue(transformationValue(column, term.getValue()));
             }
             //用于sql预编译的参数名
             prefix = StringUtils.concat(prefixTmp, "terms[", index, "]");
@@ -69,34 +69,43 @@ public abstract class SimpleWhereSqlBuilder {
                 }
                 appender.add("(");
                 if (!nullTerm)
-                    appender.add(getDialect().buildCondition(prefix, term, field, tableAlias));
+                    appender.add(getDialect().buildCondition(prefix, term, column, tableAlias));
                 appender.addAll(nest);
                 appender.add(")");
             } else {
                 if (!nullTerm)
-                    appender.add(getDialect().buildCondition(prefix, term, field, tableAlias));
+                    appender.add(getDialect().buildCondition(prefix, term, column, tableAlias));
             }
         }
     }
 
-    protected Object transformationValue(JDBCType type, Object value, String termType) {
-        if (type == null) return value;
-        switch (type) {
-            case INTEGER:
-            case NUMERIC:
-                if (StringUtils.isInt(type)) return StringUtils.toInt(value);
-                if (StringUtils.isDouble(type)) return StringUtils.toDouble(value);
-                break;
-            case TIMESTAMP:
-            case TIME:
-            case DATE:
-                if (!(value instanceof Date)) {
-                    String strValue = String.valueOf(value);
-                    Date date = DateTimeUtils.formatUnknownString2Date(strValue);
-                    if (date != null) return date;
-                }
-                break;
+    protected Object transformationValue(RDBColumnMetaData column, Object value) {
+        if (value != null && column.getValueConverter() != null) {
+            value = column.getValueConverter().getData(value);
         }
+        if (value != null && column.getOptionConverter() != null) {
+            Object tmp = column.getOptionConverter().converterData(value);
+            if (null != tmp) value = tmp;
+        }
+//        JDBCType type = column.getJdbcType();
+//
+//        if (type == null) return value;
+//        switch (type) {
+//            case INTEGER:
+//            case NUMERIC:
+//                if (StringUtils.isInt(type)) return StringUtils.toInt(value);
+//                if (StringUtils.isDouble(type)) return StringUtils.toDouble(value);
+//                break;
+//            case TIMESTAMP:
+//            case TIME:
+//            case DATE:
+//                if (!(value instanceof Date)) {
+//                    String strValue = String.valueOf(value);
+//                    Date date = DateTimeUtils.formatUnknownString2Date(strValue);
+//                    if (date != null) return date;
+//                }
+//                break;
+//        }
         return value;
     }
 
