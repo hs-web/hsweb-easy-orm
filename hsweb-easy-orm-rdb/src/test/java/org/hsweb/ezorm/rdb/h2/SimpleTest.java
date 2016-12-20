@@ -8,6 +8,7 @@ import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.ClobValueConverter;
+import org.hsweb.ezorm.rdb.meta.parser.H2TableMetaParser;
 import org.hsweb.ezorm.rdb.render.dialect.H2RDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.simple.SimpleDatabase;
 import org.junit.Before;
@@ -47,13 +48,14 @@ public class SimpleTest {
     @Test
     public void testExec() throws Exception {
         RDBDatabaseMetaData databaseMetaData = new H2RDBDatabaseMetaData();
+        databaseMetaData.setParser(new H2TableMetaParser(sqlExecutor));
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
         database.createOrAlter("s_user")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
                 .addColumn().name("name").varchar(256).notNull().comment("姓名").commit()
                 .addColumn().name("age").number(4).notNull().comment("年龄").commit()
-                .addColumn().name("remark").clob().custom(column->column.setValueConverter(new ClobValueConverter())).comment("备注").commit()
-                .addColumn().name("photo").jdbcType(JDBCType.CLOB).custom(column->column.setValueConverter(new BlobValueConverter())).comment("照片").commit()
+                .addColumn().name("remark").clob().custom(column -> column.setValueConverter(new ClobValueConverter())).comment("备注").commit()
+                .addColumn().name("photo").jdbcType(JDBCType.CLOB).custom(column -> column.setValueConverter(new BlobValueConverter())).comment("照片").commit()
                 .addColumn().name("create_date").datetime().comment("创建时间").commit()
                 .comment("用户表")
                 .commit();
@@ -87,6 +89,7 @@ public class SimpleTest {
                 "  \"remark\": \"测试123\"\n" +
                 "}")).exec();
         System.out.println(table.createQuery().list());
+
         Function<Object, Object> append = (value) -> "," + value + ",";
         table.createQuery()
                 .where()
@@ -109,14 +112,13 @@ public class SimpleTest {
         //                  where name = '张三'  (      age > 10     or     age < 5   )
 //        table.createQuery().where("name", "张三").nest().gt("age", 10).or().lt("age", 5).end().list();
 
-//        database.createOrAlter("s_user")
-//                .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
-//                .addColumn().name("name").varchar(256).notNull().comment("姓名").commit()
-//                .addColumn().name("age").number(4).notNull().comment("年龄").commit()
-//                .addColumn().name("create_date").datetime().comment("创建时间").commit()
-//                .addColumn().name("update_date").datetime().comment("修改时间").commit()
-//                .comment("用户表")
-//                .commit();
+        table.createDelete().where().notNull("age").exec();
+        database.createOrAlter("s_user")
+                .addOrAlterColumn("age").number(5).notNull().comment("年龄").commit()
+                .addColumn().name("update_date").datetime().comment("修改时间").commit()
+                .removeColumn("photo")
+                .comment("用户表")
+                .commit();
 
 //        table.createQuery().where("name", "aa").or().like("name", "aa").list();
 
