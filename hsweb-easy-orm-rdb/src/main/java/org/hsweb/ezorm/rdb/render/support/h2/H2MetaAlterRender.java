@@ -1,20 +1,19 @@
 package org.hsweb.ezorm.rdb.render.support.h2;
 
-import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.rdb.executor.BindSQL;
-import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.executor.EmptySQL;
 import org.hsweb.ezorm.rdb.executor.SQL;
-import org.hsweb.ezorm.rdb.meta.RDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
+import org.hsweb.ezorm.rdb.meta.RDBDatabaseMetaData;
+import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
+import org.hswebframwork.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 

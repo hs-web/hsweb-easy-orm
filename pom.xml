@@ -3,10 +3,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.hsweb</groupId>
+    <groupId>org.hswebframework</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
@@ -22,6 +22,7 @@
         <log4j.version>1.2.12</log4j.version>
         <logback.version>1.1.7</logback.version>
         <fastjson.version>1.2.6</fastjson.version>
+        <hsweb.expands.version>3.0.0</hsweb.expands.version>
     </properties>
     <build>
         <plugins>
@@ -81,7 +82,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- log start -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -93,12 +93,13 @@
             <optional>true</optional>
             <scope>test</scope>
         </dependency>
-        <!-- log end -->
+
         <dependency>
-            <groupId>org.hsweb</groupId>
+            <groupId>org.hswebframework</groupId>
             <artifactId>hsweb-expands-script</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${hsweb.expands.version}</version>
         </dependency>
+
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
@@ -123,12 +124,12 @@
             </dependency>
 
             <dependency>
-                <groupId>org.hsweb</groupId>
+                <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-easy-orm-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.hsweb</groupId>
+                <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-easy-orm-rdb</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -147,7 +148,7 @@
             </dependency>
             <!-- log end -->
             <dependency>
-                <groupId>org.hsweb</groupId>
+                <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-expands-script</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
