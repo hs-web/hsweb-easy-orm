@@ -15,6 +15,10 @@ public interface TableBuilder {
 
     ColumnBuilder addColumn();
 
+    ColumnBuilder addOrAlterColumn(String name);
+
+    TableBuilder removeColumn(String name);
+
     TableBuilder comment(String comment);
 
     TableBuilder property(String propertyName, Object value);

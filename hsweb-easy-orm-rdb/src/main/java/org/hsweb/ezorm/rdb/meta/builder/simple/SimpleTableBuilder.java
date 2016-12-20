@@ -43,6 +43,22 @@ public class SimpleTableBuilder implements TableBuilder {
     }
 
     @Override
+    public ColumnBuilder addOrAlterColumn(String name) {
+        RDBColumnMetaData rdbColumnMetaData = rdbTableMetaData.getColumn(name);
+        if (null == rdbColumnMetaData) {
+            rdbColumnMetaData = new RDBColumnMetaData();
+            rdbColumnMetaData.setName(name);
+        }
+        return new SimpleColumnBuilder(rdbColumnMetaData, this, rdbTableMetaData);
+    }
+
+    @Override
+    public TableBuilder removeColumn(String name) {
+        rdbTableMetaData.removeColumn(name);
+        return this;
+    }
+
+    @Override
     public ColumnBuilder addColumn() {
         RDBColumnMetaData rdbColumnMetaData = new RDBColumnMetaData();
         SimpleColumnBuilder columnBuilder = new SimpleColumnBuilder(rdbColumnMetaData, this, rdbTableMetaData);

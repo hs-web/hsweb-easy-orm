@@ -12,6 +12,8 @@ import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.RDBDatabase;
 import org.hsweb.ezorm.rdb.RDBTable;
 import org.hsweb.ezorm.rdb.simple.wrapper.AdvancedMapWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -23,6 +25,8 @@ public class SimpleDatabase implements RDBDatabase {
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private RDBDatabaseMetaData metaData;
     private SqlExecutor         sqlExecutor;
+    private boolean autoParse = false;
+    private Logger  logger    = LoggerFactory.getLogger(this.getClass());
 
     public SimpleDatabase(RDBDatabaseMetaData metaData, SqlExecutor sqlExecutor) {
         this.metaData = metaData;
@@ -41,7 +45,7 @@ public class SimpleDatabase implements RDBDatabase {
         RDBTable table;
         RDBTableMetaData tableMetaData = metaData.getTableMetaData(name);
         if (tableMetaData == null) {
-            if (metaData.getParser() != null)
+            if (metaData.getParser() != null && autoParse)
                 tableMetaData = metaData.getParser().parse(name);
             if (tableMetaData != null) {
                 metaData.putTable(tableMetaData);
@@ -135,6 +139,25 @@ public class SimpleDatabase implements RDBDatabase {
         RDBTableMetaData tableMetaData = new RDBTableMetaData();
         tableMetaData.setName(name);
         tableMetaData.setDatabaseMetaData(metaData);
+        try {
+            if (sqlExecutor.tableExists(name)) {
+                if (metaData.getParser() != null) {
+                    RDBTableMetaData tmp = metaData.getParser().parse(name);
+                    tmp.getColumns().forEach(tableMetaData::addColumn);
+                } else {
+                    logger.warn("table {} exists,but tableMetaParser is null");
+                }
+            }
+        } catch (Exception e) {
+        }
         return new SimpleTableBuilder(tableMetaData, this, sqlExecutor);
+    }
+
+    public void setAutoParse(boolean autoParse) {
+        this.autoParse = autoParse;
+    }
+
+    public boolean isAutoParse() {
+        return autoParse;
     }
 }
