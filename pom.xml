@@ -22,7 +22,7 @@
         <log4j.version>1.2.12</log4j.version>
         <logback.version>1.1.7</logback.version>
         <fastjson.version>1.2.6</fastjson.version>
-        <hsweb.expands.version>3.0.0</hsweb.expands.version>
+        <hsweb.expands.version>3.0.0-SNAPSHOT</hsweb.expands.version>
     </properties>
     <build>
         <plugins>
@@ -95,12 +95,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hswebframework</groupId>
-            <artifactId>hsweb-expands-script</artifactId>
-            <version>${hsweb.expands.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
         </dependency>
@@ -112,6 +106,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.hswebframework</groupId>
+                <artifactId>hsweb-expands-script</artifactId>
+                <version>${hsweb.expands.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.elasticsearch.client</groupId>
                 <artifactId>transport</artifactId>

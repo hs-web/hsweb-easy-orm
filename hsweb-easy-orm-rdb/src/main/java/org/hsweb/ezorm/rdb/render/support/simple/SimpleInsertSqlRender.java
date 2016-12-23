@@ -75,7 +75,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                     }
                 }
                 objProxy.put(dataProperty, value);
-                appender.addAll(getParamString(StringUtils.concat("data[", index, "].", dataProperty), column));
+                appender.addAll(getParamString(StringUtils.concat("data[", index, "]."), dataProperty, column));
                 appender.add(",");
             });
             mapData.add(objProxy);
@@ -87,7 +87,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         return new SimpleSQL(appender.toString(), paramProxy);
     }
 
-    protected SqlAppender getParamString(String paramName, RDBColumnMetaData rdbColumnMetaData) {
-        return new SqlAppender().add("#{", paramName, "}");
+    protected SqlAppender getParamString(String prefix, String paramName, RDBColumnMetaData rdbColumnMetaData) {
+        return new SqlAppender().add("#{", prefix, paramName, "}");
     }
 }
