@@ -6,6 +6,7 @@ import org.hswebframwork.utils.StringUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -167,6 +168,12 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends T
     default NestConditional<T> each(String column, String termType, Collection list, Function<NestConditional<T>, Accepter<NestConditional<T>>> accepterGetter) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply(this).accept(column, termType, o));
+        return this;
+    }
+
+    default <O> NestConditional<T> each(Collection<O> list, BiConsumer<O, NestConditional<T>> consumer) {
+        if (null != list)
+            list.forEach(o -> consumer.accept(o, this));
         return this;
     }
 

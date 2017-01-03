@@ -105,7 +105,9 @@ public class SimpleTest {
                 .or().sql("name = ?", "' or '1'='1")
                 .end()
                 .nest()
-                .or().each("age", Arrays.asList(1, 2, 3), query -> query::$like$, append)
+                .or()
+                .each("age", Arrays.asList(1, 2, 3), query -> query::$like$, append)
+                .each(Arrays.asList(4, 5, 6), (o, q) -> q.like("age", o))
                 .end()
                 .list();
 
