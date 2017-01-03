@@ -135,4 +135,9 @@ class SimpleESQuery<T> implements ESQuery<T> {
     public Accepter<Query<T>> getAccepter() {
         return accepter;
     }
+
+    @Override
+    public Query<T> sql(String sql, Object... params) {
+        return null;
+    }
 }

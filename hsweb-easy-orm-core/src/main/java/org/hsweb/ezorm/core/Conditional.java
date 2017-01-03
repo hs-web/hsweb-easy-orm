@@ -23,7 +23,7 @@ import org.hsweb.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -172,6 +172,11 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
      */
     T sql(String sql, Object... params);
 
+    default <O> T each(Collection<O> list, BiConsumer<O, Conditional<T>> consumer) {
+        if (null != list)
+            list.forEach(o -> consumer.accept(o, this));
+        return (T) this;
+    }
     /**
      * 遍历一个集合，进行条件追加
      * 例如:<br>
