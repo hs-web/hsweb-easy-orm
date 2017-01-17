@@ -49,7 +49,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             List<RDBColumnMetaData> metaDatas = sqlExecutor.list(new SimpleSQL(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper());
             metaDatas.forEach(metaData::addColumn);
             Map<String, Object> comment = sqlExecutor.single(new SimpleSQL(getTableCommentSql(name), param), new LowerCasePropertySimpleMapWrapper());
-            if (comment.get("comment") != null) {
+            if (null != comment && comment.get("comment") != null) {
                 metaData.setComment(String.valueOf(comment.get("comment")));
             }
         } catch (SQLException e) {
