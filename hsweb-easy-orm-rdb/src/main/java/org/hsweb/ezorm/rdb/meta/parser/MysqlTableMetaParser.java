@@ -31,7 +31,7 @@ public class MysqlTableMetaParser extends AbstractTableMetaParser {
         jdbcTypeMap.put("int", JDBCType.INTEGER);
         jdbcTypeMap.put("year", JDBCType.TIME);
         jdbcTypeMap.put("datetime", JDBCType.TIMESTAMP);
-
+        jdbcTypeMap.put("text", JDBCType.CLOB);
     }
 
     @Override
