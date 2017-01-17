@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -33,6 +34,20 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
     abstract String getTableCommentSql(String tname);
 
     abstract String getAllTableSql();
+
+    abstract String getTableExistsSql();
+
+    @Override
+    public boolean tableExists(String name) {
+        try {
+            Map<String, Object> param = new HashedMap();
+            param.put("table", name);
+            Map<String, Object> res = sqlExecutor.single(new SimpleSQL(getTableExistsSql(), param), new LowerCasePropertySimpleMapWrapper());
+            return res.get("total") != null && StringUtils.toInt(res.get("total")) > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public RDBTableMetaData parse(String name) {

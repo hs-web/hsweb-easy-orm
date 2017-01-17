@@ -11,5 +11,7 @@ import java.util.List;
 public interface TableMetaParser {
     RDBTableMetaData parse(String name);
 
+    boolean tableExists(String name);
+
     List<RDBTableMetaData> parseAll() throws SQLException;
 }
