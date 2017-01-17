@@ -1,6 +1,5 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
@@ -40,7 +39,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
     @Override
     public boolean tableExists(String name) {
         try {
-            Map<String, Object> param = new HashedMap();
+            Map<String, Object> param = new HashMap<>();
             param.put("table", name);
             Map<String, Object> res = sqlExecutor.single(new SimpleSQL(getTableExistsSql(), param), new LowerCasePropertySimpleMapWrapper());
             return res.get("total") != null && StringUtils.toInt(res.get("total")) > 0;
@@ -51,14 +50,11 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
 
     @Override
     public RDBTableMetaData parse(String name) {
-        try {
-            if (!sqlExecutor.tableExists(name)) return null;
-        } catch (SQLException e) {
-        }
+        if (!tableExists(name)) return null;
         RDBTableMetaData metaData = new RDBTableMetaData();
         metaData.setName(name);
         metaData.setAlias(name);
-        Map<String, Object> param = new HashedMap();
+        Map<String, Object> param = new HashMap<>();
         param.put("table", name);
         try {
             List<RDBColumnMetaData> metaDatas = sqlExecutor.list(new SimpleSQL(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper());
