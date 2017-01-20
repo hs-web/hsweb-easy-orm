@@ -1,40 +1,52 @@
 package org.hsweb.ezorm.rdb.meta.converter;
 
-import org.hsweb.commons.ClassUtils;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ValueConverter;
 
+import java.math.BigDecimal;
+
 public class NumberValueConverter implements ValueConverter {
 
-    private Class javaType;
+    private       Class   javaType;
+    private final boolean isInt;
+    private final boolean isDouble;
+    private final boolean isLong;
 
     public NumberValueConverter(Class javaType) {
         this.javaType = javaType;
+        isInt = javaType == int.class || javaType == Integer.class;
+        isDouble = javaType == double.class || javaType == Double.class;
+        isLong = javaType == long.class || javaType == Long.class;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new NumberValueConverter(Integer.class).getData("0"));
     }
 
     @Override
     public Object getData(Object value) {
         if (StringUtils.isNullOrEmpty(value)) return null;
         if (value instanceof Number) return value;
+        if (StringUtils.isNumber(value)) {
+            BigDecimal decimal = new BigDecimal(String.valueOf(value));
+            if (isInt) return decimal.intValue();
+            if (isDouble) return decimal.doubleValue();
+            if (isLong) return decimal.longValue();
+            // TODO: 17-1-20  more type supports
+            return decimal;
+        }
         throw new UnsupportedOperationException("值" + value + "不为数字");
     }
 
     @Override
     public Object getValue(Object data) {
         if (data instanceof Number) {
-            if (ClassUtils.instanceOf(javaType, Long.class)) {
-                data = ((Number) data).longValue();
-            } else if (ClassUtils.instanceOf(javaType, Double.class)) {
-                data = ((Number) data).doubleValue();
-            } else if (ClassUtils.instanceOf(javaType, Boolean.class)) {
-                data = ((Number) data).longValue() != 0;
-            } else if (ClassUtils.instanceOf(javaType, Float.class)) {
-                data = ((Number) data).floatValue();
-            } else if (ClassUtils.instanceOf(javaType, Integer.class)) {
-                data = ((Number) data).intValue();
-            } else {
-                data = data.toString();
-            }
+            Number numberVal = ((Number) data);
+            if (isInt) return numberVal.intValue();
+            if (isDouble) return numberVal.doubleValue();
+            if (isLong) return numberVal.longValue();
+            // TODO: 17-1-20  more type supports
+            return data.toString();
         }
         return data;
     }
