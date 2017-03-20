@@ -19,10 +19,6 @@ public class NumberValueConverter implements ValueConverter {
         isLong = javaType == long.class || javaType == Long.class;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new NumberValueConverter(Integer.class).getData("0"));
-    }
-
     @Override
     public Object getData(Object value) {
         if (StringUtils.isNullOrEmpty(value)) return null;
@@ -40,13 +36,18 @@ public class NumberValueConverter implements ValueConverter {
 
     @Override
     public Object getValue(Object data) {
+        if (data instanceof String) {
+            if (StringUtils.isNumber(data)) {
+                data = new BigDecimal(((String) data));
+            }
+        }
         if (data instanceof Number) {
             Number numberVal = ((Number) data);
             if (isInt) return numberVal.intValue();
             if (isDouble) return numberVal.doubleValue();
             if (isLong) return numberVal.longValue();
             // TODO: 17-1-20  more type supports
-            return data.toString();
+            return data;
         }
         return data;
     }
