@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.rdb.meta.converter;
 
-import org.hsweb.commons.DateTimeUtils;
 import org.hsweb.ezorm.core.ValueConverter;
+import org.hswebframwork.utils.DateTimeUtils;
 
 import java.util.Date;
 

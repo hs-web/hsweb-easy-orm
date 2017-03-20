@@ -2,14 +2,14 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.hsweb.commons.StringUtils;
+import org.hsweb.ezorm.core.param.InsertParam;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
-import org.hsweb.ezorm.core.param.InsertParam;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
+import org.hswebframwork.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +75,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                     }
                 }
                 objProxy.put(dataProperty, value);
-                appender.addAll(getParamString(StringUtils.concat("data[", index, "].", dataProperty), column));
+                appender.addAll(getParamString(StringUtils.concat("data[", index, "]."), dataProperty, column));
                 appender.add(",");
             });
             mapData.add(objProxy);
@@ -87,7 +87,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         return new SimpleSQL(appender.toString(), paramProxy);
     }
 
-    protected SqlAppender getParamString(String paramName, RDBColumnMetaData rdbColumnMetaData) {
-        return new SqlAppender().add("#{", paramName, "}");
+    protected SqlAppender getParamString(String prefix, String paramName, RDBColumnMetaData rdbColumnMetaData) {
+        return new SqlAppender().add("#{", prefix, paramName, "}");
     }
 }

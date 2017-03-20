@@ -1,9 +1,9 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
-import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.parser.H2TableMetaParser;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
+import org.hswebframwork.utils.StringUtils;
 
 import java.sql.JDBCType;
 

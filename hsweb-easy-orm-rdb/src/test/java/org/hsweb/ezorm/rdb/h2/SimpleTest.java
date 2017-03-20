@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.rdb.h2;
 
 import com.alibaba.fastjson.JSON;
+import org.hsweb.ezorm.core.dsl.ConditionColumnBuilder;
 import org.hsweb.ezorm.rdb.RDBDatabase;
 import org.hsweb.ezorm.rdb.RDBTable;
 import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
@@ -110,6 +111,10 @@ public class SimpleTest {
                 .end()
                 .list();
 
+
+        table.createQuery().where(
+                ConditionColumnBuilder.build("name")
+                        .like("111").andThen(ConditionColumnBuilder.build("name").$like$("123"))).list();
 
         //                  where name = '张三'  (      age > 10     or     age < 5   )
 //        table.createQuery().where("name", "张三").nest().gt("age", 10).or().lt("age", 5).end().list();

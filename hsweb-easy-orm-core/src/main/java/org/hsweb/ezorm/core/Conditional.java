@@ -16,9 +16,8 @@
 
 package org.hsweb.ezorm.core;
 
-import org.hsweb.commons.StringUtils;
-import org.hsweb.ezorm.core.param.Param;
 import org.hsweb.ezorm.core.param.TermType;
+import org.hswebframwork.utils.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,6 +40,16 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
 
     T or();
 
+    default T and(Consumer<Conditional> consumer) {
+        consumer.accept(this.and());
+        return (T) this;
+    }
+
+    default T or(Consumer<Conditional> consumer) {
+        consumer.accept(this.or());
+        return (T) this;
+    }
+
     T and(String column, String termType, Object value);
 
     T or(String column, String termType, Object value);
@@ -52,6 +61,11 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
     }
 
     default T where() {
+        return (T) this;
+    }
+
+    default  T where(Consumer<Conditional> consumer) {
+        consumer.accept(this);
         return (T) this;
     }
 
