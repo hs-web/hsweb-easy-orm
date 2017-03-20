@@ -29,6 +29,8 @@ public abstract class SqlConditionSupport<T> {
         SqlTerm sqlTerm = new SqlTerm();
         sqlTerm.setColumn(sql);
         sqlTerm.setValue(params);
+        sqlTerm.setSql(sql);
+        sqlTerm.setParam(params);
         sqlTerm.setType(getNowTermType());
         return addSqlTerm(sqlTerm);
     }

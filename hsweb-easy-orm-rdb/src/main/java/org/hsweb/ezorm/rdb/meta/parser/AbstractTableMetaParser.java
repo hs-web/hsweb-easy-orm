@@ -1,6 +1,5 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
-import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -8,6 +7,7 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
+import org.hswebframwork.utils.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.SQLException;

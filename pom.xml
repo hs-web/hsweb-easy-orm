@@ -21,7 +21,7 @@
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>1.2.12</log4j.version>
         <logback.version>1.1.7</logback.version>
-        <fastjson.version>1.2.6</fastjson.version>
+        <fastjson.version>1.2.28</fastjson.version>
         <hsweb.expands.version>3.0.0-SNAPSHOT</hsweb.expands.version>
     </properties>
     <build>
@@ -160,7 +160,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.6</version>
+                <version>${fastjson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -27,6 +27,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface Conditional<T extends Conditional> extends TermTypeConditionalSupport {
+    /*
+    * 嵌套条件，如: where name = ? or (age > 18 and age <90)
+    * */
+
     NestConditional<T> nest();
 
     NestConditional<T> nest(String column, Object value);
@@ -35,25 +39,34 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
 
     NestConditional<T> orNest(String column, Object value);
 
+    /*
+    * and or 切换
+    * */
+
     T and();
 
     T or();
 
-    default T and(Consumer<Conditional> consumer) {
+    /*
+    * 自定义and和or的操作
+    * */
+
+    default T and(Consumer<T> consumer) {
         consumer.accept(this.and());
         return (T) this;
     }
 
-    default T or(Consumer<Conditional> consumer) {
+    default T or(Consumer<T> consumer) {
         consumer.accept(this.or());
         return (T) this;
     }
 
+    /*
+   * 自定义条件类型 and和or的操作
+   * */
     T and(String column, String termType, Object value);
 
     T or(String column, String termType, Object value);
-
-    Accepter<T> getAccepter();
 
     default T where(String column, Object value) {
         return and(column, TermType.eq, value);
@@ -63,7 +76,7 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return (T) this;
     }
 
-    default  T where(Consumer<Conditional> consumer) {
+    default T where(Consumer<Conditional> consumer) {
         consumer.accept(this);
         return (T) this;
     }
@@ -200,13 +213,13 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
      * @see Conditional
      * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
      */
-    default T each(String column, Collection list, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepterGetter) {
+    default T each(String column, Collection<?> list, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepterGetter) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply(this).accept(column, o));
         return (T) this;
     }
 
-    default T each(String column, String termType, Collection list, Function<Conditional<T>, Accepter<Conditional<T>>> accepterGetter) {
+    default T each(String column, String termType, Collection<?> list, Function<Conditional<T>, Accepter<Conditional<T>>> accepterGetter) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply(this).accept(column, termType, o));
         return (T) this;
@@ -229,13 +242,13 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
      * @see Conditional
      * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
      */
-    default T each(String column, Collection list, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
+    default T each(String column, Collection<?> list, Function<Conditional<T>, SimpleAccepter<Conditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply(this).accept(column, valueMapper.apply(o)));
         return (T) this;
     }
 
-    default T each(String column, String termType, Collection list, Function<Conditional<T>, Accepter<Conditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
+    default T each(String column, String termType, Collection<?> list, Function<Conditional<T>, Accepter<Conditional<T>>> accepterGetter, Function<Object, Object> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply(this).accept(column, termType, valueMapper.apply(o)));
         return (T) this;
@@ -358,5 +371,7 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
     default <V> T when(String column, String termType, V value, Function<V, Boolean> condition, Function<Conditional<T>, Accepter<Conditional<T>>> accepter) {
         return when(condition.apply(value), column, termType, value, accepter);
     }
+
+    Accepter<T> getAccepter();
 
 }

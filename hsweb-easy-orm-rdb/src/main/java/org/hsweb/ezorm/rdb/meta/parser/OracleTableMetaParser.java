@@ -5,7 +5,6 @@ import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
 import java.sql.JDBCType;
 
-// TODO: 16-10-28
 public class OracleTableMetaParser extends AbstractTableMetaParser {
 
     final static String TABLE_META_SQL = "select distinct(cols.column_name) as \"name\"" +

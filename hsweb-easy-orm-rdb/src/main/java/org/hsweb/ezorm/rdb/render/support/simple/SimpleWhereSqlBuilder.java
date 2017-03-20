@@ -35,7 +35,7 @@ public abstract class SimpleWhereSqlBuilder {
             boolean nullTerm = StringUtils.isNullOrEmpty(term.getColumn());
             RDBColumnMetaData column = metaData.findColumn(term.getColumn());
             //不是空条件 也不是可选字段
-            if (!nullTerm && column == null && term.getTermType() != TermType.func && !(term instanceof SqlTerm)) continue;
+            if (!nullTerm && column == null && !(term instanceof SqlTerm)) continue;
             //不是空条件，值为空
             if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
             //是空条件，但是无嵌套

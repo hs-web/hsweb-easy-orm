@@ -10,8 +10,6 @@ public class Sort extends Column {
 
     private String order = "asc";
 
-    private transient QueryParam queryParam;
-
     public String getOrder() {
         return order;
     }
@@ -23,23 +21,16 @@ public class Sort extends Column {
     public Sort() {
     }
 
-    public Sort(QueryParam queryParam, String name) {
-        this.queryParam = queryParam;
+    public Sort(String name) {
         setName(name);
     }
 
-    public QueryParam asc() {
+    public void asc() {
         this.order = "asc";
-        return queryParam;
     }
 
-    public QueryParam desc() {
+    public void desc() {
         this.order = "desc";
-        return queryParam;
-    }
-
-    public Sort and(String field) {
-        return queryParam.orderBy(field);
     }
 
     @Override

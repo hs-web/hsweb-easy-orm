@@ -49,8 +49,9 @@ public abstract class DefaultDialect implements Dialect {
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=''"));
         termTypeMappers.put(TermType.nempty, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=''"));
-        termTypeMappers.put(TermType.func, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(term.getValue()));
+        //TermType.func is not support
+//        termTypeMappers.put(TermType.func, (wherePrefix, term, column, tableAlias) ->
+//                new SqlAppender().add(term.getValue()));
         termTypeMappers.put(TermType.btw, (wherePrefix, term, column, tableAlias) -> {
             SqlAppender sqlAppender = new SqlAppender();
             List<Object> objects = param2list(term.getValue(), column);
@@ -103,8 +104,9 @@ public abstract class DefaultDialect implements Dialect {
     @Override
     public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias) {
         if (term instanceof SqlTerm) {
-            TermTypeMapper mapper = TermTypeMapper.sql(term.getColumn(), term.getValue());
-            return mapper.accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
+            SqlTerm sqlTerm = ((SqlTerm) term);
+            TermTypeMapper mapper = TermTypeMapper.sql(sqlTerm.getSql(), sqlTerm.getParam());
+            return mapper.accept(wherePrefix, sqlTerm, RDBColumnMetaData, tableAlias);
         }
         if (term.getValue() instanceof TermTypeMapper) {
             return ((TermTypeMapper) term.getValue()).accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
@@ -114,34 +116,32 @@ public abstract class DefaultDialect implements Dialect {
         return mapper.accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
     }
 
+    @SuppressWarnings("unchecked")
     protected List<Object> param2list(Object value, RDBColumnMetaData columnMetaData) {
         if (value == null) return new ArrayList<>();
-        if (value instanceof List) return ((List) value);
+        if (value instanceof List) return (List) value;
         if (value instanceof Collection) return new ArrayList<>(((Collection) value));
-        if (!(value instanceof Collection)) {
-            if (value instanceof String) {
-                String[] arr = ((String) value).split("[, ;]");
-                Object[] objArr = new Object[arr.length];
-                for (int i = 0; i < arr.length; i++) {
-                    String str = arr[i];
-                    Object val = str;
-                    //数字类型
-                    if (numberJdbcType.contains(columnMetaData.getJdbcType())) {
-                        if (StringUtils.isInt(str))
-                            val = StringUtils.toInt(str);
-                        else if (StringUtils.isDouble(str))
-                            val = StringUtils.toDouble(str);
-                    }
-                    objArr[i] = val;
+        if (value instanceof String) {
+            String[] arr = ((String) value).split("[, ;]");
+            Object[] objArr = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) {
+                String str = arr[i];
+                Object val = str;
+                //数字类型
+                if (numberJdbcType.contains(columnMetaData.getJdbcType())) {
+                    if (StringUtils.isInt(str))
+                        val = StringUtils.toInt(str);
+                    else if (StringUtils.isDouble(str))
+                        val = StringUtils.toDouble(str);
                 }
-                return Arrays.asList(objArr);
-            } else if (value.getClass().isArray()) {
-                return Arrays.asList(((Object[]) value));
-            } else {
-                return new ArrayList<>(Arrays.asList(value));
+                objArr[i] = val;
             }
+            return Arrays.asList(objArr);
+        } else if (value.getClass().isArray()) {
+            return Arrays.asList(((Object[]) value));
+        } else {
+            return new ArrayList<>(Arrays.asList(value));
         }
-        return new ArrayList<>();
     }
 
     @Override

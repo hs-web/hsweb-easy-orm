@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by 浩 on 2016-01-16 0016.
+ * 查询参数
+ *
+ * @author zhouhao
+ * @since 1.0
  */
 public class QueryParam extends Param implements Serializable, Cloneable {
     private static final long serialVersionUID = 7941767360194797891L;
@@ -35,15 +38,10 @@ public class QueryParam extends Param implements Serializable, Cloneable {
      */
     private List<Sort> sorts = new LinkedList<>();
 
-
     private boolean forUpdate = false;
 
-    public QueryParam select(String... fields) {
-        return this.includes(fields);
-    }
-
     public Sort orderBy(String column) {
-        Sort sort = new Sort(this, column);
+        Sort sort = new Sort(column);
         sorts.add(sort);
         return sort;
     }
