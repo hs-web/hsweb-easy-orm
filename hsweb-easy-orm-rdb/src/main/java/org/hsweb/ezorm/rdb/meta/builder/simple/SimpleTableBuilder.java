@@ -85,9 +85,10 @@ public class SimpleTableBuilder implements TableBuilder {
 
     @Override
     public void commit() throws SQLException {
-        if (sqlExecutor.tableExists(rdbTableMetaData.getName())) {
+        RDBTableMetaData old = parser.parse(rdbTableMetaData.getName());
+        if (null != old) {
             //加载旧的表结构
-            database.reloadTable(parser.parse(rdbTableMetaData.getName()));
+            database.reloadTable(old);
             database.alterTable(rdbTableMetaData);
         } else {
             database.createTable(rdbTableMetaData);
