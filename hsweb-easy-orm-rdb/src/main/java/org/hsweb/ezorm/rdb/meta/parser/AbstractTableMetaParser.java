@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
-import org.apache.commons.collections.map.HashedMap;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -34,22 +34,33 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
 
     abstract String getAllTableSql();
 
+    abstract String getTableExistsSql();
+
+    @Override
+    public boolean tableExists(String name) {
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("table", name);
+            Map<String, Object> res = sqlExecutor.single(new SimpleSQL(getTableExistsSql(), param), new LowerCasePropertySimpleMapWrapper());
+            return res.get("total") != null && StringUtils.toInt(res.get("total")) > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public RDBTableMetaData parse(String name) {
-        try {
-            if (!sqlExecutor.tableExists(name)) return null;
-        } catch (SQLException e) {
-        }
+        if (!tableExists(name)) return null;
         RDBTableMetaData metaData = new RDBTableMetaData();
         metaData.setName(name);
         metaData.setAlias(name);
-        Map<String, Object> param = new HashedMap();
+        Map<String, Object> param = new HashMap<>();
         param.put("table", name);
         try {
             List<RDBColumnMetaData> metaDatas = sqlExecutor.list(new SimpleSQL(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper());
             metaDatas.forEach(metaData::addColumn);
             Map<String, Object> comment = sqlExecutor.single(new SimpleSQL(getTableCommentSql(name), param), new LowerCasePropertySimpleMapWrapper());
-            if (comment.get("comment") != null) {
+            if (null != comment && comment.get("comment") != null) {
                 metaData.setComment(String.valueOf(comment.get("comment")));
             }
         } catch (SQLException e) {

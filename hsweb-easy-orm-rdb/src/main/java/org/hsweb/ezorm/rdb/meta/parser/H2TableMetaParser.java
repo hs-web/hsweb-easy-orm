@@ -23,6 +23,8 @@ public class H2TableMetaParser extends AbstractTableMetaParser {
             "select table_name as \"name\" " +
                     "FROM information_schema.tables where table_type='TABLE'";
 
+    static final String TABLE_EXISTS_SQL = "SELECT count(1) as \"total\" FROM information_schema.columns WHERE TABLE_NAME = upper(#{table})";
+
     public H2TableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
     }
@@ -47,5 +49,8 @@ public class H2TableMetaParser extends AbstractTableMetaParser {
         return ALL_TABLE_SQL;
     }
 
-
+    @Override
+    public String getTableExistsSql() {
+        return TABLE_EXISTS_SQL;
+    }
 }

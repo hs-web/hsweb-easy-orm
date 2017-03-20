@@ -140,7 +140,13 @@ public class SimpleDatabase implements RDBDatabase {
         tableMetaData.setName(name);
         tableMetaData.setDatabaseMetaData(metaData);
         try {
-            if (sqlExecutor.tableExists(name)) {
+            boolean tableExists;
+            if (metaData.getParser() != null) {
+                tableExists = metaData.getParser().tableExists(name);
+            } else {
+                tableExists = sqlExecutor.tableExists(name);
+            }
+            if (tableExists) {
                 if (metaData.getParser() != null) {
                     RDBTableMetaData tmp = metaData.getParser().parse(name);
                     tmp.getColumns().forEach(tableMetaData::addColumn);

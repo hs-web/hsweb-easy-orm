@@ -22,7 +22,6 @@ import org.hswebframwork.utils.StringUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -64,7 +63,7 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
         return (T) this;
     }
 
-    default T where(Consumer<Conditional> consumer) {
+    default  T where(Consumer<Conditional> consumer) {
         consumer.accept(this);
         return (T) this;
     }
@@ -185,12 +184,6 @@ public interface Conditional<T extends Conditional> extends TermTypeConditionalS
      * @return {@link T}
      */
     T sql(String sql, Object... params);
-
-    default <O> T each(Collection<O> list, BiConsumer<O, Conditional<T>> consumer) {
-        if (null != list)
-            list.forEach(o -> consumer.accept(o, this));
-        return (T) this;
-    }
 
     /**
      * 遍历一个集合，进行条件追加
