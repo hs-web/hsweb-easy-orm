@@ -126,6 +126,7 @@ public class SimpleTest {
 
 //        table.createUpdate().set("name", "aaa").where("name", "aa").or().like("name", 1).exec();
 
+        sqlExecutor.list("select * from s_user where age > #{age}",Collections.singletonMap("age",10));
     }
 
 }

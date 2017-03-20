@@ -19,10 +19,6 @@ public class NumberValueConverter implements ValueConverter {
         isLong = javaType == long.class || javaType == Long.class;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new NumberValueConverter(Integer.class).getData("0"));
-    }
-
     @Override
     public Object getData(Object value) {
         if (StringUtils.isNullOrEmpty(value)) return null;

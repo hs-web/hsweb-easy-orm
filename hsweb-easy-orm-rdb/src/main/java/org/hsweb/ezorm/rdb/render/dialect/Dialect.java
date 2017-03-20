@@ -99,4 +99,6 @@ public interface Dialect {
     Dialect ORACLE = new OracleDialect();
     Dialect H2     = new H2Dialect();
 
+    Dialect MSSQL = new MSSQLDialect();
+
 }

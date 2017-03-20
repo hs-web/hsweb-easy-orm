@@ -1,10 +1,15 @@
 package org.hsweb.ezorm.rdb.mysql;
 
 import org.hsweb.ezorm.core.dsl.Update;
+import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.UpdateParam;
 import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
+import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBDatabaseMetaData;
+import org.hsweb.ezorm.rdb.meta.parser.MysqlTableMetaParser;
+import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.render.dialect.MysqlRDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
 import org.hsweb.ezorm.rdb.RDBDatabase;
@@ -29,7 +34,7 @@ public class MysqlTest {
     public void setup() throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
 
-        Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/test_db?useUnicode=true&characterEncoding=utf-8&useSSL=false", "root", "19920622");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/hsweb?useUnicode=true&characterEncoding=utf-8&useSSL=false", "root", "19920622");
         sqlExecutor = new AbstractJdbcSqlExecutor() {
             @Override
             public Connection getConnection() {
@@ -41,6 +46,24 @@ public class MysqlTest {
                 // connection.close();
             }
         };
+    }
+
+    @Test
+    public void testParser() throws Exception {
+        RDBDatabaseMetaData databaseMetaData = new MysqlRDBDatabaseMetaData();
+        databaseMetaData.setParser(new MysqlTableMetaParser(sqlExecutor));
+        SimpleDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
+        database.setAutoParse(true);
+        database.getTable("s_classified");
+        RDBTable s_form = database.getTable("s_form");
+
+        Correlation correlation = new Correlation();
+        correlation.setTargetTable("s_classified");
+        correlation.addTerm(new SqlTerm("s_classified.u_id=s_form.classified_id"));
+        s_form.getMeta().addCorrelation(correlation);
+
+        String sql = databaseMetaData.getRenderer(SqlRender.TYPE.SELECT).render(s_form.getMeta(), new QueryParam()).getSql();
+        System.out.println(sql);
     }
 
     @Test
@@ -91,6 +114,6 @@ public class MysqlTest {
 
     @After
     public void after() throws SQLException {
-        sqlExecutor.exec(new SimpleSQL("drop table s_user"));
+        // sqlExecutor.exec(new SimpleSQL("drop table s_user"));
     }
 }
