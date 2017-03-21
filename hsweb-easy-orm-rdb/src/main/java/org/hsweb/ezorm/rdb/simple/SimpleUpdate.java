@@ -81,7 +81,7 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
         return this;
     }
 
-    private Accepter accepter;
+    private Accepter accepter=this::and;
 
     @Override
     public Update<T> and() {
