@@ -91,7 +91,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @see Conditional
      * @see org.hsweb.ezorm.core.TermTypeConditionalSupport.SimpleAccepter
      */
-    default <E> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, Object>> accepterGetter, Function<E, Object> valueMapper) {
+    default <E,V> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, valueMapper.apply(o)));
         return (T) this;
@@ -108,7 +108,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @param <E>            集合中元素类型
      * @return this {@link T}
      */
-    default <E> T each(String column, String termType, Collection<E> list, Function<T, TermTypeConditionalSupport.Accepter<T, Object>> accepterGetter, Function<E, Object> valueMapper) {
+    default <E,V> T each(String column, String termType, Collection<E> list, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, termType, valueMapper.apply(o)));
         return (T) this;
