@@ -8,7 +8,7 @@ public class SimpleNestConditional<T extends TermTypeConditionalSupport>
         implements NestConditional<T> {
     private Term term;
     private T    target;
-    private Accepter<NestConditional<T>> accepter = this::and;
+    private Accepter<NestConditional<T>,Object> accepter = this::and;
 
     public SimpleNestConditional(T target, Term term) {
         this.term = term;
@@ -42,7 +42,7 @@ public class SimpleNestConditional<T extends TermTypeConditionalSupport>
     }
 
     @Override
-    public Accepter<NestConditional<T>> getAccepter() {
+    public Accepter<NestConditional<T>,Object> getAccepter() {
         return accepter;
     }
 

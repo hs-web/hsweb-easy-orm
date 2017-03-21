@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  */
 public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>> implements Conditional<Delete<P>> {
     private P        param    = null;
-    private Accepter accepter = this::and;
+    private Accepter<Delete<P>,Object> accepter = this::and;
     private Executor<P> executor;
 
     public Delete(P param) {
@@ -90,7 +90,7 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
     }
 
     @Override
-    public Accepter<Delete<P>> getAccepter() {
+    public Accepter<Delete<P>,Object> getAccepter() {
         return accepter;
     }
 

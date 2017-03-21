@@ -2,6 +2,8 @@ package org.hsweb.ezorm.rdb.h2;
 
 import com.alibaba.fastjson.JSON;
 import org.hsweb.ezorm.core.dsl.ConditionColumnBuilder;
+import org.hsweb.ezorm.core.dsl.Query;
+import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.rdb.RDBDatabase;
 import org.hsweb.ezorm.rdb.RDBTable;
 import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
@@ -96,21 +98,22 @@ public class SimpleTest {
                 .where()
                 .sql("age >? or age <?", 1, 5)
                 .when("age", 10, age -> age > 10, query -> query.or()::like)
+                .each(Collections.singletonMap("name", "张三"), query -> query::$like$)
+                .each(Collections.singletonMap("name", "张三"), "is", query -> query::and)
                 .nest()
                 .nest()
                 .sql("age > 10")
                 .sql("age > #{age}", Collections.singletonMap("age", 10))
-                .sql("age > #{[0]} or age > #{[0]}", Arrays.asList(1))
+                .sql("age > #{[0]} or age > #{[0]}", Arrays.asList(1, 2))
                 .end()
                 .or().sql("name = ?", "' or '1'='1")
                 .end()
                 .nest()
                 .or()
                 .each("age", Arrays.asList(1, 2, 3), query -> query::$like$, append)
-                .each(Arrays.asList(4, 5, 6), (o, q) -> q.like("age", o))
+                .each(Arrays.asList(4, 5, 6), (q, o) -> q.like("age", o))
                 .end()
                 .list();
-
 
         table.createQuery().where(
                 ConditionColumnBuilder.build("name")

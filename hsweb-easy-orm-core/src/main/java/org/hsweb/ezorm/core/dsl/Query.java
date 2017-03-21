@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
     private Q                    param          = null;
-    private Accepter             accepter       = this::and;
+    private Accepter<Query<T, Q>,Object>             accepter       = this::and;
     private ListExecutor<T, Q>   listExecutor   = null;
     private TotalExecutor<Q>     totalExecutor  = null;
     private SingleExecutor<T, Q> singleExecutor = null;
@@ -177,7 +177,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
     }
 
     @Override
-    public Accepter<Query<T, Q>> getAccepter() {
+    public Accepter<Query<T, Q>,Object> getAccepter() {
         return accepter;
     }
 

@@ -7,12 +7,12 @@ public interface TermTypeConditionalSupport {
      *
      * @param <T>
      */
-    interface Accepter<T> {
-        T accept(String column, String termType, Object value);
+    interface Accepter<T,O> {
+        T accept(String column, String termType, O value);
     }
 
-    interface SimpleAccepter<T> {
-        T accept(String column, Object value);
+    interface SimpleAccepter<T,O> {
+        T accept(String column, O value);
     }
 
 }

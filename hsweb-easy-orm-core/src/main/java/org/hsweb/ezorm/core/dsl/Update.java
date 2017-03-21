@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSupport<Update<T, Q>> implements Conditional<Update<T, Q>>, TermTypeConditionalFromBeanSupport {
     private Q        param    = null;
-    private Accepter accepter = this::and;
+    private Accepter<Update<T, Q>,Object> accepter = this::and;
     private Executor<Q> executor;
     private static final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
     private static final Logger            logger            = LoggerFactory.getLogger(Update.class);
@@ -137,7 +137,7 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
     }
 
     @Override
-    public Accepter<Update<T, Q>> getAccepter() {
+    public Accepter<Update<T, Q>,Object> getAccepter() {
         return accepter;
     }
 
