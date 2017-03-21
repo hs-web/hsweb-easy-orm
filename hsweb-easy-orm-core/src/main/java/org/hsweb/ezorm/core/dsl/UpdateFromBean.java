@@ -14,8 +14,8 @@ import java.util.List;
  */
 public final class UpdateFromBean<T, Q extends UpdateParam<T>>
         implements ConditionalFromBean<UpdateFromBean<T, Q>> {
-    private TermTypeConditionalSupport.Accepter accepter = this::and;
-    private Update<T, Q>                        proxy    = null;
+    private TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q>, Object> accepter = this::and;
+    private Update<T, Q>                                                      proxy    = null;
 
     public UpdateFromBean(Update<T, Q> proxy) {
         this.proxy = proxy;
@@ -91,7 +91,7 @@ public final class UpdateFromBean<T, Q extends UpdateParam<T>>
     }
 
     @Override
-    public TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q>> getAccepter() {
+    public TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q>, Object> getAccepter() {
         return accepter;
     }
 

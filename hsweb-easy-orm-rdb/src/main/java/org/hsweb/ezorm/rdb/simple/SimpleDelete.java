@@ -22,7 +22,7 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
     private SimpleTable      table;
     private SqlExecutor      sqlExecutor;
     private RDBTableMetaData tableMetaData;
-    private Accepter<Delete> accepter = this::and;
+    private Accepter<Delete,Object> accepter = this::and;
 
     public SimpleDelete(SimpleTable table, SqlExecutor sqlExecutor) {
         this.table = table;

@@ -11,7 +11,8 @@ import java.util.List;
 /**
  * @author zhouhao
  */
-public final class QueryFromBean<T, Q extends QueryParam> implements ConditionalFromBean<QueryFromBean<T, Q>> {
+public final class QueryFromBean<T, Q extends QueryParam>
+        implements ConditionalFromBean<QueryFromBean<T, Q>> {
     private Query<T, Q> proxy = null;
 
     public QueryFromBean(Query<T, Q> proxy) {
@@ -88,7 +89,7 @@ public final class QueryFromBean<T, Q extends QueryParam> implements Conditional
     }
 
     @Override
-    public TermTypeConditionalSupport.Accepter<QueryFromBean<T, Q>> getAccepter() {
+    public TermTypeConditionalSupport.Accepter<QueryFromBean<T, Q>, Object> getAccepter() {
         return (c, t, v) -> {
             proxy.getAccepter().accept(c, t, v);
             return this;

@@ -1,8 +1,6 @@
 package org.hsweb.ezorm.rdb.meta.converter;
 
-import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ValueConverter;
-import org.hswebframwork.utils.ClassUtils;
 import org.hswebframwork.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -38,13 +36,18 @@ public class NumberValueConverter implements ValueConverter {
 
     @Override
     public Object getValue(Object data) {
+        if (data instanceof String) {
+            if (StringUtils.isNumber(data)) {
+                data = new BigDecimal(((String) data));
+            }
+        }
         if (data instanceof Number) {
             Number numberVal = ((Number) data);
             if (isInt) return numberVal.intValue();
             if (isDouble) return numberVal.doubleValue();
             if (isLong) return numberVal.longValue();
             // TODO: 17-1-20  more type supports
-            return data.toString();
+            return data;
         }
         return data;
     }

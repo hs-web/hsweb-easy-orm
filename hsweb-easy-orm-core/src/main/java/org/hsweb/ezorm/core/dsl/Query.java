@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
+ * 查询条件构造器,用于构造{@link QueryParam} 以及设置执行器进行执行
+ *
  * @author zhouhao
+ * @see Conditional
+ * @see SqlConditionSupport
+ * @since 1.1
  */
 public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
     private Q                    param          = null;
-    private Accepter             accepter       = this::and;
+    private Accepter<Query<T, Q>,Object>             accepter       = this::and;
     private ListExecutor<T, Q>   listExecutor   = null;
     private TotalExecutor<Q>     totalExecutor  = null;
     private SingleExecutor<T, Q> singleExecutor = null;
@@ -44,7 +49,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
 
     public QueryFromBean<T, Q> fromBean(Object bean) {
         this.bean = bean;
-        return new QueryFromBean(this);
+        return new QueryFromBean<>(this);
     }
 
     @Override
@@ -172,7 +177,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
     }
 
     @Override
-    public Accepter<Query<T, Q>> getAccepter() {
+    public Accepter<Query<T, Q>,Object> getAccepter() {
         return accepter;
     }
 
@@ -181,11 +186,6 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         List<R> doExecute(P param);
     }
 
-
-    @FunctionalInterface
-    public interface PagerExecutor<R, P extends QueryParam> {
-        List<R> doExecute(P param, int pageIndex, int pageSize);
-    }
 
     @FunctionalInterface
     public interface SingleExecutor<R, P extends QueryParam> {

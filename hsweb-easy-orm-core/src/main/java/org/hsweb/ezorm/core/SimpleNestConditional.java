@@ -6,9 +6,9 @@ import org.hsweb.ezorm.core.param.Term;
 public class SimpleNestConditional<T extends TermTypeConditionalSupport>
         extends SqlConditionSupport<SimpleNestConditional<T>>
         implements NestConditional<T> {
-    Term term;
-    T    target;
-    Accepter<NestConditional<T>> accepter = this::and;
+    private Term term;
+    private T    target;
+    private Accepter<NestConditional<T>,Object> accepter = this::and;
 
     public SimpleNestConditional(T target, Term term) {
         this.term = term;
@@ -42,28 +42,28 @@ public class SimpleNestConditional<T extends TermTypeConditionalSupport>
     }
 
     @Override
-    public Accepter<NestConditional<T>> getAccepter() {
+    public Accepter<NestConditional<T>,Object> getAccepter() {
         return accepter;
     }
 
     @Override
     public NestConditional<NestConditional<T>> nest() {
-        return new SimpleNestConditional(this, this.term.nest());
+        return new SimpleNestConditional<>(this, this.term.nest());
     }
 
     @Override
     public NestConditional<NestConditional<T>> nest(String column, Object value) {
-        return new SimpleNestConditional(this, this.term.nest(column, value));
+        return new SimpleNestConditional<>(this, this.term.nest(column, value));
     }
 
     @Override
     public NestConditional<NestConditional<T>> orNest() {
-        return new SimpleNestConditional(this, this.term.orNest());
+        return new SimpleNestConditional<>(this, this.term.orNest());
     }
 
     @Override
     public NestConditional<NestConditional<T>> orNest(String column, Object value) {
-        return new SimpleNestConditional(this, this.term.orNest(column, value));
+        return new SimpleNestConditional<>(this, this.term.orNest(column, value));
     }
 
     @Override

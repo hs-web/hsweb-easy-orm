@@ -12,7 +12,7 @@ public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanS
         implements NestConditionalFromBean<T> {
 
     protected T proxy;
-    protected TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>> accepter = this::and;
+    protected TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>, Object> accepter = this::and;
     protected Term term;
 
     public SimpleNestConditionalForBean(T proxy, Term term) {
@@ -88,7 +88,7 @@ public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanS
     }
 
     @Override
-    public TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>> getAccepter() {
+    public TermTypeConditionalSupport.Accepter<NestConditionalFromBean<T>, Object> getAccepter() {
         return accepter;
     }
 

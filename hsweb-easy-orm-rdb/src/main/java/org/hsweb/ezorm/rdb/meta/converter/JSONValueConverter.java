@@ -17,6 +17,7 @@
 package org.hsweb.ezorm.rdb.meta.converter;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.hsweb.ezorm.core.ValueConverter;
 
 public class JSONValueConverter implements ValueConverter {
@@ -35,7 +36,7 @@ public class JSONValueConverter implements ValueConverter {
 
     @Override
     public Object getData(Object value) {
-        return JSON.toJSONString(parent == null ? value : parent.getValue(value));
+        return JSON.toJSONString(parent == null ? value : parent.getValue(value), SerializerFeature.WriteClassName);
     }
 
     @Override

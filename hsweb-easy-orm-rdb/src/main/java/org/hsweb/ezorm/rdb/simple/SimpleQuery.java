@@ -49,7 +49,7 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
 
     @Override
     public RDBQuery<T> select(String... fields) {
-        this.queryParam.select(fields);
+        this.queryParam.includes(fields);
         return this;
     }
 

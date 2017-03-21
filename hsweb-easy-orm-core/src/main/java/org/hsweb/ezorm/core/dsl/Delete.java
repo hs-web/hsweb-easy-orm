@@ -7,12 +7,14 @@ import org.hsweb.ezorm.core.SqlConditionSupport;
 import org.hsweb.ezorm.core.param.Param;
 import org.hsweb.ezorm.core.param.SqlTerm;
 
+import java.util.function.Supplier;
+
 /**
  * @author zhouhao
  */
-public final class Delete<P extends Param> extends SqlConditionSupport<Delete> implements Conditional<Delete> {
+public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>> implements Conditional<Delete<P>> {
     private P        param    = null;
-    private Accepter accepter = this::and;
+    private Accepter<Delete<P>,Object> accepter = this::and;
     private Executor<P> executor;
 
     public Delete(P param) {
@@ -37,47 +39,47 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete> i
         return executor.doExecute(param);
     }
 
-    public NestConditional<Delete> nest() {
+    public NestConditional<Delete<P>> nest() {
         return new SimpleNestConditional(this, this.param.nest());
     }
 
-    public NestConditional<Delete> nest(String column, Object value) {
+    public NestConditional<Delete<P>> nest(String column, Object value) {
         return new SimpleNestConditional(this, this.param.nest(column, value));
     }
 
     @Override
-    public NestConditional<Delete> orNest() {
+    public NestConditional<Delete<P>> orNest() {
         return new SimpleNestConditional(this, this.param.orNest());
     }
 
     @Override
-    public NestConditional<Delete> orNest(String column, Object value) {
+    public NestConditional<Delete<P>> orNest(String column, Object value) {
         return new SimpleNestConditional(this, this.param.orNest(column, value));
     }
 
 
     @Override
-    public Delete and() {
+    public Delete<P> and() {
         setAnd();
         this.accepter = this::and;
         return this;
     }
 
     @Override
-    public Delete or() {
+    public Delete<P> or() {
         setOr();
         this.accepter = this::or;
         return this;
     }
 
     @Override
-    public Delete and(String column, String termType, Object value) {
+    public Delete<P> and(String column, String termType, Object value) {
         this.param.and(column, termType, value);
         return this;
     }
 
     @Override
-    public Delete or(String column, String termType, Object value) {
+    public Delete<P> or(String column, String termType, Object value) {
         this.param.or(column, termType, value);
         return this;
     }
@@ -88,12 +90,12 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete> i
     }
 
     @Override
-    public Accepter<Delete> getAccepter() {
+    public Accepter<Delete<P>,Object> getAccepter() {
         return accepter;
     }
 
     @Override
-    protected Delete addSqlTerm(SqlTerm term) {
+    protected Delete<P> addSqlTerm(SqlTerm term) {
         param.addTerm(term);
         return this;
     }
@@ -103,17 +105,21 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete> i
         int doExecute(P param);
     }
 
-    public Delete excludes(String... columns) {
+    public Delete<P> excludes(String... columns) {
         param.excludes(columns);
         return this;
     }
 
-    public Delete includes(String... columns) {
+    public Delete<P> includes(String... columns) {
         param.includes(columns);
         return this;
     }
 
     public static Delete<Param> empty() {
         return new Delete<>(new Param());
+    }
+
+    public static <P extends Param> Delete<P> empty(Supplier<P> supplier) {
+        return new Delete<>(supplier.get());
     }
 }

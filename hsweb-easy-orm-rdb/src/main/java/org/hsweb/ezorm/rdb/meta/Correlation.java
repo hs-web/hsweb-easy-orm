@@ -20,6 +20,7 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
         SqlTerm term = new SqlTerm();
         term.setColumn(condition);
         term.setValue(condition);
+        term.setSql(condition);
         terms.add(term);
     }
 

@@ -112,10 +112,10 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 appender.removeLast();
             }
             String sql = appender.toString();
-            if (param.isPaging()) {
+            if (param.isPaging() && !param.isForUpdate()) {
                 sql = dialect.doPaging(sql, param.getPageIndex(), param.getPageSize());
             }
-            if (param.isForUpdate()) sql += " FOR UPDATE";
+            if (param.isForUpdate()) sql.concat(" FOR UPDATE");
             SimpleSQL simpleSQL = new SimpleSQL(sql, param);
             return simpleSQL;
         }

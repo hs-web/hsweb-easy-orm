@@ -3,7 +3,6 @@ package org.hsweb.ezorm.rdb.meta.parser;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
-import java.sql.JDBCType;
 
 public class H2TableMetaParser extends AbstractTableMetaParser {
     static final String TABLE_META_SQL    =
