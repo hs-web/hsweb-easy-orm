@@ -15,6 +15,10 @@ public class SqlTerm extends Term {
     public SqlTerm() {
     }
 
+    public SqlTerm(String sql) {
+        this.sql = sql;
+    }
+
     public SqlTerm(String sql, Object param) {
         this.sql = sql;
         this.param = param;
