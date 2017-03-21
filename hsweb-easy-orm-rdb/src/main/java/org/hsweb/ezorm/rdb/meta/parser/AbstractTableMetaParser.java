@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractTableMetaParser implements TableMetaParser {
     Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
     Map<JDBCType, Class>  javaTypeMap = new HashMap<>();
-    private SqlExecutor sqlExecutor;
+    protected SqlExecutor sqlExecutor;
 
     abstract Dialect getDialect();
 
