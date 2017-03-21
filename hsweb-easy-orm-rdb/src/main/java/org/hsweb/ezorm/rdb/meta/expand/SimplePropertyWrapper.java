@@ -1,10 +1,10 @@
 package org.hsweb.ezorm.rdb.meta.expand;
 
 import com.alibaba.fastjson.JSON;
-import org.hsweb.commons.ClassUtils;
-import org.hsweb.commons.DateTimeUtils;
-import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.PropertyWrapper;
+import org.hswebframwork.utils.ClassUtils;
+import org.hswebframwork.utils.DateTimeUtils;
+import org.hswebframwork.utils.StringUtils;
 
 import java.util.Date;
 import java.util.List;
