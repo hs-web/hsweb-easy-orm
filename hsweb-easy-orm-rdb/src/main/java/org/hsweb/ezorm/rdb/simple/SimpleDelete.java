@@ -64,7 +64,7 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
     }
 
     @Override
-    public Accepter getAccepter() {
+    public Accepter<Delete,Object> getAccepter() {
         return accepter;
     }
 

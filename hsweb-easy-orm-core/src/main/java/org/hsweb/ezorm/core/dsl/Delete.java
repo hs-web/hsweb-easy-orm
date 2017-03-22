@@ -84,7 +84,7 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
         return this;
     }
 
-    public Delete where(String column, String termType, Object value) {
+    public Delete<P> where(String column, String termType, Object value) {
         and(column, termType, value);
         return this;
     }
