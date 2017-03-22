@@ -1,9 +1,9 @@
 package org.hsweb.ezorm.rdb.meta.expand;
 
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.meta.converter.BlobValueConverter;
-import org.hswebframwork.utils.StringUtils;
 
 import java.sql.Blob;
 import java.util.LinkedHashMap;

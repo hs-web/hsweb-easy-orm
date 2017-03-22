@@ -17,15 +17,9 @@
 package org.hsweb.ezorm.core;
 
 import org.hsweb.ezorm.core.param.TermType;
-import org.hswebframwork.utils.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public interface ConditionalFromBean<T extends ConditionalFromBean> extends LogicalOperation<T>, TermTypeConditionalFromBeanSupport {
 
@@ -71,21 +65,21 @@ public interface ConditionalFromBean<T extends ConditionalFromBean> extends Logi
         Object value = getValue(column);
         if (value == null)
             return like(column);
-        return accept(column, TermType.like, StringUtils.concat(value, "%"));
+        return accept(column, TermType.like, String.valueOf(value).concat("%"));
     }
 
     default T $like(String column) {
         Object value = getValue(column);
         if (value == null)
             return like(column);
-        return accept(column, TermType.like, StringUtils.concat("%"));
+        return accept(column, TermType.like, "%".concat(String.valueOf(value)));
     }
 
     default T $like$(String column) {
         Object value = getValue(column);
         if (value == null)
             return like(column);
-        return accept(column, TermType.like, StringUtils.concat("%", "%"));
+        return accept(column, TermType.like, "%".concat(String.valueOf(value)).concat("%"));
     }
 
     default T notLike(String column) {

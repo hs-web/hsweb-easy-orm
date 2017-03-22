@@ -1,14 +1,13 @@
 package org.hsweb.ezorm.rdb.render.support.simple;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
-import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
-import org.hswebframwork.utils.StringUtils;
 
 import java.util.List;
 import java.util.Set;

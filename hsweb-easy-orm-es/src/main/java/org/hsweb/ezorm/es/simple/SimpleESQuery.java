@@ -1,13 +1,13 @@
 package org.hsweb.ezorm.es.simple;
 
 import org.elasticsearch.client.RestClient;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.NestConditional;
 import org.hsweb.ezorm.core.Query;
 import org.hsweb.ezorm.core.SimpleNestConditional;
 import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.es.ESQuery;
 import org.hsweb.ezorm.es.ESTable;
-import org.hswebframwork.utils.StringUtils;
 
 import java.sql.SQLException;
 import java.util.List;

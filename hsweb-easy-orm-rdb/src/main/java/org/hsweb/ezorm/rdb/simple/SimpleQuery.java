@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.simple;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.*;
 import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.core.param.SqlTerm;
@@ -9,7 +10,6 @@ import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.simple.wrapper.TriggerWrapper;
-import org.hswebframwork.utils.StringUtils;
 
 import java.sql.SQLException;
 import java.util.List;

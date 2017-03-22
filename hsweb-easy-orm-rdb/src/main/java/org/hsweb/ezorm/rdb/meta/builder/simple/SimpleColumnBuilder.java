@@ -1,12 +1,12 @@
 package org.hsweb.ezorm.rdb.meta.builder.simple;
 
+import org.hsweb.commons.ClassUtils;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hsweb.ezorm.rdb.meta.builder.TableBuilder;
 import org.hsweb.ezorm.rdb.meta.converter.BooleanValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.NumberValueConverter;
-import org.hswebframwork.utils.ClassUtils;
 
 import java.sql.JDBCType;
 import java.util.function.Consumer;

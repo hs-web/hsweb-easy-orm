@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.render.support.mysql;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.rdb.executor.EmptySQL;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -8,7 +9,6 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
-import org.hswebframwork.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

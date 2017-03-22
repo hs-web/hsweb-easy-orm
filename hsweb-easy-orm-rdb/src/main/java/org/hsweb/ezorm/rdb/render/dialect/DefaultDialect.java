@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.TermType;
@@ -8,7 +9,6 @@ import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.parser.OracleTableMetaParser;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
-import org.hswebframwork.utils.StringUtils;
 
 import java.sql.JDBCType;
 import java.util.*;

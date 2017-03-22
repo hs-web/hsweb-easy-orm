@@ -17,15 +17,11 @@
 package org.hsweb.ezorm.core;
 
 import org.hsweb.ezorm.core.param.TermType;
-import org.hswebframwork.utils.StringUtils;
+import org.hsweb.commons.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public interface Conditional<T extends Conditional> extends LogicalOperation<T>, TermTypeConditionalSupport {
     /*

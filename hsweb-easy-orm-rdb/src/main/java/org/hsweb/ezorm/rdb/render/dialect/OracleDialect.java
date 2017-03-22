@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
-import org.hswebframwork.utils.StringUtils;
+import org.hsweb.commons.StringUtils;
 
 import java.sql.JDBCType;
 
