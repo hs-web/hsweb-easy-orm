@@ -105,6 +105,9 @@ public abstract class DefaultDialect implements Dialect {
     public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias) {
         if (term instanceof SqlTerm) {
             SqlTerm sqlTerm = ((SqlTerm) term);
+            String sql = sqlTerm.getSql();
+            if (sql == null) sql = sqlTerm.getColumn();
+            if (sql == null) return new SqlAppender();
             TermTypeMapper mapper = TermTypeMapper.sql(sqlTerm.getSql(), sqlTerm.getParam());
             return mapper.accept(wherePrefix, sqlTerm, RDBColumnMetaData, tableAlias);
         }

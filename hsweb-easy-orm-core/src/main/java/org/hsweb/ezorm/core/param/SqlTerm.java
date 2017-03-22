@@ -16,12 +16,14 @@ public class SqlTerm extends Term {
     }
 
     public SqlTerm(String sql) {
-        this.sql = sql;
+        this(sql, null);
     }
 
     public SqlTerm(String sql, Object param) {
         this.sql = sql;
         this.param = param;
+        setColumn(sql);
+        setValue(param);
     }
 
     public String getSql() {
@@ -29,6 +31,7 @@ public class SqlTerm extends Term {
     }
 
     public void setSql(String sql) {
+        setColumn(sql);
         this.sql = sql;
     }
 
@@ -37,6 +40,7 @@ public class SqlTerm extends Term {
     }
 
     public void setParam(Object param) {
+        setValue(param);
         this.param = param;
     }
 
