@@ -16,7 +16,7 @@ import java.util.List;
  * @author zhouhao
  */
 class SimpleESQuery<T> implements ESQuery<T> {
-    Accepter<Query<T>> accepter   = this::and;
+    Accepter<Query<T>,Object> accepter   = this::and;
     QueryParam         queryParam = null;
     ESTable<T>         table      = null;
     RestClient         client     = null;
@@ -41,7 +41,7 @@ class SimpleESQuery<T> implements ESQuery<T> {
 
     @Override
     public SimpleESQuery<T> select(String... columns) {
-        queryParam.select(columns);
+        queryParam.includes(columns);
         return this;
     }
 
@@ -89,22 +89,22 @@ class SimpleESQuery<T> implements ESQuery<T> {
 
     @Override
     public NestConditional<Query<T>> nest() {
-        return new SimpleNestConditional(this, this.queryParam.nest());
+        return new SimpleNestConditional<>(this, this.queryParam.nest());
     }
 
     @Override
     public NestConditional<Query<T>> nest(String column, Object value) {
-        return new SimpleNestConditional(this, this.queryParam.nest(column, value));
+        return new SimpleNestConditional<>(this, this.queryParam.nest(column, value));
     }
 
     @Override
     public NestConditional<Query<T>> orNest() {
-        return new SimpleNestConditional(this, this.queryParam.orNest());
+        return new SimpleNestConditional<>(this, this.queryParam.orNest());
     }
 
     @Override
     public NestConditional<Query<T>> orNest(String column, Object value) {
-        return new SimpleNestConditional(this, this.queryParam.orNest(column, value));
+        return new SimpleNestConditional<>(this, this.queryParam.orNest(column, value));
     }
 
     @Override
@@ -132,7 +132,7 @@ class SimpleESQuery<T> implements ESQuery<T> {
     }
 
     @Override
-    public Accepter<Query<T>> getAccepter() {
+    public Accepter<Query<T>,Object> getAccepter() {
         return accepter;
     }
 
