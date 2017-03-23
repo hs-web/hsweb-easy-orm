@@ -23,6 +23,9 @@ public class SqlTerm extends Term {
         this.sql = sql;
         this.param = param;
         setColumn(sql);
+        if (param == null) {
+            param = sql;
+        }
         setValue(param);
     }
 

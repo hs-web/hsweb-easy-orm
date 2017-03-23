@@ -28,8 +28,8 @@ public abstract class AbstractRDBDatabaseMetaData extends RDBDatabaseMetaData {
         return dialect;
     }
 
-    public SqlRender getRenderer(SqlRender.TYPE type) {
-        SqlRender render = renderMap.get(type);
+    public <T> SqlRender<T> getRenderer(SqlRender.TYPE type) {
+        SqlRender<T> render = renderMap.get(type);
         if (render == null) throw new UnsupportedOperationException(type + " is not support");
         return render;
     }

@@ -33,12 +33,16 @@ public abstract class SimpleWhereSqlBuilder {
             index++;
             boolean nullTerm = StringUtils.isNullOrEmpty(term.getColumn());
             RDBColumnMetaData column = metaData.findColumn(term.getColumn());
-            //不是空条件 也不是可选字段
-            if (!nullTerm && column == null && !(term instanceof SqlTerm)) continue;
-            //不是空条件，值为空
-            if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
-            //是空条件，但是无嵌套
-            if (nullTerm && term.getTerms().isEmpty()) continue;
+            if (!(term instanceof SqlTerm)) {
+                //不是空条件 也不是可选字段
+                if (!nullTerm && column == null) continue;
+                //不是空条件，值为空
+                if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
+                //是空条件，但是无嵌套
+                if (nullTerm && term.getTerms().isEmpty()) continue;
+            } else {
+                if (StringUtils.isNullOrEmpty(((SqlTerm) term).getSql())) continue;
+            }
             String tableAlias = null;
             if (column != null) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
