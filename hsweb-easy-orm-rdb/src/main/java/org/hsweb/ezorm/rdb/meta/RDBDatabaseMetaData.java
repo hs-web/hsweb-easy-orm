@@ -13,7 +13,7 @@ public abstract class RDBDatabaseMetaData extends AbstractDatabaseMetaData imple
 
     public abstract void init();
 
-    public abstract SqlRender getRenderer(SqlRender.TYPE type);
+    public abstract <T> SqlRender<T> getRenderer(SqlRender.TYPE type);
 
     public abstract String getName();
 

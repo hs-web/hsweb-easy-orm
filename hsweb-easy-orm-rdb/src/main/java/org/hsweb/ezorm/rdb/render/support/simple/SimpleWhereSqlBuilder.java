@@ -2,7 +2,6 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
-import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
@@ -15,11 +14,11 @@ import java.util.Set;
 
 public abstract class SimpleWhereSqlBuilder {
 
-    protected String getTableAlias(RDBTableMetaData metaData, String field) {
-        if (field.contains("."))
-            field = field.split("[.]")[0];
+    protected String getTableAlias(RDBTableMetaData metaData, String column) {
+        if (column.contains("."))
+            column = column.split("[.]")[0];
         else return metaData.getAlias();
-        Correlation correlation = metaData.getCorrelation(field);
+        Correlation correlation = metaData.getCorrelation(column);
         if (correlation != null) return correlation.getAlias();
         return metaData.getAlias();
     }
@@ -34,14 +33,18 @@ public abstract class SimpleWhereSqlBuilder {
             index++;
             boolean nullTerm = StringUtils.isNullOrEmpty(term.getColumn());
             RDBColumnMetaData column = metaData.findColumn(term.getColumn());
-            //不是空条件 也不是可选字段
-            if (!nullTerm && column == null && !(term instanceof SqlTerm)) continue;
-            //不是空条件，值为空
-            if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
-            //是空条件，但是无嵌套
-            if (nullTerm && term.getTerms().isEmpty()) continue;
+            if (!(term instanceof SqlTerm)) {
+                //不是空条件 也不是可选字段
+                if (!nullTerm && column == null) continue;
+                //不是空条件，值为空
+                if (!nullTerm && StringUtils.isNullOrEmpty(term.getValue())) continue;
+                //是空条件，但是无嵌套
+                if (nullTerm && term.getTerms().isEmpty()) continue;
+            } else {
+                if (StringUtils.isNullOrEmpty(((SqlTerm) term).getSql())) continue;
+            }
             String tableAlias = null;
-            if (column != null) {
+            if (column != null && !(term instanceof SqlTerm)) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
                 //转换参数的值
@@ -84,25 +87,6 @@ public abstract class SimpleWhereSqlBuilder {
             Object tmp = column.getOptionConverter().converterData(value);
             if (null != tmp) value = tmp;
         }
-//        JDBCType type = column.getJdbcType();
-//
-//        if (type == null) return value;
-//        switch (type) {
-//            case INTEGER:
-//            case NUMERIC:
-//                if (StringUtils.isInt(type)) return StringUtils.toInt(value);
-//                if (StringUtils.isDouble(type)) return StringUtils.toDouble(value);
-//                break;
-//            case TIMESTAMP:
-//            case TIME:
-//            case DATE:
-//                if (!(value instanceof Date)) {
-//                    String strValue = String.valueOf(value);
-//                    Date date = DateTimeUtils.formatUnknownString2Date(strValue);
-//                    if (date != null) return date;
-//                }
-//                break;
-//        }
         return value;
     }
 
