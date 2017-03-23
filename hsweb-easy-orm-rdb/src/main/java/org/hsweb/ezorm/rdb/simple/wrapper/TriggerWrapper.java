@@ -12,14 +12,14 @@ import java.util.Map;
 /**
  * Created by zhouhao on 16-6-5.
  */
-public class TriggerWrapper implements ObjectWrapper<Object> {
+public class TriggerWrapper<T> implements ObjectWrapper<T> {
 
-    private ObjectWrapper    defaultWrapper;
+    private ObjectWrapper<T> defaultWrapper;
     private RDBTable         table;
     private RDBDatabase      database;
     private RDBTableMetaData metaData;
 
-    public TriggerWrapper(RDBDatabase database, RDBTable table, ObjectWrapper defaultWrapper) {
+    public TriggerWrapper(RDBDatabase database, RDBTable table, ObjectWrapper<T> defaultWrapper) {
         this.defaultWrapper = defaultWrapper;
         this.database = database;
         this.table = table;
@@ -27,17 +27,17 @@ public class TriggerWrapper implements ObjectWrapper<Object> {
     }
 
     @Override
-    public <C> Class<C> getType() {
+    public Class<T> getType() {
         return defaultWrapper.getType();
     }
 
     @Override
-    public Object newInstance() {
+    public T newInstance() {
         return defaultWrapper.newInstance();
     }
 
     @Override
-    public void wrapper(Object instance, int index, String attr, Object value) {
+    public void wrapper(T instance, int index, String attr, Object value) {
         if (metaData.triggerIsSupport(Trigger.select_wrapper_each)) {
             Map<String, Object> context = new HashMap<>();
             context.put("table", table);
@@ -52,7 +52,7 @@ public class TriggerWrapper implements ObjectWrapper<Object> {
     }
 
     @Override
-    public void done(Object instance) {
+    public void done(T instance) {
         if (metaData.triggerIsSupport(Trigger.select_wrapper_done)) {
             Map<String, Object> context = new HashMap<>();
             context.put("table", table);

@@ -81,7 +81,7 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
         return this;
     }
 
-    private Accepter accepter=this::and;
+    private Accepter accepter = this::and;
 
     @Override
     public Update<T> and() {
@@ -132,7 +132,7 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
     public int exec() throws SQLException {
         boolean supportBefore = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.update_before);
         boolean supportDone = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.update_done);
-        Map<String, Object> context = table.getDatabase().getTriggerContextRoot();
+        Map<String, Object> context = null;
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);
