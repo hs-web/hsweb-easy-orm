@@ -144,5 +144,8 @@ public interface SqlExecutor {
         exec(new SimpleSQL(sql));
     }
 
+    default void exec(String sql, Object params) throws SQLException {
+        exec(new SimpleSQL(sql, params));
+    }
 
 }
