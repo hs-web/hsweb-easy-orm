@@ -7,6 +7,7 @@ import org.hsweb.ezorm.core.Trigger;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author zhouhao
@@ -31,6 +32,8 @@ public interface TableMetaData extends Serializable {
     PropertyWrapper getProperty(String property);
 
     PropertyWrapper getProperty(String property, Object defaultValue);
+
+    PropertyWrapper getProperty(String name, Supplier<Object> defaultValue);
 
     PropertyWrapper setProperty(String property, Object value);
 

@@ -126,9 +126,6 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();
             int data_scale = instance.getProperty("data_scale").toInt();
-            if (data_type == null) {
-                data_type = "varchar";
-            }
             instance.setLength(len);
             instance.setPrecision(data_precision);
             instance.setScale(data_scale);

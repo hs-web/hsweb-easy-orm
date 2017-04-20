@@ -97,7 +97,6 @@ public interface Dialect {
     Dialect MYSQL  = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();
     Dialect H2     = new H2Dialect();
-
     Dialect MSSQL = new MSSQLDialect();
 
 }

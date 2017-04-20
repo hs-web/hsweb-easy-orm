@@ -97,6 +97,7 @@ public class SimpleTest {
         table.createQuery()
                 .where()
                 .sql("age >? or age <?", 1, 5)
+                .when(() -> true, query -> query.like("age", 10))
                 .when("age", 10, age -> age > 10, query -> query.or()::like)
                 .each(Collections.singletonMap("name", "张三"), query -> query::$like$)
                 .each(Collections.singletonMap("name", "张三"), "is", query -> query::and)
@@ -134,7 +135,7 @@ public class SimpleTest {
 
 //        table.createUpdate().set("name", "aaa").where("name", "aa").or().like("name", 1).exec();
 
-        sqlExecutor.list("select * from s_user where age > #{age}",Collections.singletonMap("age",10));
+        sqlExecutor.list("select * from s_user where age > #{age}", Collections.singletonMap("age", 10));
     }
 
 }

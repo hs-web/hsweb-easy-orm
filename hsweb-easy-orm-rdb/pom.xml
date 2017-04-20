@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hsweb-easy-orm</artifactId>
         <groupId>org.hsweb</groupId>
-        <version>1.1</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,12 @@
         <dependency>
             <groupId>org.hsweb</groupId>
             <artifactId>hsweb-easy-orm-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>sqljdbc4</artifactId>
+            <version>4.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
