@@ -6,7 +6,7 @@
     <groupId>org.hsweb</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>1.1</version>
+    <version>1.1.1</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
