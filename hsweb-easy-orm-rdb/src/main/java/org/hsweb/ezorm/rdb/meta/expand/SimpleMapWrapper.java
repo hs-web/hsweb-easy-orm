@@ -46,7 +46,7 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
         return value;
     }
 
-    protected void putValue(Map<String, Object> instance, String attr, Object value) {
+    public void putValue(Map<String, Object> instance, String attr, Object value) {
         value = convertValue(value);
         if (attr.contains(".")) {
             String[] attrs = StringUtils.splitFirst(attr, "[.]");
