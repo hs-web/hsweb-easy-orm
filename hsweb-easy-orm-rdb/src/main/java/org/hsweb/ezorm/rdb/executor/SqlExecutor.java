@@ -19,11 +19,13 @@ package org.hsweb.ezorm.rdb.executor;
 
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.meta.expand.SimpleMapWrapper;
+import org.hsweb.ezorm.rdb.meta.expand.WrapperConsumer;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * SQL执行器,用于执行sql
@@ -102,6 +104,22 @@ public interface SqlExecutor {
 
     default List<Map<String, Object>> list(String sql, Object params) throws SQLException {
         return list(new SimpleSQL(sql, params));
+    }
+
+    default <T> List<T> list(String sql, ObjectWrapper<T> wrapper) throws SQLException {
+        return list(new SimpleSQL(sql), wrapper);
+    }
+
+    default <T> List<T> list(String sql, Object params, ObjectWrapper<T> wrapper) throws SQLException {
+        return list(new SimpleSQL(sql, params), wrapper);
+    }
+
+    default void list(String sql, Object params, Consumer<Map<String, Object>> consumer) throws SQLException {
+        list(sql, params, new WrapperConsumer(consumer));
+    }
+
+    default void list(String sql, Consumer<Map<String, Object>> consumer) throws SQLException {
+        list(sql, new WrapperConsumer(consumer));
     }
 
     default List<Map<String, Object>> list(String sql) throws SQLException {

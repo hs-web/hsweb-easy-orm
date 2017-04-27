@@ -121,7 +121,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
         }
 
         @Override
-        public void done(RDBColumnMetaData instance) {
+        public boolean done(RDBColumnMetaData instance) {
             String data_type = instance.getProperty("data_type").toString().toLowerCase();
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();
@@ -140,6 +140,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             instance.setJdbcType(jdbcType);
             instance.setJavaType(javaType);
             instance.setDataType(getDialect().buildDataType(instance));
+            return true;
         }
     }
 }

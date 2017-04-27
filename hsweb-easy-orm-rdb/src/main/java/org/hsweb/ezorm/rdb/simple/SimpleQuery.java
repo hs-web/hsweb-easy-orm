@@ -274,8 +274,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
         }
 
         @Override
-        public void done(Object instance) {
-
+        public boolean done(Object instance) {
+            return false;
         }
     }
 }

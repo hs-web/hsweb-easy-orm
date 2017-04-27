@@ -52,7 +52,7 @@ public class TriggerWrapper<T> implements ObjectWrapper<T> {
     }
 
     @Override
-    public void done(T instance) {
+    public boolean done(T instance) {
         if (metaData.triggerIsSupport(Trigger.select_wrapper_done)) {
             Map<String, Object> context = new HashMap<>();
             context.put("table", table);
@@ -60,7 +60,7 @@ public class TriggerWrapper<T> implements ObjectWrapper<T> {
             context.put("instance", instance);
             metaData.on(Trigger.select_wrapper_done, context);
         }
-        this.defaultWrapper.done(instance);
+        return this.defaultWrapper.done(instance);
     }
 
 }

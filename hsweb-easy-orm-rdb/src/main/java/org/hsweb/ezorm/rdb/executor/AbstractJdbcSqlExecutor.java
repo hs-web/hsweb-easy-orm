@@ -160,8 +160,8 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
                     wrapper.wrapper(data, index, headers.get(i), value);
                 }
                 index++;
-                wrapper.done(data);
-                datas.add(data);
+                if (wrapper.done(data))
+                    datas.add(data);
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("<==      total: {}", index);
