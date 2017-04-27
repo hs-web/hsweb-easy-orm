@@ -58,7 +58,6 @@ public interface ObjectWrapper<T> {
      *
      * @param instance 实例对象
      */
-    void done(T instance);
-
+    boolean done(T instance);
 
 }
