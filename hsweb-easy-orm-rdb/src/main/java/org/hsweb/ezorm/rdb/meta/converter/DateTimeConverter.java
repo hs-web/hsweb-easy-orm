@@ -4,7 +4,9 @@ import org.hsweb.commons.DateTimeUtils;
 import org.hsweb.commons.time.DateFormatter;
 import org.hsweb.ezorm.core.ValueConverter;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 /**
  * 日期转换器
@@ -24,6 +26,11 @@ public class DateTimeConverter implements ValueConverter {
     public Object getData(Object value) {
         if (value instanceof Date) return value;
         if (value instanceof String) {
+            if (((String) value).contains(",")) {
+                return Arrays.stream(((String) value).split(","))
+                        .map(DateFormatter::fromString)
+                        .collect(Collectors.toList());
+            }
             return DateFormatter.fromString(((String) value));
         }
         return value;
@@ -42,6 +49,11 @@ public class DateTimeConverter implements ValueConverter {
         }
         if (data instanceof String) {
             if (toType == Date.class) {
+                if (((String) data).contains(",")) {
+                    return Arrays.stream(((String) data).split(","))
+                            .map(DateFormatter::fromString)
+                            .collect(Collectors.toList());
+                }
                 data = DateFormatter.fromString(((String) data));
                 if (data == null) data = DateTimeUtils.formatDateString(((String) data), format);
             }
