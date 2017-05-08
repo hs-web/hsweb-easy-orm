@@ -51,9 +51,7 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
             buildWhere(metaData, "", param.getTerms(), whereSql, needSelectTable);
             if (!whereSql.isEmpty()) whereSql.removeFirst();
             //加入要查询的表
-            this.selectField.stream().forEach(field -> {
-                needSelectTable.add(field.getTableName());
-            });
+            this.selectField.forEach(field -> needSelectTable.add(field.getTableName()));
             param.getSorts().forEach(sort -> {
                 RDBColumnMetaData rDBColumnMetaData = metaData.findColumn(sort.getName());
                 if (rDBColumnMetaData.getName() == null) return;
