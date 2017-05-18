@@ -3,16 +3,25 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
+import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class SimpleWhereSqlBuilder {
+
+    private Set<String> doNotTransformationValueTermType = Stream.of(
+            TermType.isnull,
+            TermType.notnull,
+            TermType.empty,
+            TermType.nempty
+    ).collect(Collectors.toSet());
 
     protected String getTableAlias(RDBTableMetaData metaData, String field) {
         if (field.contains("."))
@@ -47,8 +56,10 @@ public abstract class SimpleWhereSqlBuilder {
             if (column != null) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
-                //转换参数的值
-                term.setValue(transformationValue(column, term.getValue()));
+                //部分termType不需要转换
+                if (!doNotTransformationValueTermType.contains(term.getTermType()))
+                    //转换参数的值
+                    term.setValue(transformationValue(column, term.getValue()));
             }
             //用于sql预编译的参数名
             prefix = StringUtils.concat(prefixTmp, "terms[", index, "]");
@@ -87,25 +98,6 @@ public abstract class SimpleWhereSqlBuilder {
             Object tmp = column.getOptionConverter().converterData(value);
             if (null != tmp) value = tmp;
         }
-//        JDBCType type = column.getJdbcType();
-//
-//        if (type == null) return value;
-//        switch (type) {
-//            case INTEGER:
-//            case NUMERIC:
-//                if (StringUtils.isInt(type)) return StringUtils.toInt(value);
-//                if (StringUtils.isDouble(type)) return StringUtils.toDouble(value);
-//                break;
-//            case TIMESTAMP:
-//            case TIME:
-//            case DATE:
-//                if (!(value instanceof Date)) {
-//                    String strValue = String.valueOf(value);
-//                    Date date = DateTimeUtils.formatUnknownString2Date(strValue);
-//                    if (date != null) return date;
-//                }
-//                break;
-//        }
         return value;
     }
 
