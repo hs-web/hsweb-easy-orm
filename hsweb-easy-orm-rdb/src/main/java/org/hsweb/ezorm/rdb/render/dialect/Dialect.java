@@ -1,14 +1,13 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
-import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
+import org.hswebframwork.utils.StringUtils;
 
 import java.sql.JDBCType;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 
 import static org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor.APPEND_PATTERN;
@@ -98,5 +97,7 @@ public interface Dialect {
     Dialect MYSQL  = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();
     Dialect H2     = new H2Dialect();
+
+    Dialect MSSQL = new MSSQLDialect();
 
 }

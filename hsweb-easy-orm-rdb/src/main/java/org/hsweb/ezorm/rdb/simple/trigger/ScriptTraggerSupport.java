@@ -1,10 +1,10 @@
 package org.hsweb.ezorm.rdb.simple.trigger;
 
-import org.hsweb.commons.StringUtils;
-import org.hsweb.expands.script.engine.DynamicScriptEngine;
-import org.hsweb.expands.script.engine.ExecuteResult;
 import org.hsweb.ezorm.core.Trigger;
 import org.hsweb.ezorm.rdb.exception.TriggerException;
+import org.hswebframework.expands.script.engine.DynamicScriptEngine;
+import org.hswebframework.expands.script.engine.ExecuteResult;
+import org.hswebframwork.utils.StringUtils;
 
 import java.util.Map;
 
@@ -26,7 +26,7 @@ public class ScriptTraggerSupport implements Trigger {
         }
         ExecuteResult result = engine.execute(scriptId, context);
         if (result.isSuccess()) {
-            Object rsl = result.getResult();
+            Object rsl = result.get();
             if (rsl instanceof Boolean) {
                 if (!((Boolean) rsl)) {
                     throw new TriggerException("脚本返回结果:false");

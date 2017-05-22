@@ -2,6 +2,8 @@ package org.hsweb.ezorm.rdb.meta.converter;
 
 import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ValueConverter;
+import org.hswebframwork.utils.ClassUtils;
+import org.hswebframwork.utils.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -17,10 +19,6 @@ public class NumberValueConverter implements ValueConverter {
         isInt = javaType == int.class || javaType == Integer.class;
         isDouble = javaType == double.class || javaType == Double.class;
         isLong = javaType == long.class || javaType == Long.class;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new NumberValueConverter(Integer.class).getData("0"));
     }
 
     @Override

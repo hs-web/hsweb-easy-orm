@@ -5,6 +5,16 @@ package org.hsweb.ezorm.core.param;
  */
 public class SqlTerm extends Term {
 
+    public SqlTerm() {
+    }
+
+    public SqlTerm(String sql) {
+        this.setValue(sql);
+        this.setColumn(sql);
+        this.setTermType(sql);
+    }
+
+
     @Override
     public Term clone() {
         SqlTerm term = new SqlTerm();

@@ -10,30 +10,25 @@ import org.hsweb.ezorm.core.param.SqlTerm;
 /**
  * @author zhouhao
  */
-public final class Delete extends SqlConditionSupport<Delete> implements Conditional<Delete> {
-    private Param    param    = null;
+public final class Delete<P extends Param> extends SqlConditionSupport<Delete> implements Conditional<Delete> {
+    private P        param    = null;
     private Accepter accepter = this::and;
-    private Executor<Param> executor;
+    private Executor<P> executor;
 
-    public Delete() {
-        this(new Param());
-    }
-
-
-    public Delete(Param param) {
+    public Delete(P param) {
         this.param = param;
     }
 
-    public Delete setExecutor(Executor<Param> executor) {
+    public Delete setExecutor(Executor<P> executor) {
         this.executor = executor;
         return this;
     }
 
-    public Param getParam() {
+    public P getParam() {
         return param;
     }
 
-    public Delete setParam(Param param) {
+    public Delete setParam(P param) {
         this.param = param;
         return this;
     }
@@ -116,5 +111,9 @@ public final class Delete extends SqlConditionSupport<Delete> implements Conditi
     public Delete includes(String... columns) {
         param.includes(columns);
         return this;
+    }
+
+    public static Delete<Param> empty() {
+        return new Delete<>(new Param());
     }
 }
