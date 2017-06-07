@@ -57,6 +57,12 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
             if (null == value) {
                 return;
             }
+            try {
+                propertyUtils.setProperty(data, propertyName, value);
+            } catch (NoSuchMethodException ignore) {
+            } catch (Exception e) {
+                logger.warn("无法设置属性:{} 值:{}", propertyName, value, e);
+            }
             columns.add(dialect.buildColumnName(null, column.getName()));
             valuesExpression.add(getParamString(valueExpressionPrefix, propertyName, column).toString());
         });
