@@ -8,6 +8,13 @@ public class BindSQL {
 
     private String toField;
 
+    public BindSQL() {
+    }
+
+    public BindSQL(SQL sql) {
+        this.sql = sql;
+    }
+
     public SQL getSql() {
         return sql;
     }
