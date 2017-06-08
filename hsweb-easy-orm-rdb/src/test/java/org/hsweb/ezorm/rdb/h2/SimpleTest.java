@@ -83,7 +83,7 @@ public class SimpleTest {
 //                .getParam();
 //
 //
-//        table.createQuery().setParam(queryParam).list();
+//        table.createQuery().setParams(queryParam).list();
 
         table.createInsert().values((Collection) JSON.parseArray("[" +
                 "{\n" +
