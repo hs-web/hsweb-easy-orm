@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.render.support.sqlserver;
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.rdb.executor.BindSQL;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;

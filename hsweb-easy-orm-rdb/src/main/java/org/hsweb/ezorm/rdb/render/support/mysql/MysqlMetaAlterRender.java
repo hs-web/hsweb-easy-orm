@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.render.support.mysql;
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.rdb.executor.EmptySQL;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;

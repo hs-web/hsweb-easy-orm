@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.meta.builder.simple;
 
-import org.hsweb.commons.ClassUtils;
+import org.hswebframework.utils.ClassUtils;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.builder.ColumnBuilder;

@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.simple;
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.*;
 import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.core.param.SqlTerm;

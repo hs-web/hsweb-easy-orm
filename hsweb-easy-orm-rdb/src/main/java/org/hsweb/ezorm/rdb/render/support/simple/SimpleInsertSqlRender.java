@@ -2,7 +2,7 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.param.InsertParam;
 import org.hsweb.ezorm.rdb.executor.BindSQL;
 import org.hsweb.ezorm.rdb.executor.SQL;

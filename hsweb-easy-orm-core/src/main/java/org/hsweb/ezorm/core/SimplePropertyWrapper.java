@@ -1,10 +1,10 @@
 package org.hsweb.ezorm.core;
 
 import com.alibaba.fastjson.JSON;
-import org.hsweb.commons.ClassUtils;
-import org.hsweb.commons.DateTimeUtils;
-import org.hsweb.commons.StringUtils;
-import org.hsweb.commons.time.DateFormatter;
+import org.hswebframework.utils.ClassUtils;
+import org.hswebframework.utils.DateTimeUtils;
+import org.hswebframework.utils.time.DateFormatter;
+import org.hswebframework.utils.StringUtils;
 
 import java.util.Date;
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.rdb.meta.expand;
 
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.ClobValueConverter;

@@ -17,7 +17,7 @@
 package org.hsweb.ezorm.core;
 
 import org.hsweb.ezorm.core.param.TermType;
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;

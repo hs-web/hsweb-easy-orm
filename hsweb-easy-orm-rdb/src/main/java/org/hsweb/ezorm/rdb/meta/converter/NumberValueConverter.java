@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.meta.converter;
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.ValueConverter;
 
 import java.math.BigDecimal;

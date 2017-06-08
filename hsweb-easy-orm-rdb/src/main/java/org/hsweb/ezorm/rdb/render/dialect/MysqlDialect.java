@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.parser.MysqlTableMetaParser;
 import org.hsweb.ezorm.rdb.meta.parser.TableMetaParser;

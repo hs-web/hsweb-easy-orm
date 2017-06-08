@@ -1,7 +1,7 @@
 package org.hsweb.ezorm.es.simple;
 
 import org.elasticsearch.client.RestClient;
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.NestConditional;
 import org.hsweb.ezorm.core.Query;
 import org.hsweb.ezorm.core.SimpleNestConditional;

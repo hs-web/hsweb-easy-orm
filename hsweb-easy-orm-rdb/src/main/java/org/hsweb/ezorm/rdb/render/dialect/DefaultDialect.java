@@ -1,6 +1,6 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
-import org.hsweb.commons.StringUtils;
+import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
 import org.hsweb.ezorm.core.param.TermType;
@@ -161,7 +161,6 @@ public abstract class DefaultDialect implements Dialect {
     @Override
     public void setColumnMapper(String columnType, ColumnMapper mapper) {
         // TODO: 16-10-28
-        throw new UnsupportedOperationException();
     }
 
     @Override
