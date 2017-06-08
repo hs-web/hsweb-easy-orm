@@ -21,11 +21,13 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
     PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected SQL createSingleSql(RDBTableMetaData metaData, Object data, Object param, String valueExpressionPrefix) {
+    protected SimpleSQL createSingleSql(RDBTableMetaData metaData, Object data, Object param, String valueExpressionPrefix) {
         Dialect dialect = metaData.getDatabaseMetaData().getDialect();
         SqlAppender appender = new SqlAppender();
         List<String> columns = new ArrayList<>();
         List<String> valuesExpression = new ArrayList<>();
+        Map<String, Object> mapValue = new HashMap<>();
+
         metaData.getColumns().forEach(column -> {
             Object value = null;
             String propertyName = null;
@@ -57,19 +59,16 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
             if (null == value) {
                 return;
             }
-            try {
-                propertyUtils.setProperty(data, propertyName, value);
-            } catch (NoSuchMethodException ignore) {
-            } catch (Exception e) {
-                logger.warn("无法设置属性:{} 值:{}", propertyName, value, e);
-            }
+            mapValue.put(propertyName, value);
+
             columns.add(dialect.buildColumnName(null, column.getName()));
             valuesExpression.add(getParamString(valueExpressionPrefix, propertyName, column).toString());
         });
         appender.add("INSERT INTO ", metaData.getName(), " (")
                 .add(String.join(",", columns.toArray(new String[columns.size()])), ")VALUES(")
                 .add(String.join(",", valuesExpression.toArray(new String[valuesExpression.size()])), ")");
-        return new SimpleSQL(appender.toString(), param);
+
+        return new SimpleSQL(appender.toString(), mapValue);
     }
 
 
@@ -85,15 +84,25 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
             datas = Arrays.asList(((Object[]) data));
         }
         if (datas == null) {
-            return createSingleSql(metaData, data, param, "data.");
-        } else {
-            SimpleSQL simpleSQL = new SimpleSQL(createSingleSql(metaData, datas.get(0), param, "data[0].").getSql(), param);
-            List<BindSQL> bindSQLS = new ArrayList<>();
-            for (int i = 1; i < datas.size(); i++) {
-                bindSQLS.add(new BindSQL(createSingleSql(metaData, datas.get(i), param, "data[" + i + "].")));
-            }
-            simpleSQL.setBindSQLs(bindSQLS);
+            SimpleSQL simpleSQL = createSingleSql(metaData, data, param, "data.");
+            param.setData(simpleSQL.getParams());
+            simpleSQL.setParams(param);
             return simpleSQL;
+        } else {
+            SimpleSQL firstSql = createSingleSql(metaData, datas.get(0), param, "data[0].");
+            List<BindSQL> bindSQLS = new ArrayList<>();
+            List<Object> newParam = new ArrayList<>();
+            newParam.add(firstSql.getParams());
+            for (int i = 1; i < datas.size(); i++) {
+                SimpleSQL sql = createSingleSql(metaData, datas.get(i), param, "data[" + i + "].");
+                newParam.add(sql.getParams());
+                sql.setParams(param);
+                bindSQLS.add(new BindSQL(sql));
+            }
+            firstSql.setBindSQLs(bindSQLS);
+            param.setData(newParam);
+            firstSql.setParams(param);
+            return firstSql;
         }
     }
 
