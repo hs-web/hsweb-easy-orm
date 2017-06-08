@@ -13,20 +13,24 @@ public class SimpleSQL implements SQL {
 
     private String sql;
 
-    private Object param;
+    private Object params;
 
     private List<BindSQL> bindSQLs;
 
-    public SimpleSQL(String sql, Object param) {
+    public SimpleSQL(String sql, Object params) {
         this.sql = sql;
-        this.param = param;
+        this.params = params;
     }
 
     public SimpleSQL(String sql) {
         this.sql = sql;
-        this.param = new HashMap<>();
+        this.params = new HashMap<>();
     }
 
+
+    public void setParams(Object params) {
+        this.params = params;
+    }
 
     @Override
     public String getSql() {
@@ -35,7 +39,7 @@ public class SimpleSQL implements SQL {
 
     @Override
     public Object getParams() {
-        return param;
+        return params;
     }
 
     @Override
@@ -55,7 +59,7 @@ public class SimpleSQL implements SQL {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(sql).append("\n").append(param);
+        builder.append(sql).append("\n").append(params);
         return builder.toString();
     }
 }

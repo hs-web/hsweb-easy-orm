@@ -1,10 +1,10 @@
 package org.hsweb.ezorm.rdb.simple.trigger;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.Trigger;
 import org.hsweb.ezorm.rdb.exception.TriggerException;
-import org.hswebframework.expands.script.engine.DynamicScriptEngine;
-import org.hswebframework.expands.script.engine.ExecuteResult;
-import org.hswebframwork.utils.StringUtils;
+import org.hsweb.expands.script.engine.DynamicScriptEngine;
+import org.hsweb.expands.script.engine.ExecuteResult;
 
 import java.util.Map;
 

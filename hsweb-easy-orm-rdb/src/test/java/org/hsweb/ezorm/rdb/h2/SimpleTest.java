@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -82,21 +83,31 @@ public class SimpleTest {
 //                .getParam();
 //
 //
-//        table.createQuery().setParam(queryParam).list();
+//        table.createQuery().setParams(queryParam).list();
 
-        table.createInsert().value(JSON.parseObject("{\n" +
+        table.createInsert().values((Collection) JSON.parseArray("[" +
+                "{\n" +
                 "  \"id\": \"test\",\n" +
                 "  \"name\": \"测试\",\n" +
                 "  \"age\": 10,\n" +
                 "  \"photo\":\"test123\",\n" +
                 "  \"remark\": \"测试123\"\n" +
-                "}")).exec();
+                "}," +
+                "{\n" +
+                "  \"id\": \"test2\",\n" +
+                "  \"name\": \"测试2\",\n" +
+                "  \"age\": 10,\n" +
+                "  \"photo\":\"test123\",\n" +
+                "  \"remark\": \"测试123\"\n" +
+                "}" +
+                "]")).exec();
         System.out.println(table.createQuery().list());
 
         Function<Object, Object> append = (value) -> "," + value + ",";
         table.createQuery()
                 .where()
                 .sql("age >? or age <?", 1, 5)
+                .when(() -> true, query -> query.like("age", 10))
                 .when("age", 10, age -> age > 10, query -> query.or()::like)
                 .each(Collections.singletonMap("name", "张三"), query -> query::$like$)
                 .each(Collections.singletonMap("name", "张三"), "is", query -> query::and)
@@ -134,7 +145,7 @@ public class SimpleTest {
 
 //        table.createUpdate().set("name", "aaa").where("name", "aa").or().like("name", 1).exec();
 
-        sqlExecutor.list("select * from s_user where age > #{age}",Collections.singletonMap("age",10));
+        sqlExecutor.list("select * from s_user where age > #{age}", Collections.singletonMap("age", 10));
     }
 
 }

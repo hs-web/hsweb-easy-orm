@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -7,7 +8,6 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
-import org.hswebframwork.utils.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -121,14 +121,11 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
         }
 
         @Override
-        public void done(RDBColumnMetaData instance) {
+        public boolean done(RDBColumnMetaData instance) {
             String data_type = instance.getProperty("data_type").toString().toLowerCase();
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();
             int data_scale = instance.getProperty("data_scale").toInt();
-            if (data_type == null) {
-                data_type = "varchar";
-            }
             instance.setLength(len);
             instance.setPrecision(data_precision);
             instance.setScale(data_scale);
@@ -143,6 +140,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             instance.setJdbcType(jdbcType);
             instance.setJavaType(javaType);
             instance.setDataType(getDialect().buildDataType(instance));
+            return true;
         }
     }
 }

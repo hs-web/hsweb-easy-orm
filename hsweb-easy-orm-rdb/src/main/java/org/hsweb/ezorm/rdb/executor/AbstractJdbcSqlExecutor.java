@@ -18,20 +18,20 @@ package org.hsweb.ezorm.rdb.executor;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.core.param.Term;
-import org.hswebframwork.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * JDBC 通用sql执行器,用于执行sql.支持参数化预编译
@@ -119,7 +119,15 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             logger.error("compile sql  {}  error", sqlTemplate, e);
             throw e;
         }
+    }
 
+    protected List<SQLInfo> compileAllSql(SQL sql) {
+        List<SQLInfo> allSql = new ArrayList<>(4);
+        allSql.add(compileSql(sql));
+        if (sql.getBinds() != null) {
+            sql.getBinds().forEach(bind -> allSql.add(compileSql(bind.getSql())));
+        }
+        return allSql;
     }
 
     /**
@@ -160,8 +168,8 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
                     wrapper.wrapper(data, index, headers.get(i), value);
                 }
                 index++;
-                wrapper.done(data);
-                datas.add(data);
+                if (wrapper.done(data))
+                    datas.add(data);
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("<==      total: {}", index);
@@ -265,17 +273,23 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         printSql(info);
         Connection connection = getConnection();
         int i = 0;
+        PreparedStatement statement = null;
         try {
-            PreparedStatement statement = connection.prepareStatement(info.getSql());
+            statement = connection.prepareStatement(info.getSql());
             this.preparedParam(statement, info);
             i = statement.executeUpdate();
+            if (sql.getBinds() != null) {
+                for (BindSQL bindSQL : sql.getBinds()) {
+                    i += update(bindSQL.getSql());
+                }
+            }
+            return i;
+        } finally {
             if (logger.isDebugEnabled())
                 logger.debug("<==    updated: {} rows", i);
             closeStatement(statement);
-        } finally {
             releaseConnection(connection);
         }
-        return i;
     }
 
     @Override
@@ -284,7 +298,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         SQLInfo info = compileSql(sql);
         printSql(info);
         Connection connection = getConnection();
-        int i = 0;
+        int i;
         try {
             PreparedStatement statement = connection.prepareStatement(info.getSql());
             this.preparedParam(statement, info);
@@ -339,7 +353,9 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         int index = 1;
         //预编译参数
         for (Object object : info.getParam()) {
-            if (object instanceof Date)
+            if (object == null)
+                statement.setNull(index++, Types.NULL);
+            else if (object instanceof Date)
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
             else if (object instanceof byte[]) {
                 statement.setBlob(index++, new ByteArrayInputStream((byte[]) object));

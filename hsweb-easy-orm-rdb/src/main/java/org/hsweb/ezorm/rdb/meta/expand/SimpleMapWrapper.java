@@ -1,17 +1,21 @@
 package org.hsweb.ezorm.rdb.meta.expand;
 
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.meta.converter.BlobValueConverter;
-import org.hswebframwork.utils.StringUtils;
+import org.hsweb.ezorm.rdb.meta.converter.ClobValueConverter;
 
 import java.sql.Blob;
+import java.sql.Clob;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
 
     private static final BlobValueConverter blobValueConverter = new BlobValueConverter();
+
+    private static final ClobValueConverter clobValueConverter = new ClobValueConverter();
 
     @Override
     public Class<LinkedHashMap> getType() {
@@ -30,14 +34,15 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
     }
 
     @Override
-    public void done(Map<String, Object> instance) {
-
+    public boolean done(Map<String, Object> instance) {
+        return true;
     }
 
-    public Object convertValue(Object value) {
+    protected Object convertValue(Object value) {
         if (value instanceof Blob)
             return blobValueConverter.getValue(value);
-
+        if (value instanceof Clob)
+            return clobValueConverter.getValue(value);
         return value;
     }
 
@@ -47,11 +52,7 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
             String[] attrs = StringUtils.splitFirst(attr, "[.]");
             String attr_ob_name = attrs[0];
             String attr_ob_attr = attrs[1];
-            Object object = instance.get(attr_ob_name);
-            if (object == null) {
-                object = newInstance();
-                instance.put(attr_ob_name, object);
-            }
+            Object object = instance.computeIfAbsent(attr_ob_name, k -> newInstance());
             if (object instanceof Map) {
                 Map<String, Object> objectMap = (Map) object;
                 putValue(objectMap, attr_ob_attr, value);

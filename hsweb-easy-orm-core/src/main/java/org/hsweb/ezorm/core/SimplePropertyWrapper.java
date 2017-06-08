@@ -1,9 +1,10 @@
 package org.hsweb.ezorm.core;
 
 import com.alibaba.fastjson.JSON;
-import org.hswebframwork.utils.ClassUtils;
-import org.hswebframwork.utils.DateTimeUtils;
-import org.hswebframwork.utils.StringUtils;
+import org.hsweb.commons.ClassUtils;
+import org.hsweb.commons.DateTimeUtils;
+import org.hsweb.commons.StringUtils;
+import org.hsweb.commons.time.DateFormatter;
 
 import java.util.Date;
 import java.util.List;
@@ -43,7 +44,7 @@ public class SimplePropertyWrapper implements PropertyWrapper {
     @Override
     public Date toDate() {
         if (value instanceof Date) return ((Date) value);
-        return DateTimeUtils.formatUnknownString2Date(toString());
+        return DateFormatter.fromString(toString());
     }
 
     @Override

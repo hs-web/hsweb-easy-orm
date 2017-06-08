@@ -151,7 +151,7 @@ public class SimpleDatabase implements RDBDatabase {
                     RDBTableMetaData tmp = metaData.getParser().parse(name);
                     tmp.getColumns().forEach(tableMetaData::addColumn);
                 } else {
-                    logger.warn("table {} exists,but tableMetaParser is null");
+                    logger.warn("table {} exists,but tableMetaParser is null", name);
                 }
             }
         } catch (Exception e) {

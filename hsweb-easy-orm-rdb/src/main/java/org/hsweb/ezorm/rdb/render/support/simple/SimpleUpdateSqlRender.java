@@ -47,44 +47,39 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             updateField.forEach(operationColumn -> {
                 RDBColumnMetaData column = operationColumn.getRDBColumnMetaData();
                 if (column.getProperty("read-only").isTrue()) return;
+                String dataProperty = column.getAlias();
+                Object value = null;
                 try {
-                    String dataProperty = column.getAlias();
-                    Object value = null;
+                    value = propertyUtils.getProperty(param.getData(), dataProperty);
+                } catch (Exception e) {
+                }
+                if (value == null && !column.getAlias().equals(column.getName())) {
+                    dataProperty = column.getName();
                     try {
                         value = propertyUtils.getProperty(param.getData(), dataProperty);
                     } catch (Exception e) {
                     }
-                    if (value == null && !column.getAlias().equals(column.getName())) {
-                        dataProperty = column.getName();
-                        try {
-                            value = propertyUtils.getProperty(param.getData(), dataProperty);
-                        } catch (Exception e) {
-                        }
-                    }
-                    if (value == null) {
-                        if (logger.isInfoEnabled())
-                            logger.info("跳过修改列:[{}], 属性[{}]为null!", column.getName(), column.getAlias());
-                        return;
-                    }
-                    if (column.getValueConverter() != null) {
-                        Object new_value = column.getValueConverter().getData(value);
-                        if (column.getOptionConverter() != null) {
-                            new_value = column.getOptionConverter().converterData(new_value);
-                        }
-                        if (value != new_value && !value.equals(new_value)) {
-                            // propertyUtils.setProperty(param.getData(), dataProperty, new_value);
-                            value = new_value;
-                        }
-                    }
-                    valueProxy.put(dataProperty, value);
-                    appender.add(dialect.buildColumnName(null, column.getName()), "=")
-                            .addAll(getParamString("data.".concat(dataProperty), column));
-                    appender.add(",");
-                    bytes[0]++;
-                } catch (Exception e) {
-                    if (logger.isInfoEnabled())
-                        logger.info("跳过修改列:[{}], 可能属性[{}]不存在!", column.getName(), column.getAlias());
                 }
+                if (value == null) {
+                    if (logger.isInfoEnabled())
+                        logger.info("跳过修改列:[{}], 属性[{}]为null!", column.getName(), column.getAlias());
+                    return;
+                }
+                if (column.getValueConverter() != null) {
+                    Object new_value = column.getValueConverter().getData(value);
+                    if (column.getOptionConverter() != null) {
+                        new_value = column.getOptionConverter().converterData(new_value);
+                    }
+                    if (value != new_value && !value.equals(new_value)) {
+                        // propertyUtils.setProperty(param.getData(), dataProperty, new_value);
+                        value = new_value;
+                    }
+                }
+                valueProxy.put(dataProperty, value);
+                appender.add(dialect.buildColumnName(null, column.getName()), "=")
+                        .addAll(getParamString("data.".concat(dataProperty), column));
+                appender.add(",");
+                bytes[0]++;
             });
             if (bytes[0] == 0) throw new IndexOutOfBoundsException("没有列被修改!");
             appender.removeLast();

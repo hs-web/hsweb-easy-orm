@@ -1,24 +1,33 @@
 package org.hsweb.ezorm.rdb.render.support.simple;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
+import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.meta.Correlation;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
-import org.hswebframwork.utils.StringUtils;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class SimpleWhereSqlBuilder {
 
-    protected String getTableAlias(RDBTableMetaData metaData, String column) {
-        if (column.contains("."))
-            column = column.split("[.]")[0];
+    private Set<String> doNotTransformationValueTermType = Stream.of(
+            TermType.isnull,
+            TermType.notnull,
+            TermType.empty,
+            TermType.nempty
+    ).collect(Collectors.toSet());
+
+    protected String getTableAlias(RDBTableMetaData metaData, String field) {
+        if (field.contains("."))
+            field = field.split("[.]")[0];
         else return metaData.getAlias();
-        Correlation correlation = metaData.getCorrelation(column);
+        Correlation correlation = metaData.getCorrelation(field);
         if (correlation != null) return correlation.getAlias();
         return metaData.getAlias();
     }
@@ -44,11 +53,13 @@ public abstract class SimpleWhereSqlBuilder {
                 if (StringUtils.isNullOrEmpty(((SqlTerm) term).getSql())) continue;
             }
             String tableAlias = null;
-            if (column != null && !(term instanceof SqlTerm)) {
+            if (column != null) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
-                //转换参数的值
-                term.setValue(transformationValue(column, term.getValue()));
+                //部分termType不需要转换
+                if (!doNotTransformationValueTermType.contains(term.getTermType()))
+                    //转换参数的值
+                    term.setValue(transformationValue(column, term.getValue()));
             }
             //用于sql预编译的参数名
             prefix = StringUtils.concat(prefixTmp, "terms[", index, "]");

@@ -49,7 +49,7 @@ class SimpleInsert<T> extends ValidatorAndTriggerSupport<Insert<T>> implements I
     public int exec() throws SQLException {
         boolean supportBefore = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.insert_before);
         boolean supportDone = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.insert_done);
-        Map<String, Object> context = table.getDatabase().getTriggerContextRoot();
+        Map<String, Object> context =null;
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
             context.put("table", table);

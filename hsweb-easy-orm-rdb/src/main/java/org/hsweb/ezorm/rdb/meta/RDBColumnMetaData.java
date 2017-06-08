@@ -1,18 +1,12 @@
 package org.hsweb.ezorm.rdb.meta;
 
+import org.hsweb.ezorm.core.ValueConverter;
 import org.hsweb.ezorm.core.meta.AbstractColumnMetaData;
 import org.hsweb.ezorm.core.meta.ColumnMetaData;
-import org.hsweb.ezorm.core.OptionConverter;
-import org.hsweb.ezorm.core.PropertyWrapper;
-import org.hsweb.ezorm.core.ValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.DefaultValueConverter;
-import org.hsweb.ezorm.rdb.meta.expand.SimplePropertyWrapper;
 
 import java.io.Serializable;
 import java.sql.JDBCType;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnMetaData, Serializable, Cloneable, Comparable<RDBColumnMetaData> {
     private static final DefaultValueConverter DEFAULT_VALUE_CONVERTER = new DefaultValueConverter();

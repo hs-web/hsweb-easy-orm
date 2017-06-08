@@ -1,10 +1,9 @@
 package org.hsweb.ezorm.rdb.meta;
 
 import org.hsweb.ezorm.core.PropertyWrapper;
+import org.hsweb.ezorm.core.SimplePropertyWrapper;
 import org.hsweb.ezorm.core.param.SqlTerm;
-import org.hsweb.ezorm.rdb.meta.expand.SimplePropertyWrapper;
 import org.hsweb.ezorm.core.param.Term;
-import org.hsweb.ezorm.core.param.TermType;
 
 import java.util.*;
 

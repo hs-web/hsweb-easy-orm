@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.simple;
 
+import org.hsweb.commons.StringUtils;
 import org.hsweb.ezorm.core.*;
 import org.hsweb.ezorm.core.param.QueryParam;
 import org.hsweb.ezorm.core.param.SqlTerm;
@@ -9,7 +10,6 @@ import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.render.SqlRender;
 import org.hsweb.ezorm.rdb.simple.wrapper.TriggerWrapper;
-import org.hswebframwork.utils.StringUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -28,7 +28,7 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
 
     private SqlRender<QueryParam> totalRender;
 
-    private ObjectWrapper objectWrapper;
+    private ObjectWrapper<T> objectWrapper;
 
     private Accepter accepter = this::and;
 
@@ -36,7 +36,7 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
         this.table = table;
         this.render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.SELECT);
         this.totalRender = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.SELECT_TOTAL);
-        this.objectWrapper = new TriggerWrapper(table.getDatabase(), table, objectWrapper);
+        this.objectWrapper = new TriggerWrapper<>(table.getDatabase(), table, objectWrapper);
         this.sqlExecutor = sqlExecutor;
         this.queryParam = new QueryParam();
     }
@@ -185,7 +185,7 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
         if (!param.isForUpdate())
             param.doPaging(0, 1);
         SQL sql = render.render(table.getMeta(), param);
-        T data = (T) sqlExecutor.single(sql, objectWrapper);
+        T data = sqlExecutor.single(sql, objectWrapper);
         if (supportDone) {
             context.put("data", data);
             trigger(Trigger.select_done, context);
@@ -274,8 +274,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
         }
 
         @Override
-        public void done(Object instance) {
-
+        public boolean done(Object instance) {
+            return false;
         }
     }
 }

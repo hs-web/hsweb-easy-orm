@@ -63,8 +63,8 @@ public class BeanWrapper<T> implements ObjectWrapper<T> {
     }
 
     @Override
-    public void done(T instance) {
-
+    public boolean done(T instance) {
+        return true;
     }
 
     public interface InstanceCreator<T> {

@@ -3,6 +3,7 @@ package org.hsweb.ezorm.core.meta;
 import org.hsweb.ezorm.core.*;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public abstract class AbstractTableMetaData<C extends AbstractColumnMetaData> implements TableMetaData {
     //表名称
@@ -84,6 +85,10 @@ public abstract class AbstractTableMetaData<C extends AbstractColumnMetaData> im
 
     public PropertyWrapper getProperty(String name, Object defaultValue) {
         return new SimplePropertyWrapper(properties.getOrDefault(name, defaultValue));
+    }
+
+    public PropertyWrapper getProperty(String name, Supplier<Object> defaultValue) {
+        return new SimplePropertyWrapper(properties.getOrDefault(name, defaultValue.get()));
     }
 
     public PropertyWrapper removeProperty(String name) {
