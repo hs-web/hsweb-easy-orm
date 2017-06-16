@@ -39,6 +39,7 @@ public class OracleTableMetaParser extends AbstractTableMetaParser {
         jdbcTypeMap.put("varchar2", JDBCType.VARCHAR);
         jdbcTypeMap.put("number", JDBCType.NUMERIC);
         jdbcTypeMap.put("date", JDBCType.TIMESTAMP);
+        jdbcTypeMap.put("nvarchar2", JDBCType.NVARCHAR);
 
     }
 

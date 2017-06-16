@@ -9,6 +9,7 @@ public class OracleDialect extends DefaultDialect {
         defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
         setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar2(", meta.getLength(), ")"));
+        setDataTypeMapper(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar2(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         setDataTypeMapper(JDBCType.TIME, (meta) -> "datetime");
         setDataTypeMapper(JDBCType.DATE, (meta) -> "date");
