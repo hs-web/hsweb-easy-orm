@@ -1,6 +1,5 @@
 package org.hsweb.ezorm.rdb.meta.parser;
 
-import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.ObjectWrapper;
 import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
@@ -8,6 +7,7 @@ import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
 import org.hsweb.ezorm.rdb.meta.expand.SimpleMapWrapper;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 import org.hsweb.ezorm.rdb.render.support.simple.SimpleSQL;
+import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -134,6 +134,8 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             try {
                 jdbcType = JDBCType.valueOf(data_type.toUpperCase());
             } catch (Exception e) {
+                if (data_type.contains("("))
+                    data_type = data_type.substring(0, data_type.indexOf("("));
                 jdbcType = jdbcTypeMap.get(data_type);
             }
             Class javaType = javaTypeMap.get(jdbcType);
