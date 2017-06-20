@@ -77,7 +77,7 @@ public interface Dialect {
 
     String getQuoteEnd();
 
-    SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias);
+    SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias);
 
     String buildDataType(RDBColumnMetaData columnMetaData);
 
@@ -86,6 +86,7 @@ public interface Dialect {
     boolean columnToUpperCase();
 
     default String buildColumnName(String tableName, String columnName) {
+        if (columnName.contains(".")) return columnName;
         if (StringUtils.isNullOrEmpty(tableName)) {
             return StringUtils.concat(getQuoteStart(), columnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
         }
@@ -97,6 +98,6 @@ public interface Dialect {
     Dialect MYSQL  = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();
     Dialect H2     = new H2Dialect();
-    Dialect MSSQL = new MSSQLDialect();
+    Dialect MSSQL  = new MSSQLDialect();
 
 }

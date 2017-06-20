@@ -102,21 +102,21 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData RDBColumnMetaData, String tableAlias) {
+    public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias) {
         if (term instanceof SqlTerm) {
             SqlTerm sqlTerm = ((SqlTerm) term);
             String sql = sqlTerm.getSql();
             if (sql == null) sql = sqlTerm.getColumn();
             if (sql == null) return new SqlAppender();
             TermTypeMapper mapper = TermTypeMapper.sql(sqlTerm.getSql(), sqlTerm.getParam());
-            return mapper.accept(wherePrefix, sqlTerm, RDBColumnMetaData, tableAlias);
+            return mapper.accept(wherePrefix, sqlTerm, column, tableAlias);
         }
         if (term.getValue() instanceof TermTypeMapper) {
-            return ((TermTypeMapper) term.getValue()).accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
+            return ((TermTypeMapper) term.getValue()).accept(wherePrefix, term, column, tableAlias);
         }
         TermTypeMapper mapper = termTypeMappers.get(term.getTermType());
         if (mapper == null) mapper = termTypeMappers.get(TermType.eq);
-        return mapper.accept(wherePrefix, term, RDBColumnMetaData, tableAlias);
+        return mapper.accept(wherePrefix, term, column, tableAlias);
     }
 
     @SuppressWarnings("unchecked")

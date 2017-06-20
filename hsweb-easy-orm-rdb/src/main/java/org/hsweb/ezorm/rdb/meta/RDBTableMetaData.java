@@ -34,7 +34,10 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
                     metaData = databaseMetaData.getTableMetaData(correlation.getTargetTable());
                 }
             }
-            if (metaData != null) return metaData.findColumn(tmp[1]);
+            if (metaData != null) {
+                RDBColumnMetaData column = metaData.findColumn(tmp[1]);
+                if (null != column) return column;
+            }
         }
         RDBColumnMetaData metaData = columnMetaDataMap.get(name);
         if (metaData == null)
