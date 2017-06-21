@@ -1,5 +1,6 @@
 package org.hsweb.ezorm.rdb.render.dialect;
 
+import org.hsweb.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
 import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.param.SqlTerm;
 import org.hsweb.ezorm.core.param.Term;
@@ -23,38 +24,40 @@ public abstract class DefaultDialect implements Dialect {
 
     static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
 
+
     public DefaultDialect() {
         //默认查询条件支持
-        termTypeMappers.put(TermType.eq, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=#{", wherePrefix, ".value}"));
-        termTypeMappers.put(TermType.not, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, ".value}"));
-        termTypeMappers.put(TermType.like, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, ".value}"));
+        termTypeMappers.put(TermType.eq, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=#{", wherePrefix, ".value}")));
+
+        termTypeMappers.put(TermType.not, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, ".value}")));
+
+        termTypeMappers.put(TermType.like, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, ".value}")));
+
         termTypeMappers.put(TermType.nlike, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " NOT LIKE #{", wherePrefix, ".value}"));
         termTypeMappers.put(TermType.isnull, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NULL"));
         termTypeMappers.put(TermType.notnull, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NOT NULL"));
-        termTypeMappers.put(TermType.gt, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">#{", wherePrefix, ".value}"));
-        termTypeMappers.put(TermType.lt, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<#{", wherePrefix, ".value}"));
-        termTypeMappers.put(TermType.gte, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">=#{", wherePrefix, ".value}"));
-        termTypeMappers.put(TermType.lte, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<=#{", wherePrefix, ".value}"));
-        termTypeMappers.put(TermType.empty, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=''"));
-        termTypeMappers.put(TermType.nempty, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=''"));
-        //TermType.func is not support
-//        termTypeMappers.put(TermType.func, (wherePrefix, term, column, tableAlias) ->
-//                new SqlAppender().add(term.getValue()));
-        termTypeMappers.put(TermType.btw, (wherePrefix, term, column, tableAlias) -> {
+        termTypeMappers.put(TermType.gt, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">#{", wherePrefix, ".value}")));
+        termTypeMappers.put(TermType.lt, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<#{", wherePrefix, ".value}")));
+        termTypeMappers.put(TermType.gte, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">=#{", wherePrefix, ".value}")));
+        termTypeMappers.put(TermType.lte, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<=#{", wherePrefix, ".value}")));
+        termTypeMappers.put(TermType.empty, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=''")));
+        termTypeMappers.put(TermType.nempty, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=''")));
+
+        termTypeMappers.put(TermType.btw, BoostTermTypeMapper.supportArray((wherePrefix, term, column, tableAlias) -> {
             SqlAppender sqlAppender = new SqlAppender();
-            List<Object> objects = param2list(term.getValue(), column);
+            List<Object> objects = param2list(term.getValue());
             if (objects.size() == 1)
                 objects.add(objects.get(0));
             term.setValue(objects);
@@ -62,11 +65,11 @@ public abstract class DefaultDialect implements Dialect {
                     .add("#{", wherePrefix, ".value[0]}")
                     .add(" AND ", "#{", wherePrefix, ".value[1]}");
             return sqlAppender;
-        });
-        termTypeMappers.put(TermType.nbtw, (wherePrefix, term, column, tableAlias) ->
+        }));
+        termTypeMappers.put(TermType.nbtw, BoostTermTypeMapper.supportArray((wherePrefix, term, column, tableAlias) ->
         {
             SqlAppender sqlAppender = new SqlAppender();
-            List<Object> objects = param2list(term.getValue(), column);
+            List<Object> objects = param2list(term.getValue());
             if (objects.size() == 1)
                 objects.add(objects.get(0));
             term.setValue(objects);
@@ -74,9 +77,9 @@ public abstract class DefaultDialect implements Dialect {
                     .add("#{", wherePrefix, ".value[0]}")
                     .add(" AND ", "#{", wherePrefix, ".value[1]}");
             return sqlAppender;
-        });
-        termTypeMappers.put(TermType.in, (wherePrefix, term, column, tableAlias) -> {
-            List<Object> values = param2list(term.getValue(), column);
+        }));
+        termTypeMappers.put(TermType.in, BoostTermTypeMapper.supportArray((wherePrefix, term, column, tableAlias) -> {
+            List<Object> values = param2list(term.getValue());
             term.setValue(values);
             SqlAppender appender = new SqlAppender();
             appender.add(tableAlias, ".").addSpc(column.getName()).add("IN(");
@@ -86,9 +89,9 @@ public abstract class DefaultDialect implements Dialect {
             appender.removeLast();
             appender.add(")");
             return appender;
-        });
-        termTypeMappers.put(TermType.nin, (wherePrefix, term, column, tableAlias) -> {
-            List<Object> values = param2list(term.getValue(), column);
+        }));
+        termTypeMappers.put(TermType.nin, BoostTermTypeMapper.supportArray((wherePrefix, term, column, tableAlias) -> {
+            List<Object> values = param2list(term.getValue());
             term.setValue(values);
             SqlAppender appender = new SqlAppender();
             appender.add(tableAlias, ".").addSpc(column.getName()).add("NOT IN(");
@@ -98,7 +101,7 @@ public abstract class DefaultDialect implements Dialect {
             appender.removeLast();
             appender.add(")");
             return appender;
-        });
+        }));
     }
 
     @Override
@@ -120,30 +123,14 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @SuppressWarnings("unchecked")
-    protected List<Object> param2list(Object value, RDBColumnMetaData columnMetaData) {
+    protected List<Object> param2list(Object value) {
         if (value == null) return new ArrayList<>();
         if (value instanceof List) return (List) value;
         if (value instanceof Collection) return new ArrayList<>(((Collection) value));
-        if (value instanceof String) {
-            String[] arr = ((String) value).split("[, ;]");
-            Object[] objArr = new Object[arr.length];
-            for (int i = 0; i < arr.length; i++) {
-                String str = arr[i];
-                Object val = str;
-                //数字类型
-                if (numberJdbcType.contains(columnMetaData.getJdbcType())) {
-                    if (StringUtils.isInt(str))
-                        val = StringUtils.toInt(str);
-                    else if (StringUtils.isDouble(str))
-                        val = StringUtils.toDouble(str);
-                }
-                objArr[i] = val;
-            }
-            return Arrays.asList(objArr);
-        } else if (value.getClass().isArray()) {
-            return Arrays.asList(((Object[]) value));
+        if (value.getClass().isArray()) {
+            return new ArrayList<>(Arrays.asList(((Object[]) value)));
         } else {
-            return new ArrayList<>(Arrays.asList(value));
+            return new ArrayList<>(Collections.singletonList(value));
         }
     }
 

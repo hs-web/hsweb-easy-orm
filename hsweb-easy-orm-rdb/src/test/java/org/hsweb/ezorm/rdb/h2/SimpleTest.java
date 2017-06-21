@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import org.hsweb.ezorm.core.dsl.ConditionColumnBuilder;
 import org.hsweb.ezorm.core.dsl.Query;
 import org.hsweb.ezorm.core.param.QueryParam;
+import org.hsweb.ezorm.core.param.TermType;
 import org.hsweb.ezorm.rdb.RDBDatabase;
 import org.hsweb.ezorm.rdb.RDBTable;
 import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
@@ -11,6 +12,7 @@ import org.hsweb.ezorm.rdb.executor.SqlExecutor;
 import org.hsweb.ezorm.rdb.meta.RDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.ClobValueConverter;
+import org.hsweb.ezorm.rdb.meta.converter.DateTimeConverter;
 import org.hsweb.ezorm.rdb.meta.parser.H2TableMetaParser;
 import org.hsweb.ezorm.rdb.render.dialect.H2RDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.simple.SimpleDatabase;
@@ -21,10 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.JDBCType;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 
@@ -60,7 +59,7 @@ public class SimpleTest {
                 .addColumn().name("age").number(4).notNull().comment("年龄").commit()
                 .addColumn().name("remark").clob().custom(column -> column.setValueConverter(new ClobValueConverter())).comment("备注").commit()
                 .addColumn().name("photo").jdbcType(JDBCType.CLOB).custom(column -> column.setValueConverter(new BlobValueConverter())).comment("照片").commit()
-                .addColumn().name("create_date").datetime().comment("创建时间").commit()
+                .addColumn().name("create_date").datetime().custom(columnMetaData -> columnMetaData.setValueConverter(new DateTimeConverter("yyyy-MM-dd HH:mm:ss", Date.class))).comment("创建时间").commit()
                 .comment("用户表")
                 .commit();
 
@@ -106,6 +105,7 @@ public class SimpleTest {
         Function<Object, Object> append = (value) -> "," + value + ",";
         table.createQuery()
                 .where()
+                .accept("create_date", TermType.btw, "2017-10-01,2017-10-10")
                 .sql("age >? or age <?", 1, 5)
                 .when(() -> true, query -> query.like("age", 10))
                 .when("age", 10, age -> age > 10, query -> query.or()::like)

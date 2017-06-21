@@ -56,10 +56,10 @@ public abstract class SimpleWhereSqlBuilder {
             if (column != null) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
-                //部分termType不需要转换
-                if (!doNotTransformationValueTermType.contains(term.getTermType()))
-                    //转换参数的值
-                    term.setValue(transformationValue(column, term.getValue()));
+//                //部分termType不需要转换
+//                if (!doNotTransformationValueTermType.contains(term.getTermType()))
+//                    //转换参数的值
+//                    term.setValue(transformationValue(column, term));
             }
             //用于sql预编译的参数名
             prefix = StringUtils.concat(prefixTmp, "terms[", index, "]");
@@ -90,7 +90,9 @@ public abstract class SimpleWhereSqlBuilder {
         }
     }
 
-    protected Object transformationValue(RDBColumnMetaData column, Object value) {
+    protected Object transformationValue(RDBColumnMetaData column, Term term) {
+        Object value = term.getValue();
+
         if (value != null && column.getValueConverter() != null) {
             value = column.getValueConverter().getData(value);
         }
