@@ -17,7 +17,9 @@ public class MSSQLDialect extends DefaultDialect {
     public MSSQLDialect() {
         defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
         setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
+        setDataTypeMapper(JDBCType.NCHAR, (meta) -> StringUtils.concat("nchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        setDataTypeMapper(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime");
         setDataTypeMapper(JDBCType.TIME, (meta) -> "time");
         setDataTypeMapper(JDBCType.DATE, (meta) -> "date");
