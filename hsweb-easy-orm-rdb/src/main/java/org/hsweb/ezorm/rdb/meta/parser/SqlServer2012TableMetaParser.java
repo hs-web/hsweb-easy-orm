@@ -12,12 +12,32 @@ import java.sql.JDBCType;
 public class SqlServer2012TableMetaParser extends AbstractTableMetaParser {
     public SqlServer2012TableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
+        jdbcTypeMap.put("bigint", JDBCType.BIGINT);
+        jdbcTypeMap.put("binary", JDBCType.BINARY);
+        jdbcTypeMap.put("bit", JDBCType.BIT);
+        jdbcTypeMap.put("char", JDBCType.CHAR);
         jdbcTypeMap.put("datetime", JDBCType.TIMESTAMP);
+        jdbcTypeMap.put("decimal", JDBCType.DECIMAL);
+        jdbcTypeMap.put("float", JDBCType.FLOAT);
+        jdbcTypeMap.put("image", JDBCType.LONGVARBINARY);
+        jdbcTypeMap.put("int", JDBCType.INTEGER);
+        jdbcTypeMap.put("money", JDBCType.DECIMAL);
+        jdbcTypeMap.put("nchar", JDBCType.CHAR);
+        jdbcTypeMap.put("ntext", JDBCType.LONGVARCHAR);
+        jdbcTypeMap.put("numeric", JDBCType.NUMERIC);
         jdbcTypeMap.put("nvarchar", JDBCType.VARCHAR);
-        jdbcTypeMap.put("ntext", JDBCType.CLOB);
-        jdbcTypeMap.put("text", JDBCType.CLOB);
-        jdbcTypeMap.put("varbinary", JDBCType.BLOB);
-
+        jdbcTypeMap.put("real", JDBCType.REAL);
+        jdbcTypeMap.put("smalldatetime", JDBCType.TIMESTAMP);
+        jdbcTypeMap.put("smallint", JDBCType.SMALLINT);
+        jdbcTypeMap.put("smallmoney", JDBCType.DECIMAL);
+        jdbcTypeMap.put("sql_variant", JDBCType.VARCHAR);
+        jdbcTypeMap.put("sysname", JDBCType.VARCHAR);
+        jdbcTypeMap.put("text", JDBCType.LONGVARCHAR);
+        jdbcTypeMap.put("timestamp", JDBCType.BINARY);
+        jdbcTypeMap.put("tinyint", JDBCType.TINYINT);
+        jdbcTypeMap.put("uniqueidentifier", JDBCType.CHAR);
+        jdbcTypeMap.put("varbinary", JDBCType.VARBINARY);
+        jdbcTypeMap.put("varchar", JDBCType.VARCHAR);
     }
 
     static String TABLE_META_SQL = "SELECT \n" +

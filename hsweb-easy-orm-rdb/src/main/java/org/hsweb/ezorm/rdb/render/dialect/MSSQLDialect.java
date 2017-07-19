@@ -35,6 +35,8 @@ public class MSSQLDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+        setDataTypeMapper(JDBCType.REAL, (meta) -> "real");
+
     }
 
     @Override
