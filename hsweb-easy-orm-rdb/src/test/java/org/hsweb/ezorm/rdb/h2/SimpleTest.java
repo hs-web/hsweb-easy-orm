@@ -103,6 +103,14 @@ public class SimpleTest {
         System.out.println(table.createQuery().list());
 
         Function<Object, Object> append = (value) -> "," + value + ",";
+
+        table.createQuery()
+                .where()
+                .is("name","张三")
+                .or()
+                .like("name","李%")
+                .list();
+
         table.createQuery()
                 .where()
                 .accept("create_date", TermType.btw, "2017-10-01,2017-10-10")

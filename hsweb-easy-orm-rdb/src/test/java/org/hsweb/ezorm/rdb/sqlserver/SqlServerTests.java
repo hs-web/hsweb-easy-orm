@@ -1,8 +1,6 @@
 package org.hsweb.ezorm.rdb.sqlserver;
 
 import com.alibaba.fastjson.JSON;
-import org.hsweb.ezorm.core.dsl.Update;
-import org.hsweb.ezorm.core.param.UpdateParam;
 import org.hsweb.ezorm.rdb.RDBDatabase;
 import org.hsweb.ezorm.rdb.RDBTable;
 import org.hsweb.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
@@ -18,7 +16,6 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
