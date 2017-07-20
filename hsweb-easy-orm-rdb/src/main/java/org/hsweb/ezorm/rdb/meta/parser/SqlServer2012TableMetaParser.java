@@ -46,7 +46,7 @@ public class SqlServer2012TableMetaParser extends AbstractTableMetaParser {
             "c.length as data_length,\n" +
             "c.xscale as data_scale,\n" +
             "c.xprec as data_precision,\n" +
-            "c.isnullable as [not-null],\n" +
+            "case when c.isnullable=1 then 0 else  1 end as [not-null],\n" +
             "cast(p.value as varchar(500)) as comment\n" +
             "FROM syscolumns c\n" +
             "inner join  systypes t on c.xusertype = t.xusertype \n" +
