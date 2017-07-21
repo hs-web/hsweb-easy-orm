@@ -136,7 +136,10 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             } catch (Exception e) {
                 if (data_type.contains("("))
                     data_type = data_type.substring(0, data_type.indexOf("("));
-                jdbcType = jdbcTypeMap.get(data_type);
+                jdbcType = jdbcTypeMap.get(data_type.toLowerCase());
+                if (jdbcType == null) {
+                    jdbcType = JDBCType.valueOf(data_type.toUpperCase());
+                }
             }
             Class javaType = javaTypeMap.get(jdbcType);
             instance.setJdbcType(jdbcType);

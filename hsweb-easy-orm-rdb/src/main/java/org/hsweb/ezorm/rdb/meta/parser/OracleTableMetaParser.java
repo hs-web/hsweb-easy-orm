@@ -8,7 +8,6 @@ import java.sql.JDBCType;
 public class OracleTableMetaParser extends AbstractTableMetaParser {
 
 
-
     final static String TABLE_META_SQL = "select distinct(cols.column_name) as \"name\"" +
             ",cols.table_name as \"table_name\"" +
             ",cols.data_type as \"data_type\"" +
@@ -40,7 +39,7 @@ public class OracleTableMetaParser extends AbstractTableMetaParser {
         jdbcTypeMap.put("number", JDBCType.NUMERIC);
         jdbcTypeMap.put("date", JDBCType.TIMESTAMP);
         jdbcTypeMap.put("nvarchar2", JDBCType.NVARCHAR);
-
+        jdbcTypeMap.put("timestamp", JDBCType.TIMESTAMP);
     }
 
     @Override
