@@ -45,7 +45,7 @@ public class H2MetaAlterRender implements SqlRender<Boolean> {
                             .filter(fieldMetaData -> oldField.getName().equals(fieldMetaData.getProperty("old-name").getValue()))
                             .findFirst().orElse(null);
                 }
-                if (newMeta == null) {
+                if (newMeta == null || !newMeta.getName().equals(oldField.getName())) {
                     //删除的字段
                     deletedField.add(oldField);
                 }

@@ -35,7 +35,7 @@ public class SqlServerMetaAlterRender extends CommentSupportRender implements Sq
                             .filter(columnMetaData -> oldField.getName().equals(columnMetaData.getProperty("old-name").getValue()))
                             .findFirst().orElse(null);
                 }
-                if (newMeta == null) {
+                if (newMeta == null || !newMeta.getName().equals(oldField.getName())) {
                     //删除的字段
                     deletedField.add(oldField);
                 }

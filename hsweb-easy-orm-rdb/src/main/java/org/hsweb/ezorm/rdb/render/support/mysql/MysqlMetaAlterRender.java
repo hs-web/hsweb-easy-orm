@@ -47,7 +47,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
                     } catch (NoSuchElementException e) {
                     }
                 }
-                if (newMeta == null) {
+                if (newMeta == null || !newMeta.getName().equals(oldField.getName())) {
                     //删除的字段
                     deletedField.add(oldField);
                 }
