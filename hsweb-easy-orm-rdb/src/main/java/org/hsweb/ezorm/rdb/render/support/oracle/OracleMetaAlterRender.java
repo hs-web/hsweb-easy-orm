@@ -18,7 +18,10 @@ import java.util.stream.Collectors;
 
 
 /**
- * Created by zhouhao on 16-6-5.
+ * oracle数据库表结构修改sql渲染器
+ *
+ * @author zhouhao
+ * @see 1.0
  */
 public class OracleMetaAlterRender implements SqlRender<Boolean> {
 
@@ -36,14 +39,13 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         List<RDBColumnMetaData> addedField = new ArrayList<>();
         List<RDBColumnMetaData> deletedField = new ArrayList<>();
 
-        RDBTableMetaData oldMeta = old;
         if (executeRemove)
-            oldMeta.getColumns().forEach(oldField -> {
+            old.getColumns().forEach(oldField -> {
                 RDBColumnMetaData newMeta = metaData.findColumn(oldField.getName());
                 if (newMeta == null) {
-                        newMeta = metaData.getColumns().stream()
-                                .filter(columnMetaData -> oldField.getName().equals(columnMetaData.getProperty("old-name").getValue()))
-                                .findFirst().orElse(null);
+                    newMeta = metaData.getColumns().stream()
+                            .filter(columnMetaData -> oldField.getName().equals(columnMetaData.getProperty("old-name").getValue()))
+                            .findFirst().orElse(null);
                 }
                 if (newMeta == null) {
                     //删除的字段
@@ -53,7 +55,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         metaData.getColumns().forEach(newField -> {
             String oldName = newField.getProperty("old-name").getValue();
             if (oldName == null) oldName = newField.getName();
-            RDBColumnMetaData oldField = oldMeta.findColumn(oldName);
+            RDBColumnMetaData oldField = old.findColumn(oldName);
             if (oldField == null) {
                 //增加的字段
                 addedField.add(newField);
@@ -78,6 +80,16 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
         if (addedField.isEmpty() && changedField.isEmpty() && deletedField.isEmpty() && comments.isEmpty()) {
             return new EmptySQL();
         }
+        //删除列
+        deletedField.forEach(column -> {
+            String dropSql = String.format("ALTER TABLE %s DROP COLUMN \"%s\"", metaData.getName(), column.getName().toUpperCase());
+            SimpleSQL simpleSQL = new SimpleSQL(dropSql, column);
+            BindSQL bindSQL = new BindSQL();
+            bindSQL.setSql(simpleSQL);
+            bindSQL.setToField(column.getName());
+            bind.add(bindSQL);
+        });
+        //增加列
         addedField.forEach(column -> {
             SqlAppender append = new SqlAppender();
             append.add("ALTER TABLE ", metaData.getName(), " ADD \"", column.getName().toUpperCase(), "\" ", column.getDataType());
@@ -98,10 +110,11 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             bindSQL.setToField(column.getName());
             bind.add(bindSQL);
         });
+        //修改列
         changedField.forEach(column -> {
             String oldName = column.getProperty("old-name").getValue();
             if (oldName == null) oldName = column.getName();
-            RDBColumnMetaData oldColumn = oldMeta.findColumn(oldName);
+            RDBColumnMetaData oldColumn = old.findColumn(oldName);
             if (!oldName.equals(column.getName())) {
                 SqlAppender renameSql = new SqlAppender();
                 renameSql.add("ALTER TABLE ", metaData.getName(), " RENAME COLUMN \"", oldName.toUpperCase(), "\" TO \"", column.getName().toUpperCase(), "\"");
@@ -139,14 +152,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
                 comments.add(String.format("comment on column %s.\"%s\" is '%s'", metaData.getName(), column.getName().toUpperCase(), nc));
             }
         });
-        deletedField.forEach(column -> {
-            String dropSql = String.format("ALTER TABLE %s DROP COLUMN \"%s\"", metaData.getName(), column.getName().toUpperCase());
-            SimpleSQL simpleSQL = new SimpleSQL(dropSql, column);
-            BindSQL bindSQL = new BindSQL();
-            bindSQL.setSql(simpleSQL);
-            bindSQL.setToField(column.getName());
-            bind.add(bindSQL);
-        });
+
         LinkedList<BindSQL> commentSql = new LinkedList<>(comments.stream().map(s -> {
             BindSQL binSql = new BindSQL();
             binSql.setSql(new SimpleSQL(s, s));
@@ -162,7 +168,7 @@ public class OracleMetaAlterRender implements SqlRender<Boolean> {
             sql = bind.get(0).getSql();
             bind.removeFirst();
         }
-        if (sql != null&&!bind.isEmpty())
+        if (sql != null && !bind.isEmpty())
             ((SimpleSQL) sql).setBindSQLs(bind);
         return sql;
     }
