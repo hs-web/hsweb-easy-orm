@@ -7,6 +7,7 @@ import org.hsweb.ezorm.core.param.UpdateParam;
 import org.hsweb.ezorm.rdb.executor.SQL;
 import org.hsweb.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hsweb.ezorm.rdb.meta.RDBTableMetaData;
+import org.hsweb.ezorm.rdb.render.Sql;
 import org.hsweb.ezorm.rdb.render.SqlAppender;
 import org.hsweb.ezorm.rdb.render.dialect.Dialect;
 
@@ -76,8 +77,12 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     }
                 }
                 valueProxy.put(dataProperty, value);
-                appender.add(dialect.buildColumnName(null, column.getName()), "=")
-                        .addAll(getParamString("data.".concat(dataProperty), column));
+                appender.add(dialect.buildColumnName(null, column.getName()), "=");
+                if (value instanceof Sql) {
+                    appender.add(((Sql) value).getSql());
+                } else {
+                    appender.addAll(getParamString("data.".concat(dataProperty), column));
+                }
                 appender.add(",");
                 bytes[0]++;
             });

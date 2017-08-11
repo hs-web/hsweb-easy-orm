@@ -2,6 +2,8 @@ package org.hsweb.ezorm.rdb.render.support.simple;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hsweb.ezorm.core.DefaultValue;
+import org.hsweb.ezorm.rdb.render.Sql;
 import org.hswebframework.utils.StringUtils;
 import org.hsweb.ezorm.core.param.InsertParam;
 import org.hsweb.ezorm.rdb.executor.BindSQL;
@@ -41,9 +43,12 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                 }
             }
             if (value == null) {
-                value = column.getProperty("default-value").getValue();
+                DefaultValue defaultValue = column.getDefaultValue();
+                if (defaultValue != null) {
+                    value = defaultValue.get();
+                }
                 if (logger.isInfoEnabled() && value != null)
-                    logger.info("{}将使用默认值[default-value]:{}", propertyName, value);
+                    logger.info("{}将使用默认值:{}", propertyName, value);
             }
             if (value != null && column.getValueConverter() != null) {
                 Object new_value = column.getValueConverter().getData(value);
@@ -62,7 +67,12 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
             mapValue.put(propertyName, value);
 
             columns.add(dialect.buildColumnName(null, column.getName()));
-            valuesExpression.add(getParamString(valueExpressionPrefix, propertyName, column).toString());
+            if (value instanceof Sql) {
+                valuesExpression.add(((Sql) value).getSql());
+            } else {
+                valuesExpression.add(getParamString(valueExpressionPrefix, propertyName, column).toString());
+            }
+
         });
         appender.add("INSERT INTO ", metaData.getName(), " (")
                 .add(String.join(",", columns.toArray(new String[columns.size()])), ")VALUES(")

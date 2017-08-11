@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.core.meta;
 
 
+import org.hsweb.ezorm.core.DefaultValue;
 import org.hsweb.ezorm.core.OptionConverter;
 import org.hsweb.ezorm.core.PropertyWrapper;
 import org.hsweb.ezorm.core.ValueConverter;
@@ -22,6 +23,8 @@ public interface ColumnMetaData extends Serializable, Cloneable {
     ValueConverter getValueConverter();
 
     OptionConverter getOptionConverter();
+
+    DefaultValue getDefaultValue();
 
     Set<String> getValidator();
 

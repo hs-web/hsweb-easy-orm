@@ -1,6 +1,7 @@
 package org.hsweb.ezorm.rdb.h2;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.hsweb.ezorm.core.dsl.ConditionColumnBuilder;
 import org.hsweb.ezorm.core.dsl.Query;
 import org.hsweb.ezorm.core.param.QueryParam;
@@ -14,6 +15,7 @@ import org.hsweb.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.ClobValueConverter;
 import org.hsweb.ezorm.rdb.meta.converter.DateTimeConverter;
 import org.hsweb.ezorm.rdb.meta.parser.H2TableMetaParser;
+import org.hsweb.ezorm.rdb.render.Sql;
 import org.hsweb.ezorm.rdb.render.dialect.H2RDBDatabaseMetaData;
 import org.hsweb.ezorm.rdb.simple.SimpleDatabase;
 import org.junit.Before;
@@ -54,7 +56,8 @@ public class SimpleTest {
         databaseMetaData.setParser(new H2TableMetaParser(sqlExecutor));
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
         database.createOrAlter("s_user")
-                .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
+                .addColumn().name("id").varchar(32).primaryKey().comment("id")
+                .custom(column -> column.setDefaultValue(() -> DigestUtils.md5Hex(UUID.randomUUID().toString()))).commit()
                 .addColumn().name("name").varchar(256).notNull().comment("姓名").commit()
                 .addColumn().name("age").number(4).notNull().comment("年龄").commit()
                 .addColumn().name("remark").clob().custom(column -> column.setValueConverter(new ClobValueConverter())).comment("备注").commit()
@@ -86,7 +89,6 @@ public class SimpleTest {
 
         table.createInsert().values((Collection) JSON.parseArray("[" +
                 "{\n" +
-                "  \"id\": \"test\",\n" +
                 "  \"name\": \"测试\",\n" +
                 "  \"age\": 10,\n" +
                 "  \"photo\":\"test123\",\n" +
@@ -106,9 +108,9 @@ public class SimpleTest {
 
         table.createQuery()
                 .where()
-                .is("name","张三")
+                .is("name", "张三")
                 .or()
-                .like("name","李%")
+                .like("name", "李%")
                 .list();
 
         table.createQuery()

@@ -1,9 +1,6 @@
 package org.hsweb.ezorm.core.meta;
 
-import org.hsweb.ezorm.core.OptionConverter;
-import org.hsweb.ezorm.core.PropertyWrapper;
-import org.hsweb.ezorm.core.SimplePropertyWrapper;
-import org.hsweb.ezorm.core.ValueConverter;
+import org.hsweb.ezorm.core.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +14,8 @@ public abstract class AbstractColumnMetaData implements ColumnMetaData {
     protected TableMetaData   tableMetaData;
     protected OptionConverter optionConverter;
     protected ValueConverter  valueConverter;
-    protected Set<String>     validator;
+    protected DefaultValue    defaultValue;
+    protected Set<String> validator;
     protected Map<String, Object> properties = new HashMap<>();
 
     @Override
@@ -60,6 +58,15 @@ public abstract class AbstractColumnMetaData implements ColumnMetaData {
     @Override
     public OptionConverter getOptionConverter() {
         return optionConverter;
+    }
+
+    @Override
+    public DefaultValue getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(DefaultValue defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override
