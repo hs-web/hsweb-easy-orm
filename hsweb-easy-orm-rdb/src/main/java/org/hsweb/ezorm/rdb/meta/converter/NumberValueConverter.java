@@ -58,6 +58,12 @@ public class NumberValueConverter implements ValueConverter {
         if (StringUtils.isNumber(value)) {
             return converter.apply(new BigDecimal(String.valueOf(value)));
         }
+        if (Boolean.TRUE.equals(value)) {
+            return 1;
+        }
+        if (Boolean.FALSE.equals(value)) {
+            return 0;
+        }
         throw new UnsupportedOperationException("值" + value + "无法转换为数字");
     }
 
