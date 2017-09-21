@@ -1,4 +1,5 @@
 # 一个简单的orm工具
+[![Maven Central](https://img.shields.io/maven-central/v/org.hswebframework/hsweb-easy-orm.svg?style=plastic)](http://search.maven.org/#search%7Cga%7C1%7Chsweb-easy-orm)
 
 ```java
     //....some code
