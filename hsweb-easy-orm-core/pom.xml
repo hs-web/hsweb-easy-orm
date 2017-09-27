@@ -5,11 +5,12 @@
     <parent>
         <artifactId>hsweb-easy-orm</artifactId>
         <groupId>org.hswebframework</groupId>
-        <version>3.0.0</version>
+        <version>3.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hsweb-easy-orm-core</artifactId>
+    <description>easyorm核心,提供dsl工具封装</description>
 
     <dependencies>
         <dependency>

@@ -6,13 +6,13 @@
     <groupId>org.hswebframework</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0</version>
+    <version>3.0.1-SNAPSHOT</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
     </modules>
 
-    <name>${project.groupId}:${project.artifactId}</name>
+    <name>${artifactId}</name>
     <url>http://www.hswebframework.org</url>
     <description>一个简单的orm工具</description>
 
@@ -212,7 +212,7 @@
             <dependency>
                 <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-utils</artifactId>
-                <version>3.0.0-SNAPSHOT</version>
+                <version>3.0.0</version>
             </dependency>
 
             <dependency>
