@@ -368,8 +368,9 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
             logger.debug("==>  Preparing: {}", info.getSql());
             if (info.getParam() != null && info.getParam().length > 0) {
                 logger.debug("==> Parameters: {}", info.paramsString());
-                String sim = info.getSql();
                 Object[] param = info.getParam();
+                if (param.length > 200) return;
+                String sim = info.getSql();
                 for (int i = 0; i < param.length; i++) {
                     Object obj = param[i];
                     try {
