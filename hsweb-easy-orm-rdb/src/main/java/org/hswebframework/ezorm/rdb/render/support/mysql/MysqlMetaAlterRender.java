@@ -85,7 +85,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
 
         addedField.forEach(field -> {
             SqlAppender append = new SqlAppender();
-            append.add("add column ", field.getName(), " ", field.getDataType());
+            append.add("add column `", field.getName(), "` ", field.getDataType());
             if (!StringUtils.isNullOrEmpty(field.getProperty("default-value").getValue())) {
                 append.add(" default '", field.getProperty("default-value").getValue(), "'");
             }
@@ -103,7 +103,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
             String oldName = field.getProperty("old-name").getValue();
             if (oldName == null) oldName = field.getName();
             SqlAppender append = new SqlAppender();
-            append.addSpc("change", oldName, field.getName(), field.getDataType());
+            append.addSpc("change", "`" + oldName + "`", "`" + field.getName() + "`", field.getDataType());
             if (!StringUtils.isNullOrEmpty(field.getProperty("default-value").getValue())) {
                 append.add("default '", field.getProperty("default-value").getValue(), "'");
             }
@@ -117,7 +117,7 @@ public class MysqlMetaAlterRender implements SqlRender<Boolean> {
             }
             changedSql.add(append);
         });
-        deletedField.forEach(field -> deleteSql.add(new SqlAppender().add("drop column ", field.getName())));
+        deletedField.forEach(field -> deleteSql.add(new SqlAppender().add("drop column ", "`" + field.getName() + "`")));
         List<SqlAppender> allSql = new LinkedList<>();
         allSql.add(new SqlAppender().addSpc(String.format("alter table `%s`", metaData.getName())));
         allSql.addAll(deleteSql);
