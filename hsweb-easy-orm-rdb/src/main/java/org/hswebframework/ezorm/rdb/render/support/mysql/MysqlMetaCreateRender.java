@@ -10,10 +10,25 @@ import org.hswebframework.ezorm.rdb.render.support.simple.SimpleSQL;
 
 import java.util.Set;
 
-/**
- * Created by zhouhao on 16-6-5.
- */
 public class MysqlMetaCreateRender implements SqlRender {
+
+    private String engine="InnoDB";
+
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
+    public String getEngine() {
+        return engine;
+    }
+
+    public MysqlMetaCreateRender() {
+    }
+
+    public MysqlMetaCreateRender(String engine) {
+        this.engine = engine;
+    }
+
     @Override
     public SQL render(RDBTableMetaData metaData, Object param) {
         SqlAppender appender = new SqlAppender();
@@ -35,7 +50,7 @@ public class MysqlMetaCreateRender implements SqlRender {
             appender.add(",");
         });
         appender.removeLast();
-        appender.add("\n)ENGINE = InnoDB CHARACTER SET utf8 ");
+        appender.add("\n)ENGINE = "+getEngine()+" CHARACTER SET utf8 ");
         if (metaData.getComment() != null) {
             appender.add("COMMENT=", "'", metaData.getComment(), "'");
         }

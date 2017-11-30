@@ -10,10 +10,20 @@ public class MysqlRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
 
     private String name;
 
+    private String engine = "InnoDB";
+
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
+    public String getEngine() {
+        return engine;
+    }
+
     @Override
     public void init() {
         super.init();
-        renderMap.put(SqlRender.TYPE.META_CREATE, new MysqlMetaCreateRender());
+        renderMap.put(SqlRender.TYPE.META_CREATE, new MysqlMetaCreateRender(getEngine()));
         renderMap.put(SqlRender.TYPE.DELETE, new MysqlDeleteSqlRender(getDialect()));
         renderMap.put(SqlRender.TYPE.META_ALTER, new MysqlMetaAlterRender(this));
     }
