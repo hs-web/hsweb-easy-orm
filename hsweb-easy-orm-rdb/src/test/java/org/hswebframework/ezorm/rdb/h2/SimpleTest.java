@@ -134,11 +134,8 @@ public class SimpleTest {
 
         List<Map<String, Object>> age2 = user.createQuery().notIn("age", 11).list();
         System.out.println("age2"+age2);
-        ArrayList arrayList = new ArrayList();
 
-        arrayList.add(1);
-        arrayList.add(11);
-        List<Map<String, Object>> age3 = user.createQuery().notIn("age", arrayList).list();
+        List<Map<String, Object>> age3 = user.createQuery().notIn("age", Arrays.asList(1,11)).list();
 
         System.out.println("age3"+age3);
 
