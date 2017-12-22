@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.core.dsl;
 import org.hswebframework.ezorm.core.Conditional;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -79,6 +80,14 @@ public class ConditionColumnBuilder {
 
     public <T extends Conditional> Consumer<T> notIn(Object value) {
         return (conditional -> conditional.notIn(column, value));
+    }
+
+    public <T extends Conditional> Consumer<T> notIn(Object... value){
+        return (conditional -> conditional.notIn(column,value));
+    }
+
+    public <T extends Conditional> Consumer<T> notIn(Collection values){
+        return (conditonal -> conditonal.notIn(column,values));
     }
 
     public <T extends Conditional> Consumer<T> isEmpty() {
