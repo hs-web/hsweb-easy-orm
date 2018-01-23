@@ -2,12 +2,14 @@ package org.hswebframework.ezorm.rdb.h2;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.hswebframework.ezorm.core.Query;
 import org.hswebframework.ezorm.core.dsl.ConditionColumnBuilder;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.RDBDatabase;
 import org.hswebframework.ezorm.rdb.RDBTable;
 import org.hswebframework.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
+import org.hswebframework.ezorm.rdb.meta.Correlation;
 import org.hswebframework.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hswebframework.ezorm.rdb.meta.converter.ClobValueConverter;
 import org.hswebframework.ezorm.rdb.meta.converter.DateTimeConverter;
@@ -51,6 +53,16 @@ public class SimpleTest {
         H2RDBDatabaseMetaData databaseMetaData = new H2RDBDatabaseMetaData();
         databaseMetaData.setParser(new H2TableMetaParser(sqlExecutor));
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
+
+        database.createOrAlter("s_user_info")
+                .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
+                .addColumn().name("address").varchar(256).notNull().comment("地址").commit()
+                .addColumn().name("id_card").varchar(32).notNull().comment("身份证号").commit()
+
+                .comment("用户明细表")
+                .commit();
+
+
         database.createOrAlter("s_user")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id")
                 .custom(column -> column.setDefaultValue(() -> DigestUtils.md5Hex(UUID.randomUUID().toString()))).commit()
@@ -59,10 +71,16 @@ public class SimpleTest {
                 .addColumn().name("remark").clob().custom(column -> column.setValueConverter(new ClobValueConverter())).comment("备注").commit()
                 .addColumn().name("photo").jdbcType(JDBCType.CLOB).custom(column -> column.setValueConverter(new BlobValueConverter())).comment("照片").commit()
                 .addColumn().name("create_date").datetime().custom(columnMetaData -> columnMetaData.setValueConverter(new DateTimeConverter("yyyy-MM-dd HH:mm:ss", Date.class))).comment("创建时间").commit()
+                //表关联
+                .custom(table-> table.addCorrelation(new Correlation("s_user_info","info","info.id=s_user.id")))
                 .comment("用户表")
                 .commit();
 
-        RDBTable<Map<String, Object>> table = database.getTable("s_user");
+
+
+        RDBTable<Map<String, Object>> user = database.getTable("s_user");
+        RDBTable<Map<String, Object>> info = database.getTable("s_user_info");
+
 
 //        List<Map<String, Object>> aa =
 //                table.createQuery().where("name", "1").and("name", "2")
@@ -83,7 +101,7 @@ public class SimpleTest {
 //
 //        table.createQuery().setParams(queryParam).list();
 
-        table.createInsert().values((Collection) JSON.parseArray("[" +
+        user.createInsert().values((Collection) JSON.parseArray("[" +
                 "{\n" +
                 "  \"name\": \"测试\",\n" +
                 "  \"age\": 10,\n" +
@@ -93,23 +111,44 @@ public class SimpleTest {
                 "{\n" +
                 "  \"id\": \"test2\",\n" +
                 "  \"name\": \"测试2\",\n" +
-                "  \"age\": 10,\n" +
+                "  \"age\": 11,\n" +
                 "  \"photo\":\"test123\",\n" +
                 "  \"remark\": \"测试123\"\n" +
                 "}" +
                 "]")).exec();
-        System.out.println(table.createQuery().list());
+
+        info.createInsert().value( JSON.parseObject(
+                "{\n" +
+                "  \"id\": \"test2\",\n" +
+                "  \"address\": \"测试地址\",\n" +
+                "  \"id_card\":\"123123132\"\n" +
+                "}")).exec();
+
+        System.out.println(user.createQuery().list());
 
         Function<Object, Object> append = (value) -> "," + value + ",";
 
-        table.createQuery()
+
+        List<Map<String, Object>> age1 = user.createQuery().notIn("age", 12, 11).list();
+        System.out.println("age1"+age1);
+
+        List<Map<String, Object>> age2 = user.createQuery().notIn("age", 11).list();
+        System.out.println("age2"+age2);
+
+        List<Map<String, Object>> age3 = user.createQuery().notIn("age", Arrays.asList(1,11)).list();
+
+        System.out.println("age3"+age3);
+
+
+        user.createQuery()
                 .where()
                 .is("name", "张三")
                 .or()
+                .or().$like$("info.address","测试")
                 .like("name", "李%")
                 .list();
 
-        table.createQuery()
+        user.createQuery()
                 .where()
                 .accept("create_date", TermType.btw, "2017-10-01,2017-10-10")
                 .sql("age >? or age <?", 1, 5)
@@ -132,14 +171,11 @@ public class SimpleTest {
                 .end()
                 .list();
 
-        table.createQuery().where(
-                ConditionColumnBuilder.build("name")
-                        .like("111").andThen(ConditionColumnBuilder.build("name").$like$("123"))).list();
-
         //                  where name = '张三'  (      age > 10     or     age < 5   )
 //        table.createQuery().where("name", "张三").nest().gt("age", 10).or().lt("age", 5).end().list();
 
-        table.createDelete().where().notNull("age").exec();
+        user.createDelete().where().notNull("age").exec();
+
         database.createOrAlter("s_user")
                 .addOrAlterColumn("age").number(5).notNull().comment("年龄").commit()
                 .addColumn().name("update_date").datetime().comment("修改时间").commit()
