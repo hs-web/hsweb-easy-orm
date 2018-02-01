@@ -277,28 +277,28 @@
             </snapshots>
         </repository>
     </repositories>
-    <!--<distributionManagement>-->
-        <!--<repository>-->
-            <!--<id>releases</id>-->
-            <!--<name>Nexus Release Repository</name>-->
-            <!--<url>http://nexus.hsweb.me/content/repositories/releases/</url>-->
-        <!--</repository>-->
-        <!--<snapshotRepository>-->
-            <!--<id>snapshots</id>-->
-            <!--<name>Nexus Snapshot Repository</name>-->
-            <!--<url>http://nexus.hsweb.me/content/repositories/snapshots/</url>-->
-        <!--</snapshotRepository>-->
-    <!--</distributionManagement>-->
     <distributionManagement>
         <repository>
-            <id>sonatype-releases</id>
-            <name>sonatype repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+            <id>releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://nexus.hsweb.me/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>sonatype-snapshots</id>
+            <id>snapshots</id>
             <name>Nexus Snapshot Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>http://nexus.hsweb.me/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+    <!--<distributionManagement>-->
+        <!--<repository>-->
+            <!--<id>sonatype-releases</id>-->
+            <!--<name>sonatype repository</name>-->
+            <!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>-->
+        <!--</repository>-->
+        <!--<snapshotRepository>-->
+            <!--<id>sonatype-snapshots</id>-->
+            <!--<name>Nexus Snapshot Repository</name>-->
+            <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
+        <!--</snapshotRepository>-->
+    <!--</distributionManagement>-->
 </project>
