@@ -140,11 +140,12 @@ public class SimpleTest {
         System.out.println("age3"+age3);
 
 
-        user.createQuery()
+        user.createQuery().select("id").forUpdate()
                 .where()
                 .is("name", "张三")
                 .or()
-                .or().$like$("info.address","测试")
+                .or()
+//                .$like$("info.address","测试")
                 .like("name", "李%")
                 .list();
 
