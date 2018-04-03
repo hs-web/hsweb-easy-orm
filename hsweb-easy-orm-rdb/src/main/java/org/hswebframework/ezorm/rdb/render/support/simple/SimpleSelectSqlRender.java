@@ -54,7 +54,7 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
             this.selectField.forEach(field -> needSelectTable.add(field.getTableName()));
             param.getSorts().forEach(sort -> {
                 RDBColumnMetaData rDBColumnMetaData = metaData.findColumn(sort.getName());
-                if (rDBColumnMetaData.getName() == null) return;
+                if (rDBColumnMetaData == null || rDBColumnMetaData.getName() == null) return;
                 String tableName = getTableAlias(metaData, sort.getName());
                 needSelectTable.add(tableName);
                 sort.setName(getDialect().buildColumnName(tableName, rDBColumnMetaData.getName()));
@@ -113,9 +113,10 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
             if (param.isPaging() && !param.isForUpdate()) {
                 sql = dialect.doPaging(sql, param.getPageIndex(), param.getPageSize());
             }
-            if (param.isForUpdate()) sql.concat(" FOR UPDATE");
-            SimpleSQL simpleSQL = new SimpleSQL(sql, param);
-            return simpleSQL;
+            if (param.isForUpdate()) {
+                sql = sql.concat(" FOR UPDATE");
+            }
+            return new SimpleSQL(sql, param);
         }
 
         @Override

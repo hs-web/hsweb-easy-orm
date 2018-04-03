@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.h2;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.hswebframework.ezorm.core.Query;
 import org.hswebframework.ezorm.core.dsl.ConditionColumnBuilder;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.RDBDatabase;
@@ -110,7 +111,7 @@ public class SimpleTest {
                 "{\n" +
                 "  \"id\": \"test2\",\n" +
                 "  \"name\": \"测试2\",\n" +
-                "  \"age\": 10,\n" +
+                "  \"age\": 11,\n" +
                 "  \"photo\":\"test123\",\n" +
                 "  \"remark\": \"测试123\"\n" +
                 "}" +
@@ -127,11 +128,24 @@ public class SimpleTest {
 
         Function<Object, Object> append = (value) -> "," + value + ",";
 
-        user.createQuery()
+
+        List<Map<String, Object>> age1 = user.createQuery().notIn("age", 12, 11).list();
+        System.out.println("age1"+age1);
+
+        List<Map<String, Object>> age2 = user.createQuery().notIn("age", 11).list();
+        System.out.println("age2"+age2);
+
+        List<Map<String, Object>> age3 = user.createQuery().notIn("age", Arrays.asList(1,11)).list();
+
+        System.out.println("age3"+age3);
+
+
+        user.createQuery().select("id").forUpdate()
                 .where()
                 .is("name", "张三")
                 .or()
-                .or().$like$("info.address","测试")
+                .or()
+//                .$like$("info.address","测试")
                 .like("name", "李%")
                 .list();
 

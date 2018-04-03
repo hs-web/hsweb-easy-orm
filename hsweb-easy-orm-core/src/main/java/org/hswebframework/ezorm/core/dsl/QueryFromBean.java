@@ -47,6 +47,11 @@ public final class QueryFromBean<T, Q extends QueryParam>
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest(column, getValue(column)));
     }
 
+    public QueryFromBean<T, Q> forUpdate() {
+        this.proxy.forUpdate();
+        return this;
+    }
+
     @Override
     public QueryFromBean<T, Q> sql(String sql, Object... params) {
         proxy.sql(sql, params);

@@ -148,6 +148,14 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
         return accept(column, TermType.nin, value);
     }
 
+    default T notIn(String column,Object... value){
+        return accept(column,TermType.nin,value);
+    }
+
+    default T notIn(String column,Collection values){
+        return accept(column,TermType.nin,values);
+    }
+
     default T isEmpty(String column) {
         return accept(column, TermType.empty, 1);
     }

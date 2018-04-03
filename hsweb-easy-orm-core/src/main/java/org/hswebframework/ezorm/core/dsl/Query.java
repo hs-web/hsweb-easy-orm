@@ -16,12 +16,12 @@ import java.util.function.Supplier;
  * @since 1.1
  */
 public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
-    private Q                    param          = null;
-    private Accepter<Query<T, Q>,Object>             accepter       = this::and;
-    private ListExecutor<T, Q>   listExecutor   = null;
-    private TotalExecutor<Q>     totalExecutor  = null;
-    private SingleExecutor<T, Q> singleExecutor = null;
-    private Object               bean           = null;
+    private Q                             param          = null;
+    private Accepter<Query<T, Q>, Object> accepter       = this::and;
+    private ListExecutor<T, Q>            listExecutor   = null;
+    private TotalExecutor<Q>              totalExecutor  = null;
+    private SingleExecutor<T, Q>          singleExecutor = null;
+    private Object                        bean           = null;
 
     public Query(Q param) {
         this.param = param;
@@ -119,6 +119,11 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return totalExecutor.doExecute(param);
     }
 
+    public Query<T, Q> forUpdate() {
+        this.param.setForUpdate(true);
+        return this;
+    }
+
     public <Q> Q single(SingleExecutor<Q, QueryParam> executor) {
         return executor.doExecute(param);
     }
@@ -128,21 +133,21 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
     }
 
     public NestConditional<Query<T, Q>> nest() {
-        return new SimpleNestConditional(this, this.param.nest());
+        return new SimpleNestConditional<>(this, this.param.nest());
     }
 
     public NestConditional<Query<T, Q>> nest(String column, Object value) {
-        return new SimpleNestConditional(this, this.param.nest(column, value));
+        return new SimpleNestConditional<>(this, this.param.nest(column, value));
     }
 
     @Override
     public NestConditional<Query<T, Q>> orNest() {
-        return new SimpleNestConditional(this, this.param.orNest());
+        return new SimpleNestConditional<>(this, this.param.orNest());
     }
 
     @Override
     public NestConditional<Query<T, Q>> orNest(String column, Object value) {
-        return new SimpleNestConditional(this, this.param.orNest(column, value));
+        return new SimpleNestConditional<>(this, this.param.orNest(column, value));
     }
 
     @Override
@@ -177,7 +182,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
     }
 
     @Override
-    public Accepter<Query<T, Q>,Object> getAccepter() {
+    public Accepter<Query<T, Q>, Object> getAccepter() {
         return accepter;
     }
 
