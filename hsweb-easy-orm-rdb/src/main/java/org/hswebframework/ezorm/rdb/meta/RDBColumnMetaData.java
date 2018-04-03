@@ -164,6 +164,7 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
         RDBColumnMetaData.precision = precision;
         RDBColumnMetaData.notNull = notNull;
         RDBColumnMetaData.primaryKey = primaryKey;
+        RDBColumnMetaData.defaultValue=defaultValue;
         return RDBColumnMetaData;
     }
 
