@@ -148,24 +148,25 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
 
     @Override
     public RDBColumnMetaData clone() {
-        RDBColumnMetaData RDBColumnMetaData = new RDBColumnMetaData();
-        RDBColumnMetaData.name = name;
-        RDBColumnMetaData.alias = alias;
-        RDBColumnMetaData.comment = comment;
-        RDBColumnMetaData.javaType = javaType;
-        RDBColumnMetaData.jdbcType = jdbcType;
-        RDBColumnMetaData.dataType = dataType;
-        RDBColumnMetaData.properties = properties;
-        RDBColumnMetaData.optionConverter = optionConverter;
-        RDBColumnMetaData.tableMetaData = tableMetaData;
-        RDBColumnMetaData.sortIndex = sortIndex;
-        RDBColumnMetaData.length = length;
-        RDBColumnMetaData.scale = scale;
-        RDBColumnMetaData.precision = precision;
-        RDBColumnMetaData.notNull = notNull;
-        RDBColumnMetaData.primaryKey = primaryKey;
-        RDBColumnMetaData.defaultValue=defaultValue;
-        return RDBColumnMetaData;
+        RDBColumnMetaData target = new RDBColumnMetaData();
+        target.name = name;
+        target.alias = alias;
+        target.comment = comment;
+        target.javaType = javaType;
+        target.jdbcType = jdbcType;
+        target.dataType = dataType;
+        target.properties = properties;
+        target.optionConverter = optionConverter;
+        target.tableMetaData = tableMetaData;
+        target.sortIndex = sortIndex;
+        target.length = length;
+        target.scale = scale;
+        target.precision = precision;
+        target.notNull = notNull;
+        target.primaryKey = primaryKey;
+        target.defaultValue=defaultValue;
+        target.valueConverter=valueConverter;
+        return target;
     }
 
     @Override
