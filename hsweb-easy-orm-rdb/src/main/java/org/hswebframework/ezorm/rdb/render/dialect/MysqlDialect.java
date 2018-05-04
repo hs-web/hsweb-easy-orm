@@ -13,8 +13,9 @@ public class MysqlDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime");
+
         setDataTypeMapper(JDBCType.TIME, (meta) -> "time");
-        setDataTypeMapper(JDBCType.DATE, (meta) -> "year");
+        setDataTypeMapper(JDBCType.DATE, (meta) -> "date");
         setDataTypeMapper(JDBCType.CLOB, (meta) -> "text");
         setDataTypeMapper(JDBCType.LONGVARBINARY, (meta) -> "longblob");
         setDataTypeMapper(JDBCType.LONGVARCHAR, (meta) -> "longtext");

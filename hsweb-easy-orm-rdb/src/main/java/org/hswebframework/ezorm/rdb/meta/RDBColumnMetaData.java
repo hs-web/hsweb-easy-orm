@@ -187,6 +187,8 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
         column.notNull = notNull;
         column.primaryKey = primaryKey;
         column.columnDefinition = columnDefinition;
+        column.defaultValue=defaultValue;
+        column.valueConverter=valueConverter;
         return column;
     }
 
