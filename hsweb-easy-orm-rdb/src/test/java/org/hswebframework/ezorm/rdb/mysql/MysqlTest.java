@@ -32,7 +32,8 @@ public class MysqlTest {
     public void setup() throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
 
-        Connection connection = DriverManager.getConnection("jdbc:mysql:mxj:///test", null);
+        Connection connection = DriverManager
+                .getConnection("jdbc:mysql://localhost:3306/hsweb?useSSL=false", "root","19920622");
         sqlExecutor = new AbstractJdbcSqlExecutor() {
             @Override
             public Connection getConnection() {

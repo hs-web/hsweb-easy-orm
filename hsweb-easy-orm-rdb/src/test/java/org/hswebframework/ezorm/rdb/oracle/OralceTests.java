@@ -34,9 +34,9 @@ public class OralceTests {
 
         Connection connection = DriverManager
                 .getConnection(
-                        "jdbc:oracle:thin:@127.0.0.1:1521:orcl",
-                        "test",
-                        "test");
+                        "jdbc:oracle:thin:@127.0.0.1:1521:xe",
+                        "apsp",
+                        "apsp");
         sqlExecutor = new AbstractJdbcSqlExecutor() {
             @Override
             public Connection getConnection() {

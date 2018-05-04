@@ -80,6 +80,12 @@ public class SimpleColumnBuilder implements ColumnBuilder {
     }
 
     @Override
+    public ColumnBuilder columnDef(String def) {
+        columnMetaData.setColumnDefinition(def);
+        return this;
+    }
+
+    @Override
     public ColumnBuilder length(int len) {
         columnMetaData.setLength(len);
         return this;

@@ -75,6 +75,10 @@ public interface Dialect {
 
     String getQuoteEnd();
 
+    default String quote(String keyword) {
+        return getQuoteStart().concat(keyword).concat(getQuoteEnd());
+    }
+
     SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias);
 
     String buildDataType(RDBColumnMetaData columnMetaData);
@@ -97,5 +101,6 @@ public interface Dialect {
     Dialect ORACLE = new OracleDialect();
     Dialect H2     = new H2Dialect();
     Dialect MSSQL  = new MSSQLDialect();
+    Dialect POSTGRES  = new PGSqlDialect();
 
 }

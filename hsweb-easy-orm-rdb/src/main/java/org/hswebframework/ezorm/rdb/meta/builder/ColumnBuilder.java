@@ -29,6 +29,8 @@ public interface ColumnBuilder {
 
     ColumnBuilder primaryKey();
 
+    ColumnBuilder columnDef(String def);
+
     default ColumnBuilder varchar(int length) {
         return jdbcType(JDBCType.VARCHAR).length(length);
     }

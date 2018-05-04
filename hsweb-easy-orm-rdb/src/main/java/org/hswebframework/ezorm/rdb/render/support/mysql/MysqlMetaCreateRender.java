@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class MysqlMetaCreateRender implements SqlRender {
 
-    private String engine="InnoDB";
+    private String engine = "InnoDB";
 
     public void setEngine(String engine) {
         this.engine = engine;
@@ -32,25 +32,32 @@ public class MysqlMetaCreateRender implements SqlRender {
     @Override
     public SQL render(RDBTableMetaData metaData, Object param) {
         SqlAppender appender = new SqlAppender();
-        Set<RDBColumnMetaData> RDBColumnMetaDatas = metaData.getColumns();
-        if (RDBColumnMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
+        Set<RDBColumnMetaData> columns = metaData.getColumns();
+        if (columns.isEmpty()) {
+            throw new UnsupportedOperationException("未指定任何字段");
+        }
         appender.add("\nCREATE TABLE ", metaData.getName(), "(");
-        RDBColumnMetaDatas.forEach(fieldMetaData -> {
-            appender.add("\n\t`", fieldMetaData.getName(), "` ").add(fieldMetaData.getDataType());
-            if (fieldMetaData.isNotNull()) {
-                appender.add(" not null");
-            }
-            if (fieldMetaData.isPrimaryKey()) {
-                appender.add(" primary key");
-            }
-            //注释
-            if (!StringUtils.isNullOrEmpty(fieldMetaData.getComment())) {
-                appender.add(String.format(" COMMENT '%s'", fieldMetaData.getComment()));
+        columns.forEach(column -> {
+            appender.add("\n\t`", column.getName(), "` ");
+            if (column.getColumnDefinition() != null) {
+                appender.add(column.getColumnDefinition());
+            } else {
+                appender.add(column.getDataType());
+                if (column.isNotNull()) {
+                    appender.add(" not null");
+                }
+                if (column.isPrimaryKey()) {
+                    appender.add(" primary key");
+                }
+                //注释
+                if (!StringUtils.isNullOrEmpty(column.getComment())) {
+                    appender.add(String.format(" comment '%s'", column.getComment()));
+                }
             }
             appender.add(",");
         });
         appender.removeLast();
-        appender.add("\n)ENGINE = "+getEngine()+" CHARACTER SET utf8 ");
+        appender.add("\n)ENGINE = " + getEngine() + " CHARACTER SET utf8 ");
         if (metaData.getComment() != null) {
             appender.add("COMMENT=", "'", metaData.getComment(), "'");
         }

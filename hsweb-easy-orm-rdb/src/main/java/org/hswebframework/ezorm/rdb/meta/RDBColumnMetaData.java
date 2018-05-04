@@ -54,6 +54,13 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
      */
     private boolean primaryKey;
 
+    /**
+     * 列定义
+     *
+     * @since 3.0
+     */
+    private String columnDefinition;
+
     private JDBCType jdbcType;
 
     private int sortIndex;
@@ -66,6 +73,8 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
         this.dataType = dataType;
     }
 
+    @Override
+    @SuppressWarnings("all")
     public RDBTableMetaData getTableMetaData() {
         return super.getTableMetaData();
     }
@@ -96,7 +105,9 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
 
     @Override
     public ValueConverter getValueConverter() {
-        if (valueConverter == null) valueConverter = DEFAULT_VALUE_CONVERTER;
+        if (valueConverter == null) {
+            valueConverter = DEFAULT_VALUE_CONVERTER;
+        }
         return super.getValueConverter();
     }
 
@@ -130,8 +141,18 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
     }
 
     public boolean isNotNull() {
-        if (!notNull && isPrimaryKey()) notNull = true;
+        if (!notNull && isPrimaryKey()) {
+            notNull = true;
+        }
         return notNull;
+    }
+
+    public String getColumnDefinition() {
+        return columnDefinition;
+    }
+
+    public void setColumnDefinition(String columnDefinition) {
+        this.columnDefinition = columnDefinition;
     }
 
     public void setNotNull(boolean notNull) {
@@ -147,24 +168,26 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
     }
 
     @Override
+    @SuppressWarnings("all")
     public RDBColumnMetaData clone() {
-        RDBColumnMetaData RDBColumnMetaData = new RDBColumnMetaData();
-        RDBColumnMetaData.name = name;
-        RDBColumnMetaData.alias = alias;
-        RDBColumnMetaData.comment = comment;
-        RDBColumnMetaData.javaType = javaType;
-        RDBColumnMetaData.jdbcType = jdbcType;
-        RDBColumnMetaData.dataType = dataType;
-        RDBColumnMetaData.properties = properties;
-        RDBColumnMetaData.optionConverter = optionConverter;
-        RDBColumnMetaData.tableMetaData = tableMetaData;
-        RDBColumnMetaData.sortIndex = sortIndex;
-        RDBColumnMetaData.length = length;
-        RDBColumnMetaData.scale = scale;
-        RDBColumnMetaData.precision = precision;
-        RDBColumnMetaData.notNull = notNull;
-        RDBColumnMetaData.primaryKey = primaryKey;
-        return RDBColumnMetaData;
+        RDBColumnMetaData column = new RDBColumnMetaData();
+        column.name = name;
+        column.alias = alias;
+        column.comment = comment;
+        column.javaType = javaType;
+        column.jdbcType = jdbcType;
+        column.dataType = dataType;
+        column.properties = properties;
+        column.optionConverter = optionConverter;
+        column.tableMetaData = tableMetaData;
+        column.sortIndex = sortIndex;
+        column.length = length;
+        column.scale = scale;
+        column.precision = precision;
+        column.notNull = notNull;
+        column.primaryKey = primaryKey;
+        column.columnDefinition = columnDefinition;
+        return column;
     }
 
     @Override

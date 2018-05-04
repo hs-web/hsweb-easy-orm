@@ -19,23 +19,27 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
     public SQL render(RDBTableMetaData metaData, Object param) {
         SqlAppender createBody = new SqlAppender();
         List<String> comments = new ArrayList<>();
-        Set<RDBColumnMetaData> RDBColumnMetaDatas = metaData.getColumns();
-        if (RDBColumnMetaDatas.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
+        Set<RDBColumnMetaData> columns = metaData.getColumns();
+        if (columns.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
         createBody.add("\nCREATE TABLE ", metaData.getName(), "(");
-        RDBColumnMetaDatas.forEach(column -> {
-            createBody.add("\n\t\"", column.getName().toUpperCase(), "\" ").add(column.getDataType());
-            if (column.isNotNull()
-                    || column.isPrimaryKey()) {
-                createBody.add(" NOT NULL ");
-            }
-            if (column.isPrimaryKey())
-                createBody.add("PRIMARY KEY ");
-            //注释
-            if (!StringUtils.isNullOrEmpty(column.getComment())) {
-                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" IS '%s'", metaData.getName(), (column.getName().toUpperCase()), column.getComment()));
-            } else {
-                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" IS '%s'", metaData.getName(), (column.getName().toUpperCase()), column.getAlias()));
+        columns.forEach(column -> {
+            createBody.add("\n\t\"", column.getName().toUpperCase(), "\" ");
 
+            if (column.getColumnDefinition() != null) {
+                createBody.add(column.getColumnDefinition());
+
+            } else {
+                createBody.add(column.getDataType());
+                if (column.isNotNull()
+                        || column.isPrimaryKey()) {
+                    createBody.add(" NOT NULL ");
+                }
+                if (column.isPrimaryKey())
+                    createBody.add("PRIMARY KEY ");
+                //注释
+                if (!StringUtils.isNullOrEmpty(column.getComment())) {
+                    comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" IS '%s'", metaData.getName(), (column.getName().toUpperCase()), column.getComment()));
+                }
             }
             createBody.add(",");
         });

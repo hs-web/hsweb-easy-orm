@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.render.dialect;
 
+import org.hswebframework.ezorm.core.param.ClassFieldTerm;
 import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
@@ -27,28 +28,31 @@ public abstract class DefaultDialect implements Dialect {
     public DefaultDialect() {
         //默认查询条件支持
         termTypeMappers.put(TermType.eq, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=#{", wherePrefix, ".value}")));
+                new SqlAppender().add(
+                        buildColumnName(tableAlias, column.getName()),
+                        "=#{", wherePrefix,
+                        (term instanceof ClassFieldTerm) ? "" : ".value}")));
 
         termTypeMappers.put(TermType.not, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, ".value}")));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
 
         termTypeMappers.put(TermType.like, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, ".value}")));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
 
         termTypeMappers.put(TermType.nlike, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " NOT LIKE #{", wherePrefix, ".value}"));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " NOT LIKE #{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}"));
         termTypeMappers.put(TermType.isnull, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NULL"));
         termTypeMappers.put(TermType.notnull, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NOT NULL"));
         termTypeMappers.put(TermType.gt, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">#{", wherePrefix, ".value}")));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
         termTypeMappers.put(TermType.lt, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<#{", wherePrefix, ".value}")));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
         termTypeMappers.put(TermType.gte, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">=#{", wherePrefix, ".value}")));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), ">=#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
         termTypeMappers.put(TermType.lte, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<=#{", wherePrefix, ".value}")));
+                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "<=#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
         termTypeMappers.put(TermType.empty, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "=''")));
         termTypeMappers.put(TermType.nempty, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
@@ -135,8 +139,7 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public void setTermTypeMapper(String termType, TermTypeMapper mapper) {
-        termType = termType.toLowerCase();
-        termTypeMappers.put(termType, mapper);
+        termTypeMappers.put(termType.toLowerCase(), mapper);
     }
 
     @Override
@@ -155,11 +158,6 @@ public abstract class DefaultDialect implements Dialect {
         DataTypeMapper mapper = dataTypeMappers.get(columnMetaData.getJdbcType().getName());
         if (null == mapper) mapper = defaultDataTypeMapper;
         return mapper.getDataType(columnMetaData);
-    }
-
-    @Override
-    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
-        return new OracleTableMetaParser(sqlExecutor);
     }
 
 }

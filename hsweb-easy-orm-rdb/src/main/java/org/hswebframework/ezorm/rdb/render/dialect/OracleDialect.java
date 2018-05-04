@@ -1,5 +1,8 @@
 package org.hswebframework.ezorm.rdb.render.dialect;
 
+import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
+import org.hswebframework.ezorm.rdb.meta.parser.OracleTableMetaParser;
+import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
@@ -52,5 +55,10 @@ public class OracleDialect extends DefaultDialect {
     @Override
     public boolean columnToUpperCase() {
         return true;
+    }
+
+    @Override
+    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
+        return new OracleTableMetaParser(sqlExecutor);
     }
 }
