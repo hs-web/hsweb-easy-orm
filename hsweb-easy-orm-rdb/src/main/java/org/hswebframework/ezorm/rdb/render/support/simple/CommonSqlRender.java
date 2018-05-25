@@ -45,7 +45,7 @@ public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
             return tmp;
         }
         //指定了exclude,没有指定include
-        if (includesIsEmpty && !excludesIsEmpty) {
+        if (includesIsEmpty) {
             boolean hasSelf = false;
             for (String exclude : excludes) {
                 if (exclude.contains(".")) {
@@ -55,62 +55,59 @@ public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
                 }
             }
             if (hasSelf) includes.add("*");
-            includesIsEmpty = false;
         }
-        if (!includesIsEmpty) {
-            includes.forEach(include -> {
-                if (excludes.contains(include)) return;
-                if ("*".equals(include)) {
-                    metaData.getColumns().forEach(column -> {
-                        if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
-                            return;
-                        tmp.add(new OperationColumn(null, column));
-                    });
-                    return;
-                }
-                if (include.contains(".")) {
-                    String[] columnInfo = include.split("[.]");
-                    RDBTableMetaData table = metaData.getDatabaseMetaData().getTableMetaData(columnInfo[0]);
-                    String tname = null;
-                    if (null == table) {
-                        Correlation correlation = metaData.getCorrelation(columnInfo[0]);
-                        if (correlation != null) {
-                            table = metaData.getDatabaseMetaData().getTableMetaData(correlation.getTargetTable());
-                            tname = correlation.getAlias();
-                        }
-                    } else {
-                        tname = table.getAlias();
-                    }
-                    if (null == table) return;
-                    if (columnInfo[1].equals("*")) {
-                        String finalName = tname;
-                        table.getColumns().forEach(column -> {
-                            if (excludes.contains(column.getFullAliasName()) || excludes.contains(column.getFullName())
-                                    || excludes.contains(finalName + "." + column.getName())
-                                    || excludes.contains(finalName + "." + column.getAlias()))
-                                return;
-                            tmp.add(new OperationColumn(finalName, column));
-                        });
+        includes.forEach(include -> {
+            if (excludes.contains(include)) return;
+            if ("*".equals(include)) {
+                metaData.getColumns().forEach(column -> {
+                    if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
                         return;
-                    } else {
-                        RDBColumnMetaData column = metaData.findColumn(include);
-                        if (null != column) {
-                            if (excludes.contains(column.getFullAliasName()) || excludes.contains(column.getFullName()))
-                                return;
-                            tmp.add(new OperationColumn(tname, column));
-                        }
+                    tmp.add(new OperationColumn(null, column));
+                });
+                return;
+            }
+            RDBColumnMetaData column = metaData.findColumn(include);
+            if (null != column) {
+                if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
+                    return;
+                tmp.add(new OperationColumn(column.getTableMetaData().getAlias(), column));
+            } else if (include.contains(".")) {
+                String[] columnInfo = include.split("[.]");
+                RDBTableMetaData table = metaData.getDatabaseMetaData().getTableMetaData(columnInfo[0]);
+                String tname = null;
+                if (null == table) {
+                    Correlation correlation = metaData.getCorrelation(columnInfo[0]);
+                    if (correlation != null) {
+                        table = metaData.getDatabaseMetaData().getTableMetaData(correlation.getTargetTable());
+                        tname = correlation.getAlias();
                     }
                 } else {
-                    RDBColumnMetaData column = metaData.findColumn(include);
-                    if (null != column) {
-                        if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
+                    tname = table.getAlias();
+                }
+                if (null == table) return;
+                if (columnInfo[1].equals("*")) {
+                    String finalName = tname;
+                    table.getColumns().forEach(nestColumn -> {
+                        if (excludes.contains(nestColumn.getFullAliasName()) || excludes.contains(nestColumn.getFullName())
+                                || excludes.contains(finalName + "." + nestColumn.getName())
+                                || excludes.contains(finalName + "." + nestColumn.getAlias()))
                             return;
-                        tmp.add(new OperationColumn(column.getTableMetaData().getAlias(), column));
+                        tmp.add(new OperationColumn(finalName, nestColumn));
+                    });
+                    return;
+                } else {
+                    column = metaData.findColumn(include);
+                    if (null != column) {
+                        if (excludes.contains(column.getFullAliasName()) || excludes.contains(column.getFullName()))
+                            return;
+                        tmp.add(new OperationColumn(tname, column));
                     }
                 }
-            });
+            }
+        });
+        if (tmp.isEmpty()) {
+            throw new UnsupportedOperationException("未找到任何查询字段!");
         }
-        if (tmp.isEmpty()) throw new UnsupportedOperationException("未找到任何查询字段!");
         return tmp;
     }
 }
