@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
+import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.core.param.Term;
 
@@ -69,8 +70,6 @@ public interface Dialect {
 
     void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
 
-    void setColumnMapper(String columnType, ColumnMapper mapper);
-
     String getQuoteStart();
 
     String getQuoteEnd();
@@ -85,6 +84,10 @@ public interface Dialect {
 
     String doPaging(String sql, int pageIndex, int pageSize);
 
+    SqlFunction getFunction(String name);
+
+    SqlFunction installFunction(String name, SqlFunction function);
+
     boolean columnToUpperCase();
 
     default String buildColumnName(String tableName, String columnName) {
@@ -97,10 +100,10 @@ public interface Dialect {
 
     TableMetaParser getDefaultParser(SqlExecutor sqlExecutor);
 
-    Dialect MYSQL  = new MysqlDialect();
-    Dialect ORACLE = new OracleDialect();
-    Dialect H2     = new H2Dialect();
-    Dialect MSSQL  = new MSSQLDialect();
-    Dialect POSTGRES  = new PGSqlDialect();
+    Dialect MYSQL    = new MysqlDialect();
+    Dialect ORACLE   = new OracleDialect();
+    Dialect H2       = new H2Dialect();
+    Dialect MSSQL    = new MSSQLDialect();
+    Dialect POSTGRES = new PGSqlDialect();
 
 }

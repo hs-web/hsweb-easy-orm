@@ -1,10 +1,12 @@
 package org.hswebframework.ezorm.core.param;
 
+import java.io.Serializable;
+
 /**
  * @author zhouhao
  * @since 1.1
  */
-public class Column {
+public class Column implements Serializable {
     private String name;
 
     private String type;

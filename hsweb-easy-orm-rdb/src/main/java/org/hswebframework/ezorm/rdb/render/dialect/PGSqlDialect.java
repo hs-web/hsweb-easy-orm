@@ -3,9 +3,13 @@ package org.hswebframework.ezorm.rdb.render.dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.parser.PGSqlTableMetaParser;
 import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
+import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
+import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * @author zhouhao
@@ -33,6 +37,15 @@ public class PGSqlDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.TINYINT, (meta) -> "smallint");
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+
+        installFunction(SqlFunction.concat, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            StringJoiner joiner = new StringJoiner("||");
+            listParam.stream()
+                    .map(String::valueOf)
+                    .forEach(joiner::add);
+            return joiner.toString();
+        });
     }
 
     @Override

@@ -71,6 +71,26 @@ public interface BoostTermTypeMapper extends Dialect.TermTypeMapper {
         return value;
     }
 
+    static List<Object> convertList(Object value) {
+        if (value == null) return new ArrayList<>();
+        if (value instanceof List) return (List) value;
+        if (value instanceof Collection) return new ArrayList<>(((Collection) value));
+        if (value instanceof String) {
+            String[] arr = ((String) value).split("[,]");
+            Object[] objArr = new Object[arr.length];
+            for (int i = 0; i < arr.length; i++) {
+                String str = arr[i];
+                Object val = str;
+                objArr[i] = val;
+            }
+            return new ArrayList<>(Arrays.asList(objArr));
+        } else if (value.getClass().isArray()) {
+            return new ArrayList<>(Arrays.asList(((Object[]) value)));
+        } else {
+            return new ArrayList<>(Collections.singletonList(value));
+        }
+    }
+
     @SuppressWarnings("unchecked")
     static List<Object> convertList(RDBColumnMetaData column, Object value) {
         if (value == null) return new ArrayList<>();

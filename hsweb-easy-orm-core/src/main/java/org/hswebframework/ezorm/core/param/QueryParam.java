@@ -114,7 +114,7 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         QueryParam sqlParam = new QueryParam();
         sqlParam.setExcludes(new LinkedHashSet<>(excludes));
         sqlParam.setIncludes(new LinkedHashSet<>(includes));
-        List<Term> terms = this.terms.stream().map(term -> term.clone()).collect(Collectors.toList());
+        List<Term> terms = this.terms.stream().map(Term::clone).collect(Collectors.toList());
         sqlParam.setTerms(terms);
         sqlParam.setPageIndex(pageIndex);
         sqlParam.setPageSize(pageSize);

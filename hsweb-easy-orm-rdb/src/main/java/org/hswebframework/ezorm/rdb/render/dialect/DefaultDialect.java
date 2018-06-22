@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.render.dialect;
 
 import org.hswebframework.ezorm.core.param.ClassFieldTerm;
+import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
@@ -20,10 +21,10 @@ import java.util.*;
 public abstract class DefaultDialect implements Dialect {
     protected Map<String, TermTypeMapper> termTypeMappers       = new HashMap<>();
     protected Map<String, DataTypeMapper> dataTypeMappers       = new HashMap<>();
+    protected Map<String, SqlFunction>    functions             = new HashMap<>();
     protected DataTypeMapper              defaultDataTypeMapper = null;
 
     static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
-
 
     public DefaultDialect() {
         //默认查询条件支持
@@ -108,6 +109,16 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
+    public SqlFunction getFunction(String name) {
+        return functions.get(name);
+    }
+
+    @Override
+    public SqlFunction installFunction(String name, SqlFunction function) {
+        return functions.put(name, function);
+    }
+
+    @Override
     public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias) {
         if (term instanceof SqlTerm) {
             SqlTerm sqlTerm = ((SqlTerm) term);
@@ -145,11 +156,6 @@ public abstract class DefaultDialect implements Dialect {
     @Override
     public void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
         dataTypeMappers.put(jdbcType.getName(), mapper);
-    }
-
-    @Override
-    public void setColumnMapper(String columnType, ColumnMapper mapper) {
-        // TODO: 16-10-28
     }
 
     @Override

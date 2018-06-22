@@ -53,7 +53,6 @@ public class SimpleTest {
         H2RDBDatabaseMetaData databaseMetaData = new H2RDBDatabaseMetaData();
         databaseMetaData.setParser(new H2TableMetaParser(sqlExecutor));
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
-
         database.createOrAlter("s_user_info")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
                 .addColumn().name("address").columnDef("varchar(32) not null comment '地址'").commit()
