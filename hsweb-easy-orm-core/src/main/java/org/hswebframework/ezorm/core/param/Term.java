@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.core.param;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,17 +31,25 @@ public class Term implements Cloneable {
     private String termType = TermType.eq;
 
     /**
+     * 自定义选项,用于在某些自定义的termType中进行自定义生产sql的规则.
+     * 可通过column进行设置如: name$like$reverse$func-concat,则column为name,termType为like,options为[reverse,func-concat]
+     *
+     * @since 3.0.1
+     */
+    private List<String> options = new ArrayList<>();
+
+    /**
      * 嵌套的条件
      */
     private List<Term> terms = new LinkedList<>();
 
 
     public Term or(String term, Object value) {
-        return or(term, TermType.eq,value);
+        return or(term, TermType.eq, value);
     }
 
     public Term and(String term, Object value) {
-        return and(term, TermType.eq,value);
+        return and(term, TermType.eq, value);
     }
 
     public Term or(String term, String termType, Object value) {
@@ -98,6 +108,9 @@ public class Term implements Cloneable {
             String tmp[] = column.split("[$]");
             setTermType(tmp[1]);
             column = tmp[0];
+            if (tmp.length > 2) {
+                options.addAll(Arrays.asList(tmp).subList(2, tmp.length));
+            }
         }
         this.column = column;
     }
@@ -139,6 +152,14 @@ public class Term implements Cloneable {
         return this;
     }
 
+    public List<String> getOptions() {
+        return options;
+    }
+
+    public void setOptions(List<String> options) {
+        this.options = options;
+    }
+
     @Override
     public Term clone() {
         Term term = new Term();
@@ -147,6 +168,7 @@ public class Term implements Cloneable {
         term.setTermType(termType);
         term.setType(type);
         terms.forEach(t -> term.addTerm(t.clone()));
+        term.setOptions(new ArrayList<>(getOptions()));
         return term;
     }
 

@@ -19,10 +19,10 @@ import java.util.*;
  *
  */
 public abstract class DefaultDialect implements Dialect {
-    protected Map<String, TermTypeMapper> termTypeMappers       = new HashMap<>();
-    protected Map<String, DataTypeMapper> dataTypeMappers       = new HashMap<>();
-    protected Map<String, SqlFunction>    functions             = new HashMap<>();
-    protected DataTypeMapper              defaultDataTypeMapper = null;
+    protected Map<String, TermTypeMapper> termTypeMappers = new HashMap<>();
+    protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
+    protected Map<String, SqlFunction> functions = new HashMap<>();
+    protected DataTypeMapper defaultDataTypeMapper = null;
 
     static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
 
@@ -37,11 +37,69 @@ public abstract class DefaultDialect implements Dialect {
         termTypeMappers.put(TermType.not, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), "!=#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
 
-        termTypeMappers.put(TermType.like, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " LIKE #{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}")));
+        termTypeMappers.put(TermType.like, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) -> {
+            SqlAppender sqlAppender = new SqlAppender();
+            boolean reverse = term.getOptions().contains("reverse");
+            boolean startWith = term.getOptions().contains("startWith");
+            boolean endWith = term.getOptions().contains("endWith");
+            Dialect dialect = column.getTableMetaData().getDatabaseMetaData().getDialect();
 
-        termTypeMappers.put(TermType.nlike, (wherePrefix, term, column, tableAlias) ->
-                new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " NOT LIKE #{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}"));
+            String columnName = buildColumnName(tableAlias, column.getName());
+
+            if (reverse) {
+                SqlFunction concat = dialect.getFunction("concat");
+                if (concat != null) {
+                    List<String> params = new ArrayList<>();
+                    if (startWith) {
+                        params.add("'%'");
+                    }
+                    params.add(columnName);
+                    if (endWith) {
+                        params.add("'%'");
+                    }
+                    columnName = startWith || endWith ? concat.apply(SqlFunction.Param.of(RenderPhase.where, params)) : columnName;
+                }
+                sqlAppender.add("#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}", " LIKE ", columnName);
+
+            } else {
+                sqlAppender.add(columnName, " LIKE #{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}");
+            }
+
+            return sqlAppender;
+
+        }));
+
+        termTypeMappers.put(TermType.nlike, BoostTermTypeMapper.notSupportArray((wherePrefix, term, column, tableAlias) -> {
+            SqlAppender sqlAppender = new SqlAppender();
+            boolean reverse = term.getOptions().contains("reverse");
+            String columnName = buildColumnName(tableAlias, column.getName());
+
+            if (reverse) {
+                boolean startWith = term.getOptions().contains("startWith");
+                boolean endWith = term.getOptions().contains("endWith");
+                Dialect dialect = column.getTableMetaData().getDatabaseMetaData().getDialect();
+
+                SqlFunction concat = dialect.getFunction("concat");
+                if (concat != null) {
+                    List<String> params = new ArrayList<>();
+                    if (endWith) {
+                        params.add("'%'");
+                    }
+                    params.add(columnName);
+                    if (startWith) {
+                        params.add("'%'");
+                    }
+                    columnName = startWith || endWith ? concat.apply(SqlFunction.Param.of(RenderPhase.where, params)) : columnName;
+                }
+                sqlAppender.add("#{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}", " NOT LIKE ", columnName);
+
+            } else {
+                sqlAppender.add(columnName, " NOT LIKE #{", wherePrefix, (term instanceof ClassFieldTerm) ? "" : ".value}");
+            }
+
+            return sqlAppender;
+
+        }));
         termTypeMappers.put(TermType.isnull, (wherePrefix, term, column, tableAlias) ->
                 new SqlAppender().add(buildColumnName(tableAlias, column.getName()), " IS NULL"));
         termTypeMappers.put(TermType.notnull, (wherePrefix, term, column, tableAlias) ->

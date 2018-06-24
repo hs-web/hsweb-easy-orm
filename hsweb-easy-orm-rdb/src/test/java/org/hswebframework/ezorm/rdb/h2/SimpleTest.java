@@ -156,6 +156,7 @@ public class SimpleTest {
                 .each(Collections.singletonMap("name", "张三"), "is", query -> query::and)
                 .nest()
                 .nest()
+                .and("name$like$reverse$endWith","1234")
                 .sql("age > 10")
                 .sql("age > #{age}", Collections.singletonMap("age", 10))
                 .sql("age > #{[0]} or age > #{[0]}", Arrays.asList(1, 2))
