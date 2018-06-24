@@ -50,11 +50,11 @@ public abstract class DefaultDialect implements Dialect {
                 SqlFunction concat = dialect.getFunction("concat");
                 if (concat != null) {
                     List<String> params = new ArrayList<>();
-                    if (startWith) {
+                    if (endWith) {
                         params.add("'%'");
                     }
                     params.add(columnName);
-                    if (endWith) {
+                    if (startWith) {
                         params.add("'%'");
                     }
                     columnName = startWith || endWith ? concat.apply(SqlFunction.Param.of(RenderPhase.where, params)) : columnName;
