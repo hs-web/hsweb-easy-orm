@@ -61,19 +61,27 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     } catch (Exception e) {
                     }
                 }
+                boolean alwaysUpdate = column.getProperty("update-always", false).isTrue();
+
                 if (value == null) {
-                    if (logger.isInfoEnabled())
-                        logger.info("跳过修改列:[{}], 属性[{}]为null!", column.getName(), column.getAlias());
-                    return;
+                    if (alwaysUpdate && column.getDefaultValue() != null) {
+                        value = column.getDefaultValue().get();
+                    }
+                    if (value == null) {
+                        if (logger.isInfoEnabled()) {
+                            logger.info("跳过修改列:[{}], 属性[{}]为null!", column.getName(), column.getAlias());
+                        }
+                        return;
+                    }
+
                 }
                 if (column.getValueConverter() != null) {
-                    Object new_value = column.getValueConverter().getData(value);
+                    Object newValue = column.getValueConverter().getData(value);
                     if (column.getOptionConverter() != null) {
-                        new_value = column.getOptionConverter().converterData(new_value);
+                        newValue = column.getOptionConverter().converterData(newValue);
                     }
-                    if (value != new_value && !value.equals(new_value)) {
-                        // propertyUtils.setProperty(param.getData(), dataProperty, new_value);
-                        value = new_value;
+                    if (value != newValue && !value.equals(newValue)) {
+                        value = newValue;
                     }
                 }
                 valueProxy.put(dataProperty, value);
