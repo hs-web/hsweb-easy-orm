@@ -73,7 +73,6 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         }
                         return;
                     }
-
                 }
                 if (column.getValueConverter() != null) {
                     Object newValue = column.getValueConverter().getData(value);

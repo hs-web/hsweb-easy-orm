@@ -68,9 +68,19 @@ public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
             }
             RDBColumnMetaData column = metaData.findColumn(include);
             if (null != column) {
-                if (excludes.contains(column.getAlias()) || excludes.contains(column.getName()))
+                if (excludes.contains(column.getAlias()) || excludes.contains(column.getName())) {
                     return;
-                tmp.add(new OperationColumn(column.getTableMetaData().getAlias(), column));
+                }
+                if (!column.getTableMetaData().getName().equals(metaData.getName())) {
+                    Correlation correlation = metaData.getCorrelation(column.getTableMetaData().getName());
+                    if (null != correlation) {
+                        tmp.add(new OperationColumn(correlation.getAlias(), column));
+                    } else {
+                        tmp.add(new OperationColumn(column.getTableMetaData().getAlias(), column));
+                    }
+                } else {
+                    tmp.add(new OperationColumn(column.getTableMetaData().getAlias(), column));
+                }
             } else if (include.contains(".")) {
                 String[] columnInfo = include.split("[.]");
                 RDBTableMetaData table = metaData.getDatabaseMetaData().getTableMetaData(columnInfo[0]);

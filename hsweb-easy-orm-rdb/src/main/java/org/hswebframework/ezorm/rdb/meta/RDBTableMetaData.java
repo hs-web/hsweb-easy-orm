@@ -24,7 +24,9 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
     }
 
     public RDBColumnMetaData findColumn(String name) {
-        if (name == null) return null;
+        if (name == null) {
+            return null;
+        }
         if (name.contains(".")) {
             String[] tmp = name.split("[.]");
             RDBTableMetaData metaData = databaseMetaData.getTableMetaData(tmp[0]);
@@ -36,12 +38,15 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
             }
             if (metaData != null) {
                 RDBColumnMetaData column = metaData.findColumn(tmp[1]);
-                if (null != column) return column;
+                if (null != column) {
+                    return column;
+                }
             }
         }
         RDBColumnMetaData metaData = columnMetaDataMap.get(name);
-        if (metaData == null)
+        if (metaData == null) {
             metaData = aliasColumnMetaDataMap.get(name);
+        }
         return metaData;
     }
 
