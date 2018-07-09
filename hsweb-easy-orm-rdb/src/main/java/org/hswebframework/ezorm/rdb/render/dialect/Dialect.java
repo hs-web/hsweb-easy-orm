@@ -91,7 +91,9 @@ public interface Dialect {
     boolean columnToUpperCase();
 
     default String buildColumnName(String tableName, String columnName) {
-        if (columnName.contains(".")) return columnName;
+        if (columnName.contains(".")){
+            return columnName;
+        }
         if (StringUtils.isNullOrEmpty(tableName)) {
             return StringUtils.concat(getQuoteStart(), columnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
         }

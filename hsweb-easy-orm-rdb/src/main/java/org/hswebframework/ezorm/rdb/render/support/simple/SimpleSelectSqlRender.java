@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Sort;
 import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
+import org.hswebframework.utils.StringUtils;
 
 import java.util.*;
 
@@ -71,7 +72,12 @@ public class SimpleSelectSqlRender extends CommonSqlRender<QueryParam> {
                 String tableName = rDBColumnMetaData.getTableMetaData().getName();
                 Correlation correlation = metaData.getCorrelation(tableName);
                 if (correlation == null) {
-                    appender.add(getDialect().buildColumnName(operationColumn.getTableName(), rDBColumnMetaData.getName())
+                    String tname = operationColumn.getTableName();
+                    if (StringUtils.isNullOrEmpty(tname)) {
+                        tname = tableName;
+                    }
+                    String column = getDialect().buildColumnName(tname, rDBColumnMetaData.getName());
+                    appender.add(column
                             , " AS "
                             , dialect.getQuoteStart()
                             , rDBColumnMetaData.getAlias()
