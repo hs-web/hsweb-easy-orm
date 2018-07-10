@@ -10,6 +10,8 @@ public interface SqlFunction {
 
     String concat = "concat";
 
+    String bitand = "bitand";
+
     String apply(Param param);
 
     class Param {

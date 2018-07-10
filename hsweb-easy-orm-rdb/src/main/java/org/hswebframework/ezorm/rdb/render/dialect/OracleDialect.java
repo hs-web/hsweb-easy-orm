@@ -40,6 +40,16 @@ public class OracleDialect extends DefaultDialect {
             return joiner.toString();
         });
 
+        installFunction(SqlFunction.bitand, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            if (listParam.size() != 2) {
+                throw new IllegalArgumentException("[BITAND]参数长度必须为2");
+            }
+            StringJoiner joiner = new StringJoiner(",", "BITAND(", ")");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
+
     }
 
     @Override
