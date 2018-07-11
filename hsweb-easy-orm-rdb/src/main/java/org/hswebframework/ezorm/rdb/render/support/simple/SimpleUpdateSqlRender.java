@@ -29,7 +29,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
         public SimpleUpdateSqlRenderProcess(RDBTableMetaData metaData, UpdateParam param) {
             this.metaData = metaData;
-            this.param = param.clone();
+            this.param = param;//.clone();
             List<Term> terms = param.getTerms();
             terms = terms.stream().filter(term -> term.getColumn() == null || !term.getColumn().contains(".")).collect(Collectors.toList());
             param.setTerms(terms);
