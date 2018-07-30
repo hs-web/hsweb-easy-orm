@@ -58,11 +58,12 @@ public abstract class AbstractTableMetaData<C extends AbstractColumnMetaData> im
         triggerBase.put(triggerName, trigger);
     }
 
-    public void on(String triggerName, Map<String, Object> context) {
+    public Object on(String triggerName, Map<String, Object> context) {
         if (triggerIsSupport(triggerName)) {
             Trigger trigger = triggerBase.get(triggerName);
-            trigger.execute(context);
+            return trigger.execute(context);
         }
+        return null;
     }
 
     @Override

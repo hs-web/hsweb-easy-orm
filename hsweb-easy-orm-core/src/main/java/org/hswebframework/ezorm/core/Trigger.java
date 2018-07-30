@@ -5,7 +5,7 @@ import java.util.Map;
 
 public interface Trigger {
 
-    void execute(Map<String, Object> context);
+    Object execute(Map<String, Object> context);
 
     String select_before       = "select.before";
     String select_wrapper_each = "select.wrapper.each";

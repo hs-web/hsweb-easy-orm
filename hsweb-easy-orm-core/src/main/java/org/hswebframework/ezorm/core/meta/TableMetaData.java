@@ -39,7 +39,7 @@ public interface TableMetaData extends Serializable {
 
     void on(String name, Trigger trigger);
 
-    void on(String name, Map<String, Object> triggerContext);
+    Object on(String name, Map<String, Object> triggerContext);
 
     boolean triggerIsSupport(String name);
 }

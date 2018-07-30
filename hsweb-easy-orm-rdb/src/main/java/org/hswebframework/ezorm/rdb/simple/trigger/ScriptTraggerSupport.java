@@ -19,25 +19,14 @@ public class ScriptTraggerSupport implements Trigger {
     }
 
     @Override
-    public void execute(Map<String, Object> context) throws TriggerException {
+    public Object execute(Map<String, Object> context) throws TriggerException {
         boolean scriptCompiled = engine.compiled(scriptId);
         if (!scriptCompiled) {
             throw new TriggerException("动态脚本 [" + scriptId + "] 未编译!");
         }
         ExecuteResult result = engine.execute(scriptId, context);
         if (result.isSuccess()) {
-            Object rsl = result.get();
-            if (rsl instanceof Boolean) {
-                if (!((Boolean) rsl)) {
-                    throw new TriggerException("脚本返回结果:false");
-                }
-            }
-            if (rsl instanceof Map) {
-                Map map = ((Map) rsl);
-                if (!StringUtils.isTrue(map.get("success"))) {
-                    throw new TriggerException(String.valueOf(map.get("message")));
-                }
-            }
+            return result.get();
         } else {
             Throwable throwable = result.getException();
             while (throwable != null && (throwable = throwable.getCause()) != null) {
