@@ -6,7 +6,7 @@
     <groupId>org.hswebframework</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.0.2-SNAPSHOT</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
@@ -114,6 +114,18 @@
                     </plugin>
                 </plugins>
             </build>
+            <distributionManagement>
+                <repository>
+                    <id>sonatype-releases</id>
+                    <name>sonatype repository</name>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+                </repository>
+                <snapshotRepository>
+                    <id>sonatype-snapshots</id>
+                    <name>Nexus Snapshot Repository</name>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
         </profile>
     </profiles>
 
@@ -290,16 +302,5 @@
         </snapshotRepository>
 
     </distributionManagement>
-    <!--<distributionManagement>-->
-        <!--<repository>-->
-            <!--<id>sonatype-releases</id>-->
-            <!--<name>sonatype repository</name>-->
-            <!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>-->
-        <!--</repository>-->
-        <!--<snapshotRepository>-->
-            <!--<id>sonatype-snapshots</id>-->
-            <!--<name>Nexus Snapshot Repository</name>-->
-            <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
-        <!--</snapshotRepository>-->
-    <!--</distributionManagement>-->
+
 </project>
