@@ -6,10 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public interface TermTypeConditionalFromBeanSupport {
+public interface TermTypeConditionalFromBeanSupport<B> {
     Logger logger = LoggerFactory.getLogger("queryForBean");
 
-    Object getBean();
+    B getBean();
+
+    default Object getValue(LambdaColumn<B> property) {
+        return property.apply(getBean());
+    }
 
     default Object getValue(String property) {
         if (getBean() == null) {

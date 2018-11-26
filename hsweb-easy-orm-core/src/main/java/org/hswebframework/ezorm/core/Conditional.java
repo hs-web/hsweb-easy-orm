@@ -65,6 +65,14 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
 
     T or(String column, String termType, Object value);
 
+    default T and(LambdaColumn<T> column, String termType, Object value) {
+        return and(column.getColumn(), termType, value);
+    }
+
+    default T or(LambdaColumn<T> column, String termType, Object value) {
+        return or(column.getColumn(), termType, value);
+    }
+
     default T where(String column, Object value) {
         return and(column, TermType.eq, value);
     }
@@ -148,12 +156,12 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
         return accept(column, TermType.nin, value);
     }
 
-    default T notIn(String column,Object... value){
-        return accept(column,TermType.nin,value);
+    default T notIn(String column, Object... value) {
+        return accept(column, TermType.nin, value);
     }
 
-    default T notIn(String column,Collection values){
-        return accept(column,TermType.nin,values);
+    default T notIn(String column, Collection values) {
+        return accept(column, TermType.nin, values);
     }
 
     default T isEmpty(String column) {
@@ -184,9 +192,123 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
         return accept(column, TermType.nbtw, Arrays.asList(between, and));
     }
 
+
+    /*---------lambda---------*/
+
+    default T and(LambdaColumn<T> column, Object value) {
+        return and(column, TermType.eq, value);
+    }
+
+    default T is(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.eq, value);
+    }
+
+    default T or(LambdaColumn<T> column, Object value) {
+        return or(column, TermType.eq, value);
+    }
+
+    default T like(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.like, value);
+    }
+
+    default T like$(LambdaColumn<T> column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat(value, "%"));
+    }
+
+    default T $like(LambdaColumn<T> column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat("%", value));
+    }
+
+    default T $like$(LambdaColumn<T> column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, StringUtils.concat("%", value, "%"));
+    }
+
+    default T notLike(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.nlike, value);
+    }
+
+    default T gt(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.gt, value);
+    }
+
+    default T lt(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.lt, value);
+    }
+
+    default T gte(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.gte, value);
+    }
+
+    default T lte(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.lte, value);
+    }
+
+    default T in(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.in, value);
+    }
+
+    default T in(LambdaColumn<T> column, Object... values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default T in(LambdaColumn<T> column, Collection values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default T notIn(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.nin, value);
+    }
+
+    default T notIn(LambdaColumn<T> column, Object... value) {
+        return accept(column, TermType.nin, value);
+    }
+
+    default T notIn(LambdaColumn<T> column, Collection values) {
+        return accept(column, TermType.nin, values);
+    }
+
+    default T isEmpty(LambdaColumn<T> column) {
+        return accept(column, TermType.empty, 1);
+    }
+
+    default T notEmpty(LambdaColumn<T> column) {
+        return accept(column, TermType.nempty, 1);
+    }
+
+    default T isNull(LambdaColumn<T> column) {
+        return accept(column, TermType.isnull, 1);
+    }
+
+    default T notNull(LambdaColumn<T> column) {
+        return accept(column, TermType.notnull, 1);
+    }
+
+    default T not(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.not, value);
+    }
+
+    default T between(LambdaColumn<T> column, Object between, Object and) {
+        return accept(column, TermType.btw, Arrays.asList(between, and));
+    }
+
+    default T notBetween(LambdaColumn<T> column, Object between, Object and) {
+        return accept(column, TermType.nbtw, Arrays.asList(between, and));
+    }
+
     default T accept(String column, String termType, Object value) {
         return getAccepter().accept(column, termType, value);
     }
+
+    default T accept(LambdaColumn<T> column, String termType, Object value) {
+        return getAccepter().accept(column.getColumn(), termType, value);
+    }
+
 
     /**
      * 直接拼接sql,参数支持预编译

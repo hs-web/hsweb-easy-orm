@@ -47,7 +47,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return bean;
     }
 
-    public QueryFromBean<T, Q> fromBean(Object bean) {
+    public <B> QueryFromBean<T, Q,B> fromBean(B bean) {
         this.bean = bean;
         return new QueryFromBean<>(this);
     }

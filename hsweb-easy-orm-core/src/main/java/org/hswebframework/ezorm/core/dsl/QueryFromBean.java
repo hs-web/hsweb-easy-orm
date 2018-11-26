@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * @author zhouhao
  */
-public final class QueryFromBean<T, Q extends QueryParam>
-        implements ConditionalFromBean<QueryFromBean<T, Q>> {
+public final class QueryFromBean<T, Q extends QueryParam, B>
+        implements ConditionalFromBean<QueryFromBean<T, Q, B>, B> {
     private Query<T, Q> proxy = null;
 
     public QueryFromBean(Query<T, Q> proxy) {
@@ -23,99 +23,99 @@ public final class QueryFromBean<T, Q extends QueryParam>
     }
 
     @Override
-    public Object getBean() {
-        return proxy.getBean();
+    public B getBean() {
+        return (B) proxy.getBean();
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q>> nest() {
+    public NestConditionalFromBean<QueryFromBean<T, Q, B>> nest() {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().nest());
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q>> nest(String column) {
+    public NestConditionalFromBean<QueryFromBean<T, Q, B>> nest(String column) {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().nest(column, getValue(column)));
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q>> orNest() {
+    public NestConditionalFromBean<QueryFromBean<T, Q, B>> orNest() {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest());
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q>> orNest(String column) {
+    public NestConditionalFromBean<QueryFromBean<T, Q, B>> orNest(String column) {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest(column, getValue(column)));
     }
 
-    public QueryFromBean<T, Q> forUpdate() {
+    public QueryFromBean<T, Q, B> forUpdate() {
         this.proxy.forUpdate();
         return this;
     }
 
     @Override
-    public QueryFromBean<T, Q> sql(String sql, Object... params) {
+    public QueryFromBean<T, Q, B> sql(String sql, Object... params) {
         proxy.sql(sql, params);
         return this;
     }
 
     @Override
-    public QueryFromBean<T, Q> and() {
+    public QueryFromBean<T, Q, B> and() {
         proxy.and();
         return this;
     }
 
     @Override
-    public QueryFromBean<T, Q> or() {
+    public QueryFromBean<T, Q, B> or() {
         proxy.or();
         return this;
     }
 
-    public QueryFromBean<T, Q> and(String column, String termType, Object value) {
+    public QueryFromBean<T, Q, B> and(String column, String termType, Object value) {
         proxy.and(column, termType, value);
         return this;
     }
 
-    public QueryFromBean<T, Q> or(String column, String termType, Object value) {
+    public QueryFromBean<T, Q, B> or(String column, String termType, Object value) {
         proxy.or(column, termType, value);
         return this;
     }
 
     @Override
-    public QueryFromBean<T, Q> and(String column, String termType) {
+    public QueryFromBean<T, Q, B> and(String column, String termType) {
         and(column, termType, getValue(column));
         return this;
     }
 
     @Override
-    public QueryFromBean<T, Q> or(String column, String termType) {
+    public QueryFromBean<T, Q, B> or(String column, String termType) {
         or(column, termType, getValue(column));
         return this;
     }
 
     @Override
-    public TermTypeConditionalSupport.Accepter<QueryFromBean<T, Q>, Object> getAccepter() {
+    public TermTypeConditionalSupport.Accepter<QueryFromBean<T, Q, B>, Object> getAccepter() {
         return (c, t, v) -> {
             proxy.getAccepter().accept(c, t, v);
             return this;
         };
     }
 
-    public QueryFromBean<T, Q> selectExcludes(String... columns) {
+    public QueryFromBean<T, Q, B> selectExcludes(String... columns) {
         proxy.selectExcludes(columns);
         return this;
     }
 
-    public QueryFromBean<T, Q> select(String... columns) {
+    public QueryFromBean<T, Q, B> select(String... columns) {
         proxy.select(columns);
         return this;
     }
 
-    public QueryFromBean<T, Q> doPaging(int pageIndex, int pageSize) {
+    public QueryFromBean<T, Q, B> doPaging(int pageIndex, int pageSize) {
         proxy.doPaging(pageIndex, pageSize);
         return this;
     }
 
-    public QueryFromBean<T, Q> noPaging() {
+    public QueryFromBean<T, Q, B> noPaging() {
         proxy.noPaging();
         return this;
     }

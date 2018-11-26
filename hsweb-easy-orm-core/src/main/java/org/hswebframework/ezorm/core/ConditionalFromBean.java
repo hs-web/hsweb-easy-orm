@@ -21,7 +21,7 @@ import org.hswebframework.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 
-public interface ConditionalFromBean<T extends ConditionalFromBean> extends LogicalOperation<T>, TermTypeConditionalFromBeanSupport {
+public interface ConditionalFromBean<T extends ConditionalFromBean, B> extends LogicalOperation<T>, TermTypeConditionalFromBeanSupport<B> {
 
     NestConditionalFromBean<T> nest();
 
@@ -38,6 +38,14 @@ public interface ConditionalFromBean<T extends ConditionalFromBean> extends Logi
     T and(String column, String termType);
 
     T or(String column, String termType);
+
+    default T and(LambdaColumn<B> column, String termType) {
+        return and(column.getColumn(), termType);
+    }
+
+    default T or(LambdaColumn<B> column, String termType) {
+        return or(column.getColumn(), termType);
+    }
 
     TermTypeConditionalSupport.Accepter<T, Object> getAccepter();
 
@@ -122,7 +130,6 @@ public interface ConditionalFromBean<T extends ConditionalFromBean> extends Logi
         return accept(column, TermType.nin, values);
     }
 
-    T sql(String sql, Object... params);
 
     default T notIn(String column) {
         return accept(column, TermType.nin);
@@ -156,12 +163,97 @@ public interface ConditionalFromBean<T extends ConditionalFromBean> extends Logi
         return accept(column, TermType.nbtw, Arrays.asList(between, and));
     }
 
+
+    /*lambda*/
+
+    default T notLike(LambdaColumn<B> column) {
+        return accept(column, TermType.nlike);
+    }
+
+    default T gt(LambdaColumn<B> column) {
+        return accept(column, TermType.gt);
+    }
+
+    default T lt(LambdaColumn<B> column) {
+        return accept(column, TermType.lt);
+    }
+
+    default T gte(LambdaColumn<B> column) {
+        return accept(column, TermType.gte);
+    }
+
+    default T lte(LambdaColumn<B> column) {
+        return accept(column, TermType.lte);
+    }
+
+    default T in(LambdaColumn<B> column) {
+        return accept(column, TermType.in);
+    }
+
+    default T in(LambdaColumn<B> column, Object... values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default T in(LambdaColumn<B> column, Collection values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default T notIn(LambdaColumn<B> column, Object... values) {
+        return accept(column, TermType.nin, values);
+    }
+
+    default T notIn(LambdaColumn<B> column, Collection values) {
+        return accept(column, TermType.nin, values);
+    }
+
+    default T notIn(LambdaColumn<B> column) {
+        return accept(column, TermType.nin);
+    }
+
+    default T isEmpty(LambdaColumn<B> column) {
+        return accept(column, TermType.empty, 1);
+    }
+
+    default T notEmpty(LambdaColumn<B> column) {
+        return accept(column, TermType.nempty, 1);
+    }
+
+    default T isNull(LambdaColumn<B> column) {
+        return accept(column, TermType.isnull, 1);
+    }
+
+    default T notNull(LambdaColumn<B> column) {
+        return accept(column, TermType.notnull, 1);
+    }
+
+    default T not(LambdaColumn<B> column) {
+        return accept(column, TermType.not);
+    }
+
+    default T between(LambdaColumn<B> column, Object between, Object and) {
+        return accept(column, TermType.btw, Arrays.asList(between, and));
+    }
+
+    default T notBetween(LambdaColumn<B> column, Object between, Object and) {
+        return accept(column, TermType.nbtw, Arrays.asList(between, and));
+    }
+
     default T accept(String column, String termType) {
+        return accept(column, termType, getValue(column));
+    }
+
+    default T accept(LambdaColumn<B> column, String termType) {
         return accept(column, termType, getValue(column));
     }
 
     default T accept(String column, String termType, Object value) {
         return getAccepter().accept(column, termType, value);
     }
+
+    default T accept(LambdaColumn<B> column, String termType, Object value) {
+        return getAccepter().accept(column.getColumn(), termType, value);
+    }
+
+    T sql(String sql, Object... params);
 
 }

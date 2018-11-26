@@ -76,6 +76,8 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
      */
     NestConditional<T> sql(String sql, Object... params);
 
+
+
     default NestConditional<T> notLike(String column, Object value) {
         return accept(column, TermType.nlike, value);
     }
@@ -140,6 +142,73 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
         return accept(column, TermType.nbtw, Arrays.asList(between, and));
     }
 
+    /*------lambda-------*/
+    default NestConditional<T> notLike(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.nlike, value);
+    }
+
+    default NestConditional<T> gt(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.gt, value);
+    }
+
+    default NestConditional<T> lt(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.lt, value);
+    }
+
+    default NestConditional<T> gte(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.gte, value);
+    }
+
+    default NestConditional<T> lte(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.lte, value);
+    }
+
+    default NestConditional<T> in(LambdaColumn<T> column, Object... values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default NestConditional<T> in(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.in, value);
+    }
+
+    default NestConditional<T> in(LambdaColumn<T> column, Collection values) {
+        return accept(column, TermType.in, values);
+    }
+
+    default NestConditional<T> notIn(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.nin, value);
+    }
+
+    default NestConditional<T> isEmpty(LambdaColumn<T> column) {
+        return accept(column, TermType.empty, 1);
+    }
+
+    default NestConditional<T> notEmpty(LambdaColumn<T> column) {
+        return accept(column, TermType.nempty, 1);
+    }
+
+    default NestConditional<T> isNull(LambdaColumn<T> column) {
+        return accept(column, TermType.isnull, 1);
+    }
+
+    default NestConditional<T> notNull(LambdaColumn<T> column) {
+        return accept(column, TermType.notnull, 1);
+    }
+
+    default NestConditional<T> not(LambdaColumn<T> column, Object value) {
+        return accept(column, TermType.not, value);
+    }
+
+    default NestConditional<T> between(LambdaColumn<T> column, Object between, Object and) {
+        return accept(column, TermType.btw, Arrays.asList(between, and));
+    }
+
+    default NestConditional<T> notBetween(LambdaColumn<T> column, Object between, Object and) {
+        return accept(column, TermType.nbtw, Arrays.asList(between, and));
+    }
+    default NestConditional<T> accept(LambdaColumn<T> column, String termType, Object value) {
+        return getAccepter().accept(column.getColumn(), termType, value);
+    }
     default NestConditional<T> accept(String column, String termType, Object value) {
         return getAccepter().accept(column, termType, value);
     }

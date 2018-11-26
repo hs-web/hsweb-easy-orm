@@ -1,0 +1,43 @@
+package org.hswebframework.ezorm.core;
+
+import lombok.SneakyThrows;
+
+import java.io.*;
+
+public class SerializedLambda implements Serializable {
+    private static final long serialVersionUID = 8025925345765570181L;
+    private Class<?> capturingClass;
+    private String functionalInterfaceClass;
+    private String functionalInterfaceMethodName;
+    private String functionalInterfaceMethodSignature;
+    private String implClass;
+    private String implMethodName;
+    private String implMethodSignature;
+    private int implMethodKind;
+    private String instantiatedMethodType;
+    private Object[] capturedArgs;
+
+    public String getMethodName() {
+        return implMethodName;
+    }
+
+    @SneakyThrows
+    public static SerializedLambda of(LambdaColumn lambdaColumn)  {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(lambdaColumn);
+        oos.flush();
+        byte[] data = baos.toByteArray();
+
+        try (ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(data)) {
+            @Override
+            protected Class<?> resolveClass(ObjectStreamClass objectStreamClass) throws IOException, ClassNotFoundException {
+                Class<?> clazz = super.resolveClass(objectStreamClass);
+                return clazz == java.lang.invoke.SerializedLambda.class ? SerializedLambda.class : clazz;
+            }
+        }) {
+            SerializedLambda lambda = (SerializedLambda) objIn.readObject();
+            return lambda;
+        }
+    }
+}
