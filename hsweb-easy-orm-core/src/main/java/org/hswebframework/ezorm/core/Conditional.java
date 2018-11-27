@@ -78,6 +78,14 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
         return and(column, TermType.eq, value);
     }
 
+    default <B> T where(StaticMethodReferenceColumn<B> column, Object value) {
+        return and(column, TermType.eq, value);
+    }
+
+    default <B> T where(MethodReferenceColumn<B> column) {
+        return and(column.getColumn(), TermType.eq, column.get());
+    }
+
     default T where() {
         return (T) this;
     }

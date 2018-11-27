@@ -48,6 +48,14 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
         return null;
     }
 
+    public <V> Update<T, Q> set(MethodReferenceColumn<V> column) {
+        return set(column.getColumn(), column.get());
+    }
+
+    public <V> Update<T, Q> set(StaticMethodReferenceColumn<V> column, Object value) {
+        return set(column.getColumn(), value);
+    }
+
     public Update<T, Q> set(String property, Object value) {
         if (param.getData() == null) {
             ((UpdateParam) param).setData(new HashMap<>());
