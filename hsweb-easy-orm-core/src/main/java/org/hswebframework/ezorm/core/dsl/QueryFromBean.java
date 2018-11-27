@@ -11,7 +11,7 @@ import java.util.List;
  * @author zhouhao
  */
 public final class QueryFromBean<T, Q extends QueryParam, B>
-        implements ConditionalFromBean<QueryFromBean<T, Q, B>, B> {
+        implements ConditionalFromBean<B, QueryFromBean<T, Q, B>> {
     private Query<T, Q> proxy = null;
 
     public QueryFromBean(Query<T, Q> proxy) {
@@ -28,22 +28,22 @@ public final class QueryFromBean<T, Q extends QueryParam, B>
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q, B>> nest() {
+    public NestConditionalFromBean<B, QueryFromBean<T, Q, B>> nest() {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().nest());
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q, B>> nest(String column) {
+    public NestConditionalFromBean<B, QueryFromBean<T, Q, B>> nest(String column) {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().nest(column, getValue(column)));
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q, B>> orNest() {
+    public NestConditionalFromBean<B, QueryFromBean<T, Q, B>> orNest() {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest());
     }
 
     @Override
-    public NestConditionalFromBean<QueryFromBean<T, Q, B>> orNest(String column) {
+    public NestConditionalFromBean<B, QueryFromBean<T, Q, B>> orNest(String column) {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest(column, getValue(column)));
     }
 
@@ -136,7 +136,7 @@ public final class QueryFromBean<T, Q extends QueryParam, B>
         return proxy.noPaging().list();
     }
 
-    public <Q> List<Q> list(Query.ListExecutor<Q, QueryParam> executor) {
+    public <R> List<R> list(Query.ListExecutor<R, Q> executor) {
         return proxy.noPaging().list(executor);
     }
 
@@ -148,11 +148,11 @@ public final class QueryFromBean<T, Q extends QueryParam, B>
         return proxy.total();
     }
 
-    public <Q> Q single(Query.SingleExecutor<Q, QueryParam> executor) {
+    public <R> R single(Query.SingleExecutor<R, Q> executor) {
         return proxy.single(executor);
     }
 
-    public int total(Query.TotalExecutor<QueryParam> executor) {
+    public int total(Query.TotalExecutor<Q> executor) {
         return proxy.total(executor);
     }
 

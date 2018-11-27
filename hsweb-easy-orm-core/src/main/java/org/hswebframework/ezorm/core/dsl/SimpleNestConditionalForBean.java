@@ -6,13 +6,13 @@ import org.hswebframework.ezorm.core.TermTypeConditionalFromBeanSupport;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
 
-public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanSupport>
-        extends SqlConditionSupport<SimpleNestConditionalForBean<T>>
-        implements NestConditionalFromBean<T> {
+public class SimpleNestConditionalForBean<B, T extends TermTypeConditionalFromBeanSupport<B>>
+        extends SqlConditionSupport<SimpleNestConditionalForBean<B, T>>
+        implements NestConditionalFromBean<B, T> {
 
-    protected T proxy;
-    protected Accepter<NestConditionalFromBean<T>, Object> accepter = this::and;
-    protected Term term;
+    protected T                                               proxy;
+    protected Accepter<NestConditionalFromBean<B, T>, Object> accepter = this::and;
+    protected Term                                            term;
 
     public SimpleNestConditionalForBean(T proxy, Term term) {
         this.proxy = proxy;
@@ -20,7 +20,7 @@ public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanS
     }
 
     @Override
-    protected SimpleNestConditionalForBean<T> addSqlTerm(SqlTerm term) {
+    protected SimpleNestConditionalForBean<B, T> addSqlTerm(SqlTerm term) {
         this.term.addTerm(term);
         return this;
     }
@@ -31,68 +31,68 @@ public class SimpleNestConditionalForBean<T extends TermTypeConditionalFromBeanS
     }
 
     @Override
-    public NestConditionalFromBean<NestConditionalFromBean<T>> nest() {
+    public NestConditionalFromBean<B, NestConditionalFromBean<B, T>> nest() {
         return new SimpleNestConditionalForBean<>(this, term.nest());
     }
 
     @Override
-    public NestConditionalFromBean<NestConditionalFromBean<T>> nest(String column) {
+    public NestConditionalFromBean<B, NestConditionalFromBean<B, T>> nest(String column) {
         return new SimpleNestConditionalForBean<>(this, term.nest(column, getValue(column)));
     }
 
     @Override
-    public NestConditionalFromBean<NestConditionalFromBean<T>> orNest() {
+    public NestConditionalFromBean<B, NestConditionalFromBean<B, T>> orNest() {
         return new SimpleNestConditionalForBean<>(this, term.orNest());
     }
 
     @Override
-    public NestConditionalFromBean<NestConditionalFromBean<T>> orNest(String column) {
+    public NestConditionalFromBean<B, NestConditionalFromBean<B, T>> orNest(String column) {
         return new SimpleNestConditionalForBean<>(this, term.orNest(column, getValue(column)));
     }
 
     @Override
-    public NestConditionalFromBean<T> and() {
+    public NestConditionalFromBean<B, T> and() {
         setAnd();
         accepter = this::and;
         return this;
     }
 
     @Override
-    public NestConditionalFromBean<T> or() {
+    public NestConditionalFromBean<B, T> or() {
         setOr();
         accepter = this::or;
         return this;
     }
 
     @Override
-    public NestConditionalFromBean<T> and(String column, String termType) {
+    public NestConditionalFromBean<B, T> and(String column, String termType) {
         term.and(column, termType, getValue(column));
         return this;
     }
 
     @Override
-    public NestConditionalFromBean<T> or(String column, String termType) {
+    public NestConditionalFromBean<B, T> or(String column, String termType) {
         term.or(column, termType, getValue(column));
         return this;
     }
 
-    public NestConditionalFromBean<T> and(String column, String termType, Object value) {
+    public NestConditionalFromBean<B, T> and(String column, String termType, Object value) {
         term.and(column, termType, value);
         return this;
     }
 
-    public NestConditionalFromBean<T> or(String column, String termType, Object value) {
+    public NestConditionalFromBean<B, T> or(String column, String termType, Object value) {
         term.or(column, termType, value);
         return this;
     }
 
     @Override
-    public Accepter<NestConditionalFromBean<T>, Object> getAccepter() {
+    public Accepter<NestConditionalFromBean<B, T>, Object> getAccepter() {
         return accepter;
     }
 
     @Override
-    public Object getBean() {
+    public B getBean() {
         return proxy.getBean();
     }
 }

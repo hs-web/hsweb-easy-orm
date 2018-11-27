@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -47,7 +48,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return bean;
     }
 
-    public <B> QueryFromBean<T, Q,B> fromBean(B bean) {
+    public <B> QueryFromBean<T, Q, B> fromBean(B bean) {
         this.bean = bean;
         return new QueryFromBean<>(this);
     }
@@ -102,13 +103,8 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return listExecutor.doExecute(param);
     }
 
-
     public List<T> listNoPaging() {
         return noPaging().list();
-    }
-
-    public <Q> List<Q> list(ListExecutor<Q, QueryParam> executor) {
-        return executor.doExecute(param);
     }
 
     public T single() {
@@ -124,11 +120,19 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return this;
     }
 
-    public <Q> Q single(SingleExecutor<Q, QueryParam> executor) {
+    public <R> R execute(Function<Q, R> function) {
+        return function.apply(param);
+    }
+
+    public <R> List<R> list(ListExecutor<R, Q> executor) {
         return executor.doExecute(param);
     }
 
-    public int total(TotalExecutor<QueryParam> executor) {
+    public <R> R single(SingleExecutor<R, Q> executor) {
+        return executor.doExecute(param);
+    }
+
+    public int total(TotalExecutor<Q> executor) {
         return executor.doExecute(param);
     }
 

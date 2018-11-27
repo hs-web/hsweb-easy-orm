@@ -16,13 +16,6 @@ import java.util.stream.Stream;
 
 public abstract class SimpleWhereSqlBuilder {
 
-    private Set<String> doNotTransformationValueTermType = Stream.of(
-            TermType.isnull,
-            TermType.notnull,
-            TermType.empty,
-            TermType.nempty
-    ).collect(Collectors.toSet());
-
     protected String getTableAlias(RDBTableMetaData metaData, String field) {
         if (field.contains("."))
             field = field.split("[.]")[0];
@@ -56,10 +49,6 @@ public abstract class SimpleWhereSqlBuilder {
             if (column != null) {
                 tableAlias = getTableAlias(metaData, term.getColumn());
                 needSelectTable.add(tableAlias);
-//                //部分termType不需要转换
-//                if (!doNotTransformationValueTermType.contains(term.getTermType()))
-//                    //转换参数的值
-//                    term.setValue(transformationValue(column, term));
             }
             //用于sql预编译的参数名
             prefix = StringUtils.concat(prefixTmp, "terms[", index, "]");
@@ -88,19 +77,6 @@ public abstract class SimpleWhereSqlBuilder {
                     appender.add(getDialect().buildCondition(prefix, term, column, tableAlias));
             }
         }
-    }
-
-    protected Object transformationValue(RDBColumnMetaData column, Term term) {
-        Object value = term.getValue();
-
-        if (value != null && column.getValueConverter() != null) {
-            value = column.getValueConverter().getData(value);
-        }
-        if (value != null && column.getOptionConverter() != null) {
-            Object tmp = column.getOptionConverter().converterData(value);
-            if (null != tmp) value = tmp;
-        }
-        return value;
     }
 
     public abstract Dialect getDialect();

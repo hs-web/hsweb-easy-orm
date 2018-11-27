@@ -14,7 +14,7 @@ public class LambdaColumnConvertTest {
     public void testConvertLambdaColumn(){
         Assert.assertEquals(LambdaColumnConvert.convertToColumn(TestClass::getName),"name");
 
-        Assert.assertEquals(LambdaColumnConvert.convertToColumn(TestClass::isEnabled),"enabled");
+        Assert.assertEquals(LambdaColumnConvert.convertToColumn((LambdaColumn<Object>) o -> null),"enabled");
 
     }
 

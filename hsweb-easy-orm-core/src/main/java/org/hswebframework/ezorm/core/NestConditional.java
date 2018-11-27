@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.core;
 
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 
 import java.util.Arrays;
@@ -28,6 +29,14 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
     NestConditional<T> and(String column, String termType, Object value);
 
     NestConditional<T> or(String column, String termType, Object value);
+
+    default <B> NestConditional<T> and(LambdaColumn<B> column, String termType, Object value) {
+        return and(column.getColumn(), termType, value);
+    }
+
+    default <B> NestConditional<T> or(LambdaColumn<B> column, String termType, Object value) {
+        return or(column.getColumn(), termType, value);
+    }
 
     default NestConditional<T> and(String column, Object value) {
         and();
@@ -75,8 +84,6 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
      * @return {@link T}
      */
     NestConditional<T> sql(String sql, Object... params);
-
-
 
     default NestConditional<T> notLike(String column, Object value) {
         return accept(column, TermType.nlike, value);
@@ -143,72 +150,97 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
     }
 
     /*------lambda-------*/
-    default NestConditional<T> notLike(LambdaColumn<T> column, Object value) {
+
+    default <B> NestConditional<T> like(LambdaColumn<B> column, Object value) {
+        return accept(column, TermType.like, value);
+    }
+
+    default <B> NestConditional<T> like$(LambdaColumn<B> column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, String.valueOf(value).concat("%"));
+    }
+
+    default <B> NestConditional<T> $like(LambdaColumn<B> column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, "%".concat(String.valueOf(value)));
+    }
+
+    default <B> NestConditional<T> $like$(LambdaColumn<B> column, Object value) {
+        if (value == null)
+            return like(column, null);
+        return accept(column, TermType.like, "%".concat(String.valueOf(value)).concat("%"));
+    }
+
+    default <B> NestConditional<T> notLike(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.nlike, value);
     }
 
-    default NestConditional<T> gt(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> gt(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.gt, value);
     }
 
-    default NestConditional<T> lt(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> lt(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.lt, value);
     }
 
-    default NestConditional<T> gte(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> gte(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.gte, value);
     }
 
-    default NestConditional<T> lte(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> lte(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.lte, value);
     }
 
-    default NestConditional<T> in(LambdaColumn<T> column, Object... values) {
+    default <B> NestConditional<T> in(LambdaColumn<B> column, Object... values) {
         return accept(column, TermType.in, values);
     }
 
-    default NestConditional<T> in(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> in(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.in, value);
     }
 
-    default NestConditional<T> in(LambdaColumn<T> column, Collection values) {
+    default <B> NestConditional<T> in(LambdaColumn<B> column, Collection values) {
         return accept(column, TermType.in, values);
     }
 
-    default NestConditional<T> notIn(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> notIn(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.nin, value);
     }
 
-    default NestConditional<T> isEmpty(LambdaColumn<T> column) {
+    default <B> NestConditional<T> isEmpty(LambdaColumn<B> column) {
         return accept(column, TermType.empty, 1);
     }
 
-    default NestConditional<T> notEmpty(LambdaColumn<T> column) {
+    default <B> NestConditional<T> notEmpty(LambdaColumn<B> column) {
         return accept(column, TermType.nempty, 1);
     }
 
-    default NestConditional<T> isNull(LambdaColumn<T> column) {
+    default <B> NestConditional<T> isNull(LambdaColumn<B> column) {
         return accept(column, TermType.isnull, 1);
     }
 
-    default NestConditional<T> notNull(LambdaColumn<T> column) {
+    default <B> NestConditional<T> notNull(LambdaColumn<B> column) {
         return accept(column, TermType.notnull, 1);
     }
 
-    default NestConditional<T> not(LambdaColumn<T> column, Object value) {
+    default <B> NestConditional<T> not(LambdaColumn<B> column, Object value) {
         return accept(column, TermType.not, value);
     }
 
-    default NestConditional<T> between(LambdaColumn<T> column, Object between, Object and) {
+    default <B> NestConditional<T> between(LambdaColumn<B> column, Object between, Object and) {
         return accept(column, TermType.btw, Arrays.asList(between, and));
     }
 
-    default NestConditional<T> notBetween(LambdaColumn<T> column, Object between, Object and) {
+    default <B> NestConditional<T> notBetween(LambdaColumn<B> column, Object between, Object and) {
         return accept(column, TermType.nbtw, Arrays.asList(between, and));
     }
-    default NestConditional<T> accept(LambdaColumn<T> column, String termType, Object value) {
+
+    default <B> NestConditional<T> accept(LambdaColumn<B> column, String termType, Object value) {
         return getAccepter().accept(column.getColumn(), termType, value);
     }
+
     default NestConditional<T> accept(String column, String termType, Object value) {
         return getAccepter().accept(column, termType, value);
     }

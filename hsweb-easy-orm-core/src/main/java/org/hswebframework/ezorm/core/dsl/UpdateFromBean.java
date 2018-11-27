@@ -8,18 +8,18 @@ import org.hswebframework.ezorm.core.param.UpdateParam;
 /**
  * @author zhouhao
  */
-public final class UpdateFromBean<T, Q extends UpdateParam<T>>
-        implements ConditionalFromBean<UpdateFromBean<T, Q>> {
-    private TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q>, Object> accepter = this::and;
-    private Update<T, Q>                                                      proxy    = null;
+public final class UpdateFromBean<T, Q extends UpdateParam<T>, B>
+        implements ConditionalFromBean<B, UpdateFromBean<T, Q, B>> {
+    private TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q, B>, Object> accepter = this::and;
+    private Update<T, Q>                                                         proxy    = null;
 
     public UpdateFromBean(Update<T, Q> proxy) {
         this.proxy = proxy;
     }
 
     @Override
-    public Object getBean() {
-        return proxy.getBean();
+    public B getBean() {
+        return (B) proxy.getBean();
     }
 
     public Update<T, Q> fromCustom() {
@@ -27,76 +27,76 @@ public final class UpdateFromBean<T, Q extends UpdateParam<T>>
     }
 
     @Override
-    public UpdateFromBean<T, Q> sql(String sql, Object... params) {
+    public UpdateFromBean<T, Q, B> sql(String sql, Object... params) {
         proxy.sql(sql, params);
         return this;
     }
 
     @Override
-    public NestConditionalFromBean<UpdateFromBean<T, Q>> nest() {
+    public NestConditionalFromBean<B, UpdateFromBean<T, Q, B>> nest() {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().nest());
     }
 
     @Override
-    public NestConditionalFromBean<UpdateFromBean<T, Q>> nest(String column) {
+    public NestConditionalFromBean<B, UpdateFromBean<T, Q, B>> nest(String column) {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().nest(column, getValue(column)));
     }
 
     @Override
-    public NestConditionalFromBean<UpdateFromBean<T, Q>> orNest() {
+    public NestConditionalFromBean<B, UpdateFromBean<T, Q, B>> orNest() {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest());
     }
 
     @Override
-    public NestConditionalFromBean<UpdateFromBean<T, Q>> orNest(String column) {
+    public NestConditionalFromBean<B, UpdateFromBean<T, Q, B>> orNest(String column) {
         return new SimpleNestConditionalForBean<>(this, proxy.getParam().orNest(column, getValue(column)));
     }
 
     @Override
-    public UpdateFromBean<T, Q> and() {
+    public UpdateFromBean<T, Q, B> and() {
         proxy.and();
         return this;
     }
 
     @Override
-    public UpdateFromBean<T, Q> or() {
+    public UpdateFromBean<T, Q, B> or() {
         proxy.or();
         return this;
     }
 
-    public UpdateFromBean<T, Q> and(String column, String termType, Object value) {
+    public UpdateFromBean<T, Q, B> and(String column, String termType, Object value) {
         proxy.and(column, termType, value);
         return this;
     }
 
-    public UpdateFromBean<T, Q> or(String column, String termType, Object value) {
+    public UpdateFromBean<T, Q, B> or(String column, String termType, Object value) {
         proxy.or(column, termType, value);
         return this;
     }
 
     @Override
-    public UpdateFromBean<T, Q> and(String column, String termType) {
+    public UpdateFromBean<T, Q, B> and(String column, String termType) {
         and(column, termType, getValue(column));
         return this;
     }
 
     @Override
-    public UpdateFromBean<T, Q> or(String column, String termType) {
+    public UpdateFromBean<T, Q, B> or(String column, String termType) {
         or(column, termType, getValue(column));
         return this;
     }
 
     @Override
-    public TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q>, Object> getAccepter() {
+    public TermTypeConditionalSupport.Accepter<UpdateFromBean<T, Q, B>, Object> getAccepter() {
         return accepter;
     }
 
-    public UpdateFromBean<T, Q> excludes(String... columns) {
+    public UpdateFromBean<T, Q, B> excludes(String... columns) {
         proxy.excludes(columns);
         return this;
     }
 
-    public UpdateFromBean<T, Q> includes(String... columns) {
+    public UpdateFromBean<T, Q, B> includes(String... columns) {
         proxy.includes(columns);
         return this;
     }

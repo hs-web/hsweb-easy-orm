@@ -21,15 +21,16 @@ import org.hswebframework.ezorm.core.param.TermType;
 import java.util.Arrays;
 import java.util.Collection;
 
-public interface ConditionalFromBean<T extends ConditionalFromBean, B> extends LogicalOperation<T>, TermTypeConditionalFromBeanSupport<B> {
+public interface ConditionalFromBean<B, T extends ConditionalFromBean<B, T>> extends LogicalOperation<T>,
+        TermTypeConditionalFromBeanSupport<B> {
 
-    NestConditionalFromBean<T> nest();
+    NestConditionalFromBean<B, T> nest();
 
-    NestConditionalFromBean<T> nest(String column);
+    NestConditionalFromBean<B, T> nest(String column);
 
-    NestConditionalFromBean<T> orNest();
+    NestConditionalFromBean<B, T> orNest();
 
-    NestConditionalFromBean<T> orNest(String column);
+    NestConditionalFromBean<B, T> orNest(String column);
 
     T and();
 
@@ -165,6 +166,30 @@ public interface ConditionalFromBean<T extends ConditionalFromBean, B> extends L
 
 
     /*lambda*/
+    default T like(LambdaColumn<B> column) {
+        return accept(column, TermType.like);
+    }
+
+    default T like$(LambdaColumn<B> column) {
+        Object value = getValue(column);
+        if (value == null)
+            return like(column);
+        return accept(column, TermType.like, String.valueOf(value).concat("%"));
+    }
+
+    default T $like(LambdaColumn<B> column) {
+        Object value = getValue(column);
+        if (value == null)
+            return like(column);
+        return accept(column, TermType.like, "%".concat(String.valueOf(value)));
+    }
+
+    default T $like$(LambdaColumn<B> column) {
+        Object value = getValue(column);
+        if (value == null)
+            return like(column);
+        return accept(column, TermType.like, "%".concat(String.valueOf(value)).concat("%"));
+    }
 
     default T notLike(LambdaColumn<B> column) {
         return accept(column, TermType.nlike);

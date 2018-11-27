@@ -16,12 +16,12 @@ import java.util.function.Supplier;
  * @author zhouhao
  */
 public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSupport<Update<T, Q>> implements Conditional<Update<T, Q>>, TermTypeConditionalFromBeanSupport {
-    private Q        param    = null;
-    private Accepter<Update<T, Q>,Object> accepter = this::and;
-    private Executor<Q> executor;
-    private static final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-    private static final Logger            logger            = LoggerFactory.getLogger(Update.class);
-    private              Object            bean              = null;
+    private              Q                              param             = null;
+    private              Accepter<Update<T, Q>, Object> accepter          = this::and;
+    private              Executor<Q>                    executor;
+    private static final PropertyUtilsBean              propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+    private static final Logger                         logger            = LoggerFactory.getLogger(Update.class);
+    private              Object                         bean              = null;
 
     @Override
     public Object getBean() {
@@ -32,12 +32,12 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
         this.param = param;
     }
 
-    public UpdateFromBean<T, Q> fromBean() {
+    public <B> UpdateFromBean<T, Q, B> fromBean() {
         this.bean = param.getData();
         return new UpdateFromBean<>(this);
     }
 
-    public UpdateFromBean<T, Q> fromBean(T bean) {
+    public UpdateFromBean<T, Q, T> fromBean(T bean) {
         param.setData(bean);
         this.bean = bean;
         return new UpdateFromBean<>(this);
@@ -137,7 +137,7 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
     }
 
     @Override
-    public Accepter<Update<T, Q>,Object> getAccepter() {
+    public Accepter<Update<T, Q>, Object> getAccepter() {
         return accepter;
     }
 

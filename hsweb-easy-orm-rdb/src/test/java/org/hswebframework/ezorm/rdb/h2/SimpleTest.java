@@ -2,8 +2,9 @@ package org.hswebframework.ezorm.rdb.h2;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.hswebframework.ezorm.core.Query;
 import org.hswebframework.ezorm.core.dsl.ConditionColumnBuilder;
+import org.hswebframework.ezorm.core.dsl.Query;
+import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.RDBDatabase;
 import org.hswebframework.ezorm.rdb.RDBTable;
@@ -187,6 +188,15 @@ public class SimpleTest {
 //        table.createUpdate().set("name", "aaa").where("name", "aa").or().like("name", 1).exec();
 
         sqlExecutor.list("select * from s_user where age > #{age}", Collections.singletonMap("age", 10));
+    }
+
+
+    static class Bean{
+        private String name;
+
+        public String getName() {
+            return name;
+        }
     }
 
 }

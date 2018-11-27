@@ -34,12 +34,12 @@ class SimpleTable<T> implements RDBTable<T> {
     }
 
     @Override
-    public RDBQuery createQuery() {
+    public RDBQuery<T> createQuery() {
         return new SimpleQuery<>(this, sqlExecutor, objectWrapper);
     }
 
     @Override
-    public Update createUpdate() {
+    public Update<T> createUpdate() {
         return new SimpleUpdate<>(this, sqlExecutor);
     }
 
