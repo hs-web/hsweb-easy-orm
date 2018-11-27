@@ -40,17 +40,21 @@ public interface ConditionalFromBean<B, T extends ConditionalFromBean<B, T>> ext
 
     T or(String column, String termType);
 
-    default T and(LambdaColumn<B> column, String termType) {
+    default T and(StaticMethodReferenceColumn<B> column, String termType) {
         return and(column.getColumn(), termType);
     }
 
-    default T or(LambdaColumn<B> column, String termType) {
+    default T or(StaticMethodReferenceColumn<B> column, String termType) {
         return or(column.getColumn(), termType);
     }
 
     TermTypeConditionalSupport.Accepter<T, Object> getAccepter();
 
     default T where(String column) {
+        return and(column, TermType.eq);
+    }
+
+    default T where(StaticMethodReferenceColumn<B> column) {
         return and(column, TermType.eq);
     }
 
@@ -64,6 +68,22 @@ public interface ConditionalFromBean<B, T extends ConditionalFromBean<B, T>> ext
 
     default T or(String column) {
         return or(column, TermType.eq);
+    }
+
+    default T and(StaticMethodReferenceColumn<B> column) {
+        return and(column, TermType.eq);
+    }
+
+    default T or(StaticMethodReferenceColumn<B> column) {
+        return or(column, TermType.eq);
+    }
+
+    default T is(String column) {
+        return accept(column, TermType.eq);
+    }
+
+    default T is(StaticMethodReferenceColumn<B> column) {
+        return accept(column, TermType.eq);
     }
 
     default T like(String column) {
@@ -166,100 +186,100 @@ public interface ConditionalFromBean<B, T extends ConditionalFromBean<B, T>> ext
 
 
     /*lambda*/
-    default T like(LambdaColumn<B> column) {
+    default T like(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.like);
     }
 
-    default T like$(LambdaColumn<B> column) {
+    default T like$(StaticMethodReferenceColumn<B> column) {
         Object value = getValue(column);
         if (value == null)
             return like(column);
         return accept(column, TermType.like, String.valueOf(value).concat("%"));
     }
 
-    default T $like(LambdaColumn<B> column) {
+    default T $like(StaticMethodReferenceColumn<B> column) {
         Object value = getValue(column);
         if (value == null)
             return like(column);
         return accept(column, TermType.like, "%".concat(String.valueOf(value)));
     }
 
-    default T $like$(LambdaColumn<B> column) {
+    default T $like$(StaticMethodReferenceColumn<B> column) {
         Object value = getValue(column);
         if (value == null)
             return like(column);
         return accept(column, TermType.like, "%".concat(String.valueOf(value)).concat("%"));
     }
 
-    default T notLike(LambdaColumn<B> column) {
+    default T notLike(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.nlike);
     }
 
-    default T gt(LambdaColumn<B> column) {
+    default T gt(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.gt);
     }
 
-    default T lt(LambdaColumn<B> column) {
+    default T lt(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.lt);
     }
 
-    default T gte(LambdaColumn<B> column) {
+    default T gte(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.gte);
     }
 
-    default T lte(LambdaColumn<B> column) {
+    default T lte(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.lte);
     }
 
-    default T in(LambdaColumn<B> column) {
+    default T in(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.in);
     }
 
-    default T in(LambdaColumn<B> column, Object... values) {
+    default T in(StaticMethodReferenceColumn<B> column, Object... values) {
         return accept(column, TermType.in, values);
     }
 
-    default T in(LambdaColumn<B> column, Collection values) {
+    default T in(StaticMethodReferenceColumn<B> column, Collection values) {
         return accept(column, TermType.in, values);
     }
 
-    default T notIn(LambdaColumn<B> column, Object... values) {
+    default T notIn(StaticMethodReferenceColumn<B> column, Object... values) {
         return accept(column, TermType.nin, values);
     }
 
-    default T notIn(LambdaColumn<B> column, Collection values) {
+    default T notIn(StaticMethodReferenceColumn<B> column, Collection values) {
         return accept(column, TermType.nin, values);
     }
 
-    default T notIn(LambdaColumn<B> column) {
+    default T notIn(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.nin);
     }
 
-    default T isEmpty(LambdaColumn<B> column) {
+    default T isEmpty(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.empty, 1);
     }
 
-    default T notEmpty(LambdaColumn<B> column) {
+    default T notEmpty(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.nempty, 1);
     }
 
-    default T isNull(LambdaColumn<B> column) {
+    default T isNull(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.isnull, 1);
     }
 
-    default T notNull(LambdaColumn<B> column) {
+    default T notNull(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.notnull, 1);
     }
 
-    default T not(LambdaColumn<B> column) {
+    default T not(StaticMethodReferenceColumn<B> column) {
         return accept(column, TermType.not);
     }
 
-    default T between(LambdaColumn<B> column, Object between, Object and) {
+    default T between(StaticMethodReferenceColumn<B> column, Object between, Object and) {
         return accept(column, TermType.btw, Arrays.asList(between, and));
     }
 
-    default T notBetween(LambdaColumn<B> column, Object between, Object and) {
+    default T notBetween(StaticMethodReferenceColumn<B> column, Object between, Object and) {
         return accept(column, TermType.nbtw, Arrays.asList(between, and));
     }
 
@@ -267,7 +287,7 @@ public interface ConditionalFromBean<B, T extends ConditionalFromBean<B, T>> ext
         return accept(column, termType, getValue(column));
     }
 
-    default T accept(LambdaColumn<B> column, String termType) {
+    default T accept(StaticMethodReferenceColumn<B> column, String termType) {
         return accept(column, termType, getValue(column));
     }
 
@@ -275,7 +295,7 @@ public interface ConditionalFromBean<B, T extends ConditionalFromBean<B, T>> ext
         return getAccepter().accept(column, termType, value);
     }
 
-    default T accept(LambdaColumn<B> column, String termType, Object value) {
+    default T accept(StaticMethodReferenceColumn<B> column, String termType, Object value) {
         return getAccepter().accept(column.getColumn(), termType, value);
     }
 

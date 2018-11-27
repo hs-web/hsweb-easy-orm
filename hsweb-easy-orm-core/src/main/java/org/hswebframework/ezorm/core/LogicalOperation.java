@@ -91,7 +91,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @see Conditional
      * @see SimpleAccepter
      */
-    default <E,V> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
+    default <E, V> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, valueMapper.apply(o)));
         return (T) this;
@@ -108,7 +108,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @param <E>            集合中元素类型
      * @return this {@link T}
      */
-    default <E,V> T each(String column, String termType, Collection<E> list, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
+    default <E, V> T each(String column, String termType, Collection<E> list, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, termType, valueMapper.apply(o)));
         return (T) this;
@@ -294,4 +294,11 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
         return when(condition.apply(value), column, termType, value, accepter);
     }
 
+    default <V> T accept(MethodReferenceColumn<V> column, BiConsumer<V, T> consumer) {
+        V v = column.get();
+        if (v != null) {
+            consumer.accept(v, (T) this);
+        }
+        return (T) this;
+    }
 }

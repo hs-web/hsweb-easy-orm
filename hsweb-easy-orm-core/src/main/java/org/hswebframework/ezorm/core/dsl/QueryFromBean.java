@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.TermTypeConditionalSupport;
 import org.hswebframework.ezorm.core.param.QueryParam;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author zhouhao
@@ -142,6 +143,10 @@ public final class QueryFromBean<T, Q extends QueryParam, B>
 
     public T single() {
         return proxy.single();
+    }
+
+    public <R> R execute(Function<Q, R> function) {
+        return proxy.execute(function);
     }
 
     public int total() {

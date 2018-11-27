@@ -26,7 +26,7 @@ public class SerializedLambda implements Serializable {
     }
 
     @SneakyThrows
-    public static SerializedLambda of(LambdaColumn lambdaColumn) {
+    public static SerializedLambda of(Object lambdaColumn) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
             try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
@@ -48,7 +48,11 @@ public class SerializedLambda implements Serializable {
                 }
             }
         } catch (NotSerializableException e) {
-            throw new UnsupportedOperationException("请使用方法引用,例如: UserEntity::getName");
+            String className = lambdaColumn.getClass().getName();
+            if (className.contains("$$")) {
+                className = className.substring(0, className.indexOf("$$"));
+            }
+            throw new UnsupportedOperationException("请将类[" + className + "]实现[Serializable]接口");
         }
     }
 }

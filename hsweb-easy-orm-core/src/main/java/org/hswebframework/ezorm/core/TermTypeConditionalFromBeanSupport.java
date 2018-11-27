@@ -11,7 +11,7 @@ public interface TermTypeConditionalFromBeanSupport<B> {
 
     B getBean();
 
-    default Object getValue(LambdaColumn<B> property) {
+    default Object getValue(StaticMethodReferenceColumn<B> property) {
         return property.apply(getBean());
     }
 
