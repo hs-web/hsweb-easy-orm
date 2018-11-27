@@ -48,11 +48,8 @@ public class SerializedLambda implements Serializable {
                 }
             }
         } catch (NotSerializableException e) {
-            String className = lambdaColumn.getClass().getName();
-            if (className.contains("$$")) {
-                className = className.substring(0, className.indexOf("$$"));
-            }
-            throw new UnsupportedOperationException("请将类[" + className + "]实现[Serializable]接口");
+
+            throw new UnsupportedOperationException("请将类[" + e.getMessage() + "]实现[Serializable]接口");
         }
     }
 }
