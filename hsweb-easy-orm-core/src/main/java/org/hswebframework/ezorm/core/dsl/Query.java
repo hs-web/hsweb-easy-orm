@@ -68,6 +68,17 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return this;
     }
 
+
+    public <B> Query<T, Q> orderByAsc(StaticMethodReferenceColumn<B> column) {
+        param.orderBy(column.getColumn()).asc();
+        return this;
+    }
+
+    public <B> Query<T, Q> orderByDesc(StaticMethodReferenceColumn<B> column) {
+        param.orderBy(column.getColumn()).desc();
+        return this;
+    }
+
     public Query<T, Q> orderByAsc(String column) {
         param.orderBy(column).asc();
         return this;
