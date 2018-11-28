@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.render.support.oracle;
 
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
+import org.hswebframework.ezorm.rdb.render.support.simple.CommonCreateIndexRender;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.BindSQL;
 import org.hswebframework.ezorm.rdb.executor.SQL;
@@ -47,11 +48,18 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
         createBody.removeLast();
         createBody.add("\n)");
         SimpleSQL simpleSQL = new SimpleSQL(createBody.toString(), param);
-        List<BindSQL> bindSQLs = comments.stream().map(s -> {
-            BindSQL sql = new BindSQL();
-            sql.setSql(new SimpleSQL(s, param));
-            return sql;
-        }).collect(Collectors.toList());
+        List<BindSQL> bindSQLs = comments
+                .stream()
+                .map(s -> {
+                    BindSQL sql = new BindSQL();
+                    sql.setSql(new SimpleSQL(s, param));
+                    return sql;
+                }).collect(Collectors.toList());
+
+        for (SQL sql : CommonCreateIndexRender.buildCreateIndexSql(metaData)) {
+            bindSQLs.add(new BindSQL(sql));
+        }
+
         simpleSQL.setBindSQLs(bindSQLs);
         return simpleSQL;
     }

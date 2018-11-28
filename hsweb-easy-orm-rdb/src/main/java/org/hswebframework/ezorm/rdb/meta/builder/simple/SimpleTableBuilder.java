@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.meta.builder.ColumnBuilder;
+import org.hswebframework.ezorm.rdb.meta.builder.IndexBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.TableBuilder;
 import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.RDBDatabase;
@@ -29,6 +30,11 @@ public class SimpleTableBuilder implements TableBuilder {
         if (this.parser == null) {
             this.parser = database.getMeta().getDialect().getDefaultParser(sqlExecutor);
         }
+    }
+
+    @Override
+    public IndexBuilder index() {
+        return new IndexBuilder(this, rdbTableMetaData);
     }
 
     public TableBuilder custom(Consumer<RDBTableMetaData> consumer) {

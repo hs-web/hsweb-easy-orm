@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.render.support.sqlserver;
 
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
+import org.hswebframework.ezorm.rdb.render.support.simple.CommonCreateIndexRender;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.BindSQL;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
@@ -53,6 +54,9 @@ public class SqlServerMetaCreateRender extends CommentSupportRender implements S
             sql.setSql(s);
             return sql;
         }).collect(Collectors.toList());
+        for (SQL sql : CommonCreateIndexRender.buildCreateIndexSql(table)) {
+            bindSQLs.add(new BindSQL(sql));
+        }
         simpleSQL.setBindSQLs(bindSQLs);
         return simpleSQL;
     }

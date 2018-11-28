@@ -70,10 +70,14 @@ public class SimpleTest {
                 .addColumn().name("photo").jdbcType(JDBCType.CLOB).custom(column -> column.setValueConverter(new BlobValueConverter())).comment("照片").commit()
                 .addColumn().name("create_date").datetime().custom(columnMetaData -> columnMetaData.setValueConverter(new DateTimeConverter("yyyy-MM-dd HH:mm:ss", Date.class))).comment("创建时间").commit()
                 //表关联
-                .custom(table-> table.addCorrelation(new Correlation("s_user_info","info","info.id=s_user.id")))
+                .custom(table -> table.addCorrelation(new Correlation("s_user_info", "info", "info.id=s_user.id")))
                 .comment("用户表")
+                .index()
+                .name("test_index")
+                .column("name")
+                .unique()
+                .commit()
                 .commit();
-
 
 
         RDBTable<Map<String, Object>> user = database.getTable("s_user");
@@ -115,12 +119,12 @@ public class SimpleTest {
                 "}" +
                 "]")).exec();
 
-        info.createInsert().value( JSON.parseObject(
+        info.createInsert().value(JSON.parseObject(
                 "{\n" +
-                "  \"id\": \"test2\",\n" +
-                "  \"address\": \"测试地址\",\n" +
-                "  \"id_card\":\"123123132\"\n" +
-                "}")).exec();
+                        "  \"id\": \"test2\",\n" +
+                        "  \"address\": \"测试地址\",\n" +
+                        "  \"id_card\":\"123123132\"\n" +
+                        "}")).exec();
 
         System.out.println(user.createQuery().list());
 
@@ -128,14 +132,14 @@ public class SimpleTest {
 
 
         List<Map<String, Object>> age1 = user.createQuery().notIn("age", 12, 11).list();
-        System.out.println("age1"+age1);
+        System.out.println("age1" + age1);
 
         List<Map<String, Object>> age2 = user.createQuery().notIn("age", 11).list();
-        System.out.println("age2"+age2);
+        System.out.println("age2" + age2);
 
-        List<Map<String, Object>> age3 = user.createQuery().notIn("age", Arrays.asList(1,11)).list();
+        List<Map<String, Object>> age3 = user.createQuery().notIn("age", Arrays.asList(1, 11)).list();
 
-        System.out.println("age3"+age3);
+        System.out.println("age3" + age3);
 
 
         user.createQuery().select("id").forUpdate()
@@ -157,7 +161,7 @@ public class SimpleTest {
                 .each(Collections.singletonMap("name", "张三"), "is", query -> query::and)
                 .nest()
                 .nest()
-                .and("name$like$reverse$endWith","1234")
+                .and("name$like$reverse$endWith", "1234")
                 .sql("age > 10")
                 .sql("age > #{age}", Collections.singletonMap("age", 10))
                 .sql("age > #{[0]} or age > #{[0]}", Arrays.asList(1, 2))
@@ -191,7 +195,7 @@ public class SimpleTest {
     }
 
 
-    static class Bean{
+    static class Bean {
         private String name;
 
         public String getName() {

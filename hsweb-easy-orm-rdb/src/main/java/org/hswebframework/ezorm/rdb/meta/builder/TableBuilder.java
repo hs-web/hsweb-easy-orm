@@ -25,5 +25,7 @@ public interface TableBuilder {
 
     TableBuilder alias(String name);
 
+    IndexBuilder index();
+
     void commit() throws SQLException;
 }

@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.rdb.meta;
 
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.AbstractTableMetaData;
 import org.hswebframework.ezorm.core.meta.TableMetaData;
 
@@ -13,6 +15,11 @@ import java.util.*;
 public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> implements TableMetaData, Serializable, Cloneable {
     //数据库定义实体
     private Set<Correlation> correlations = new LinkedHashSet<>();
+
+    @Getter
+    @Setter
+    private List<IndexMetaData> indexes = new ArrayList<>();
+
     private RDBDatabaseMetaData databaseMetaData;
 
     public RDBDatabaseMetaData getDatabaseMetaData() {
@@ -72,6 +79,14 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
         this.comment = comment;
     }
 
+    public boolean columnInIndex(String column) {
+        RDBColumnMetaData columnMeta = getColumn(column);
+        if (columnMeta == null) {
+            return false;
+        }
+        return indexes.stream().anyMatch(index -> index.contains(columnMeta.getName()));
+    }
+
     public Correlation getCorrelation(String target) {
         for (Correlation correlation : correlations) {
             if (correlation.getAlias().equals(target))
@@ -83,7 +98,6 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
         }
         return null;
     }
-
 
     public Correlation addCorrelation(Correlation correlation) {
         correlation.setIndex(correlations.size());
