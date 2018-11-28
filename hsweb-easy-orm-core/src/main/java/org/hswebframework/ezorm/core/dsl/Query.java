@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -48,6 +49,9 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return bean;
     }
 
+    /**
+     * 可使用 {@link this#where(MethodReferenceColumn)} )}替代
+     */
     public <B> QueryFromBean<T, Q, B> fromBean(B bean) {
         this.bean = bean;
         return new QueryFromBean<>(this);
@@ -68,6 +72,35 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return this;
     }
 
+    public Query<T, Q> excludes(String... columns) {
+        param.excludes(columns);
+        return this;
+    }
+
+    public Query<T, Q> includes(String... columns) {
+        param.includes(columns);
+        return this;
+    }
+
+    public Query<T, Q> select(StaticMethodReferenceColumn... columns) {
+        return select(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Query<T, Q> includes(StaticMethodReferenceColumn... columns) {
+        return includes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Query<T, Q> includes(MethodReferenceColumn... columns) {
+        return includes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Query<T, Q> excludes(StaticMethodReferenceColumn... columns) {
+        return excludes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Query<T, Q> excludes(MethodReferenceColumn... columns) {
+        return excludes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
 
     public <B> Query<T, Q> orderByAsc(StaticMethodReferenceColumn<B> column) {
         param.orderBy(column.getColumn()).asc();

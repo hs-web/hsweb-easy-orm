@@ -1,9 +1,9 @@
 package org.hswebframework.ezorm.core.dsl;
 
-import org.hswebframework.ezorm.core.ConditionalFromBean;
-import org.hswebframework.ezorm.core.NestConditionalFromBean;
-import org.hswebframework.ezorm.core.TermTypeConditionalSupport;
+import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.UpdateParam;
+
+import java.util.Arrays;
 
 /**
  * @author zhouhao
@@ -100,6 +100,23 @@ public final class UpdateFromBean<T, Q extends UpdateParam<T>, B>
         proxy.includes(columns);
         return this;
     }
+
+    public UpdateFromBean<T, Q, B> includes(StaticMethodReferenceColumn... columns) {
+        return includes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public UpdateFromBean<T, Q, B> includes(MethodReferenceColumn... columns) {
+        return includes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public UpdateFromBean<T, Q, B> excludes(StaticMethodReferenceColumn... columns) {
+        return excludes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public UpdateFromBean<T, Q, B> excludes(MethodReferenceColumn... columns) {
+        return excludes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
 
     public int exec() {
         return proxy.exec();

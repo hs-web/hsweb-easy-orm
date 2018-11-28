@@ -8,8 +8,10 @@ import org.hswebframework.ezorm.core.param.UpdateParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -95,22 +97,26 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
         return executor.doExecute(param);
     }
 
+    public <R> R exec(Function<Q, R> executor) {
+        return executor.apply(getParam());
+    }
+
     public NestConditional<Update<T, Q>> nest() {
-        return new SimpleNestConditional(this, this.param.nest());
+        return new SimpleNestConditional<>(this, this.param.nest());
     }
 
     public NestConditional<Update<T, Q>> nest(String column, Object value) {
-        return new SimpleNestConditional(this, this.param.nest(column, value));
+        return new SimpleNestConditional<>(this, this.param.nest(column, value));
     }
 
     @Override
     public NestConditional<Update<T, Q>> orNest() {
-        return new SimpleNestConditional(this, this.param.orNest());
+        return new SimpleNestConditional<>(this, this.param.orNest());
     }
 
     @Override
     public NestConditional<Update<T, Q>> orNest(String column, Object value) {
-        return new SimpleNestConditional(this, this.param.orNest(column, value));
+        return new SimpleNestConditional<>(this, this.param.orNest(column, value));
     }
 
     @Override
@@ -158,6 +164,22 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
     public Update<T, Q> includes(String... columns) {
         param.includes(columns);
         return this;
+    }
+
+    public Update<T, Q> includes(StaticMethodReferenceColumn... columns) {
+        return includes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Update<T, Q> includes(MethodReferenceColumn... columns) {
+        return includes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Update<T, Q> excludes(StaticMethodReferenceColumn... columns) {
+        return excludes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    public Update<T, Q> excludes(MethodReferenceColumn... columns) {
+        return excludes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
     @FunctionalInterface

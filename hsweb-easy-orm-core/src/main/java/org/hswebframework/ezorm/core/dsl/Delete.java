@@ -7,15 +7,16 @@ import org.hswebframework.ezorm.core.SqlConditionSupport;
 import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * @author zhouhao
  */
 public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>> implements Conditional<Delete<P>> {
-    private P        param    = null;
-    private Accepter<Delete<P>,Object> accepter = this::and;
-    private Executor<P> executor;
+    private P                           param    = null;
+    private Accepter<Delete<P>, Object> accepter = this::and;
+    private Executor<P>                 executor;
 
     public Delete(P param) {
         this.param = param;
@@ -35,9 +36,6 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
         return this;
     }
 
-    public int exec() {
-        return executor.doExecute(param);
-    }
 
     public NestConditional<Delete<P>> nest() {
         return new SimpleNestConditional<>(this, this.param.nest());
@@ -90,7 +88,7 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
     }
 
     @Override
-    public Accepter<Delete<P>,Object> getAccepter() {
+    public Accepter<Delete<P>, Object> getAccepter() {
         return accepter;
     }
 
@@ -113,6 +111,14 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
     public Delete<P> includes(String... columns) {
         param.includes(columns);
         return this;
+    }
+
+    public <R> R exec(Function<P, R> executor) {
+        return executor.apply(getParam());
+    }
+
+    public int exec() {
+        return executor.doExecute(param);
     }
 
     public static Delete<Param> empty() {
