@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.core.dsl;
 import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.Arrays;
 import java.util.List;
@@ -209,6 +210,12 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
     public Query<T, Q> or() {
         setOr();
         this.accepter = this::or;
+        return this;
+    }
+
+    @Override
+    public Query<T, Q> accept(Term term) {
+        param.addTerm(term);
         return this;
     }
 

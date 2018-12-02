@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.BeanUtils;
 
 import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.UpdateParam;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
@@ -121,6 +122,12 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
     @Override
     public NestConditional<Update<T>> orNest(String column, Object value) {
         return new SimpleNestConditional<>(this, updateParam.orNest(column, value));
+    }
+
+    @Override
+    public Update<T> accept(Term term) {
+        updateParam.addTerm(term);
+        return this;
     }
 
     @Override

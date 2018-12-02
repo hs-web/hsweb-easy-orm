@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.SimpleNestConditional;
 import org.hswebframework.ezorm.core.Trigger;
 import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
@@ -121,5 +122,11 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
     @Override
     RDBTableMetaData getTableMeta() {
         return tableMetaData;
+    }
+
+    @Override
+    public Delete accept(Term term) {
+        param.addTerm(term);
+        return this;
     }
 }

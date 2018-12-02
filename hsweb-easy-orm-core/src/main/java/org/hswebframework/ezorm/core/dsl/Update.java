@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.UpdateParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,6 +164,12 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
 
     public Update<T, Q> includes(String... columns) {
         param.includes(columns);
+        return this;
+    }
+
+    @Override
+    public Update<T, Q> accept(Term term) {
+        param.addTerm(term);
         return this;
     }
 

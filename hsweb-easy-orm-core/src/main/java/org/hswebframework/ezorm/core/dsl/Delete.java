@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.SimpleNestConditional;
 import org.hswebframework.ezorm.core.SqlConditionSupport;
 import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -14,9 +15,9 @@ import java.util.function.Supplier;
  * @author zhouhao
  */
 public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>> implements Conditional<Delete<P>> {
-    private P                           param    = null;
+    private P param = null;
     private Accepter<Delete<P>, Object> accepter = this::and;
-    private Executor<P>                 executor;
+    private Executor<P> executor;
 
     public Delete(P param) {
         this.param = param;
@@ -36,6 +37,11 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
         return this;
     }
 
+    @Override
+    public Delete<P> accept(Term term) {
+        param.addTerm(term);
+        return this;
+    }
 
     public NestConditional<Delete<P>> nest() {
         return new SimpleNestConditional<>(this, this.param.nest());

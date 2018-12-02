@@ -16,6 +16,7 @@
 
 package org.hswebframework.ezorm.core;
 
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.utils.StringUtils;
 
@@ -418,5 +419,7 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
     T sql(String sql, Object... params);
 
     Accepter<T, Object> getAccepter();
+
+    T accept(Term term);
 
 }
