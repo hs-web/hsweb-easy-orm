@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.core;
 
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.utils.StringUtils;
 
@@ -319,4 +320,5 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
 
     Accepter<NestConditional<T>, Object> getAccepter();
 
+    NestConditional<T> accept(Term term);
 }

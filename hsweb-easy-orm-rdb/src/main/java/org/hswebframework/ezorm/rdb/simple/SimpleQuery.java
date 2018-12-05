@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.simple;
 
 import org.hswebframework.ezorm.core.*;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.utils.StringUtils;
 
 import org.hswebframework.ezorm.core.param.QueryParam;
@@ -244,6 +245,12 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
             trigger(Trigger.select_done, context);
         }
         return totalWrapper.getTotal();
+    }
+
+    @Override
+    public Query<T> accept(Term term) {
+        queryParam.addTerm(term);
+        return this;
     }
 
     @Override
