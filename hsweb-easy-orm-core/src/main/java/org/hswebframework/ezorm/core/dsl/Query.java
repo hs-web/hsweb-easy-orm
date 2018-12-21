@@ -19,12 +19,12 @@ import java.util.function.Supplier;
  * @since 1.1
  */
 public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
-    private Q                             param          = null;
-    private Accepter<Query<T, Q>, Object> accepter       = this::and;
-    private ListExecutor<T, Q>            listExecutor   = null;
-    private TotalExecutor<Q>              totalExecutor  = null;
-    private SingleExecutor<T, Q>          singleExecutor = null;
-    private Object                        bean           = null;
+    private Q param = null;
+    private Accepter<Query<T, Q>, Object> accepter = this::and;
+    private ListExecutor<T, Q> listExecutor = null;
+    private TotalExecutor<Q> totalExecutor = null;
+    private SingleExecutor<T, Q> singleExecutor = null;
+    private Object bean = null;
 
     public Query(Q param) {
         this.param = param;
@@ -83,23 +83,28 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return this;
     }
 
-    public Query<T, Q> select(StaticMethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Query<T, Q> select(StaticMethodReferenceColumn<B>... columns) {
         return select(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Query<T, Q> includes(StaticMethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Query<T, Q> includes(StaticMethodReferenceColumn<B>... columns) {
         return includes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Query<T, Q> includes(MethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Query<T, Q> includes(MethodReferenceColumn<B>... columns) {
         return includes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Query<T, Q> excludes(StaticMethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Query<T, Q> excludes(StaticMethodReferenceColumn<B>... columns) {
         return excludes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Query<T, Q> excludes(MethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Query<T, Q> excludes(MethodReferenceColumn<B>... columns) {
         return excludes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 

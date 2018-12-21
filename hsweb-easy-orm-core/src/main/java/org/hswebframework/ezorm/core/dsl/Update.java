@@ -19,12 +19,12 @@ import java.util.function.Supplier;
  * @author zhouhao
  */
 public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSupport<Update<T, Q>> implements Conditional<Update<T, Q>>, TermTypeConditionalFromBeanSupport {
-    private              Q                              param             = null;
-    private              Accepter<Update<T, Q>, Object> accepter          = this::and;
-    private              Executor<Q>                    executor;
-    private static final PropertyUtilsBean              propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-    private static final Logger                         logger            = LoggerFactory.getLogger(Update.class);
-    private              Object                         bean              = null;
+    private Q param = null;
+    private Accepter<Update<T, Q>, Object> accepter = this::and;
+    private Executor<Q> executor;
+    private static final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+    private static final Logger logger = LoggerFactory.getLogger(Update.class);
+    private Object bean = null;
 
     @Override
     public Object getBean() {
@@ -173,19 +173,23 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
         return this;
     }
 
-    public Update<T, Q> includes(StaticMethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Update<T, Q> includes(StaticMethodReferenceColumn<B>... columns) {
         return includes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Update<T, Q> includes(MethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Update<T, Q> includes(MethodReferenceColumn<B>... columns) {
         return includes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Update<T, Q> excludes(StaticMethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Update<T, Q> excludes(StaticMethodReferenceColumn<B>... columns) {
         return excludes(Arrays.stream(columns).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
-    public Update<T, Q> excludes(MethodReferenceColumn... columns) {
+    @SafeVarargs
+    public final <B> Update<T, Q> excludes(MethodReferenceColumn<B>... columns) {
         return excludes(Arrays.stream(columns).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
     }
 
