@@ -46,6 +46,16 @@ public class PGSqlDialect extends DefaultDialect {
                     .forEach(joiner::add);
             return joiner.toString();
         });
+
+        installFunction(SqlFunction.bitand, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            if (listParam.isEmpty()) {
+                throw new IllegalArgumentException("[BITAND]参数不能为空");
+            }
+            StringJoiner joiner = new StringJoiner("&");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
     }
 
     @Override

@@ -2,10 +2,14 @@ package org.hswebframework.ezorm.rdb.render.dialect;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
+import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
+import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.meta.parser.SqlServer2012TableMetaParser;
 
 import java.sql.JDBCType;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * TODO 完成注释
@@ -36,6 +40,22 @@ public class MSSQLDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
         setDataTypeMapper(JDBCType.REAL, (meta) -> "real");
+
+        installFunction(SqlFunction.concat, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
+        installFunction(SqlFunction.bitand, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            if (listParam.size() != 2) {
+                throw new IllegalArgumentException("[bitand]参数长度必须为2");
+            }
+            StringJoiner joiner = new StringJoiner(",", "bitand(", ")");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
 
     }
 

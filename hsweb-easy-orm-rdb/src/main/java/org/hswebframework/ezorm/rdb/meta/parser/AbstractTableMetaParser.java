@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ObjectWrapper;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
@@ -49,6 +50,7 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
     }
 
     @Override
+    @SneakyThrows
     public RDBTableMetaData parse(String name) {
         if (!tableExists(name)) return null;
         RDBTableMetaData metaData = new RDBTableMetaData();
@@ -56,15 +58,11 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
         metaData.setAlias(name);
         Map<String, Object> param = new HashMap<>();
         param.put("table", name);
-        try {
-            List<RDBColumnMetaData> metaDatas = sqlExecutor.list(new SimpleSQL(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper());
-            metaDatas.forEach(metaData::addColumn);
-            Map<String, Object> comment = sqlExecutor.single(new SimpleSQL(getTableCommentSql(name), param), new LowerCasePropertySimpleMapWrapper());
-            if (null != comment && comment.get("comment") != null) {
-                metaData.setComment(String.valueOf(comment.get("comment")));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        List<RDBColumnMetaData> metaDatas = sqlExecutor.list(new SimpleSQL(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper());
+        metaDatas.forEach(metaData::addColumn);
+        Map<String, Object> comment = sqlExecutor.single(new SimpleSQL(getTableCommentSql(name), param), new LowerCasePropertySimpleMapWrapper());
+        if (null != comment && comment.get("comment") != null) {
+            metaData.setComment(String.valueOf(comment.get("comment")));
         }
         return metaData;
     }
