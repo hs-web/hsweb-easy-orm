@@ -72,9 +72,9 @@ public class PGSqlDialect extends DefaultDialect {
     public String doPaging(String sql, int pageIndex, int pageSize) {
         return new StringBuilder(sql)
                 .append(" limit ")
-                .append(pageSize * pageIndex)
+                .append(pageSize)
                 .append(" offset ")
-                .append(pageSize).toString();
+                .append(pageSize * pageIndex).toString();
     }
 
     @Override
