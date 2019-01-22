@@ -116,7 +116,7 @@ public class SimpleColumnBuilder implements ColumnBuilder {
                 columnMetaData.setValueConverter(new NumberValueConverter(columnMetaData.getJavaType()));
             }
             if (columnMetaData.getJavaType() == Boolean.class || columnMetaData.getJavaType() == boolean.class) {
-                columnMetaData.setValueConverter(new BooleanValueConverter());
+                columnMetaData.setValueConverter(new BooleanValueConverter(columnMetaData.getJdbcType()));
             }
         }
         tableMetaData.addColumn(columnMetaData);
