@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.StringJoiner;
 
 /**
- * TODO 完成注释
- *
  * @author zhouhao
  */
 public class MSSQLDialect extends DefaultDialect {
@@ -70,9 +68,12 @@ public class MSSQLDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize) {
+    public String doPaging(String sql, int pageIndex, int pageSize,boolean prepare) {
         if (!sql.contains("order") && !sql.contains("ORDER")) {
             sql = sql.concat(" order by 1");
+        }
+        if (prepare) {
+            return sql + " OFFSET #{pageSize}*#{pageIndex}  ROWS FETCH NEXT #{pageSize} ROWS ONLY";
         }
         return sql.concat(" OFFSET " + (pageIndex * pageSize) + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY");
     }

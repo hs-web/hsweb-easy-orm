@@ -15,6 +15,7 @@ import org.hswebframework.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hswebframework.ezorm.rdb.meta.converter.ClobValueConverter;
 import org.hswebframework.ezorm.rdb.meta.converter.DateTimeConverter;
 import org.hswebframework.ezorm.rdb.meta.parser.H2TableMetaParser;
+import org.hswebframework.ezorm.rdb.render.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.render.dialect.H2RDBDatabaseMetaData;
 import org.hswebframework.ezorm.rdb.simple.SimpleDatabase;
 import org.junit.Before;
@@ -33,6 +34,8 @@ public class SimpleTest {
 
     @Before
     public void setup() throws Exception {
+       System.setProperty("easyorm.paging.prepare","true");
+
         Class.forName("org.h2.Driver");
         Connection connection = DriverManager.getConnection("jdbc:h2:mem:hsweb", "sa", "");
 
@@ -51,6 +54,7 @@ public class SimpleTest {
 
     @Test
     public void testExec() throws Exception {
+
         H2RDBDatabaseMetaData databaseMetaData = new H2RDBDatabaseMetaData();
         databaseMetaData.setParser(new H2TableMetaParser(sqlExecutor));
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
@@ -141,15 +145,15 @@ public class SimpleTest {
 
         System.out.println("age3" + age3);
 
-
-        user.createQuery().select("id").forUpdate()
+        user.createQuery().select("id")
                 .where()
                 .is("name", "张三")
+                .nest()
                 .or()
-                .or()
-//                .$like$("info.address","测试")
-                .like("name", "李%")
-                .list();
+                .$like$("info.address", "测试")
+                .like("name2", "李%")
+                .end()
+                .list(0,10);
 
         user.createQuery()
                 .where()

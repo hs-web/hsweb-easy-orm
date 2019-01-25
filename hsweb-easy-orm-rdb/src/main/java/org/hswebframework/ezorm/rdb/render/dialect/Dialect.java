@@ -84,6 +84,8 @@ public interface Dialect {
 
     String doPaging(String sql, int pageIndex, int pageSize);
 
+    String doPaging(String sql, int pageIndex, int pageSize, boolean prepare);
+
     SqlFunction getFunction(String name);
 
     SqlFunction installFunction(String name, SqlFunction function);
@@ -91,7 +93,7 @@ public interface Dialect {
     boolean columnToUpperCase();
 
     default String buildColumnName(String tableName, String columnName) {
-        if (columnName.contains(".")){
+        if (columnName.contains(".")) {
             return columnName;
         }
         if (StringUtils.isNullOrEmpty(tableName)) {

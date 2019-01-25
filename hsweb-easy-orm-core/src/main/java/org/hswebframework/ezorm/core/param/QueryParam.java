@@ -1,5 +1,8 @@
 package org.hswebframework.ezorm.core.param;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -15,10 +18,20 @@ import java.util.stream.Collectors;
 public class QueryParam extends Param implements Serializable, Cloneable {
     private static final long serialVersionUID = 7941767360194797891L;
 
+    public static final int DEFAULT_FIRST_PAGE_INDEX = Integer.getInteger("easyorm.page.fist.index", 0);
+
     /**
      * 是否进行分页，默认为true
      */
     private boolean paging = true;
+
+    /**
+     * 第一页索引
+     *
+     * @since 3.0.3
+     */
+    @Getter
+    private int firstPageIndex = DEFAULT_FIRST_PAGE_INDEX;
 
     /**
      * 第几页 从0开始
@@ -30,13 +43,14 @@ public class QueryParam extends Param implements Serializable, Cloneable {
      */
     private int pageSize = 25;
 
-
     /**
      * 排序字段
      *
      * @since 1.0
      */
     private List<Sort> sorts = new LinkedList<>();
+
+    private transient int pageIndexTmp = 0;
 
     private boolean forUpdate = false;
 
@@ -59,10 +73,14 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         return (Q) this;
     }
 
+    public int getRealPageIndex() {
+        return Math.max(pageIndex - firstPageIndex, 0);
+    }
+
     public <Q extends QueryParam> Q rePaging(int total) {
         paging = true;
         // 当前页没有数据后跳转到最后一页
-        if (this.getPageIndex() != 0 && (pageIndex * pageSize) >= total) {
+        if (pageIndex != 0 && (pageIndex * pageSize) >= total) {
             int tmp = total / this.getPageSize();
             pageIndex = total % this.getPageSize() == 0 ? tmp - 1 : tmp;
         }
@@ -82,7 +100,17 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     }
 
     public void setPageIndex(int pageIndex) {
-        this.pageIndex = pageIndex;
+        this.pageIndexTmp = this.pageIndex;
+        this.pageIndex = Math.max(pageIndex - firstPageIndex, 0);
+    }
+
+    public void setFirstPageIndex(int firstPageIndex) {
+        this.firstPageIndex = firstPageIndex;
+        this.pageIndex = Math.max(this.pageIndexTmp - this.firstPageIndex, 0);
+    }
+
+    public int getThinkPageIndex() {
+        return this.pageIndex + firstPageIndex;
     }
 
     public int getPageSize() {
@@ -112,10 +140,11 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     @Override
     public QueryParam clone() {
         QueryParam sqlParam = new QueryParam();
+        sqlParam.pageIndexTmp = pageIndexTmp;
+        sqlParam.setFirstPageIndex(sqlParam.getFirstPageIndex());
         sqlParam.setExcludes(new LinkedHashSet<>(excludes));
         sqlParam.setIncludes(new LinkedHashSet<>(includes));
-        List<Term> terms = this.terms.stream().map(Term::clone).collect(Collectors.toList());
-        sqlParam.setTerms(terms);
+        sqlParam.setTerms(this.terms.stream().map(Term::clone).collect(Collectors.toList()));
         sqlParam.setPageIndex(pageIndex);
         sqlParam.setPageSize(pageSize);
         sqlParam.setPaging(paging);

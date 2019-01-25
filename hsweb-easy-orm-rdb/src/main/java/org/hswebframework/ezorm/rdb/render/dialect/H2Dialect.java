@@ -59,12 +59,16 @@ public class H2Dialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize) {
+    public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
+        if (prepare) {
+            return sql + " limit #{pageSize}*#{pageIndex} , #{pageSize}";
+        }
         return new StringBuilder(sql)
                 .append(" limit ")
                 .append(pageSize * pageIndex)
                 .append(",")
-                .append(pageSize).toString();
+                .append(pageSize)
+                .toString();
     }
 
     @Override

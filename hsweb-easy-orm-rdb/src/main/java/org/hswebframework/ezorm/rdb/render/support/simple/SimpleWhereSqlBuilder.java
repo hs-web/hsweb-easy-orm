@@ -57,11 +57,12 @@ public abstract class SimpleWhereSqlBuilder {
             if (!term.getTerms().isEmpty()) {
                 SqlAppender that = nullTerm ? null : getDialect().buildCondition(prefix, term, column, tableAlias);
                 SqlAppender nest = null;
+                //在自定义SQL条件中可能会修改这个值,所以要重新判断
                 if (!term.getTerms().isEmpty()) {
                     //构建嵌套的条件
                     nest = new SqlAppender();
                     buildWhere(metaData, prefix, term.getTerms(), nest, needSelectTable);
-                    //如果嵌套结果为空,在自定义SQL条件中可能会修改这个值
+                    //如果嵌套结果为空
                     if (nest.isEmpty()) {
                         if (!nullTerm) {
                             appender.add(that);
