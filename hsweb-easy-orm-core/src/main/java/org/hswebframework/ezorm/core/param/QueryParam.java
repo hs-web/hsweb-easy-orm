@@ -73,10 +73,6 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         return (Q) this;
     }
 
-    public int getRealPageIndex() {
-        return Math.max(pageIndex - firstPageIndex, 0);
-    }
-
     public <Q extends QueryParam> Q rePaging(int total) {
         paging = true;
         // 当前页没有数据后跳转到最后一页
