@@ -61,7 +61,7 @@ public class SimpleTest {
         database.createOrAlter("s_user_info")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()
                 .addColumn().name("address").columnDef("varchar(32) not null comment '地址'").commit()
-                .addColumn().name("id_card").varchar(32).notNull().comment("身份证号").commit()
+                .addColumn().name("id_card").alias("idCard").varchar(32).notNull().comment("身份证号").commit()
                 .comment("用户明细表")
                 .commit();
 

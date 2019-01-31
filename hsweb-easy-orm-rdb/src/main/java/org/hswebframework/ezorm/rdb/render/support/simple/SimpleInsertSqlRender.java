@@ -12,6 +12,7 @@ import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
 import org.hswebframework.ezorm.rdb.render.SqlRender;
 import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,16 +30,11 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
         Map<String, Object> mapValue = new HashMap<>();
 
         metaData.getColumns().forEach(column -> {
-            Object value = null;
-            String propertyName = null;
-            try {
-                value = propertyUtils.getProperty(data, propertyName = column.getAlias());
-            } catch (Exception e) {
-                try {
-                    value = propertyUtils.getProperty(data, propertyName = column.getName());
-                } catch (Exception ignore) {
-                    //ignore
-                }
+            String propertyName;
+
+            Object value = PropertiesUtils.getProperty(data, propertyName = column.getAlias()).orElse(null);
+            if (value == null && !column.getAlias().equals(column.getName())) {
+                value = PropertiesUtils.getProperty(data, propertyName = column.getName()).orElse(null);
             }
             if (value == null) {
                 DefaultValue defaultValue = column.getDefaultValue();
@@ -53,18 +49,20 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                         }
                     }
                 }
-                if (logger.isInfoEnabled() && value != null)
-                    logger.info("{}将使用默认值:{}", propertyName, value);
+                if (logger.isInfoEnabled() && value != null) {
+                    logger.info("{}.{}将使用默认值:{}", metaData.getName(), column.getName(), value);
+                }
             }
             if (value != null && column.getValueConverter() != null) {
-                Object new_value = column.getValueConverter().getData(value);
+                Object newValue = column.getValueConverter().getData(value);
                 if (column.getOptionConverter() != null) {
-                    new_value = column.getOptionConverter().converterData(new_value);
+                    newValue = column.getOptionConverter().converterData(newValue);
                 }
-                if (value != new_value && !value.equals(new_value)) {
-                    if (logger.isDebugEnabled())
-                        logger.debug("{} 转换value:{}为:{}", propertyName, value, new_value);
-                    value = new_value;
+                if (value != newValue && !value.equals(newValue)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{}.{}转换value:{}为:{}", metaData.getName(), column.getName(), value, newValue);
+                    }
+                    value = newValue;
                 }
             }
             if (null == value) {

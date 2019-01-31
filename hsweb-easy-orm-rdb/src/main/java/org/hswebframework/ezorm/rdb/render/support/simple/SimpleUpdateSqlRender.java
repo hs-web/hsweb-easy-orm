@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.Sql;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
 import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,10 +21,10 @@ import java.util.stream.Collectors;
 public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
     class SimpleUpdateSqlRenderProcess extends SimpleWhereSqlBuilder {
-        private RDBTableMetaData      metaData;
-        private UpdateParam           param;
+        private RDBTableMetaData metaData;
+        private UpdateParam param;
         private List<OperationColumn> updateField;
-        private SqlAppender whereSql       = new SqlAppender();
+        private SqlAppender whereSql = new SqlAppender();
         private Set<String> conditionTable = new LinkedHashSet<>();
         PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
@@ -47,19 +48,13 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             Map<String, Object> valueProxy = new HashMap<>();
             updateField.forEach(operationColumn -> {
                 RDBColumnMetaData column = operationColumn.getRDBColumnMetaData();
-                if (column.getProperty("read-only").isTrue()) return;
-                String dataProperty = column.getAlias();
-                Object value = null;
-                try {
-                    value = propertyUtils.getProperty(param.getData(), dataProperty);
-                } catch (Exception e) {
+                if (column.getProperty("read-only").isTrue()) {
+                    return;
                 }
+                String dataProperty = null;
+                Object value = PropertiesUtils.getProperty(param.getData(), dataProperty = column.getAlias()).orElse(null);
                 if (value == null && !column.getAlias().equals(column.getName())) {
-                    dataProperty = column.getName();
-                    try {
-                        value = propertyUtils.getProperty(param.getData(), dataProperty);
-                    } catch (Exception e) {
-                    }
+                    value = PropertiesUtils.getProperty(param.getData(), dataProperty = column.getName()).orElse(null);
                 }
                 boolean alwaysUpdate = column.getProperty("update-always", false).isTrue();
 
