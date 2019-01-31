@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.rdb.render.dialect;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hswebframework.ezorm.core.param.ClassFieldTerm;
 import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
@@ -19,10 +21,10 @@ import java.util.*;
  *
  */
 public abstract class DefaultDialect implements Dialect {
-    protected Map<String, TermTypeMapper> termTypeMappers = new HashMap<>();
-    protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
-    protected Map<String, SqlFunction> functions = new HashMap<>();
-    protected DataTypeMapper defaultDataTypeMapper = null;
+    protected Map<String, TermTypeMapper> termTypeMappers       = new HashMap<>();
+    protected Map<String, DataTypeMapper> dataTypeMappers       = new HashMap<>();
+    protected Map<String, SqlFunction>    functions             = new HashMap<>();
+    protected DataTypeMapper              defaultDataTypeMapper = null;
 
     static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
 
@@ -224,4 +226,13 @@ public abstract class DefaultDialect implements Dialect {
         return mapper.getDataType(columnMetaData);
     }
 
+
+    @Setter
+    @Getter
+    private boolean preparePagingSql = Boolean.getBoolean("easyorm.paging.prepare");
+
+    @Override
+    public String doPaging(String sql, int pageIndex, int pageSize) {
+        return doPaging(sql, pageIndex, pageSize, preparePagingSql);
+    }
 }

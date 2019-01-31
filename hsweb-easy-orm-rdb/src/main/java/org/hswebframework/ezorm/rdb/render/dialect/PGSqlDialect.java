@@ -24,7 +24,7 @@ public class PGSqlDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         setDataTypeMapper(JDBCType.TIME, (meta) -> "time");
-        setDataTypeMapper(JDBCType.DATE, (meta) -> "year");
+        setDataTypeMapper(JDBCType.DATE, (meta) -> "date");
         setDataTypeMapper(JDBCType.CLOB, (meta) -> "text");
         setDataTypeMapper(JDBCType.LONGVARBINARY, (meta) -> "bytea");
         setDataTypeMapper(JDBCType.LONGVARCHAR, (meta) -> "text");
@@ -46,6 +46,16 @@ public class PGSqlDialect extends DefaultDialect {
                     .forEach(joiner::add);
             return joiner.toString();
         });
+
+        installFunction(SqlFunction.bitand, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            if (listParam.isEmpty()) {
+                throw new IllegalArgumentException("[BITAND]参数不能为空");
+            }
+            StringJoiner joiner = new StringJoiner("&");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
     }
 
     @Override
@@ -59,12 +69,16 @@ public class PGSqlDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize) {
+    public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
+        if (prepare) {
+            return sql + " limit #{pageSize} offset #{pageSize}*#{pageIndex}";
+        }
         return new StringBuilder(sql)
                 .append(" limit ")
-                .append(pageSize * pageIndex)
+                .append(pageSize)
                 .append(" offset ")
-                .append(pageSize).toString();
+                .append(pageSize * pageIndex)
+                .toString();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.render.support.oracle;
+package org.hswebframework.ezorm.rdb.render.support.postgres;
 
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetaData;
@@ -15,9 +15,9 @@ import java.util.List;
  * @author zhouhao
  * @see 1.0
  */
-public class OracleMetaAlterRender extends AbstractMetaAlterRender {
+public class PostgresMetaAlterRender extends AbstractMetaAlterRender {
 
-    public OracleMetaAlterRender(RDBDatabaseMetaData databaseMetaData) {
+    public PostgresMetaAlterRender(RDBDatabaseMetaData databaseMetaData) {
         super(databaseMetaData);
     }
 
@@ -26,10 +26,12 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
         SqlAppender alter = new SqlAppender();
         SqlAppender comments = new SqlAppender();
         List<SqlAppender> all = new ArrayList<>();
+        String columnFullName = column.getTableMetaData().getDatabaseMetaData().getDialect().buildColumnName(null, column.getName());
+
         alter.add("ALTER TABLE ",
                 column.getTableMetaData().getName(),
                 " ADD ",
-                column.getName(),
+                columnFullName,
                 " ");
         if (column.getColumnDefinition() != null) {
             alter.add(column.getColumnDefinition());
@@ -39,7 +41,7 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
                 alter.add(" NOT NULL");
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", column.getTableMetaData().getName(), column.getName().toUpperCase(), column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getName(), columnFullName, column.getComment()));
             }
         }
         all.add(alter);
@@ -52,10 +54,12 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
         SqlAppender alter = new SqlAppender();
         SqlAppender comments = new SqlAppender();
         List<SqlAppender> all = new ArrayList<>();
+        String columnFullName = column.getTableMetaData().getDatabaseMetaData().getDialect().buildColumnName(null, column.getName());
+
         alter.add("ALTER TABLE ",
                 column.getTableMetaData().getName(),
                 " MODIFY ",
-                column.getName(),
+                columnFullName,
                 " ");
         if (column.getColumnDefinition() != null) {
             alter.add(column.getColumnDefinition());
@@ -65,7 +69,7 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
                 alter.add(" NOT NULL");
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", column.getTableMetaData().getName(), column.getName().toUpperCase(), column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getName(),columnFullName, column.getComment()));
             }
         }
         all.add(alter);

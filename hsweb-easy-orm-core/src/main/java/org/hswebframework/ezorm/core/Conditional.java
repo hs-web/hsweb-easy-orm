@@ -420,6 +420,16 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
 
     Accepter<T, Object> getAccepter();
 
+    default T accept(TermSupplier supplier) {
+        Term term = new Term();
+        term.setColumn(supplier.getColumn());
+        term.setValue(supplier.getValue());
+        if (null != supplier.getOptions())
+            term.setOptions(supplier.getOptions());
+        term.setTermType(supplier.getTermType());
+        return this.accept(term);
+    }
+
     T accept(Term term);
 
 }

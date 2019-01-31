@@ -55,26 +55,40 @@ public abstract class SimpleWhereSqlBuilder {
             //添加类型，and 或者 or
             appender.add(StringUtils.concat(" ", term.getType().toString().toUpperCase(), " "));
             if (!term.getTerms().isEmpty()) {
-                //构建嵌套的条件
-                SqlAppender nest = new SqlAppender();
-                buildWhere(metaData, prefix, term.getTerms(), nest, needSelectTable);
-                //如果嵌套结果为空,
-                if (nest.isEmpty()) {
-                    appender.removeLast();//删除最后一个（and 或者 or）
-                    continue;
+                SqlAppender that = nullTerm ? null : getDialect().buildCondition(prefix, term, column, tableAlias);
+                SqlAppender nest = null;
+                //在自定义SQL条件中可能会修改这个值,所以要重新判断
+                if (!term.getTerms().isEmpty()) {
+                    //构建嵌套的条件
+                    nest = new SqlAppender();
+                    buildWhere(metaData, prefix, term.getTerms(), nest, needSelectTable);
+                    //如果嵌套结果为空
+                    if (nest.isEmpty()) {
+                        if (!nullTerm) {
+                            appender.add(that);
+                        } else {
+                            appender.removeLast();//删除最后一个（and 或者 or）
+                        }
+                        continue;
+                    }
+                    if (nullTerm) {
+                        //删除 第一个（and 或者 or）
+                        nest.removeFirst();
+                    }
+                    appender.add("(");
                 }
-                if (nullTerm) {
-                    //删除 第一个（and 或者 or）
-                    nest.removeFirst();
+                if (that != null) {
+                    appender.add(that);
                 }
-                appender.add("(");
-                if (!nullTerm)
-                    appender.add(getDialect().buildCondition(prefix, term, column, tableAlias));
-                appender.addAll(nest);
-                appender.add(")");
+                if (nest != null) {
+                    appender.addAll(nest);
+                    appender.add(")");
+                }
+
             } else {
-                if (!nullTerm)
+                if (!nullTerm) {
                     appender.add(getDialect().buildCondition(prefix, term, column, tableAlias));
+                }
             }
         }
     }

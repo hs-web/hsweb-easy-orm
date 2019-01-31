@@ -6,23 +6,27 @@ import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
 import java.sql.JDBCType;
 
 public class PGSqlTableMetaParser extends AbstractTableMetaParser {
-    static final String TABLE_META_SQL = " select " +
-            "column_name as `name`, " +
-            "data_type as `data_type`, " +
-            "character_maximum_length as `data_length`, " +
-            "numeric_precision as `data_precision`, " +
-            "numeric_scale as `data_scale`, " +
-            "column_comment as `comment`, " +
-            "case when is_nullable='YES' then 0 else 1 end as 'not-null' " +
-            "from information_schema.columns where table_schema=database() and table_name=#{table}";
+    static final String TABLE_META_SQL = "select column_name as \"name\"" +
+            " , udt_name as \"data_type\"" +
+            " , character_maximum_length as \"data_length\"" +
+            " , numeric_precision as \"data_precision\"" +
+            " , numeric_scale as \"data_scale\"" +
+            " , case when is_nullable = 'YES' then 0 else 1 end as \"not-null\"" +
+            " ,col_description(a.attrelid,a.attnum) as \"comment\"" +
+            " from information_schema.columns columns ," +
+            "     pg_class as c,pg_attribute as a" +
+            " where a.attrelid = c.oid and a.attnum>0 and a.attname = columns.column_name and c.relname=columns.table_name" +
+            " and table_schema = current_schema()" +
+            "  and table_name = #{table}";
 
-    static final String TABLE_COMMENT_SQL = " select " +
-            "table_comment as `comment` " +
-            "from information_schema.tables where table_name=#{table}";
+    static final String TABLE_COMMENT_SQL = "select cast(obj_description(relfilenode,'pg_class') as varchar)" +
+            "  as \"comment\" from pg_class c" +
+            " where relname=#{table} and relkind = 'r' and relname not like 'pg_%'" +
+            " and relname not like 'sql_%'";
 
-    static final String ALL_TABLE_SQL = "select table_name as `name` from information_schema.`TABLES` where table_schema=database()";
+    static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=current_schema()";
 
-    static final String TABLE_EXISTS_SQL = "select count(1) as 'total' from information_schema.`TABLES` where table_schema=database() and table_name=#{table}";
+    static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=current_schema() and table_name=#{table}";
 
     public PGSqlTableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);

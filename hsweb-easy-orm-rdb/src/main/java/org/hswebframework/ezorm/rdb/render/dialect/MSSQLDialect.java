@@ -2,14 +2,16 @@ package org.hswebframework.ezorm.rdb.render.dialect;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
+import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
+import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.meta.parser.SqlServer2012TableMetaParser;
 
 import java.sql.JDBCType;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
- * TODO 完成注释
- *
  * @author zhouhao
  */
 public class MSSQLDialect extends DefaultDialect {
@@ -37,6 +39,22 @@ public class MSSQLDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
         setDataTypeMapper(JDBCType.REAL, (meta) -> "real");
 
+        installFunction(SqlFunction.concat, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
+        installFunction(SqlFunction.bitand, param -> {
+            List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
+            if (listParam.size() != 2) {
+                throw new IllegalArgumentException("[bitand]参数长度必须为2");
+            }
+            StringJoiner joiner = new StringJoiner(",", "bitand(", ")");
+            listParam.stream().map(String::valueOf).forEach(joiner::add);
+            return joiner.toString();
+        });
+
     }
 
     @Override
@@ -50,9 +68,12 @@ public class MSSQLDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize) {
+    public String doPaging(String sql, int pageIndex, int pageSize,boolean prepare) {
         if (!sql.contains("order") && !sql.contains("ORDER")) {
             sql = sql.concat(" order by 1");
+        }
+        if (prepare) {
+            return sql + " OFFSET #{pageSize}*#{pageIndex}  ROWS FETCH NEXT #{pageSize} ROWS ONLY";
         }
         return sql.concat(" OFFSET " + (pageIndex * pageSize) + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY");
     }

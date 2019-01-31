@@ -18,11 +18,11 @@ public class CommonCreateIndexRender {
     public static List<SQL> buildCreateIndexSql(RDBTableMetaData table) {
         return table.getIndexes()
                 .stream()
-                .map(index -> buildIndex(table.getName(), index))
+                .map(index -> buildIndex(table.getName(), index, table))
                 .collect(Collectors.toList());
     }
 
-    public static SQL buildIndex(String table, IndexMetaData index) {
+    public static SQL buildIndex(String table, IndexMetaData index, RDBTableMetaData tableMeta) {
         SqlAppender appender = new SqlAppender();
         appender.addSpc("create",
                 index.isUnique() ? "unique" : "",
@@ -32,7 +32,11 @@ public class CommonCreateIndexRender {
         );
 
         for (IndexMetaData.IndexColumn indexColumn : index.getColumnName()) {
-            appender.add(indexColumn.getColumn(), " ", (indexColumn.getSort() == null ? "" : indexColumn.getSort()));
+            appender.add(tableMeta.getDatabaseMetaData()
+                            .getDialect()
+                            .buildColumnName(null, indexColumn.getColumn()),
+                    " ",
+                    (indexColumn.getSort() == null ? "" : indexColumn.getSort()));
             appender.add(",");
         }
         appender.removeLast();

@@ -3,6 +3,8 @@ package org.hswebframework.ezorm.rdb.render.dialect;
 import org.hswebframework.ezorm.rdb.render.SqlRender;
 import org.hswebframework.ezorm.rdb.render.support.oracle.OracleMetaAlterRender;
 import org.hswebframework.ezorm.rdb.render.support.oracle.OracleMetaCreateRender;
+import org.hswebframework.ezorm.rdb.render.support.postgres.PostgresMetaAlterRender;
+import org.hswebframework.ezorm.rdb.render.support.postgres.PostgresMetaCreateRender;
 
 /**
  * @author zhouhao
@@ -22,8 +24,8 @@ public class PGRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     @Override
     public void init() {
         super.init();
-        putRenderer(SqlRender.TYPE.META_CREATE, new OracleMetaCreateRender());
-        putRenderer(SqlRender.TYPE.META_ALTER, new OracleMetaAlterRender(this));
+        putRenderer(SqlRender.TYPE.META_CREATE, new PostgresMetaCreateRender());
+        putRenderer(SqlRender.TYPE.META_ALTER, new PostgresMetaAlterRender(this));
     }
 
     @Override
