@@ -14,6 +14,8 @@ public class PropertiesUtils {
 
         try {
             return Optional.ofNullable(propertyUtils.getProperty(object, propertyName));
+        } catch (NoSuchMethodException ignore) {
+
         } catch (Exception e) {
             log.debug("无法获取属性:{},对象:{}", propertyName, object, e);
         }
