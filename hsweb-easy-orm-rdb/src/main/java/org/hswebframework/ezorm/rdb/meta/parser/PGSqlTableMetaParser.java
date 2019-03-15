@@ -16,17 +16,17 @@ public class PGSqlTableMetaParser extends AbstractTableMetaParser {
             " from information_schema.columns columns ," +
             "     pg_class as c,pg_attribute as a" +
             " where a.attrelid = c.oid and a.attnum>0 and a.attname = columns.column_name and c.relname=columns.table_name" +
-            " and table_schema = current_schema()" +
-            "  and table_name = #{table}";
+            " and table_schema = %s" +
+            " and table_name = #{table}";
 
     static final String TABLE_COMMENT_SQL = "select cast(obj_description(relfilenode,'pg_class') as varchar)" +
             "  as \"comment\" from pg_class c" +
             " where relname=#{table} and relkind = 'r' and relname not like 'pg_%'" +
             " and relname not like 'sql_%'";
 
-    static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=current_schema()";
+    static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=%s";
 
-    static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=current_schema() and table_name=#{table}";
+    static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=%s and table_name=#{table}";
 
     public PGSqlTableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
@@ -36,6 +36,14 @@ public class PGSqlTableMetaParser extends AbstractTableMetaParser {
         jdbcTypeMap.put("text", JDBCType.CLOB);
     }
 
+    protected String getRealDatabaseName() {
+        String db = getDatabaseName();
+        if (db == null) {
+            return "current_schema()";
+        }
+        return "'" + db + "'";
+    }
+
     @Override
     Dialect getDialect() {
         return Dialect.POSTGRES;
@@ -43,7 +51,7 @@ public class PGSqlTableMetaParser extends AbstractTableMetaParser {
 
     @Override
     String getTableMetaSql(String tname) {
-        return TABLE_META_SQL;
+        return String.format(TABLE_META_SQL, getRealDatabaseName());
     }
 
     @Override
@@ -53,11 +61,11 @@ public class PGSqlTableMetaParser extends AbstractTableMetaParser {
 
     @Override
     String getAllTableSql() {
-        return ALL_TABLE_SQL;
+        return String.format(ALL_TABLE_SQL, getRealDatabaseName());
     }
 
     @Override
     String getTableExistsSql() {
-        return TABLE_EXISTS_SQL;
+        return String.format(TABLE_EXISTS_SQL, getRealDatabaseName());
     }
 }

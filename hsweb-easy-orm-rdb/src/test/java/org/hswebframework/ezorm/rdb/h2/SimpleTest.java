@@ -56,7 +56,12 @@ public class SimpleTest {
     public void testExec() throws Exception {
 
         H2RDBDatabaseMetaData databaseMetaData = new H2RDBDatabaseMetaData();
-        databaseMetaData.setParser(new H2TableMetaParser(sqlExecutor));
+        databaseMetaData.setDatabaseName("PUBLIC");
+        H2TableMetaParser metaParser=new H2TableMetaParser(sqlExecutor);
+
+        databaseMetaData.setParser(metaParser);
+        metaParser.setDatabaseName("PUBLIC");
+
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
         database.createOrAlter("s_user_info")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()

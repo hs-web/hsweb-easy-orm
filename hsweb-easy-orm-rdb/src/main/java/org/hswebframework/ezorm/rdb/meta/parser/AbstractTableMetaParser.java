@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ObjectWrapper;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
@@ -19,8 +20,16 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class AbstractTableMetaParser implements TableMetaParser {
-    Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
-    Map<JDBCType, Class>  javaTypeMap = new HashMap<>();
+    protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
+    protected Map<JDBCType, Class> javaTypeMap = new HashMap<>();
+
+    @Setter
+    protected String databaseName;
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
     protected SqlExecutor sqlExecutor;
 
     abstract Dialect getDialect();

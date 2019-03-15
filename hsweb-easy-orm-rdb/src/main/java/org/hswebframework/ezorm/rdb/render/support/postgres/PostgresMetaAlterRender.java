@@ -29,7 +29,7 @@ public class PostgresMetaAlterRender extends AbstractMetaAlterRender {
         String columnFullName = column.getTableMetaData().getDatabaseMetaData().getDialect().buildColumnName(null, column.getName());
 
         alter.add("ALTER TABLE ",
-                column.getTableMetaData().getName(),
+                column.getTableMetaData().getFullName(),
                 " ADD ",
                 columnFullName,
                 " ");
@@ -41,7 +41,7 @@ public class PostgresMetaAlterRender extends AbstractMetaAlterRender {
                 alter.add(" NOT NULL");
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getName(), columnFullName, column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getFullName(), columnFullName, column.getComment()));
             }
         }
         all.add(alter);
@@ -69,7 +69,7 @@ public class PostgresMetaAlterRender extends AbstractMetaAlterRender {
                 alter.add(" NOT NULL");
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getName(),columnFullName, column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getFullName(),columnFullName, column.getComment()));
             }
         }
         all.add(alter);

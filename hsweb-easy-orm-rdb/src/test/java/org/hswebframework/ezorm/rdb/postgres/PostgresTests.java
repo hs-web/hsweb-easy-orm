@@ -39,7 +39,7 @@ public class PostgresTests {
         Class.forName("org.postgresql.Driver");
 
         Connection connection = DriverManager
-                .getConnection("jdbc:postgresql://localhost:5432/postgres", "root","123456");
+                .getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres","123456");
         sqlExecutor = new AbstractJdbcSqlExecutor() {
             @Override
             public Connection getConnection() {
@@ -73,7 +73,14 @@ public class PostgresTests {
 
     @Test
     public void testExec() throws Exception {
-        RDBDatabaseMetaData databaseMetaData = new PGRDBDatabaseMetaData();
+        PGRDBDatabaseMetaData databaseMetaData = new PGRDBDatabaseMetaData();
+
+        databaseMetaData.setDatabaseName("test");
+
+        PGSqlTableMetaParser metaParser=new PGSqlTableMetaParser(sqlExecutor);
+        metaParser.setDatabaseName("test");
+        databaseMetaData.setParser(metaParser);
+
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
         database.createOrAlter("s_user")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()

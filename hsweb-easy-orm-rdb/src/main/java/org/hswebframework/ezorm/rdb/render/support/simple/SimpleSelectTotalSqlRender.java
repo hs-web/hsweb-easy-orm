@@ -45,7 +45,7 @@ public class SimpleSelectTotalSqlRender extends CommonSqlRender<QueryParam> {
         public SQL process() {
             SqlAppender appender = new SqlAppender();
             appender.add("SELECT count(0) as ", dialect.getQuoteStart(), "total", dialect.getQuoteEnd());
-            appender.add(" FROM ", metaData.getName(), " ", metaData.getAlias());
+            appender.add(" FROM ", metaData.getFullName(), " ", metaData.getAlias());
             //生成join
             needSelectTable.stream()
                     .filter(table -> !table.equals(metaData.getName()) && metaData.getCorrelation(table) != null)

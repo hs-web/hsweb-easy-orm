@@ -40,7 +40,7 @@ public class MysqlDeleteSqlRender extends CommonSqlRender<Param> {
 
         public SQL process() {
             SqlAppender appender = new SqlAppender();
-            appender.add("DELETE ", metaData.getAlias(), " FROM ", metaData.getName(), " ", metaData.getAlias());
+            appender.add("DELETE ", metaData.getAlias(), " FROM ", metaData.getFullName(), " ", metaData.getAlias());
             if (whereSql.isEmpty()) {
                 throw new UnsupportedOperationException("禁止执行未设置任何条件的删除操作!");
             }

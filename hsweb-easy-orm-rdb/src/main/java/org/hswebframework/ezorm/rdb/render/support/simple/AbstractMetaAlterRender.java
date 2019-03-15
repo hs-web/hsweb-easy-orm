@@ -111,7 +111,7 @@ public abstract class AbstractMetaAlterRender implements SqlRender<Boolean> {
     protected List<SqlAppender> buildAdd(RDBColumnMetaData column) {
         SqlAppender append = new SqlAppender();
         append.add("alter table ",
-                column.getTableMetaData().getName(),
+                column.getTableMetaData().getFullName(),
                 " add ",
                 column.getName(),
                 " ");
@@ -132,7 +132,7 @@ public abstract class AbstractMetaAlterRender implements SqlRender<Boolean> {
     protected List<SqlAppender> buildAlter(RDBColumnMetaData column) {
         SqlAppender append = new SqlAppender();
         append.add("alter table ",
-                column.getTableMetaData().getName(),
+                column.getTableMetaData().getFullName(),
                 " modify ",
                 column.getName(),
                 " ");
@@ -151,7 +151,7 @@ public abstract class AbstractMetaAlterRender implements SqlRender<Boolean> {
     }
 
     protected List<SqlAppender> buildDrop(RDBColumnMetaData column) {
-        String dropSql = String.format("alter table %s drop column %s", column.getTableMetaData().getName(), column.getName());
+        String dropSql = String.format("alter table %s drop column %s", column.getTableMetaData().getFullName(), column.getName());
         return new ArrayList<>(Collections.singletonList(new SqlAppender(dropSql)));
     }
 

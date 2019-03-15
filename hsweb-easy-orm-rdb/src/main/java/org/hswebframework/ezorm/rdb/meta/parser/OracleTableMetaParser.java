@@ -28,6 +28,14 @@ public class OracleTableMetaParser extends AbstractTableMetaParser {
     static final String TABLE_EXISTS_SQL = "select count(1) as \"total\" from user_tab_comments where table_type='TABLE' and table_name=upper(#{table})";
 
 
+    protected String getRealDatabaseName() {
+        String db = getDatabaseName();
+        if (db == null) {
+            return "current_schema()";
+        }
+        return "'" + db + "'";
+    }
+
     @Override
     Dialect getDialect() {
         return Dialect.ORACLE;

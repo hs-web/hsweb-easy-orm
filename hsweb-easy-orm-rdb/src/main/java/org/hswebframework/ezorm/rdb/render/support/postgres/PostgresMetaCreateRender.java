@@ -22,7 +22,7 @@ public class PostgresMetaCreateRender implements SqlRender<Object> {
         List<String> comments = new ArrayList<>();
         Set<RDBColumnMetaData> columns = metaData.getColumns();
         if (columns.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
-        createBody.add("\nCREATE TABLE ", metaData.getName(), "(");
+        createBody.add("\nCREATE TABLE ", metaData.getFullName(), "(");
         columns.forEach(column -> {
             String columnFullName = metaData.getDatabaseMetaData().getDialect().buildColumnName(null, column.getName());
 
@@ -41,12 +41,12 @@ public class PostgresMetaCreateRender implements SqlRender<Object> {
                     createBody.add("PRIMARY KEY ");
                 //注释
                 if (!StringUtils.isNullOrEmpty(column.getComment())) {
-                    comments.add(String.format("COMMENT ON COLUMN %s.%s IS '%s'", metaData.getName(), columnFullName, column.getComment()));
+                    comments.add(String.format("COMMENT ON COLUMN %s.%s IS '%s'", metaData.getFullName(), columnFullName, column.getComment()));
                 }
             }
             createBody.add(",");
         });
-        comments.add(String.format("COMMENT ON TABLE %s IS '%s'", metaData.getName(), metaData.getComment()));
+        comments.add(String.format("COMMENT ON TABLE %s IS '%s'", metaData.getFullName(), metaData.getComment()));
         createBody.removeLast();
         createBody.add("\n)");
         SimpleSQL simpleSQL = new SimpleSQL(createBody.toString(), param);

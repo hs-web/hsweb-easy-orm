@@ -40,7 +40,7 @@ public class MysqlMetaCreateRender implements SqlRender {
         if (columns.isEmpty()) {
             throw new UnsupportedOperationException("未指定任何字段");
         }
-        appender.add("\nCREATE TABLE ", metaData.getName(), "(");
+        appender.add("\nCREATE TABLE ", metaData.getFullName(), "(");
         columns.forEach(column -> {
             appender.add("\n\t`", column.getName(), "` ");
             if (column.getColumnDefinition() != null) {

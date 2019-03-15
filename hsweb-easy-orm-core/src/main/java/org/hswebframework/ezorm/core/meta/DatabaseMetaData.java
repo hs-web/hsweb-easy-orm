@@ -5,6 +5,8 @@ import org.hswebframework.ezorm.core.ValidatorFactory;
 
 public interface DatabaseMetaData {
 
+    String getDatabaseName();
+
     ObjectWrapperFactory getObjectWrapperFactory();
 
     ValidatorFactory getValidatorFactory();

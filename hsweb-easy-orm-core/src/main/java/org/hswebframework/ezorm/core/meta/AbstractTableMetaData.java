@@ -7,18 +7,18 @@ import java.util.function.Supplier;
 
 public abstract class AbstractTableMetaData<C extends AbstractColumnMetaData> implements TableMetaData {
     //表名称
-    protected String               name                   = null;
+    protected String name = null;
     //表别名,如果指定了别名,查询结果将使用别名进行封装
-    protected String               alias                  = null;
+    protected String alias = null;
     //备注
-    protected String               comment                = null;
+    protected String comment = null;
     //表字段
-    protected Map<String, C>       columnMetaDataMap      = new LinkedHashMap<>();
-    protected Map<String, C>       aliasColumnMetaDataMap = new LinkedHashMap<>();
-    protected Validator            validator              = null;
-    protected ObjectWrapper        objectWrapper          = null;
-    protected Map<String, Object>  properties             = new HashMap<>();
-    protected Map<String, Trigger> triggerBase            = new HashMap<>();
+    protected Map<String, C> columnMetaDataMap = new LinkedHashMap<>();
+    protected Map<String, C> aliasColumnMetaDataMap = new LinkedHashMap<>();
+    protected Validator validator = null;
+    protected ObjectWrapper objectWrapper = null;
+    protected Map<String, Object> properties = new HashMap<>();
+    protected Map<String, Trigger> triggerBase = new HashMap<>();
 
     @Override
     public <T> ObjectWrapper<T> getObjectWrapper() {
@@ -31,6 +31,15 @@ public abstract class AbstractTableMetaData<C extends AbstractColumnMetaData> im
 
     public String getName() {
         return name;
+    }
+
+    public String getFullName() {
+        String dbName = getDatabaseMetaData().getDatabaseName();
+
+        if (dbName == null) {
+            return getName();
+        }
+        return dbName + "." + getName();
     }
 
     public void setName(String name) {

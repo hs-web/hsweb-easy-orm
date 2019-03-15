@@ -84,7 +84,7 @@ public class SqlServerSelectSqlRender extends CommonSqlRender<QueryParam> {
                             .map(sort -> sort.getName().concat(" ").concat(sort.getOrder()))
                             .reduce((s1, s2) -> s1.concat(",").concat(s2)).get();
                 }
-                appender.add("SELECT tmp_.* FROM ", metaData.getName(), " t ,"
+                appender.add("SELECT tmp_.* FROM ", metaData.getFullName(), " t ,"
                         , "(SELECT TOP ((#{pageIndex}+1)*#{pageSize}) row_number() over (ORDER BY ", defaultOrder, " ) rownum_,");
             } else {
                 appender.add("SELECT ");

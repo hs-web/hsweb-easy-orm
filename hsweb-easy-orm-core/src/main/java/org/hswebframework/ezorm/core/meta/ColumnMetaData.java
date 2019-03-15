@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.core.ValueConverter;
 import java.io.Serializable;
 import java.util.Set;
 
+@SuppressWarnings("all")
 public interface ColumnMetaData extends Serializable, Cloneable {
     String getName();
 

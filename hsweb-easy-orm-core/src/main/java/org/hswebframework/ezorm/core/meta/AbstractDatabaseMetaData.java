@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.core.meta;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hswebframework.ezorm.core.ObjectWrapperFactory;
 import org.hswebframework.ezorm.core.ValidatorFactory;
 import org.hswebframework.ezorm.core.meta.storage.MapTableMetaDataStorage;
@@ -8,6 +10,11 @@ import org.hswebframework.ezorm.core.meta.storage.TableMetaDataStorage;
 public abstract class AbstractDatabaseMetaData implements DatabaseMetaData {
     protected ObjectWrapperFactory objectWrapperFactory;
     protected ValidatorFactory     validatorFactory;
+
+    @Getter
+    @Setter
+    protected String databaseName;
+
     protected TableMetaDataStorage tableMetaDataStorage =new MapTableMetaDataStorage();
 
     @Override

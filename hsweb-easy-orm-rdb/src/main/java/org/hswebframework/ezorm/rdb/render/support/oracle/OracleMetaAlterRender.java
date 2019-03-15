@@ -27,7 +27,7 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
         SqlAppender comments = new SqlAppender();
         List<SqlAppender> all = new ArrayList<>();
         alter.add("ALTER TABLE ",
-                column.getTableMetaData().getName(),
+                column.getTableMetaData().getFullName(),
                 " ADD ",
                 column.getName(),
                 " ");
@@ -39,7 +39,7 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
                 alter.add(" NOT NULL");
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", column.getTableMetaData().getName(), column.getName().toUpperCase(), column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", column.getTableMetaData().getFullName(), column.getName().toUpperCase(), column.getComment()));
             }
         }
         all.add(alter);
@@ -65,7 +65,7 @@ public class OracleMetaAlterRender extends AbstractMetaAlterRender {
                 alter.add(" NOT NULL");
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", column.getTableMetaData().getName(), column.getName().toUpperCase(), column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.\"%s\" is '%s'", column.getTableMetaData().getFullName(), column.getName().toUpperCase(), column.getComment()));
             }
         }
         all.add(alter);

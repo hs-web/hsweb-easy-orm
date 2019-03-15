@@ -33,7 +33,7 @@ public class MysqlTest {
         Class.forName("com.mysql.jdbc.Driver");
 
         Connection connection = DriverManager
-                .getConnection("jdbc:mysql://localhost:3306/hsweb?useSSL=false", "root","19920622");
+                .getConnection("jdbc:mysql://localhost:3306/hsweb?useSSL=false", "root","12345");
         sqlExecutor = new AbstractJdbcSqlExecutor() {
             @Override
             public Connection getConnection() {
@@ -67,7 +67,12 @@ public class MysqlTest {
 
     @Test
     public void testExec() throws Exception {
-        RDBDatabaseMetaData databaseMetaData = new MysqlRDBDatabaseMetaData();
+        MysqlRDBDatabaseMetaData databaseMetaData = new MysqlRDBDatabaseMetaData();
+        databaseMetaData.setDatabaseName("test");
+        MysqlTableMetaParser tableMetaParser=new MysqlTableMetaParser(sqlExecutor);
+        tableMetaParser.setDatabaseName("test");
+        databaseMetaData.setParser(tableMetaParser);
+
         RDBDatabase database = new SimpleDatabase(databaseMetaData, sqlExecutor);
         database.createOrAlter("s_user")
                 .addColumn().name("id").varchar(32).primaryKey().comment("id").commit()

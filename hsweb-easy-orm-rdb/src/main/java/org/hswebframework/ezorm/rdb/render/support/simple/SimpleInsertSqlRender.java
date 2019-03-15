@@ -78,7 +78,7 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
             }
 
         });
-        appender.add("INSERT INTO ", metaData.getName(), " (")
+        appender.add("INSERT INTO ", metaData.getFullName(), " (")
                 .add(String.join(",", columns.toArray(new String[columns.size()])), ")VALUES(")
                 .add(String.join(",", valuesExpression.toArray(new String[valuesExpression.size()])), ")");
 

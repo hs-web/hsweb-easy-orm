@@ -22,7 +22,7 @@ public class OracleMetaCreateRender implements SqlRender<Object> {
         List<String> comments = new ArrayList<>();
         Set<RDBColumnMetaData> columns = metaData.getColumns();
         if (columns.isEmpty()) throw new UnsupportedOperationException("未指定任何字段");
-        createBody.add("\nCREATE TABLE ", metaData.getName(), "(");
+        createBody.add("\nCREATE TABLE ", metaData.getFullName(), "(");
         columns.forEach(column -> {
             createBody.add("\n\t\"", column.getName().toUpperCase(), "\" ");
 

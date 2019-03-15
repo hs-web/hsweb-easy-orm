@@ -18,7 +18,7 @@ public class CommonCreateIndexRender {
     public static List<SQL> buildCreateIndexSql(RDBTableMetaData table) {
         return table.getIndexes()
                 .stream()
-                .map(index -> buildIndex(table.getName(), index, table))
+                .map(index -> buildIndex(table.getFullName(), index, table))
                 .collect(Collectors.toList());
     }
 
