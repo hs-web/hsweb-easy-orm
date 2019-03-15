@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hsweb-easy-orm-rdb</artifactId>
-    <description>easyorm关系型数据库实现,支持h2,oracle,mysql</description>
+    <description>easyorm关系型数据库实现,支持h2,Oracle,Mysql,PostgreSQL</description>
 
     <dependencies>
         <dependency>
