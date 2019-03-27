@@ -214,6 +214,11 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
+    public boolean isSupportTermType(String termType) {
+        return termTypeMappers.containsKey(termType);
+    }
+
+    @Override
     public void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
         dataTypeMappers.put(jdbcType.getName(), mapper);
     }
