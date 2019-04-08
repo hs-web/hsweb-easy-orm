@@ -11,7 +11,11 @@ public class Sort extends Column {
     private String order = "asc";
 
     public String getOrder() {
-        return order;
+        if ("desc".equalsIgnoreCase(order)) {
+            return order;
+        } else {
+            return order = "asc";
+        }
     }
 
     public void setOrder(String order) {
