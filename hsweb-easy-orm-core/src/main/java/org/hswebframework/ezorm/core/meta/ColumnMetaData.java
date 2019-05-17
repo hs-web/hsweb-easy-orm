@@ -35,5 +35,4 @@ public interface ColumnMetaData extends Serializable, Cloneable {
 
     PropertyWrapper setProperty(String property, Object value);
 
-    <T extends ColumnMetaData> T clone();
 }
