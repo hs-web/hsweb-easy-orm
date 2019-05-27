@@ -13,10 +13,13 @@ import org.hswebframework.ezorm.rdb.render.support.simple.SimpleSQL;
 import org.hswebframework.ezorm.rdb.render.support.simple.SimpleWhereSqlBuilder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Created by zhouhao on 16-5-17.
+ * @author zhouhao
+ * @since 2.0
  */
+@SuppressWarnings("all")
 public class SqlServerSelectSqlRender extends CommonSqlRender<QueryParam> {
 
     private Dialect dialect;
@@ -34,12 +37,12 @@ public class SqlServerSelectSqlRender extends CommonSqlRender<QueryParam> {
     }
 
     class SimpleSelectSqlRenderProcess extends SimpleWhereSqlBuilder {
-        private RDBTableMetaData      metaData;
-        private QueryParam            param;
+        private RDBTableMetaData metaData;
+        private QueryParam param;
         private List<OperationColumn> selectField;
-        private SqlAppender whereSql        = new SqlAppender();
+        private SqlAppender whereSql = new SqlAppender();
         private Set<String> needSelectTable = new LinkedHashSet<>();
-        private List<Sort>  sorts           = new ArrayList<>();
+        private List<Sort> sorts = new ArrayList<>();
 
         public SimpleSelectSqlRenderProcess(RDBTableMetaData metaData, QueryParam param) {
             this.metaData = metaData;
@@ -52,11 +55,12 @@ public class SqlServerSelectSqlRender extends CommonSqlRender<QueryParam> {
             this.selectField = parseOperationField(metaData, param);
             //解析查询条件
             buildWhere(metaData, "", param.getTerms(), whereSql, needSelectTable);
-            if (!whereSql.isEmpty()) whereSql.removeFirst();
+            if (!whereSql.isEmpty()) {
+                whereSql.removeFirst();
+            } ;
             //加入要查询的表
-            this.selectField.stream().forEach(field -> {
-                needSelectTable.add(field.getTableName());
-            });
+            needSelectTable.addAll(this.selectField.stream().map(OperationColumn::getTableName).collect(Collectors.toList()));
+
             param.getSorts().forEach(sort -> {
                 RDBColumnMetaData rDBColumnMetaData = metaData.findColumn(sort.getName());
                 if (rDBColumnMetaData.getName() == null) return;
@@ -68,29 +72,12 @@ public class SqlServerSelectSqlRender extends CommonSqlRender<QueryParam> {
         }
 
         public SQL process() {
-            boolean doPaing = param.isPaging() && !param.isForUpdate();
             SqlAppender appender = new SqlAppender();
-            if (doPaing) {
-                //SELECT w2.n, w1.* FROM s_test w1,(
-//                    SELECT TOP 1030 row_number() over (ORDER BY u_id DESC) n,* FROM s_test
-//              ) w2 WHERE w1.u_id = w2.u_id AND w2.n > 0 ORDER BY w2.n ASC
+            appender.add("SELECT ");
 
-                String defaultOrder;
-                if (sorts.isEmpty()) {
-                    defaultOrder = metaData
-                            .getProperty("default-order", metaData.getColumns().stream().findAny().get().getAlias()).getValue();
-                } else {
-                    defaultOrder = sorts.stream()
-                            .map(sort -> sort.getName().concat(" ").concat(sort.getOrder()))
-                            .reduce((s1, s2) -> s1.concat(",").concat(s2)).get();
-                }
-                appender.add("SELECT tmp_.* FROM ", metaData.getFullName(), " t ,"
-                        , "(SELECT TOP ((#{pageIndex}+1)*#{pageSize}) row_number() over (ORDER BY ", defaultOrder, " ) rownum_,");
-            } else {
-                appender.add("SELECT ");
+            if (selectField.isEmpty()) {
+                appender.add(" * ");
             }
-
-            if (selectField.isEmpty()) appender.add(" * ");
             selectField.forEach(operationColumn -> {
                 RDBColumnMetaData rDBColumnMetaData = operationColumn.getRDBColumnMetaData();
                 String tableName = rDBColumnMetaData.getTableMetaData().getName();
@@ -132,31 +119,19 @@ public class SqlServerSelectSqlRender extends CommonSqlRender<QueryParam> {
             if (!whereSql.isEmpty())
                 appender.add(" WHERE ", "").addAll(whereSql);
 
-            if (doPaing) {
-                String uniqueColumn = metaData
-                        .getProperty("unique-column", () -> {
-                            RDBColumnMetaData column = metaData.findColumn("u_id") == null ? metaData.findColumn("id") : null;
-                            if (column != null) return column.getName();
-                            return null;
-                        })
-                        .getValue();
-                if (uniqueColumn == null) {
-                    throw new NullPointerException("unique column is null,you can set table property:unique-column or add column : id or u_id");
-                }
-                appender.add(") tmp_ WHERE t.[", uniqueColumn, "] = tmp_.[" + uniqueColumn + "] AND tmp_.rownum_ > (#{pageIndex}*#{pageSize}) ORDER BY tmp_.rownum_ ASC");
-
-            } else if (!sorts.isEmpty()) {
+            if (!sorts.isEmpty()) {
                 appender.add(" ORDER BY ");
-                sorts.forEach(sort -> appender.add(sort.getName(), " ", sort.getOrder(), ","));
+                for (Sort sort : sorts) {
+                    appender.add(sort.getName(), " ", sort.getOrder(), ",");
+                }
                 appender.removeLast();
             }
+            if (param.isForUpdate()) {
+                appender.add(" FOR UPDATE");
+            }
             String sql = appender.toString();
-//            if (param.isPaging() && !param.isForUpdate()) {
-//                sql = dialect.doPaging(sql, param.getPageIndex(), param.getPageSize());
-//            }
-            if (param.isForUpdate()) sql.concat(" FOR UPDATE");
-            SimpleSQL simpleSQL = new SimpleSQL(sql, param);
-            return simpleSQL;
+
+            return new SimpleSQL(sql, param);
         }
 
         @Override

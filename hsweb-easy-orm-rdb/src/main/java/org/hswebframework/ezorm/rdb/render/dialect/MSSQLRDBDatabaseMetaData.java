@@ -14,10 +14,10 @@ public class MSSQLRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     @Override
     public void init() {
         super.init();
-        renderMap.put(SqlRender.TYPE.META_CREATE, new SqlServerMetaCreateRender());
-        renderMap.put(SqlRender.TYPE.META_ALTER, new SqlServerMetaAlterRender());
-        renderMap.put(SqlRender.TYPE.SELECT, new SqlServerSelectSqlRender(getDialect()));
-        renderMap.put(SqlRender.TYPE.DELETE, new SqlServerDeleteSqlRender(getDialect()));
+        putRenderer(SqlRender.TYPE.META_CREATE, new SqlServerMetaCreateRender());
+        putRenderer(SqlRender.TYPE.META_ALTER, new SqlServerMetaAlterRender());
+        putRenderer(SqlRender.TYPE.SELECT, new SqlServerSelectSqlRender(getDialect()));
+        putRenderer(SqlRender.TYPE.DELETE, new SqlServerDeleteSqlRender(getDialect()));
     }
 
     public MSSQLRDBDatabaseMetaData() {
