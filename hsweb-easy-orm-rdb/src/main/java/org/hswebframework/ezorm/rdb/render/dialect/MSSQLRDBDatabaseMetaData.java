@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.render.dialect;
 
 import org.hswebframework.ezorm.rdb.render.SqlRender;
-import org.hswebframework.ezorm.rdb.render.support.sqlserver.SqlServerDeleteSqlRender;
-import org.hswebframework.ezorm.rdb.render.support.sqlserver.SqlServerMetaAlterRender;
-import org.hswebframework.ezorm.rdb.render.support.sqlserver.SqlServerMetaCreateRender;
-import org.hswebframework.ezorm.rdb.render.support.sqlserver.SqlServerSelectSqlRender;
+import org.hswebframework.ezorm.rdb.render.support.sqlserver.*;
 
 public class MSSQLRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     private static final String DEFAULT_NAME = "mssql";
@@ -18,6 +15,7 @@ public class MSSQLRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
         putRenderer(SqlRender.TYPE.META_ALTER, new SqlServerMetaAlterRender());
         putRenderer(SqlRender.TYPE.SELECT, new SqlServerSelectSqlRender(getDialect()));
         putRenderer(SqlRender.TYPE.DELETE, new SqlServerDeleteSqlRender(getDialect()));
+        putRenderer(SqlRender.TYPE.UPDATE, new SqlServerUpdateSqlRender(getDialect()));
     }
 
     public MSSQLRDBDatabaseMetaData() {
