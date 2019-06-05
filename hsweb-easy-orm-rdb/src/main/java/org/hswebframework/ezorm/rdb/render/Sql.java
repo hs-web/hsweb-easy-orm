@@ -1,8 +1,6 @@
 package org.hswebframework.ezorm.rdb.render;
 
 /**
- * TODO 完成注释
- *
  * @author zhouhao
  */
 public interface Sql {

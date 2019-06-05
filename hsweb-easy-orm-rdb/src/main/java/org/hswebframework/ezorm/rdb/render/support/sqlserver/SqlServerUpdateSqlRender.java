@@ -73,7 +73,7 @@ public class SqlServerUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         return;
                     }
                 }
-                if (column.getValueConverter() != null) {
+                if (!(value instanceof Sql) && column.getValueConverter() != null) {
                     Object newValue = column.getValueConverter().getData(value);
                     if (column.getOptionConverter() != null) {
                         newValue = column.getOptionConverter().converterData(newValue);

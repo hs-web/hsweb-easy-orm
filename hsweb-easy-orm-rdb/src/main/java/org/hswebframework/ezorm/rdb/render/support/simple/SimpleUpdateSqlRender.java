@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Created by zhouhao on 16-6-4.
  */
+@SuppressWarnings("all")
 public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
     class SimpleUpdateSqlRenderProcess extends SimpleWhereSqlBuilder {
@@ -69,7 +70,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         return;
                     }
                 }
-                if (column.getValueConverter() != null) {
+                if (!(value instanceof Sql) &&column.getValueConverter() != null) {
                     Object newValue = column.getValueConverter().getData(value);
                     if (column.getOptionConverter() != null) {
                         newValue = column.getOptionConverter().converterData(newValue);
