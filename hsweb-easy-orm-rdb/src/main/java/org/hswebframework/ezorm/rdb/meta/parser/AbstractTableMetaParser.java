@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class AbstractTableMetaParser implements TableMetaParser {
+    @Deprecated
     protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
     protected Map<JDBCType, Class> javaTypeMap = new HashMap<>();
 
@@ -137,17 +138,8 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             instance.setPrecision(data_precision);
             instance.setScale(data_scale);
 
-            JDBCType jdbcType;
-            try {
-                jdbcType = JDBCType.valueOf(data_type.toUpperCase());
-            } catch (Exception e) {
-                if (data_type.contains("("))
-                    data_type = data_type.substring(0, data_type.indexOf("("));
-                jdbcType = jdbcTypeMap.get(data_type.toLowerCase());
-                if (jdbcType == null) {
-                    jdbcType = JDBCType.valueOf(data_type.toUpperCase());
-                }
-            }
+            JDBCType jdbcType=getDialect().getJdbcType(data_type);
+
             Class javaType = javaTypeMap.get(jdbcType);
             instance.setJdbcType(jdbcType);
             instance.setJavaType(javaType);

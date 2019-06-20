@@ -33,6 +33,11 @@ public class MysqlDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
+        setJdbcTypeMapping("int", JDBCType.INTEGER);
+        setJdbcTypeMapping("year", JDBCType.TIME);
+        setJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
+        setJdbcTypeMapping("text", JDBCType.CLOB);
+
         installFunction(SqlFunction.concat, param -> {
             List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
             StringJoiner joiner = new StringJoiner(",", "concat(", ")");

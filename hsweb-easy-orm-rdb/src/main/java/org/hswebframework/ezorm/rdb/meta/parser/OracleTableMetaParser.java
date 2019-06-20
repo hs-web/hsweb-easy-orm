@@ -43,11 +43,7 @@ public class OracleTableMetaParser extends AbstractTableMetaParser {
 
     public OracleTableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
-        jdbcTypeMap.put("varchar2", JDBCType.VARCHAR);
-        jdbcTypeMap.put("number", JDBCType.NUMERIC);
-        jdbcTypeMap.put("date", JDBCType.TIMESTAMP);
-        jdbcTypeMap.put("nvarchar2", JDBCType.NVARCHAR);
-        jdbcTypeMap.put("timestamp", JDBCType.TIMESTAMP);
+
     }
 
     @Override

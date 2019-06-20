@@ -63,6 +63,8 @@ public interface Dialect {
 
     TableMetaParser getDefaultParser(SqlExecutor sqlExecutor);
 
+    JDBCType getJdbcType(String dataType);
+
     Dialect MYSQL    = new MysqlDialect();
     Dialect ORACLE   = new OracleDialect();
     Dialect H2       = new H2Dialect();

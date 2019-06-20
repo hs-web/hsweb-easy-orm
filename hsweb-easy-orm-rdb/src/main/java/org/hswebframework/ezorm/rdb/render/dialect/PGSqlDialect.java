@@ -38,6 +38,21 @@ public class PGSqlDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
+        setJdbcTypeMapping("int", JDBCType.INTEGER);
+        setJdbcTypeMapping("int2", JDBCType.INTEGER);
+        setJdbcTypeMapping("int4", JDBCType.INTEGER);
+
+        setJdbcTypeMapping("float8", JDBCType.DOUBLE);
+        setJdbcTypeMapping("money", JDBCType.DOUBLE);
+        setJdbcTypeMapping("bool", JDBCType.BOOLEAN);
+
+        setJdbcTypeMapping("character", JDBCType.VARCHAR);
+        setJdbcTypeMapping("xml", JDBCType.VARCHAR);
+
+        setJdbcTypeMapping("year", JDBCType.TIME);
+        setJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
+        setJdbcTypeMapping("text", JDBCType.CLOB);
+
         installFunction(SqlFunction.concat, param -> {
             List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
             StringJoiner joiner = new StringJoiner("||");

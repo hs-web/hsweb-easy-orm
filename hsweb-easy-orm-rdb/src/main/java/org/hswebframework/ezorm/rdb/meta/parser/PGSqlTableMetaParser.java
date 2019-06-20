@@ -30,10 +30,6 @@ public class PGSqlTableMetaParser extends AbstractTableMetaParser {
 
     public PGSqlTableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);
-        jdbcTypeMap.put("int", JDBCType.INTEGER);
-        jdbcTypeMap.put("year", JDBCType.TIME);
-        jdbcTypeMap.put("datetime", JDBCType.TIMESTAMP);
-        jdbcTypeMap.put("text", JDBCType.CLOB);
     }
 
     protected String getRealDatabaseName() {

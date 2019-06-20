@@ -39,6 +39,34 @@ public class MSSQLDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
         setDataTypeMapper(JDBCType.REAL, (meta) -> "real");
 
+
+        setJdbcTypeMapping("bigint", JDBCType.BIGINT);
+        setJdbcTypeMapping("binary", JDBCType.BINARY);
+        setJdbcTypeMapping("bit", JDBCType.BIT);
+        setJdbcTypeMapping("char", JDBCType.CHAR);
+        setJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
+        setJdbcTypeMapping("decimal", JDBCType.DECIMAL);
+        setJdbcTypeMapping("float", JDBCType.FLOAT);
+        setJdbcTypeMapping("image", JDBCType.LONGVARBINARY);
+        setJdbcTypeMapping("int", JDBCType.INTEGER);
+        setJdbcTypeMapping("money", JDBCType.DECIMAL);
+        setJdbcTypeMapping("nchar", JDBCType.CHAR);
+        setJdbcTypeMapping("ntext", JDBCType.LONGVARCHAR);
+        setJdbcTypeMapping("numeric", JDBCType.NUMERIC);
+        setJdbcTypeMapping("nvarchar", JDBCType.VARCHAR);
+        setJdbcTypeMapping("real", JDBCType.REAL);
+        setJdbcTypeMapping("smalldatetime", JDBCType.TIMESTAMP);
+        setJdbcTypeMapping("smallint", JDBCType.SMALLINT);
+        setJdbcTypeMapping("smallmoney", JDBCType.DECIMAL);
+        setJdbcTypeMapping("sql_variant", JDBCType.VARCHAR);
+        setJdbcTypeMapping("sysname", JDBCType.VARCHAR);
+        setJdbcTypeMapping("text", JDBCType.LONGVARCHAR);
+        setJdbcTypeMapping("timestamp", JDBCType.BINARY);
+        setJdbcTypeMapping("tinyint", JDBCType.TINYINT);
+        setJdbcTypeMapping("uniqueidentifier", JDBCType.CHAR);
+        setJdbcTypeMapping("varbinary", JDBCType.VARBINARY);
+        setJdbcTypeMapping("varchar", JDBCType.VARCHAR);
+
         installFunction(SqlFunction.concat, param -> {
             List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
             StringJoiner joiner = new StringJoiner(",", "concat(", ")");
@@ -68,7 +96,7 @@ public class MSSQLDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize,boolean prepare) {
+    public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
         if (!sql.contains("order") && !sql.contains("ORDER")) {
             sql = sql.concat(" order by 1");
         }

@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.render.dialect;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.param.ClassFieldTerm;
 import org.hswebframework.ezorm.rdb.render.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.render.dialect.term.BoostTermTypeMapper;
@@ -17,16 +18,14 @@ import org.hswebframework.ezorm.rdb.render.SqlAppender;
 import java.sql.JDBCType;
 import java.util.*;
 
-/**
- *
- */
+@Slf4j
 public abstract class DefaultDialect implements Dialect {
-    protected Map<String, TermTypeMapper> termTypeMappers       = new HashMap<>();
-    protected Map<String, DataTypeMapper> dataTypeMappers       = new HashMap<>();
-    protected Map<String, SqlFunction>    functions             = new HashMap<>();
-    protected DataTypeMapper              defaultDataTypeMapper = null;
+    protected Map<String, TermTypeMapper> termTypeMappers = new HashMap<>();
+    protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
+    protected Map<String, SqlFunction> functions = new HashMap<>();
+    protected DataTypeMapper defaultDataTypeMapper = null;
 
-    static final List<JDBCType> numberJdbcType = Arrays.asList(JDBCType.NUMERIC, JDBCType.INTEGER, JDBCType.BIGINT, JDBCType.TINYINT, JDBCType.DOUBLE, JDBCType.FLOAT);
+    protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
 
     public DefaultDialect() {
         //默认查询条件支持
@@ -223,6 +222,10 @@ public abstract class DefaultDialect implements Dialect {
         dataTypeMappers.put(jdbcType.getName(), mapper);
     }
 
+    public void setJdbcTypeMapping(String dataType, JDBCType jdbcType) {
+        jdbcTypeMap.put(dataType, jdbcType);
+    }
+
     @Override
     public String buildDataType(RDBColumnMetaData columnMetaData) {
         if (columnMetaData.getJdbcType() == null) return null;
@@ -231,6 +234,23 @@ public abstract class DefaultDialect implements Dialect {
         return mapper.getDataType(columnMetaData);
     }
 
+    @Override
+    public JDBCType getJdbcType(String dataType) {
+        JDBCType jdbcType;
+        try {
+            jdbcType = JDBCType.valueOf(dataType.toUpperCase());
+        } catch (Exception e) {
+            if (dataType.contains("("))
+                dataType = dataType.substring(0, dataType.indexOf("("));
+            jdbcType = jdbcTypeMap.get(dataType.toLowerCase());
+            if (jdbcType == null) {
+                //出现此警告可以通过 setJdbcTypeMapping注册一些奇怪的类型
+                log.warn("can not parse jdbcType:{}", dataType);
+                jdbcType = JDBCType.OTHER;
+            }
+        }
+        return jdbcType;
+    }
 
     @Setter
     @Getter

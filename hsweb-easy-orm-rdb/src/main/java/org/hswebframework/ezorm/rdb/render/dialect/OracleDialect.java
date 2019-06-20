@@ -33,6 +33,12 @@ public class OracleDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
+        setJdbcTypeMapping("varchar2", JDBCType.VARCHAR);
+        setJdbcTypeMapping("number", JDBCType.NUMERIC);
+        setJdbcTypeMapping("date", JDBCType.TIMESTAMP);
+        setJdbcTypeMapping("nvarchar2", JDBCType.NVARCHAR);
+        setJdbcTypeMapping("timestamp", JDBCType.TIMESTAMP);
+
         installFunction(SqlFunction.concat, param -> {
             List<Object> listParam = BoostTermTypeMapper.convertList(param.getParam());
             StringJoiner joiner = new StringJoiner("||");
