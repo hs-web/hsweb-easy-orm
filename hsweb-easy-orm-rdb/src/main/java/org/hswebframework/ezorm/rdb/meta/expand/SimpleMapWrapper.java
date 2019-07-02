@@ -1,7 +1,6 @@
 package org.hswebframework.ezorm.rdb.meta.expand;
 
 
-import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.core.ObjectWrapper;
 import org.hswebframework.ezorm.rdb.meta.converter.BlobValueConverter;
 import org.hswebframework.ezorm.rdb.meta.converter.ClobValueConverter;
@@ -46,17 +45,34 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
         return value;
     }
 
+    @SuppressWarnings("all")
     public void putValue(Map<String, Object> instance, String attr, Object value) {
         value = convertValue(value);
         if (attr.contains(".")) {
-            String[] attrs = StringUtils.splitFirst(attr, "[.]");
-            String attr_ob_name = attrs[0];
-            String attr_ob_attr = attrs[1];
-            Object object = instance.computeIfAbsent(attr_ob_name, k -> newInstance());
-            if (object instanceof Map) {
-                Map<String, Object> objectMap = (Map) object;
-                putValue(objectMap, attr_ob_attr, value);
+            String[] attrs = attr.split("[.]", 2);
+
+            Object nest = instance.computeIfAbsent(attrs[0], k -> newInstance());
+            Map<String, Object> tmp;
+            if (nest instanceof Map) {
+                tmp = (Map) nest;
+            } else {
+                instance.put(attrs[0], tmp = newInstance());
+                instance.put(attrs[0].concat("_old"), value);
             }
+            for (attrs = attrs[1].split("[.]", 2);
+                 attrs.length > 1;
+                 attrs = attrs[1].split("[.]", 2)) {
+                String field = attrs[0];
+                Object _nest = tmp.computeIfAbsent(field, k -> newInstance());
+                if (_nest instanceof Map) {
+                    tmp = (Map) _nest;
+                } else {
+                    tmp.put(field, tmp = newInstance());
+                    tmp.put("_this_old", _nest);
+                }
+            }
+            tmp.put(attrs[0], value);
+
         } else {
             instance.put(attr, value);
         }
