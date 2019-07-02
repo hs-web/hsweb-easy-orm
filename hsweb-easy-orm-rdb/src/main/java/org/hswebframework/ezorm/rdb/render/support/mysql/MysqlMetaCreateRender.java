@@ -61,7 +61,7 @@ public class MysqlMetaCreateRender implements SqlRender {
             appender.add(",");
         });
         appender.removeLast();
-        appender.add("\n)ENGINE = " + getEngine() + " CHARACTER SET utf8 ");
+        appender.add("\n)ENGINE = " + getEngine() + " CHARACTER SET utf8mb4 ");
         if (metaData.getComment() != null) {
             appender.add("COMMENT=", "'", metaData.getComment(), "'");
         }
