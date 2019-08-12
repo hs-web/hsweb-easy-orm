@@ -11,6 +11,10 @@
 
     <artifactId>hsweb-easy-orm-elasticsearch</artifactId>
 
+    <properties>
+        <log4j.version>2.6.2</log4j.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.hswebframework</groupId>
@@ -18,9 +22,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.56</version>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
