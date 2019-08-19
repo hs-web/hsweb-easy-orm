@@ -55,21 +55,23 @@ public class PostgresMetaAlterRender extends AbstractMetaAlterRender {
         SqlAppender comments = new SqlAppender();
         List<SqlAppender> all = new ArrayList<>();
         String columnFullName = column.getTableMetaData().getDatabaseMetaData().getDialect().buildColumnName(null, column.getName());
-
         alter.add("ALTER TABLE ",
                 column.getTableMetaData().getName(),
-                " MODIFY ",
-                columnFullName,
-                " ");
+                " ALTER column ",
+                columnFullName);
         if (column.getColumnDefinition() != null) {
             alter.add(column.getColumnDefinition());
         } else {
-            alter.add(column.getDataType());
+            alter.add(" type ", column.getDataType(), " using ", columnFullName, "::", column.getDataType());
+
             if (column.isNotNull() || column.isPrimaryKey()) {
-                alter.add(" NOT NULL");
+                all.add(new SqlAppender()
+                        .add("ALTER TABLE ",
+                                column.getTableMetaData().getName(),
+                                " ALTER column ", columnFullName, " set not null"));
             }
             if (column.getComment() != null) {
-                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getFullName(),columnFullName, column.getComment()));
+                comments.add(String.format("COMMENT ON COLUMN %s.%s is '%s'", column.getTableMetaData().getFullName(), columnFullName, column.getComment()));
             }
         }
         all.add(alter);
