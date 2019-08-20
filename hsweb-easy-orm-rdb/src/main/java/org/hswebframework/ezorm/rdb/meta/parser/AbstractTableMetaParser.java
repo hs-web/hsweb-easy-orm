@@ -13,15 +13,29 @@ import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractTableMetaParser implements TableMetaParser {
-    @Deprecated
-    protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
+    protected static Map<JDBCType, Class> defaultJavaTypeMap = new HashMap<>();
+
+    static {
+        defaultJavaTypeMap.put(JDBCType.VARCHAR, String.class);
+        defaultJavaTypeMap.put(JDBCType.CLOB, String.class);
+        defaultJavaTypeMap.put(JDBCType.BLOB, byte[].class);
+        defaultJavaTypeMap.put(JDBCType.DATE, Date.class);
+        defaultJavaTypeMap.put(JDBCType.TIME, Date.class);
+        defaultJavaTypeMap.put(JDBCType.TIMESTAMP, Date.class);
+        defaultJavaTypeMap.put(JDBCType.BIT, Byte.class);
+        defaultJavaTypeMap.put(JDBCType.BIGINT, Long.class);
+        defaultJavaTypeMap.put(JDBCType.NUMERIC, Double.class);
+        defaultJavaTypeMap.put(JDBCType.INTEGER, Integer.class);
+        defaultJavaTypeMap.put(JDBCType.DOUBLE, Double.class);
+        defaultJavaTypeMap.put(JDBCType.FLOAT, Float.class);
+        defaultJavaTypeMap.put(JDBCType.CHAR, String.class);
+        defaultJavaTypeMap.put(JDBCType.TINYINT, Byte.class);
+    }
+
     protected Map<JDBCType, Class> javaTypeMap = new HashMap<>();
 
     @Setter
@@ -138,9 +152,10 @@ public abstract class AbstractTableMetaParser implements TableMetaParser {
             instance.setPrecision(data_precision);
             instance.setScale(data_scale);
 
-            JDBCType jdbcType=getDialect().getJdbcType(data_type);
+            JDBCType jdbcType = getDialect().getJdbcType(data_type);
+            Class javaType = Optional.ofNullable(javaTypeMap.get(jdbcType))
+                    .orElseGet(() -> defaultJavaTypeMap.getOrDefault(jdbcType, String.class));
 
-            Class javaType = javaTypeMap.get(jdbcType);
             instance.setJdbcType(jdbcType);
             instance.setJavaType(javaType);
             instance.setDataType(getDialect().buildDataType(instance));
