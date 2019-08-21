@@ -1,7 +1,6 @@
 package org.hswebframework.ezorm.rdb.meta.builder;
 
-import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.rdb.meta.IndexMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBIndexMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 
 /**
@@ -18,7 +17,7 @@ public class IndexBuilder {
 
     private RDBTableMetaData table;
 
-    private IndexMetaData index = new IndexMetaData();
+    private RDBIndexMetaData index = new RDBIndexMetaData();
 
     public IndexBuilder name(String indexName) {
         index.setIndexName(indexName);
@@ -33,7 +32,7 @@ public class IndexBuilder {
     }
 
     public IndexBuilder column(String column, String sort) {
-        index.getColumnName().add(IndexMetaData.IndexColumn.of(column, sort));
+        index.getColumnName().add(RDBIndexMetaData.IndexColumn.of(column, sort));
         return this;
     }
 

@@ -135,7 +135,7 @@ public class QueryParam extends Param implements Serializable, Cloneable {
 
     @Override
     public QueryParam clone() {
-        QueryParam sqlParam = new QueryParam();
+        QueryParam sqlParam = ((QueryParam) super.clone());
         sqlParam.pageIndexTmp = pageIndexTmp;
         sqlParam.setFirstPageIndex(sqlParam.getFirstPageIndex());
         sqlParam.setExcludes(new LinkedHashSet<>(excludes));

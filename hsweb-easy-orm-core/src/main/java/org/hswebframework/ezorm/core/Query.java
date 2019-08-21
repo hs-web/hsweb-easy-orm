@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 import java.sql.SQLException;
 import java.util.List;
 
+@Deprecated
 public interface Query<T> extends Conditional<Query<T>>{
     <Q extends Query<T>> Q setParam(QueryParam param);
 

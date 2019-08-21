@@ -2,15 +2,15 @@ package org.hswebframework.ezorm.core.meta;
 
 
 import org.hswebframework.ezorm.core.DefaultValue;
-import org.hswebframework.ezorm.core.OptionConverter;
+import org.hswebframework.ezorm.core.DictionaryCodec;
 import org.hswebframework.ezorm.core.PropertyWrapper;
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.io.Serializable;
 import java.util.Set;
 
 @SuppressWarnings("all")
-public interface ColumnMetaData extends Serializable, Cloneable {
+public interface ColumnMetaData extends ObjectMetaData, Cloneable {
     String getName();
 
     String getAlias();
@@ -21,9 +21,9 @@ public interface ColumnMetaData extends Serializable, Cloneable {
 
     <T extends TableMetaData> T getTableMetaData();
 
-    ValueConverter getValueConverter();
+    ValueCodec getValueCodec();
 
-    OptionConverter getOptionConverter();
+    DictionaryCodec getDictionaryCodec();
 
     DefaultValue getDefaultValue();
 

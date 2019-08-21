@@ -55,16 +55,16 @@ public interface BoostTermTypeMapper extends Dialect.TermTypeMapper {
     static Object convertValue(RDBColumnMetaData column, Object value) {
         if (null == value) return null;
         Object newValue = null;
-        if (column.getOptionConverter() != null) {
-            newValue = column.getOptionConverter().converterData(value);
+        if (column.getDictionaryCodec() != null) {
+            newValue = column.getDictionaryCodec().encode(value);
         }
-        if (column.getValueConverter() != null) {
+        if (column.getValueCodec() != null) {
             if (newValue instanceof Collection) {
                 newValue = ((Collection) newValue).stream()
-                        .map(column.getValueConverter()::getData)
+                        .map(column.getValueCodec()::encode)
                         .collect(Collectors.toList());
             } else {
-                newValue = column.getValueConverter().getData(value);
+                newValue = column.getValueCodec().encode(value);
             }
         }
         if (newValue != null) return newValue;

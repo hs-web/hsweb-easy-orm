@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.meta.converter;
 
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.utils.time.DateFormatter;
@@ -9,15 +9,15 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.function.Function;
 
-public class NumberValueConverter implements ValueConverter {
+public class NumberValueCodec implements ValueCodec {
 
     private Function<Number, Object> converter;
 
-    public NumberValueConverter(Function<Number, Object> converter) {
+    public NumberValueCodec(Function<Number, Object> converter) {
         this.converter = converter;
     }
 
-    public NumberValueConverter(Class javaType) {
+    public NumberValueCodec(Class javaType) {
         if (javaType == int.class || javaType == Integer.class) {
             converter = Number::intValue;
         } else if (javaType == double.class || javaType == Double.class) {
@@ -46,7 +46,7 @@ public class NumberValueConverter implements ValueConverter {
     }
 
     @Override
-    public Object getData(Object value) {
+    public Object encode(Object value) {
         if (StringUtils.isNullOrEmpty(value)) return null;
         if (value instanceof Number) return value;
         if (value instanceof Date) {
@@ -69,7 +69,7 @@ public class NumberValueConverter implements ValueConverter {
 
 
     @Override
-    public Object getValue(Object data) {
+    public Object decode(Object data) {
         if (data instanceof String) {
             if (StringUtils.isNumber(data)) {
                 data = new BigDecimal(((String) data));

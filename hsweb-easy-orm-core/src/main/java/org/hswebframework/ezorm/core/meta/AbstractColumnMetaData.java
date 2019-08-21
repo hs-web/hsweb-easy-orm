@@ -12,8 +12,8 @@ public abstract class AbstractColumnMetaData implements ColumnMetaData {
     protected String          comment;
     protected Class           javaType;
     protected TableMetaData   tableMetaData;
-    protected OptionConverter optionConverter;
-    protected ValueConverter  valueConverter;
+    protected DictionaryCodec dictionaryCodec;
+    protected ValueCodec valueCodec;
     protected DefaultValue    defaultValue;
     protected Set<String>     validator;
     protected Map<String, Object> properties = new HashMap<>();
@@ -51,13 +51,13 @@ public abstract class AbstractColumnMetaData implements ColumnMetaData {
     }
 
     @Override
-    public ValueConverter getValueConverter() {
-        return valueConverter;
+    public ValueCodec getValueCodec() {
+        return valueCodec;
     }
 
     @Override
-    public OptionConverter getOptionConverter() {
-        return optionConverter;
+    public DictionaryCodec getDictionaryCodec() {
+        return dictionaryCodec;
     }
 
     @Override
@@ -105,12 +105,12 @@ public abstract class AbstractColumnMetaData implements ColumnMetaData {
         this.tableMetaData = tableMetaData;
     }
 
-    public void setOptionConverter(OptionConverter optionConverter) {
-        this.optionConverter = optionConverter;
+    public void setDictionaryCodec(DictionaryCodec dictionaryCodec) {
+        this.dictionaryCodec = dictionaryCodec;
     }
 
-    public void setValueConverter(ValueConverter valueConverter) {
-        this.valueConverter = valueConverter;
+    public void setValueCodec(ValueCodec valueCodec) {
+        this.valueCodec = valueCodec;
     }
 
     public void setValidator(Set<String> validator) {

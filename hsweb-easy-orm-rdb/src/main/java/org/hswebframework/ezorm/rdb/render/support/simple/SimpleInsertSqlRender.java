@@ -53,10 +53,10 @@ public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
                     logger.info("{}.{}将使用默认值:{}", metaData.getName(), column.getName(), value);
                 }
             }
-            if (value != null && column.getValueConverter() != null) {
-                Object newValue = column.getValueConverter().getData(value);
-                if (column.getOptionConverter() != null) {
-                    newValue = column.getOptionConverter().converterData(newValue);
+            if (value != null && column.getValueCodec() != null) {
+                Object newValue = column.getValueCodec().encode(value);
+                if (column.getDictionaryCodec() != null) {
+                    newValue = column.getDictionaryCodec().encode(newValue);
                 }
                 if (value != newValue && !value.equals(newValue)) {
                     if (logger.isDebugEnabled()) {

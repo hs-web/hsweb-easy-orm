@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.core.param;
 
 
+import lombok.SneakyThrows;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -135,11 +137,12 @@ public class Param implements Cloneable {
     }
 
     @Override
+    @SneakyThrows
     public Param clone() {
-        Param param = new Param();
+        Param param = ((Param) super.clone());
         param.setExcludes(new LinkedHashSet<>(excludes));
         param.setIncludes(new LinkedHashSet<>(includes));
-        List<Term> terms = this.terms.stream().map(term -> term.clone()).collect(Collectors.toList());
+        List<Term> terms = this.terms.stream().map(Term::clone).collect(Collectors.toList());
         param.setTerms(terms);
         return param;
     }

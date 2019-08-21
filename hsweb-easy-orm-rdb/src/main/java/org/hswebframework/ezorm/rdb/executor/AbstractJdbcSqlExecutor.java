@@ -363,6 +363,7 @@ public abstract class AbstractJdbcSqlExecutor implements SqlExecutor {
         }
     }
 
+
     protected void printSql(SQLInfo info) {
         if (logger.isDebugEnabled()) {
             logger.debug("==>  Preparing: {}", info.getSql());

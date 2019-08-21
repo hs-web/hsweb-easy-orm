@@ -1,17 +1,17 @@
 package org.hswebframework.ezorm.rdb.meta.converter;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.sql.JDBCType;
 
 @AllArgsConstructor
-public class BooleanValueConverter implements ValueConverter {
+public class BooleanValueCodec implements ValueCodec {
 
     private JDBCType jdbcType;
 
     @Override
-    public Object getData(Object value) {
+    public Object encode(Object value) {
         if (jdbcType == JDBCType.BOOLEAN || value == null) {
             return value;
         }
@@ -25,7 +25,7 @@ public class BooleanValueConverter implements ValueConverter {
     }
 
     @Override
-    public Object getValue(Object data) {
+    public Object decode(Object data) {
         if (null == data) return false;
         if (data instanceof Boolean) return data;
         return "1".equals(String.valueOf(data)) || "true".equals(String.valueOf(data));

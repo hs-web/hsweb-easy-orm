@@ -1,10 +1,9 @@
-package org.hswebframework.ezorm.rdb.meta.parser;
+package org.hswebframework.ezorm.rdb.meta.parser.table;
 
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
 
-
-public class H2TableMetaParser extends AbstractTableMetaParser {
+public class H2TableMetaParser extends RDBTableMetaParser {
     static final String TABLE_META_SQL =
             "SELECT column_name AS \"name\"," +
                     "type_name AS \"data_type\"," +
@@ -24,13 +23,12 @@ public class H2TableMetaParser extends AbstractTableMetaParser {
 
     static final String TABLE_EXISTS_SQL = "SELECT count(1) as \"total\" FROM information_schema.columns WHERE TABLE_NAME = upper(#{table})  and table_name=upper(#{table})";
 
-
-    public H2TableMetaParser(SqlExecutor sqlExecutor) {
+    public H2TableMetaParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);
     }
 
     protected String getRealDatabaseName() {
-        String db = getDatabaseName();
+        String db = getSchemaName();
         if (db == null) {
             return "schema()";
         }
@@ -43,7 +41,7 @@ public class H2TableMetaParser extends AbstractTableMetaParser {
     }
 
     @Override
-    Dialect getDialect() {
+    protected Dialect getDialect() {
         return Dialect.H2;
     }
 

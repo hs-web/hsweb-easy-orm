@@ -1,0 +1,22 @@
+language: java
+sudo: false
+addons:
+  postgresql: "10"
+jdk:
+  - openjdk8
+before_install:
+  - chmod +x mvnw
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS ezorm DEFAULT CHARSET utf8mb4;'
+  - psql -c 'create database ezorm;' -U postgres
+  - docker run -p 1521:1521 wnameless/oracle-xe-11g
+services:
+  - mysql
+  - postgresql
+  - docker
+script:
+  - mvn -q test
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+cache:
+  directories:
+    - '$HOME/.m2/repository'

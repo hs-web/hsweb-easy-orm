@@ -1,9 +1,12 @@
 package org.hswebframework.ezorm.core.param;
 
+import lombok.SneakyThrows;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 执行条件
@@ -161,28 +164,20 @@ public class Term implements Cloneable {
     }
 
     @Override
+    @SneakyThrows
     public Term clone() {
-        Term term = new Term();
+        Term term = ((Term) super.clone());
         term.setColumn(column);
         term.setValue(value);
         term.setTermType(termType);
         term.setType(type);
-        terms.forEach(t -> term.addTerm(t.clone()));
+        term.setTerms(terms.stream().map(Term::clone).collect(Collectors.toList()));
         term.setOptions(new ArrayList<>(getOptions()));
         return term;
     }
 
     public enum Type {
         or, and;
-
-        public static Type fromString(String str) {
-            try {
-                return Type.valueOf(str.toLowerCase());
-            } catch (Exception e) {
-                return and;
-            }
-        }
     }
-
 
 }

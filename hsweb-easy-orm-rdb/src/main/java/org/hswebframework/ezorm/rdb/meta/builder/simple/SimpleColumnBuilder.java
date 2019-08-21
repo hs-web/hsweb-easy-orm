@@ -3,10 +3,10 @@ package org.hswebframework.ezorm.rdb.meta.builder.simple;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.TableBuilder;
-import org.hswebframework.ezorm.rdb.meta.converter.BooleanValueConverter;
+import org.hswebframework.ezorm.rdb.meta.converter.BooleanValueCodec;
 import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.meta.converter.NumberValueConverter;
+import org.hswebframework.ezorm.rdb.meta.converter.NumberValueCodec;
 
 import java.sql.JDBCType;
 import java.util.function.Consumer;
@@ -113,10 +113,10 @@ public class SimpleColumnBuilder implements ColumnBuilder {
         }
         if (columnMetaData.getJavaType() != null) {
             if (ClassUtils.instanceOf(columnMetaData.getJavaType(), Number.class)) {
-                columnMetaData.setValueConverter(new NumberValueConverter(columnMetaData.getJavaType()));
+                columnMetaData.setValueCodec(new NumberValueCodec(columnMetaData.getJavaType()));
             }
             if (columnMetaData.getJavaType() == Boolean.class || columnMetaData.getJavaType() == boolean.class) {
-                columnMetaData.setValueConverter(new BooleanValueConverter(columnMetaData.getJdbcType()));
+                columnMetaData.setValueCodec(new BooleanValueCodec(columnMetaData.getJdbcType()));
             }
         }
         tableMetaData.addColumn(columnMetaData);

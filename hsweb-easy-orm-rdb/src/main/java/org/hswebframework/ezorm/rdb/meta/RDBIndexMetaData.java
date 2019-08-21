@@ -2,6 +2,9 @@ package org.hswebframework.ezorm.rdb.meta;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.meta.ObjectMetaData;
+import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.core.meta.TableMetaData;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
@@ -13,7 +16,7 @@ import java.util.Set;
  */
 @Getter
 @Setter
-public class IndexMetaData implements Serializable {
+public class RDBIndexMetaData implements ObjectMetaData {
 
     private String indexName;
 
@@ -23,6 +26,16 @@ public class IndexMetaData implements Serializable {
 
     public boolean contains(String column) {
         return columnName.stream().anyMatch(indexColumn -> indexColumn.getColumn().equals(column));
+    }
+
+    @Override
+    public String getName() {
+        return indexName;
+    }
+
+    @Override
+    public ObjectType getObjectType() {
+        return RDBObjectType.index;
     }
 
     @Getter

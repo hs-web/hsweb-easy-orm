@@ -34,7 +34,7 @@ public abstract class AbstractTableMetaData<C extends AbstractColumnMetaData> im
     }
 
     public String getFullName() {
-        String dbName = getDatabaseMetaData().getDatabaseName();
+        String dbName = getDatabaseMetaData().getName();
 
         if (dbName == null) {
             return getName();

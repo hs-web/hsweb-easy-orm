@@ -70,10 +70,10 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                         return;
                     }
                 }
-                if (!(value instanceof Sql) &&column.getValueConverter() != null) {
-                    Object newValue = column.getValueConverter().getData(value);
-                    if (column.getOptionConverter() != null) {
-                        newValue = column.getOptionConverter().converterData(newValue);
+                if (!(value instanceof Sql) &&column.getValueCodec() != null) {
+                    Object newValue = column.getValueCodec().encode(value);
+                    if (column.getDictionaryCodec() != null) {
+                        newValue = column.getDictionaryCodec().encode(newValue);
                     }
                     if (value != newValue && !value.equals(newValue)) {
                         value = newValue;

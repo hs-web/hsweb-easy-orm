@@ -2,8 +2,8 @@ package org.hswebframework.ezorm.rdb.meta.expand;
 
 
 import org.hswebframework.ezorm.core.ObjectWrapper;
-import org.hswebframework.ezorm.rdb.meta.converter.BlobValueConverter;
-import org.hswebframework.ezorm.rdb.meta.converter.ClobValueConverter;
+import org.hswebframework.ezorm.rdb.meta.converter.BlobValueCodec;
+import org.hswebframework.ezorm.rdb.meta.converter.ClobValueCodec;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -12,9 +12,11 @@ import java.util.Map;
 
 public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
 
-    private static final BlobValueConverter blobValueConverter = new BlobValueConverter();
+    private static final BlobValueCodec blobValueConverter = new BlobValueCodec();
 
-    private static final ClobValueConverter clobValueConverter = new ClobValueConverter();
+    private static final ClobValueCodec clobValueConverter = new ClobValueCodec();
+
+    public static final SimpleMapWrapper INSTANCE=new SimpleMapWrapper();
 
     @Override
     public Class<LinkedHashMap> getType() {
@@ -28,7 +30,9 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
 
     @Override
     public void wrapper(Map<String, Object> instance, int index, String attr, Object value) {
-        if ("ROWNUM_".equals(attr.toUpperCase())) return;
+        if ("ROWNUM_".equals(attr.toUpperCase())) {
+            return;
+        }
         putValue(instance, attr, value);
     }
 
@@ -39,9 +43,9 @@ public class SimpleMapWrapper implements ObjectWrapper<Map<String, Object>> {
 
     protected Object convertValue(Object value) {
         if (value instanceof Blob)
-            return blobValueConverter.getValue(value);
+            return blobValueConverter.decode(value);
         if (value instanceof Clob)
-            return clobValueConverter.getValue(value);
+            return clobValueConverter.decode(value);
         return value;
     }
 

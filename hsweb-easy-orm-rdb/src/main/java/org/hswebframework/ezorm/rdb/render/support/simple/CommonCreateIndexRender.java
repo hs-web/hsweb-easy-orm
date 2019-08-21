@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.render.support.simple;
 
 
 import org.hswebframework.ezorm.rdb.executor.SQL;
-import org.hswebframework.ezorm.rdb.meta.IndexMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBIndexMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
 
@@ -22,7 +22,7 @@ public class CommonCreateIndexRender {
                 .collect(Collectors.toList());
     }
 
-    public static SQL buildIndex(String table, IndexMetaData index, RDBTableMetaData tableMeta) {
+    public static SQL buildIndex(String table, RDBIndexMetaData index, RDBTableMetaData tableMeta) {
         SqlAppender appender = new SqlAppender();
         appender.addSpc("create",
                 index.isUnique() ? "unique" : "",
@@ -31,7 +31,7 @@ public class CommonCreateIndexRender {
                 "on", table, "("
         );
 
-        for (IndexMetaData.IndexColumn indexColumn : index.getColumnName()) {
+        for (RDBIndexMetaData.IndexColumn indexColumn : index.getColumnName()) {
             appender.add(tableMeta.getDatabaseMetaData()
                             .getDialect()
                             .buildColumnName(null, indexColumn.getColumn()),

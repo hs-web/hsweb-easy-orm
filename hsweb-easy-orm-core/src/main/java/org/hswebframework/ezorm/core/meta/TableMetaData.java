@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 /**
  * @author zhouhao
  */
-public interface TableMetaData extends Serializable {
+public interface TableMetaData  extends ObjectMetaData, Serializable {
     String getName();
 
     String getComment();

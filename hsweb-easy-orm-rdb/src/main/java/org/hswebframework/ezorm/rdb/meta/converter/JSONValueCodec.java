@@ -18,30 +18,30 @@ package org.hswebframework.ezorm.rdb.meta.converter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 
-public class JSONValueConverter implements ValueConverter {
+public class JSONValueCodec implements ValueCodec {
     private Class type;
 
-    private ValueConverter parent;
+    private ValueCodec parent;
 
-    public JSONValueConverter(Class type) {
+    public JSONValueCodec(Class type) {
         this(type, null);
     }
 
-    public JSONValueConverter(Class type, ValueConverter parent) {
+    public JSONValueCodec(Class type, ValueCodec parent) {
         this.type = type;
         this.parent = parent;
     }
 
     @Override
-    public Object getData(Object value) {
-        return JSON.toJSONString(parent == null ? value : parent.getValue(value), SerializerFeature.WriteClassName);
+    public Object encode(Object value) {
+        return JSON.toJSONString(parent == null ? value : parent.decode(value), SerializerFeature.WriteClassName);
     }
 
     @Override
-    public Object getValue(Object data) {
-        if (parent != null) data = parent.getValue(data);
+    public Object decode(Object data) {
+        if (parent != null) data = parent.decode(data);
         if (data instanceof String) {
             String str = (String) data;
             if (str.startsWith("[")) {

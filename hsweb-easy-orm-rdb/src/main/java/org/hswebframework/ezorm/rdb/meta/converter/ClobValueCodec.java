@@ -1,19 +1,19 @@
 package org.hswebframework.ezorm.rdb.meta.converter;
 
 
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.io.Reader;
 import java.sql.Clob;
 
-public class ClobValueConverter implements ValueConverter {
+public class ClobValueCodec implements ValueCodec {
     @Override
-    public Object getData(Object value) {
+    public Object encode(Object value) {
         return value;
     }
 
     @Override
-    public Object getValue(Object data) {
+    public Object decode(Object data) {
         if (data instanceof Clob) {
             Clob clobData = ((Clob) data);
             try (Reader reader = clobData.getCharacterStream()) {

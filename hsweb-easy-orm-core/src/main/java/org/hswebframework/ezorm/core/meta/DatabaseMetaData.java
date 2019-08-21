@@ -1,16 +1,19 @@
 package org.hswebframework.ezorm.core.meta;
 
-import org.hswebframework.ezorm.core.ObjectWrapperFactory;
-import org.hswebframework.ezorm.core.ValidatorFactory;
+import java.util.List;
+import java.util.Optional;
 
-public interface DatabaseMetaData {
 
-    String getDatabaseName();
+public interface DatabaseMetaData extends ObjectMetaData {
 
-    ObjectWrapperFactory getObjectWrapperFactory();
+    String getName();
 
-    ValidatorFactory getValidatorFactory();
+    List<SchemaMetaData> getSchemas();
 
-    <T extends TableMetaData> T getTableMetaData(String name);
+    Optional<SchemaMetaData> getSchema(String name);
 
+    @Override
+    default ObjectType getObjectType() {
+        return DefaultObjectType.database;
+    }
 }

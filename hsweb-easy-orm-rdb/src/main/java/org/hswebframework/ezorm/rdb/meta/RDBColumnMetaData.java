@@ -1,15 +1,16 @@
 package org.hswebframework.ezorm.rdb.meta;
 
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.core.meta.AbstractColumnMetaData;
 import org.hswebframework.ezorm.core.meta.ColumnMetaData;
-import org.hswebframework.ezorm.rdb.meta.converter.DefaultValueConverter;
+import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.meta.converter.DefaultValueCodec;
 
 import java.io.Serializable;
 import java.sql.JDBCType;
 
 public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnMetaData, Serializable, Cloneable, Comparable<RDBColumnMetaData> {
-    private static final DefaultValueConverter DEFAULT_VALUE_CONVERTER = new DefaultValueConverter();
+    private static final DefaultValueCodec DEFAULT_VALUE_CONVERTER = new DefaultValueCodec();
 
     public RDBColumnMetaData() {
     }
@@ -104,11 +105,11 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
     }
 
     @Override
-    public ValueConverter getValueConverter() {
-        if (valueConverter == null) {
-            valueConverter = DEFAULT_VALUE_CONVERTER;
+    public ValueCodec getValueCodec() {
+        if (valueCodec == null) {
+            valueCodec = DEFAULT_VALUE_CONVERTER;
         }
-        return super.getValueConverter();
+        return super.getValueCodec();
     }
 
     @Override
@@ -178,7 +179,7 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
         column.jdbcType = jdbcType;
         column.dataType = dataType;
         column.properties = properties;
-        column.optionConverter = optionConverter;
+        column.dictionaryCodec = dictionaryCodec;
         column.tableMetaData = tableMetaData;
         column.sortIndex = sortIndex;
         column.length = length;
@@ -188,7 +189,7 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
         column.primaryKey = primaryKey;
         column.columnDefinition = columnDefinition;
         column.defaultValue=defaultValue;
-        column.valueConverter=valueConverter;
+        column.valueCodec = valueCodec;
         return column;
     }
 
@@ -200,5 +201,10 @@ public class RDBColumnMetaData extends AbstractColumnMetaData implements ColumnM
                 ", comment='" + comment + '\'' +
                 ", dataType='" + dataType + '\'' +
                 '}';
+    }
+
+    @Override
+    public ObjectType getObjectType() {
+        return RDBObjectType.column;
     }
 }

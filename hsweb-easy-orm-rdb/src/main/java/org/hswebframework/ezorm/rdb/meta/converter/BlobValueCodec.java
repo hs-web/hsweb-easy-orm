@@ -16,7 +16,7 @@
 
 package org.hswebframework.ezorm.rdb.meta.converter;
 
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +27,11 @@ import java.io.ObjectInputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 
-public class BlobValueConverter implements ValueConverter {
+public class BlobValueCodec implements ValueCodec {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public Object getData(Object value) {
+    public Object encode(Object value) {
         if (value instanceof String) {
             value = ((String) value).getBytes();
         }
@@ -46,7 +46,7 @@ public class BlobValueConverter implements ValueConverter {
     }
 
     @Override
-    public Object getValue(Object data) {
+    public Object decode(Object data) {
         if (data == null) return null;
         if (data instanceof Blob) {
             Blob blobValue = ((Blob) data);

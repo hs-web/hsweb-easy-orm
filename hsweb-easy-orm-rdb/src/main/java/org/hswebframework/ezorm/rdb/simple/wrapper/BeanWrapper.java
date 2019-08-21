@@ -19,7 +19,7 @@ package org.hswebframework.ezorm.rdb.simple.wrapper;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.hswebframework.ezorm.core.ObjectWrapper;
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.slf4j.Logger;
@@ -53,8 +53,8 @@ public class BeanWrapper<T> implements ObjectWrapper<T> {
         RDBColumnMetaData metaData = tableMetaData.findColumn(attr);
         if (metaData != null) {
             try {
-                ValueConverter valueConverter = metaData.getValueConverter();
-                propertyUtil.setProperty(instance, attr, valueConverter.getValue(value));
+                ValueCodec valueCodec = metaData.getValueCodec();
+                propertyUtil.setProperty(instance, attr, valueCodec.decode(value));
             } catch (NoSuchMethodException e) {
             } catch (Throwable e) {
                 logger.warn("{}.setProperty('{}',{});error ", instance.getClass().getName(), attr, value, e);

@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.core;
 import java.sql.SQLException;
 import java.util.Collection;
 
+
 public interface Insert<T>extends TriggerSkipSupport<Insert<T>> {
     Insert<T> value(T data);
 

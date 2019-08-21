@@ -4,6 +4,7 @@ package org.hswebframework.ezorm.rdb.meta;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.AbstractTableMetaData;
+import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.core.meta.TableMetaData;
 
 import java.io.Serializable;
@@ -18,7 +19,12 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
 
     @Getter
     @Setter
-    private List<IndexMetaData> indexes = new ArrayList<>();
+    private List<RDBIndexMetaData> indexes = new ArrayList<>();
+
+    @Getter
+    @Setter
+    private List<RDBKeyMetadata> keys = new ArrayList<>();
+
 
     private RDBDatabaseMetaData databaseMetaData;
 
@@ -140,5 +146,10 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
     @Override
     public String toString() {
         return name + " [" + alias + "]" + "(" + comment + ")";
+    }
+
+    @Override
+    public ObjectType getObjectType() {
+        return RDBObjectType.table;
     }
 }

@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.meta.converter;
 
 import org.hswebframework.utils.DateTimeUtils;
 import org.hswebframework.utils.time.DateFormatter;
-import org.hswebframework.ezorm.core.ValueConverter;
+import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -11,19 +11,19 @@ import java.util.stream.Collectors;
 /**
  * 日期转换器
  */
-public class DateTimeConverter implements ValueConverter {
+public class DateTimeCodec implements ValueCodec {
 
     private String format;
 
     private Class toType;
 
-    public DateTimeConverter(String format, Class toType) {
+    public DateTimeCodec(String format, Class toType) {
         this.format = format;
         this.toType = toType;
     }
 
     @Override
-    public Object getData(Object value) {
+    public Object encode(Object value) {
         if (value instanceof Date) return value;
         if (value instanceof String) {
             if (((String) value).contains(",")) {
@@ -37,7 +37,7 @@ public class DateTimeConverter implements ValueConverter {
     }
 
     @Override
-    public Object getValue(Object data) {
+    public Object decode(Object data) {
         if (data instanceof Number) {
             data = new Date(((Number) data).longValue());
         }
