@@ -7,7 +7,7 @@ jdk:
 before_install:
   - chmod +x mvnw
   - mysql -e 'CREATE DATABASE IF NOT EXISTS ezorm DEFAULT CHARSET utf8mb4;'
-  - docker run -p 1521:1521 wnameless/oracle-xe-11g
+#  - docker run -p 1521:1521 wnameless/oracle-xe-11g
 before_script:
   - psql -c 'create database ezorm;' -U postgres
 services:
