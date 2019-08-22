@@ -4,8 +4,8 @@ jdk:
   - openjdk8
 before_install:
   - chmod +x mvnw
-  - docker run -p 13306:3306 -e TZ=Asia/Shanghai -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=ezorm  mysql:5.7 --character-set-server=utf8mb4
-  - docker run -p 15432:5432 -e TZ=Asia/Shanghai -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=ezorm postgres:11-alpine
+  - docker run -p -d 13306:3306 -e TZ=Asia/Shanghai -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=ezorm  mysql:5.7 --character-set-server=utf8mb4
+  - docker run -p -d 15432:5432 -e TZ=Asia/Shanghai -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=ezorm postgres:11-alpine
 
 services:
   - docker
