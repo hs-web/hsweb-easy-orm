@@ -11,7 +11,8 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
         strategies.put(strategy.getSupportType().getType(), strategy);
     }
 
-    protected Optional<ObjectMetaDataParserStrategy> getStrategy(ObjectType type) {
+    @SuppressWarnings("all")
+    protected <T extends ObjectMetaData> Optional<ObjectMetaDataParserStrategy<T>> getStrategy(ObjectType type) {
         return Optional.ofNullable(strategies.get(type.getType()));
     }
 
@@ -23,9 +24,9 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
     }
 
     @Override
-    public Optional<ObjectMetaData> parse(ObjectType type, String name) {
+    public <T extends ObjectMetaData> Optional<T> parse(ObjectType type, String name) {
 
-        return getStrategy(type)
+        return this.<T>getStrategy(type)
                 .flatMap(strategy -> strategy.parse(name));
     }
 
@@ -37,8 +38,8 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
     }
 
     @Override
-    public List<ObjectMetaData> parseAll(ObjectType type) {
-        return getStrategy(type)
+    public <T extends ObjectMetaData> List<T> parseAll(ObjectType type) {
+        return this.<T>getStrategy(type)
                 .map(ObjectMetaDataParserStrategy::parseAll)
                 .orElseGet(ArrayList::new);
     }

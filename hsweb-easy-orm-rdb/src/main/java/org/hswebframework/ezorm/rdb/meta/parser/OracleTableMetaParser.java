@@ -1,10 +1,9 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
-import java.sql.JDBCType;
-
+@Deprecated
 public class OracleTableMetaParser extends AbstractTableMetaParser {
 
 

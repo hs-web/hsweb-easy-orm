@@ -3,10 +3,10 @@ package org.hswebframework.ezorm.rdb.meta.builder.simple;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.TableBuilder;
-import org.hswebframework.ezorm.rdb.meta.converter.BooleanValueCodec;
+import org.hswebframework.ezorm.rdb.codec.BooleanValueCodec;
 import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.meta.converter.NumberValueCodec;
+import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
 
 import java.sql.JDBCType;
 import java.util.function.Consumer;

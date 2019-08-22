@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Created by zhouhao on 16-6-5.
  */
+@Deprecated
 public interface TableMetaParser {
     RDBTableMetaData parse(String name);
 

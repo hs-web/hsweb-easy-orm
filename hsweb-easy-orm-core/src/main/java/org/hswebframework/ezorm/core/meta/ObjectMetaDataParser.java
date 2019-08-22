@@ -9,11 +9,10 @@ public interface ObjectMetaDataParser {
 
     boolean objectExists(ObjectType type, String name);
 
-    Optional<ObjectMetaData> parse(ObjectType type, String name);
+    <T extends ObjectMetaData> Optional<T> parse(ObjectType type, String name);
 
     Set<String> getAllNames(ObjectType type);
 
-    List<ObjectMetaData> parseAll(ObjectType type);
-
+    <T extends ObjectMetaData> List<T> parseAll(ObjectType type);
 
 }

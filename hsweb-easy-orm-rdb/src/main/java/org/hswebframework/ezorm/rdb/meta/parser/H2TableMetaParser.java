@@ -1,9 +1,9 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
-
+@Deprecated
 public class H2TableMetaParser extends AbstractTableMetaParser {
     static final String TABLE_META_SQL =
             "SELECT column_name AS \"name\"," +

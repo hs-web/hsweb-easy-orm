@@ -31,12 +31,12 @@ public class UpdateParam<T> extends Param {
     }
 
     @Override
-    public UpdateParam clone() {
-        UpdateParam param = new UpdateParam();
+    public UpdateParam<T> clone() {
+        UpdateParam<T> param = ((UpdateParam) super.clone());
         param.setData(data);
         param.setExcludes(new LinkedHashSet<>(excludes));
         param.setIncludes(new LinkedHashSet<>(includes));
-        List<Term> terms = this.terms.stream().map(term -> term.clone()).collect(Collectors.toList());
+        List<Term> terms = this.terms.stream().map(Term::clone).collect(Collectors.toList());
         param.setTerms(terms);
         return param;
     }

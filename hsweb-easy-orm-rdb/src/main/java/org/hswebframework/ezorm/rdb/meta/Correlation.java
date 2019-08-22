@@ -107,12 +107,12 @@ public class Correlation implements Cloneable, Comparable<Correlation> {
         return this;
     }
 
-    public Correlation InnerJoin() {
+    public Correlation innerJoin() {
         this.join = JOIN.INNER;
         return this;
     }
 
-    public Correlation FullJoin() {
+    public Correlation fullJoin() {
         this.join = JOIN.FULL;
         return this;
     }

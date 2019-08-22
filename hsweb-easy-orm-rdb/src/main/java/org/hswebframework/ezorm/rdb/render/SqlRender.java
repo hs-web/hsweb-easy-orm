@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.render;
 
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.render.support.simple.SimpleSQL;
+import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
 
 /**
  * SQL渲染器

@@ -2,8 +2,8 @@ package org.hswebframework.ezorm.rdb.meta.expand;
 
 
 import org.hswebframework.ezorm.core.ObjectWrapper;
-import org.hswebframework.ezorm.rdb.meta.converter.BlobValueCodec;
-import org.hswebframework.ezorm.rdb.meta.converter.ClobValueCodec;
+import org.hswebframework.ezorm.rdb.codec.BlobValueCodec;
+import org.hswebframework.ezorm.rdb.codec.ClobValueCodec;
 
 import java.sql.Blob;
 import java.sql.Clob;

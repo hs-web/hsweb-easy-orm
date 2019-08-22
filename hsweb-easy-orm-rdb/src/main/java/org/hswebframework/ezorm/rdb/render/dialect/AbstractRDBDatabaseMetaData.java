@@ -1,8 +1,9 @@
 package org.hswebframework.ezorm.rdb.render.dialect;
 
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlRender;
-import org.hswebframework.ezorm.rdb.render.support.simple.*;
+import org.hswebframework.ezorm.rdb.supports.commons.*;
 
 import java.util.HashMap;
 import java.util.Map;

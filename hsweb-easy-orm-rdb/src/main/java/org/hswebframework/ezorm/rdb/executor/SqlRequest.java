@@ -6,7 +6,7 @@ public interface SqlRequest {
 
     Object[] getParameters();
 
-    static SqlRequest of(String sql, Object... parameters) {
+    static SqlRequest prepare(String sql, Object... parameters) {
         return SimpleSqlRequest.of(sql, parameters);
     }
 

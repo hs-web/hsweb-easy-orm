@@ -4,7 +4,7 @@ import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.core.meta.AbstractColumnMetaData;
 import org.hswebframework.ezorm.core.meta.ColumnMetaData;
 import org.hswebframework.ezorm.core.meta.ObjectType;
-import org.hswebframework.ezorm.rdb.meta.converter.DefaultValueCodec;
+import org.hswebframework.ezorm.rdb.codec.DefaultValueCodec;
 
 import java.io.Serializable;
 import java.sql.JDBCType;

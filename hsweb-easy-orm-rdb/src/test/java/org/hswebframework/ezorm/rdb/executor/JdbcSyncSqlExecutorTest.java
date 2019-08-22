@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequest.*;
-import static org.junit.Assert.*;
 
 public class JdbcSyncSqlExecutorTest {
 
@@ -25,13 +24,14 @@ public class JdbcSyncSqlExecutorTest {
         Class.forName("org.h2.Driver");
         Connection connection = DriverManager.getConnection("jdbc:h2:mem:hsweb", "sa", "");
         executor = new JdbcSyncSqlExecutor() {
+
             @Override
-            public Connection getConnection() {
+            public Connection getConnection(SqlRequest sqlRequest) {
                 return connection;
             }
 
             @Override
-            public void releaseConnection(Connection connection) {
+            public void releaseConnection(Connection connection, SqlRequest sqlRequest) {
 
             }
         };
@@ -40,7 +40,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectSingle() {
-        Map<String, Object> data = executor.selectSingle(of("select 1 as data"), SimpleMapWrapper.INSTANCE);
+        Map<String, Object> data = executor.selectSingle(prepare("select 1 as data"), SimpleMapWrapper.INSTANCE);
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }
@@ -48,7 +48,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectPrepare() {
-        Map<String, Object> data = executor.selectSingle(of("select 1 as data where 1 = ?", 1), SimpleMapWrapper.INSTANCE);
+        Map<String, Object> data = executor.selectSingle(prepare("select 1 as data where 1 = ?", 1), SimpleMapWrapper.INSTANCE);
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }

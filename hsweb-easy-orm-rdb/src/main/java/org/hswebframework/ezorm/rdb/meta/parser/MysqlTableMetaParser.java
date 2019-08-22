@@ -1,13 +1,12 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
-
-import java.sql.JDBCType;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
 /**
  * @author zhouhao
  */
+@Deprecated
 public class MysqlTableMetaParser extends AbstractTableMetaParser {
     static final String TABLE_META_SQL = " select " +
             "column_name as `name`, " +

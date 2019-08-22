@@ -1,10 +1,9 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
-import java.sql.JDBCType;
-
+@Deprecated
 public class PGSqlTableMetaParser extends AbstractTableMetaParser {
     static final String TABLE_META_SQL = "select column_name as \"name\"" +
             " , udt_name as \"data_type\"" +

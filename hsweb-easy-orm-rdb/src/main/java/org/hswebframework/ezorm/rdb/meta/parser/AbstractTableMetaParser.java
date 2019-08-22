@@ -7,8 +7,8 @@ import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.meta.expand.SimpleMapWrapper;
-import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.render.support.simple.SimpleSQL;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 public abstract class AbstractTableMetaParser implements TableMetaParser {
     protected static Map<JDBCType, Class> defaultJavaTypeMap = new HashMap<>();
 

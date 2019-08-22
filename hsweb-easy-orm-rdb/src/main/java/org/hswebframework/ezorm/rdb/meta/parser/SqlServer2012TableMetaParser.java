@@ -1,14 +1,14 @@
 package org.hswebframework.ezorm.rdb.meta.parser;
 
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.render.dialect.MSSQLDialect;
-
-import java.sql.JDBCType;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLDialect;
 
 /**
  * @author zhouhao
  */
+
+@Deprecated
 public class SqlServer2012TableMetaParser extends AbstractTableMetaParser {
     public SqlServer2012TableMetaParser(SqlExecutor sqlExecutor) {
         super(sqlExecutor);

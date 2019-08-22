@@ -15,9 +15,9 @@ import java.util.function.Function;
 @Slf4j
 public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
 
-    public abstract Connection getConnection();
+    public abstract Connection getConnection(SqlRequest sqlRequest);
 
-    public abstract void releaseConnection(Connection connection);
+    public abstract void releaseConnection(Connection connection, SqlRequest sqlRequest);
 
     @SneakyThrows
     public void releaseStatement(Statement statement) {
@@ -78,7 +78,7 @@ public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
     public int update(SqlRequest request) {
         printSql(request);
 
-        Connection connection = getConnection();
+        Connection connection = getConnection(request);
         PreparedStatement statement = connection.prepareStatement(request.getSql());
         try {
             preparedParam(statement, request.getParameters());
@@ -90,7 +90,7 @@ public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
             try {
                 releaseStatement(statement);
             } finally {
-                releaseConnection(connection);
+                releaseConnection(connection, request);
             }
         }
     }
@@ -100,7 +100,7 @@ public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
     public boolean execute(SqlRequest request) {
         printSql(request);
 
-        Connection connection = getConnection();
+        Connection connection = getConnection(request);
         PreparedStatement statement = connection.prepareStatement(request.getSql());
         try {
             preparedParam(statement, request.getParameters());
@@ -110,7 +110,7 @@ public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
             try {
                 releaseStatement(statement);
             } finally {
-                releaseConnection(connection);
+                releaseConnection(connection, request);
             }
         }
     }
@@ -133,7 +133,7 @@ public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
     public <T> int select(SqlRequest request, ObjectWrapper<T> wrapper, Function<T, Boolean> consumer) {
         printSql(request);
 
-        Connection connection = getConnection();
+        Connection connection = getConnection(request);
         PreparedStatement statement = connection.prepareStatement(request.getSql());
         try {
             preparedParam(statement, request.getParameters());
@@ -169,7 +169,7 @@ public abstract class JdbcSyncSqlExecutor implements SyncSqlExecutor {
             try {
                 releaseStatement(statement);
             } finally {
-                releaseConnection(connection);
+                releaseConnection(connection, request);
             }
         }
     }

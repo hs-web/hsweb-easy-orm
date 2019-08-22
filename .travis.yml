@@ -6,11 +6,10 @@ before_install:
   - chmod +x mvnw
   - docker run -d -p 13306:3306 -e TZ=Asia/Shanghai -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=ezorm  mysql:5.7 --character-set-server=utf8mb4
   - docker run -d -p 15432:5432 -e TZ=Asia/Shanghai -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=ezorm postgres:11-alpine
-
 services:
   - docker
 script:
-  - mvn -q test
+  - mvn  -Dmysql.url=127.0.0.1:13306 -q test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 cache:
