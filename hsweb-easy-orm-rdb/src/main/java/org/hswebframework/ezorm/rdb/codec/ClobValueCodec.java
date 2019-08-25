@@ -7,6 +7,10 @@ import java.io.Reader;
 import java.sql.Clob;
 
 public class ClobValueCodec implements ValueCodec {
+
+    public static final ClobValueCodec INSTANCE=new ClobValueCodec();
+
+
     @Override
     public Object encode(Object value) {
         return value;

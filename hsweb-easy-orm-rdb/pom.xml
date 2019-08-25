@@ -24,6 +24,39 @@
         </dependency>
 
         <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.2.8.RELEASE</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <version>3.2.8.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.r2dbc</groupId>-->
+            <!--<artifactId>r2dbc-h2</artifactId>-->
+            <!--<version>0.8.0.BUILD-SNAPSHOT</version>-->
+            <!--<optional>true</optional>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>io.projectreactor</groupId>-->
+                    <!--<artifactId>reactor-bom</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>io.r2dbc</groupId>-->
+            <!--<artifactId>r2dbc-spi</artifactId>-->
+            <!--<version>0.8.0.BUILD-SNAPSHOT</version>-->
+            <!--<optional>true</optional>-->
+        <!--</dependency>-->
+
+        <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc14</artifactId>
             <version>10.2.0.1.0</version>
@@ -44,4 +77,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>

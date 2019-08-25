@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.core;
 
-public interface ValueCodec {
-    Object encode(Object value);
+public interface ValueCodec<E,D> extends Encoder<E>,Decoder<D> {
+    E encode(Object value);
 
-    Object decode(Object data);
+    D decode(Object data);
 }

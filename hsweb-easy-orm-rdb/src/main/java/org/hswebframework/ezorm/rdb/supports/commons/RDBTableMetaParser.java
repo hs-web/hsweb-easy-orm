@@ -1,17 +1,17 @@
-package org.hswebframework.ezorm.rdb.meta.parser;
+package org.hswebframework.ezorm.rdb.supports.commons;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.core.ObjectWrapper;
 import org.hswebframework.ezorm.core.meta.ObjectMetaDataParserStrategy;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.wrapper.*;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBObjectType;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.meta.expand.SimpleMapWrapper;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -19,8 +19,8 @@ import java.sql.JDBCType;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.hswebframework.ezorm.rdb.executor.SqlRequest.prepare;
-import static org.hswebframework.ezorm.rdb.executor.SqlRequest.template;
+import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.list;
 
 public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy<RDBTableMetaData> {
 
@@ -54,13 +54,13 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
 
     protected abstract Dialect getDialect();
 
-    protected  abstract String getTableMetaSql(String name);
+    protected abstract String getTableMetaSql(String name);
 
-    protected  abstract String getTableCommentSql(String name);
+    protected abstract String getTableCommentSql(String name);
 
     protected abstract String getAllTableSql();
 
-    protected  abstract String getTableExistsSql();
+    protected abstract String getTableExistsSql();
 
     public RDBTableMetaParser(SyncSqlExecutor executor) {
         this.sqlExecutor = executor;
@@ -80,10 +80,10 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
         param.put("table", name);
 
         //列
-        List<RDBColumnMetaData> metaDataList = sqlExecutor.select(template(getTableMetaSql(name), param), columnMetaDataWrapper);
+        List<RDBColumnMetaData> metaDataList = sqlExecutor.select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
         metaDataList.forEach(metaData::addColumn);
         //说明
-        Map<String, Object> comment = sqlExecutor.selectSingle(template(getTableCommentSql(name), param), lowerCasePropertySimpleMapWrapper);
+        Map<String, Object> comment = sqlExecutor.select(template(getTableCommentSql(name), param), ResultWrappers.singleMap());
         if (null != comment && comment.get("comment") != null) {
             metaData.setComment(String.valueOf(comment.get("comment")));
         }
@@ -104,7 +104,7 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
     public boolean objectExists(String name) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", name);
-        Map<String, Object> res = sqlExecutor.selectSingle(template(getTableExistsSql(), param), lowerCasePropertySimpleMapWrapper);
+        Map<String, Object> res = sqlExecutor.select(template(getTableExistsSql(), param), lowerCasePropertySimpleMapWrapper);
         return res.get("total") != null && StringUtils.toInt(res.get("total")) > 0;
     }
 
@@ -112,7 +112,7 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
     @SneakyThrows
     public Set<String> getAllNames() {
         return sqlExecutor
-                .select(prepare(getAllTableSql()), lowerCasePropertySimpleMapWrapper)
+                .select(SqlRequests.of(getAllTableSql()), list(lowerCasePropertySimpleMapWrapper))
                 .stream()
                 .map(map -> map.get("name"))
                 .filter(Objects::nonNull)
@@ -134,28 +134,67 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
 
     protected RDBColumnMetaDataWrapper columnMetaDataWrapper = new RDBColumnMetaDataWrapper();
 
-    static class LowerCasePropertySimpleMapWrapper extends SimpleMapWrapper {
+    static class LowerCasePropertySimpleMapWrapper extends MapResultWrapper {
         @Override
-        public void wrapper(Map<String, Object> instance, int index, String attr, Object value) {
-            attr = attr.toLowerCase();
-            super.wrapper(instance, index, attr, value);
+        protected void doWrap(Map<String, Object> instance, String column, Object value) {
+            column = column.toLowerCase();
+            super.doWrap(instance, column, value);
         }
     }
 
     @SuppressWarnings("all")
-    class RDBColumnMetaDataWrapper implements ObjectWrapper<RDBColumnMetaData> {
-        @Override
+    class RDBColumnMetaDataWrapper implements ResultWrapper<RDBColumnMetaData, RDBColumnMetaData> {
+
         public Class<RDBColumnMetaData> getType() {
             return RDBColumnMetaData.class;
         }
 
         @Override
-        public RDBColumnMetaData newInstance() {
+        public RDBColumnMetaData newRowInstance() {
             return new RDBColumnMetaData();
         }
 
         @Override
-        public void wrapper(RDBColumnMetaData instance, int index, String attr, Object value) {
+        public void beforeWrap(ResultWrapperContext context) {
+
+        }
+
+        @Override
+        public void completedWrap() {
+
+        }
+
+        @Override
+        public RDBColumnMetaData getResult() {
+            return null;
+        }
+
+        @Override
+        public boolean completedWrapRow(int rowIndex, RDBColumnMetaData instance) {
+            String data_type = instance.getProperty("data_type").toString().toLowerCase();
+            int len = instance.getProperty("data_length").toInt();
+            int data_precision = instance.getProperty("data_precision").toInt();
+            int data_scale = instance.getProperty("data_scale").toInt();
+            instance.setLength(len);
+            instance.setPrecision(data_precision);
+            instance.setScale(data_scale);
+
+            JDBCType jdbcType = getDialect().getJdbcType(data_type);
+            Class javaType = Optional.ofNullable(javaTypeMap.get(jdbcType))
+                    .orElseGet(() -> defaultJavaTypeMap.getOrDefault(jdbcType, String.class));
+
+            instance.setJdbcType(jdbcType);
+            instance.setJavaType(javaType);
+            instance.setDataType(getDialect().buildDataType(instance));
+            return true;
+        }
+
+        @Override
+        public void wrapColumn(ColumnWrapperContext<RDBColumnMetaData> context) {
+            doWrap(context.getInstance(), context.getColumnLabel(), context.getResult());
+        }
+
+        public void doWrap(RDBColumnMetaData instance, String attr, Object value) {
             String stringValue;
             if (value instanceof String) {
                 stringValue = ((String) value).toLowerCase();
@@ -174,26 +213,6 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
                 }
                 instance.setProperty(attr.toLowerCase(), value);
             }
-        }
-
-        @Override
-        public boolean done(RDBColumnMetaData instance) {
-            String data_type = instance.getProperty("data_type").toString().toLowerCase();
-            int len = instance.getProperty("data_length").toInt();
-            int data_precision = instance.getProperty("data_precision").toInt();
-            int data_scale = instance.getProperty("data_scale").toInt();
-            instance.setLength(len);
-            instance.setPrecision(data_precision);
-            instance.setScale(data_scale);
-
-            JDBCType jdbcType = getDialect().getJdbcType(data_type);
-            Class javaType = Optional.ofNullable(javaTypeMap.get(jdbcType))
-                    .orElseGet(() -> defaultJavaTypeMap.getOrDefault(jdbcType, String.class));
-
-            instance.setJdbcType(jdbcType);
-            instance.setJavaType(javaType);
-            instance.setDataType(getDialect().buildDataType(instance));
-            return true;
         }
     }
 }

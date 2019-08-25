@@ -5,13 +5,4 @@ public interface SqlRequest {
     String getSql();
 
     Object[] getParameters();
-
-    static SqlRequest prepare(String sql, Object... parameters) {
-        return SimpleSqlRequest.of(sql, parameters);
-    }
-
-    static SqlRequest template(String template, Object parameter) {
-        return SqlTemplateParser.parse(template, parameter);
-    }
-
 }

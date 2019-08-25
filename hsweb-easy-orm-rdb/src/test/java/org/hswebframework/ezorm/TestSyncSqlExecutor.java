@@ -1,12 +1,10 @@
 package org.hswebframework.ezorm;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.rdb.executor.AbstractJdbcSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.JdbcSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 @AllArgsConstructor
 public class TestSyncSqlExecutor extends JdbcSyncSqlExecutor {

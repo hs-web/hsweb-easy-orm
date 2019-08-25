@@ -1,7 +1,9 @@
-package org.hswebframework.ezorm.rdb.executor;
+package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.rdb.meta.expand.SimpleMapWrapper;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSyncSqlExecutor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +14,9 @@ import java.util.Collections;
 import java.util.Map;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequest.*;
+import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
+import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
 public class JdbcSyncSqlExecutorTest {
 
@@ -40,7 +45,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectSingle() {
-        Map<String, Object> data = executor.selectSingle(prepare("select 1 as data"), SimpleMapWrapper.INSTANCE);
+        Map<String, Object> data = executor.select(prepare("select 1 as data"), singleMap());
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }
@@ -48,7 +53,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectPrepare() {
-        Map<String, Object> data = executor.selectSingle(prepare("select 1 as data where 1 = ?", 1), SimpleMapWrapper.INSTANCE);
+        Map<String, Object> data = executor.select(prepare("select 1 as data where 1 = ?", 1), singleMap());
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }
@@ -56,7 +61,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectTemplate() {
-        Map<String, Object> data = executor.selectSingle(template("select 1 as data where 1 = #{id}", Collections.singletonMap("id", 1)), SimpleMapWrapper.INSTANCE);
+        Map<String, Object> data = executor.select(template("select 1 as data where 1 = #{id}", Collections.singletonMap("id", 1)), singleMap());
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }

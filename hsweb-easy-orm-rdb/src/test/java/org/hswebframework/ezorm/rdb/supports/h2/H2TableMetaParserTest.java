@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.h2;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
@@ -35,7 +36,7 @@ public class H2TableMetaParserTest {
 
     @Test
     public void testParse() {
-        executor.execute(prepare("CREATE TABLE IF NOT EXISTS test_table(" +
+        executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table(" +
                 "id varchar(32) primary key," +
                 "name varchar(128) not null," +
                 "age number(4)" +
@@ -82,7 +83,7 @@ public class H2TableMetaParserTest {
                 Assert.assertEquals(column.getJavaType(), BigDecimal.class);
             }
         }finally {
-            executor.execute(SqlRequest.prepare("drop table test_table"));
+            executor.execute(SqlRequests.of("drop table test_table"));
         }
 
     }

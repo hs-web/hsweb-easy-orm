@@ -103,7 +103,7 @@ public class SqlTemplateParser {
             newArr[len++] = symbol;
         }
 
-        return SqlRequest.prepare(new String(newArr, 0, len), parameters.toArray());
+        return SqlRequests.prepare(new String(newArr, 0, len), parameters.toArray());
     }
 
     public SqlRequest parse() {

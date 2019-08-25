@@ -16,6 +16,8 @@
 
 package org.hswebframework.ezorm.rdb.codec;
 
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,22 +29,28 @@ import java.io.ObjectInputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 
-public class BlobValueCodec implements ValueCodec {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+@Slf4j
+public class BlobValueCodec implements ValueCodec<Blob, Object> {
+
+    public static final BlobValueCodec INSTANCE = new BlobValueCodec();
 
     @Override
-    public Object encode(Object value) {
+    @SneakyThrows
+    public Blob encode(Object value) {
+        Blob blob;
+        if (value instanceof Blob) {
+            return ((Blob) value);
+        }
         if (value instanceof String) {
             value = ((String) value).getBytes();
+        } else {
+            value = value.toString().getBytes();
         }
-        if (value instanceof byte[]) {
-            try {
-                return new SerialBlob(((byte[]) value));
-            } catch (SQLException e) {
-                return value;
-            }
-        }
-        return value;
+
+        // if (value instanceof byte[]) {
+        blob = new SerialBlob(((byte[]) value));
+        //}
+        return blob;
     }
 
     @Override
@@ -60,12 +68,12 @@ public class BlobValueCodec implements ValueCodec {
                 } catch (IOException e) {
                     //可能不是对象
                 } catch (ClassNotFoundException e) {
-                    logger.warn("blob is class,but class not found!", e);
+                    log.warn("blob is class,but class not found!", e);
                 }
                 //转为bytes
                 return blobValue.getBytes(0, (int) blobValue.length());
             } catch (Exception e) {
-                logger.warn("blob data error", e);
+                log.warn("blob data error", e);
             }
         }
         return data;

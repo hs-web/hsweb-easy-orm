@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.sql.JDBCType;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequest.*;
+import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 
 public class MysqlTableMetaParserTest {
 
@@ -29,7 +31,7 @@ public class MysqlTableMetaParserTest {
 
     @Test
     public void testParse() {
-        executor.execute(prepare("CREATE TABLE IF NOT EXISTS test_table(" +
+        executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table(" +
                 "id varchar(32) primary key," +
                 "name varchar(128) not null," +
                 "age int" +
