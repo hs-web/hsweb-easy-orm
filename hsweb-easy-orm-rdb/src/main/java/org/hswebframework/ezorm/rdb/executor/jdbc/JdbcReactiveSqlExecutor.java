@@ -33,20 +33,6 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
 
     }
 
-    protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
-        Flux<SqlRequest> flux;
-        if (request instanceof Mono) {
-            Mono<SqlRequest> mono = ((Mono<SqlRequest>) request);
-            flux = mono.flux();
-        } else if (request instanceof Flux) {
-            flux = ((Flux<SqlRequest>) request);
-        } else {
-            return Flux.error(new UnsupportedOperationException("unsupported request type:" + request.getClass()));
-        }
-        return flux;
-    }
-
-
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
 
@@ -65,8 +51,8 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
 
         return Flux.create(sink -> {
             Disposable disposable = toFlux(request)
-                    .doOnNext(sql -> JdbcSqlExecutorHelper.printSql(log, sql))
                     .doFinally(type -> sink.complete())
+                    .doOnNext(sql -> JdbcSqlExecutorHelper.printSql(log, sql))
                     .subscribe(sqlRequest -> getConnection(sqlRequest)
                             .subscribe(connection -> {
                                 doSelect(connection, sqlRequest, consumer(wrapper, sink::next));
@@ -76,5 +62,18 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
             sink.onCancel(disposable)
                     .onDispose(disposable);
         });
+    }
+
+    protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
+        Flux<SqlRequest> flux;
+        if (request instanceof Mono) {
+            Mono<SqlRequest> mono = ((Mono<SqlRequest>) request);
+            flux = mono.flux();
+        } else if (request instanceof Flux) {
+            flux = ((Flux<SqlRequest>) request);
+        } else {
+            return Flux.error(new UnsupportedOperationException("unsupported request type:" + request.getClass()));
+        }
+        return flux;
     }
 }

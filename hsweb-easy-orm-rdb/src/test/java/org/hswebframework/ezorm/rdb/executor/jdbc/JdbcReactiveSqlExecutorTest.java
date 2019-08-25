@@ -65,6 +65,17 @@ public class JdbcReactiveSqlExecutorTest {
         StepVerifier.create(data)
                 .expectNext(10L)
                 .verifyComplete();
+
+        Mono<Long> count = sqlExecutor.select(Flux.range(0,10)
+                .map(String::valueOf)
+                .map(num->of("select * from test where id = ?",num)), map())
+                .doOnError(Throwable::printStackTrace)
+                .map(map -> map.get("ID"))
+                .count();
+
+        StepVerifier.create(count)
+                .expectNext(10L)
+                .verifyComplete();
     }
 
 }
