@@ -36,25 +36,19 @@
             <version>3.2.8.RELEASE</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>io.r2dbc</groupId>-->
-            <!--<artifactId>r2dbc-h2</artifactId>-->
-            <!--<version>0.8.0.BUILD-SNAPSHOT</version>-->
-            <!--<optional>true</optional>-->
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>io.projectreactor</groupId>-->
-                    <!--<artifactId>reactor-bom</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-h2</artifactId>
+            <version>0.8.0.BUILD-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>io.r2dbc</groupId>-->
-            <!--<artifactId>r2dbc-spi</artifactId>-->
-            <!--<version>0.8.0.BUILD-SNAPSHOT</version>-->
-            <!--<optional>true</optional>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-spi</artifactId>
+            <version>0.8.0.BUILD-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>com.oracle</groupId>

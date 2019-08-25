@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.executor.reactive.r2dbc;
 
+import io.r2dbc.spi.Connection;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -7,13 +8,16 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
+public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
 
-//    protected Mono<Connection>
+    protected abstract Mono<Connection> getConnection();
+
+
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
+
         return null;
     }
 
@@ -24,6 +28,7 @@ public class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, E> wrapper) {
+
         return null;
     }
 }
