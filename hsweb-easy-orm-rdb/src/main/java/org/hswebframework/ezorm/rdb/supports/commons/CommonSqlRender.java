@@ -4,7 +4,7 @@ import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.Correlation;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.core.param.Param;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class CommonSqlRender<R extends Param> implements SqlRender<R> {
+public abstract class CommonSqlRender<R extends Param> implements SqlRender_<R> {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public class OperationColumn {

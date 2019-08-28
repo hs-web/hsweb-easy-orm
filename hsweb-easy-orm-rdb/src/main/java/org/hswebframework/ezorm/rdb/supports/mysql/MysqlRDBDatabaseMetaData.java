@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.render.dialect.AbstractRDBDatabaseMetaData;
 
 public class MysqlRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
@@ -33,9 +33,9 @@ public class MysqlRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     @Override
     public void init() {
         super.init();
-        renderMap.put(SqlRender.TYPE.META_CREATE, new MysqlMetaCreateRender(getEngine()));
-        renderMap.put(SqlRender.TYPE.DELETE, new MysqlDeleteSqlRender(getDialect()));
-        renderMap.put(SqlRender.TYPE.META_ALTER, new MysqlMetaAlterRender(this));
+        renderMap.put(SqlRender_.TYPE.META_CREATE, new MysqlMetaCreateRender(getEngine()));
+        renderMap.put(SqlRender_.TYPE.DELETE, new MysqlDeleteSqlRender(getDialect()));
+        renderMap.put(SqlRender_.TYPE.META_ALTER, new MysqlMetaAlterRender(this));
     }
 
 

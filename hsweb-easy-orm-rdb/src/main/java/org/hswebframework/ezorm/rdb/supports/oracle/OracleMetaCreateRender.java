@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.BindSQL;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class OracleMetaCreateRender implements SqlRender<Object> {
+public class OracleMetaCreateRender implements SqlRender_<Object> {
     @Override
     public SQL render(RDBTableMetaData metaData, Object param) {
         SqlAppender createBody = new SqlAppender();

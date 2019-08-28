@@ -7,14 +7,14 @@ import org.hswebframework.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MysqlMetaCreateRender implements SqlRender {
+public class MysqlMetaCreateRender implements SqlRender_ {
 
     private String engine = "InnoDB";
 

@@ -13,6 +13,8 @@ public class RDBKeyMetadata implements ObjectMetaData {
 
     private String name;
 
+    private String alias;
+
     private boolean primaryKey;
 
     private String type;

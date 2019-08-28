@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.supports.commons.CommonCreateIndexRender;
 import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
 import org.hswebframework.utils.StringUtils;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class PostgresMetaCreateRender implements SqlRender<Object> {
+public class PostgresMetaCreateRender implements SqlRender_<Object> {
     @Override
     public SQL render(RDBTableMetaData metaData, Object param) {
         SqlAppender createBody = new SqlAppender();

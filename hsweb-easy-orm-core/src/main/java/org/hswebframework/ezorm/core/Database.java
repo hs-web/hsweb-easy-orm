@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.core.meta.DatabaseMetaData;
  * 数据库操作接口
  * Created by zhouhao on 16-6-4.
  */
+@Deprecated
 public interface Database {
 
     /**

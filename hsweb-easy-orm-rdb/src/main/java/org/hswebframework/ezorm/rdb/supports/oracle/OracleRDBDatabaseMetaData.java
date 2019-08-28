@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.render.dialect.AbstractRDBDatabaseMetaData;
 
 public class OracleRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
@@ -18,8 +18,8 @@ public class OracleRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     @Override
     public void init() {
         super.init();
-        renderMap.put(SqlRender.TYPE.META_CREATE, new OracleMetaCreateRender());
-        renderMap.put(SqlRender.TYPE.META_ALTER, new OracleMetaAlterRender(this));
+        renderMap.put(SqlRender_.TYPE.META_CREATE, new OracleMetaCreateRender());
+        renderMap.put(SqlRender_.TYPE.META_ALTER, new OracleMetaAlterRender(this));
     }
 
     @Override

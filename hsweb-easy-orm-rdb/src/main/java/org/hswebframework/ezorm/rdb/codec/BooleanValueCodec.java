@@ -6,7 +6,7 @@ import org.hswebframework.ezorm.core.ValueCodec;
 import java.sql.JDBCType;
 
 @AllArgsConstructor
-public class BooleanValueCodec implements ValueCodec {
+public class BooleanValueCodec implements ValueCodec<Object, Boolean> {
 
     private JDBCType jdbcType;
 
@@ -25,12 +25,12 @@ public class BooleanValueCodec implements ValueCodec {
     }
 
     @Override
-    public Object decode(Object data) {
+    public Boolean decode(Object data) {
         if (null == data) {
             return false;
         }
         if (data instanceof Boolean) {
-            return data;
+            return (Boolean) data;
         }
         return "1".equals(String.valueOf(data)) || "true".equals(String.valueOf(data));
     }

@@ -8,6 +8,8 @@ public interface DatabaseMetaData extends ObjectMetaData {
 
     String getName();
 
+    SchemaMetaData getCurrentSchema();
+
     List<SchemaMetaData> getSchemas();
 
     Optional<SchemaMetaData> getSchema(String name);

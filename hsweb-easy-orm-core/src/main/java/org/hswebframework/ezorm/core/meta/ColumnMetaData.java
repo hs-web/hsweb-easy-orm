@@ -6,7 +6,6 @@ import org.hswebframework.ezorm.core.DictionaryCodec;
 import org.hswebframework.ezorm.core.PropertyWrapper;
 import org.hswebframework.ezorm.core.ValueCodec;
 
-import java.io.Serializable;
 import java.util.Set;
 
 @SuppressWarnings("all")

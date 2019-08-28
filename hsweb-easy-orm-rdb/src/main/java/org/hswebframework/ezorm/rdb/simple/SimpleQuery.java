@@ -10,7 +10,7 @@ import org.hswebframework.ezorm.rdb.RDBQuery;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.simple.wrapper.TriggerWrapper;
 
 import java.sql.SQLException;
@@ -24,11 +24,11 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
 
     private QueryParam queryParam;
 
-    private SqlRender<QueryParam> render;
+    private SqlRender_<QueryParam> render;
 
     private SqlExecutor sqlExecutor;
 
-    private SqlRender<QueryParam> totalRender;
+    private SqlRender_<QueryParam> totalRender;
 
     private ObjectWrapper<T> objectWrapper;
 
@@ -36,8 +36,8 @@ class SimpleQuery<T> extends ValidatorAndTriggerSupport<Query<T>> implements RDB
 
     public SimpleQuery(SimpleTable<T> table, SqlExecutor sqlExecutor, ObjectWrapper<T> objectWrapper) {
         this.table = table;
-        this.render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.SELECT);
-        this.totalRender = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.SELECT_TOTAL);
+        this.render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender_.TYPE.SELECT);
+        this.totalRender = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender_.TYPE.SELECT_TOTAL);
         this.objectWrapper = new TriggerWrapper<>(table.getDatabase(), table, objectWrapper);
         this.sqlExecutor = sqlExecutor;
         this.queryParam = new QueryParam();

@@ -8,7 +8,7 @@ import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.meta.builder.TableBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.simple.SimpleTableBuilder;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.RDBDatabase;
 import org.hswebframework.ezorm.rdb.RDBTable;
 import org.hswebframework.ezorm.rdb.simple.wrapper.AdvancedMapWrapper;
@@ -82,7 +82,7 @@ public class SimpleDatabase implements RDBDatabase {
 
     @Override
     public <T> RDBTable<T> createTable(RDBTableMetaData tableMetaData) throws SQLException {
-        SqlRender render = metaData.getRenderer(SqlRender.TYPE.META_CREATE);
+        SqlRender_ render = metaData.getRenderer(SqlRender_.TYPE.META_CREATE);
         SQL sql = render.render(tableMetaData, new Object());
         sqlExecutor.exec(sql);
         metaData.putTable(tableMetaData);
@@ -104,7 +104,7 @@ public class SimpleDatabase implements RDBDatabase {
 
     @Override
     public <T> RDBTable<T> alterTable(RDBTableMetaData tableMetaData) throws SQLException {
-        SqlRender<Boolean> render = metaData.getRenderer(SqlRender.TYPE.META_ALTER);
+        SqlRender_<Boolean> render = metaData.getRenderer(SqlRender_.TYPE.META_ALTER);
         RDBTable old = getTable(tableMetaData.getName());
         if (old == null) throw new NullPointerException("旧表不存在!");
         int total = old.createQuery().total();

@@ -10,7 +10,7 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -109,7 +109,7 @@ class SimpleDelete extends ValidatorAndTriggerSupport<Delete> implements Delete 
         if (supportBefore) {
             tableMetaData.on(Trigger.delete_before, context);
         }
-        SqlRender<Param> render = tableMetaData.getDatabaseMetaData().getRenderer(SqlRender.TYPE.DELETE);
+        SqlRender_<Param> render = tableMetaData.getDatabaseMetaData().getRenderer(SqlRender_.TYPE.DELETE);
         SQL sql = render.render(table.getMeta(), param);
         int size = sqlExecutor.delete(sql);
         if (supportDone) {

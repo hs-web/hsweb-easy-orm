@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.core;
 
 import org.hswebframework.ezorm.core.meta.TableMetaData;
 
+@Deprecated
 public interface Table<T> {
     <M extends TableMetaData> M getMeta();
 

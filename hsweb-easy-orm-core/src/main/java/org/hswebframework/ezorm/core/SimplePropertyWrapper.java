@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by zhouhao on 16-6-4.
+ * @since 1.0
  */
 public class SimplePropertyWrapper implements PropertyWrapper {
 

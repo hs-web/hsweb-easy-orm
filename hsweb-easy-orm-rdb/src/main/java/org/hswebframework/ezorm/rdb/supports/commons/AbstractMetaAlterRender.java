@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * @author zhouhao
  * @since 3.0
  */
-public abstract class AbstractMetaAlterRender implements SqlRender<Boolean> {
+public abstract class AbstractMetaAlterRender implements SqlRender_<Boolean> {
 
     protected RDBDatabaseMetaData databaseMetaData;
 

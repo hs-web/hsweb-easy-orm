@@ -20,6 +20,8 @@ public class RDBIndexMetaData implements ObjectMetaData {
 
     private String indexName;
 
+    private String alias;
+
     private Set<IndexColumn> columnName = new LinkedHashSet<>();
 
     private boolean unique;

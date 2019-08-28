@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -42,20 +43,26 @@ public class DateTimeCodec implements ValueCodec {
             data = new Date(((Number) data).longValue());
         }
         if (data instanceof Date) {
-            if (toType == Date.class) return data;
+            if (toType == Date.class) {
+                return data;
+            }
             if (toType == String.class) {
                 return DateTimeUtils.format(((Date) data), format);
             }
         }
         if (data instanceof String) {
+            String stringData = ((String) data);
             if (toType == Date.class) {
-                if (((String) data).contains(",")) {
-                    return Arrays.stream(((String) data).split(","))
+                if ((stringData).contains(",")) {
+                    return Arrays.stream(stringData.split(","))
                             .map(DateFormatter::fromString)
+                            .filter(Objects::nonNull)
                             .collect(Collectors.toList());
                 }
-                data = DateFormatter.fromString(((String) data));
-                if (data == null) data = DateTimeUtils.formatDateString(((String) data), format);
+                data = DateFormatter.fromString(stringData);
+                if (data == null) {
+                    data = DateTimeUtils.formatDateString(stringData, format);
+                }
             }
         }
         return data;

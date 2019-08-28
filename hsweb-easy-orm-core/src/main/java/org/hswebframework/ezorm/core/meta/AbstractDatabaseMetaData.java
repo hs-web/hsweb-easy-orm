@@ -7,50 +7,43 @@ import org.hswebframework.ezorm.core.ValidatorFactory;
 import org.hswebframework.ezorm.core.meta.storage.MapTableMetaDataStorage;
 import org.hswebframework.ezorm.core.meta.storage.TableMetaDataStorage;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractDatabaseMetaData implements DatabaseMetaData {
-    protected ObjectWrapperFactory objectWrapperFactory;
-    protected ValidatorFactory     validatorFactory;
+
+    private Map<String, SchemaMetaData> schemas = new ConcurrentHashMap<>();
+
+    @Getter
+    @Setter
+    private SchemaMetaData currentSchema;
 
     @Getter
     @Setter
     protected String databaseName;
 
-    protected TableMetaDataStorage tableMetaDataStorage =new MapTableMetaDataStorage();
+    @Getter
+    @Setter
+    private String name;
 
-    public <T extends TableMetaData> T getTableMetaData(String name) {
-        return tableMetaDataStorage.getTableMetaData(name);
-    }
+    @Getter
+    @Setter
+    private String alias;
 
-    public ObjectWrapperFactory getObjectWrapperFactory() {
-        return objectWrapperFactory;
-    }
-
-    public ValidatorFactory getValidatorFactory() {
-        return validatorFactory;
-    }
-
-    public void setObjectWrapperFactory(ObjectWrapperFactory objectWrapperFactory) {
-        this.objectWrapperFactory = objectWrapperFactory;
-    }
-
-    public void setValidatorFactory(ValidatorFactory validatorFactory) {
-        this.validatorFactory = validatorFactory;
-    }
-
-    public void setTableMetaDataStorage(TableMetaDataStorage tableMetaDataStorage) {
-        this.tableMetaDataStorage = tableMetaDataStorage;
+    public void registerSchema(SchemaMetaData schema) {
+        schemas.put(schema.getName(), schema);
+        if (schema.getAlias() != null) {
+            schemas.put(schema.getAlias(), schema);
+        }
     }
 
     @Override
     public List<SchemaMetaData> getSchemas() {
-        return null;
+        return new ArrayList<>(schemas.values());
     }
 
     @Override
     public Optional<SchemaMetaData> getSchema(String name) {
-        return Optional.empty();
+        return Optional.ofNullable(schemas.get(name));
     }
 }

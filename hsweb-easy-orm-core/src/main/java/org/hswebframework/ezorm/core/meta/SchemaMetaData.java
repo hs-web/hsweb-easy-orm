@@ -11,6 +11,8 @@ public interface SchemaMetaData extends ObjectMetaData  {
 
     String getName();
 
+    DatabaseMetaData getDatabase();
+
     List<ObjectType> getAllObjectType();
 
     <T extends ObjectMetaData> List<T> getObject(ObjectType type);

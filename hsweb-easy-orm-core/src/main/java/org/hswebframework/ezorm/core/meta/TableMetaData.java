@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 /**
  * @author zhouhao
  */
+@Deprecated
 public interface TableMetaData  extends ObjectMetaData, Serializable {
     String getName();
 

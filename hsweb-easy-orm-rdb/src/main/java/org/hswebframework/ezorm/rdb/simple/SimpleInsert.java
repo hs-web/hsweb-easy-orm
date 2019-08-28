@@ -8,7 +8,7 @@ import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -59,7 +59,7 @@ class SimpleInsert<T> extends ValidatorAndTriggerSupport<Insert<T>> implements I
         if (supportBefore) {
             table.getMeta().on(Trigger.insert_before, context);
         }
-        SqlRender<InsertParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.INSERT);
+        SqlRender_<InsertParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender_.TYPE.INSERT);
         SQL sql = render.render(table.getMeta(), insertParam);
         tryValidate(insertParam.getData(), Validator.Operation.INSERT);
         int total = sqlExecutor.insert(sql);

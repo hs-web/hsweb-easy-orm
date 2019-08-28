@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.BindSQL;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * sqlServer 表结构创建 sql渲染器,用于渲染sqlServer创建表的sql
  */
-public class SqlServerMetaCreateRender extends CommentSupportRender implements SqlRender {
+public class SqlServerMetaCreateRender extends CommentSupportRender implements SqlRender_ {
     @Override
     protected boolean isDropCommentBefore() {
         return false;

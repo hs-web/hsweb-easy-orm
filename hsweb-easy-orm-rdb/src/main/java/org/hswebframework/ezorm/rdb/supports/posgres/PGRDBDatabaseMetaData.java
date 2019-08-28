@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.posgres;
 
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.render.dialect.AbstractRDBDatabaseMetaData;
 
 /**
@@ -22,8 +22,8 @@ public class PGRDBDatabaseMetaData extends AbstractRDBDatabaseMetaData {
     @Override
     public void init() {
         super.init();
-        putRenderer(SqlRender.TYPE.META_CREATE, new PostgresMetaCreateRender());
-        putRenderer(SqlRender.TYPE.META_ALTER, new PostgresMetaAlterRender(this));
+        putRenderer(SqlRender_.TYPE.META_CREATE, new PostgresMetaCreateRender());
+        putRenderer(SqlRender_.TYPE.META_ALTER, new PostgresMetaAlterRender(this));
     }
 
     @Override

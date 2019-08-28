@@ -8,7 +8,7 @@ import org.hswebframework.ezorm.rdb.executor.BindSQL;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * sqlServer 表结构修改sql渲染器,用于渲染sqlServer修改表的sql
  */
-public class SqlServerMetaAlterRender extends CommentSupportRender implements SqlRender<Boolean> {
+public class SqlServerMetaAlterRender extends CommentSupportRender implements SqlRender_<Boolean> {
     @Override
     public SQL render(RDBTableMetaData table, Boolean executeRemove) {
         RDBTableMetaData old = table.getDatabaseMetaData().getTableMetaData(table.getName());

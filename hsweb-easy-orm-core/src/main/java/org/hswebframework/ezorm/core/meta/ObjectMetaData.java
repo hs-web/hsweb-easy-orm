@@ -8,6 +8,12 @@ public interface ObjectMetaData {
 
     String getName();
 
+    String getAlias();
+
     ObjectType getObjectType();
 
+    default boolean equalsNameOrAlias(String nameOrAlias) {
+        return nameOrAlias.equalsIgnoreCase(getName())
+                || nameOrAlias.equalsIgnoreCase(getAlias());
+    }
 }

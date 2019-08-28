@@ -9,7 +9,7 @@ import org.hswebframework.ezorm.core.param.UpdateParam;
 import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +150,7 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
         if (supportBefore) {
             table.getMeta().on(Trigger.update_before, context);
         }
-        SqlRender<UpdateParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.UPDATE);
+        SqlRender_<UpdateParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender_.TYPE.UPDATE);
         SQL sql = render.render(table.getMeta(), updateParam);
         tryValidate(updateParam.getData(), Validator.Operation.UPDATE);
         int total = sqlExecutor.update(sql);

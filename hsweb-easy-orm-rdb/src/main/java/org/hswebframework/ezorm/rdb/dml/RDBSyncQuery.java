@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface RDBSyncQuery<T> {
 
-
     T selectSingle(QueryParam param);
 
     List<T> select(QueryParam param);

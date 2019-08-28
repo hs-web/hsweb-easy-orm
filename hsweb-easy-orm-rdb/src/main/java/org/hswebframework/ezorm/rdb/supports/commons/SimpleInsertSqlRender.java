@@ -10,7 +10,7 @@ import org.hswebframework.ezorm.rdb.executor.SQL;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.render.SqlAppender;
-import org.hswebframework.ezorm.rdb.render.SqlRender;
+import org.hswebframework.ezorm.rdb.render.SqlRender_;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class SimpleInsertSqlRender implements SqlRender<InsertParam> {
+public class SimpleInsertSqlRender implements SqlRender_<InsertParam> {
     PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
