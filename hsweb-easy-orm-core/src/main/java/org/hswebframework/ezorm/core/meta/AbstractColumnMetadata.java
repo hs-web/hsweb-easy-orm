@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 @Getter
 @Setter
@@ -19,6 +21,8 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     protected DefaultValue defaultValue;
     protected Validator validator;
     protected Map<String, Object> properties = new HashMap<>();
+
+    private Map<String, Feature> features;
 
     @Override
     public String getAlias() {
@@ -43,4 +47,13 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     public PropertyWrapper setProperty(String property, Object value) {
         return new SimplePropertyWrapper(properties.put(property, value));
     }
+
+
+    public void addFeature(Feature feature) {
+        if (features == null) {
+            features = new HashMap<>();
+        }
+        features.put(feature.getId(), feature);
+    }
+
 }

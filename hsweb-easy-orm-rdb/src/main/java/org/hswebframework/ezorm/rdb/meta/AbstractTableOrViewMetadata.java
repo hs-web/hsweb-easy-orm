@@ -2,10 +2,14 @@ package org.hswebframework.ezorm.rdb.meta;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.meta.Feature;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Optional.*;
 
@@ -22,6 +26,8 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     private final Map<String, RDBColumnMetadata> allColumns = new HashMap<>();
 
     private List<ForeignKeyMetadata> foreignKey = new ArrayList<>();
+
+    private Map<String, Feature> features = new HashMap<>();
 
     public boolean isTable() {
         return this instanceof RDBTableMetadata;
@@ -125,5 +131,13 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                 .findFirst();
     }
 
+    public void addFeature(Feature feature) {
+        features.put(feature.getId(), feature);
+    }
 
+    @Override
+    public Dialect getDialect() {
+        return getSchema()
+                .getDialect();
+    }
 }

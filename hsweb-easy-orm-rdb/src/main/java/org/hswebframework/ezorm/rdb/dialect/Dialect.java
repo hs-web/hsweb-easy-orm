@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.dialect;
 
-import org.hswebframework.ezorm.rdb.operator.builder.TermFragment;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
@@ -11,7 +10,6 @@ import org.hswebframework.ezorm.rdb.supports.posgres.PGSqlDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
-import java.util.Optional;
 
 /**
  * 数据库方言
@@ -24,14 +22,6 @@ import java.util.Optional;
  * @since 1.0
  */
 public interface Dialect {
-
-    Optional<TermFragment> getTermFragment(String termType);
-
-    void addTermFragment(String termType, TermFragment fragment);
-
-    void setTermTypeMapper(String termType, TermTypeMapper mapper);
-
-    boolean isSupportTermType(String termType);
 
     void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
 
@@ -48,10 +38,6 @@ public interface Dialect {
     String doPaging(String sql, int pageIndex, int pageSize);
 
     String doPaging(String sql, int pageIndex, int pageSize, boolean prepare);
-
-    SqlFunction getFunction(String name);
-
-    SqlFunction installFunction(String name, SqlFunction function);
 
     boolean columnToUpperCase();
 

@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.core.*;
 
 
 @SuppressWarnings("all")
-public interface ColumnMetadata extends ObjectMetadata, Cloneable {
+public interface ColumnMetadata extends FeatureSupportMetadata, ObjectMetadata, Cloneable {
     String getName();
 
     String getAlias();

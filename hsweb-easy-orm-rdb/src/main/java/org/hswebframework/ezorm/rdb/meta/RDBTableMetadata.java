@@ -17,6 +17,7 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata {
 
     private List<RDBKeyMetadata> keys = new ArrayList<>();
 
+
     @Override
     public ObjectType getObjectType() {
         return RDBObjectType.table;

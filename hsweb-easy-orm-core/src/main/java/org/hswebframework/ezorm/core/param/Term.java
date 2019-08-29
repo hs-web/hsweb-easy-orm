@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.core.param;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import java.util.stream.Collectors;
 /**
  * 执行条件
  */
+@Getter
+@Setter
 public class Term implements Cloneable {
 
     /**
@@ -101,8 +105,10 @@ public class Term implements Cloneable {
         return queryTerm;
     }
 
-    public String getColumn() {
-        return column;
+
+    public Term addTerm(Term term) {
+        terms.add(term);
+        return this;
     }
 
     public void setColumn(String column) {
@@ -118,50 +124,6 @@ public class Term implements Cloneable {
         this.column = column;
     }
 
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public String getTermType() {
-        return termType.toLowerCase();
-    }
-
-    public void setTermType(String termType) {
-        this.termType = termType;
-    }
-
-    public List<Term> getTerms() {
-        return terms;
-    }
-
-    public void setTerms(List<Term> terms) {
-        this.terms = terms;
-    }
-
-    public Term addTerm(Term term) {
-        terms.add(term);
-        return this;
-    }
-
-    public List<String> getOptions() {
-        return options;
-    }
-
-    public void setOptions(List<String> options) {
-        this.options = options;
-    }
 
     @Override
     @SneakyThrows

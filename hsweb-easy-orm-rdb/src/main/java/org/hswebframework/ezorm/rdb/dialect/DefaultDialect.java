@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.TermFragment;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -14,22 +14,12 @@ import java.util.*;
 public abstract class DefaultDialect implements Dialect {
     protected Map<String, TermTypeMapper> termTypeMappers = new HashMap<>();
     protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
-    protected Map<String, TermFragment> termFragments = new HashMap<>();
+    protected Map<String, TermFragmentBuilder> termFragments = new HashMap<>();
 
     protected Map<String, SqlFunction> functions = new HashMap<>();
     protected DataTypeMapper defaultDataTypeMapper = null;
 
     protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
-
-    @Override
-    public Optional<TermFragment> getTermFragment(String termType) {
-        return Optional.ofNullable(termFragments.get(termType));
-    }
-
-    @Override
-    public void addTermFragment(String termType, TermFragment fragment) {
-        termFragments.put(termType, fragment);
-    }
 
 //    public DefaultDialect() {
 //        //默认查询条件支持
@@ -170,56 +160,6 @@ public abstract class DefaultDialect implements Dialect {
 //            return appender;
 //        }));
 //    }
-
-    @Override
-    public SqlFunction getFunction(String name) {
-        return functions.get(name);
-    }
-
-    @Override
-    public SqlFunction installFunction(String name, SqlFunction function) {
-        return functions.put(name, function);
-    }
-
-//    @Override
-//    public SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetadata column, String tableAlias) {
-//        if (term instanceof SqlTerm) {
-//            SqlTerm sqlTerm = ((SqlTerm) term);
-//            String sql = sqlTerm.getSql();
-//            if (sql == null) sql = sqlTerm.getColumn();
-//            if (sql == null) return new SqlAppender();
-//            TermTypeMapper mapper = TermTypeMapper.sql(sqlTerm.getSql(), sqlTerm.getParam());
-//            return mapper.accept(wherePrefix, sqlTerm, column, tableAlias);
-//        }
-//        if (term.getValue() instanceof TermTypeMapper) {
-//            return ((TermTypeMapper) term.getValue()).accept(wherePrefix, term, column, tableAlias);
-//        }
-//        TermTypeMapper mapper = termTypeMappers.get(term.getTermType());
-//        if (mapper == null) mapper = termTypeMappers.get(TermType.eq);
-//        return mapper.accept(wherePrefix, term, column, tableAlias);
-//    }
-
-    @SuppressWarnings("unchecked")
-    protected List<Object> param2list(Object value) {
-        if (value == null) return new ArrayList<>();
-        if (value instanceof List) return (List) value;
-        if (value instanceof Collection) return new ArrayList<>(((Collection) value));
-        if (value.getClass().isArray()) {
-            return new ArrayList<>(Arrays.asList(((Object[]) value)));
-        } else {
-            return new ArrayList<>(Collections.singletonList(value));
-        }
-    }
-
-    @Override
-    public void setTermTypeMapper(String termType, TermTypeMapper mapper) {
-        termTypeMappers.put(termType.toLowerCase(), mapper);
-    }
-
-    @Override
-    public boolean isSupportTermType(String termType) {
-        return termTypeMappers.containsKey(termType);
-    }
 
     @Override
     public void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {

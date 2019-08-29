@@ -36,22 +36,22 @@ public class MysqlDialect extends DefaultDialect {
         setJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
         setJdbcTypeMapping("text", JDBCType.CLOB);
 
-        installFunction(SqlFunction.concat, param -> {
-            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
-            listParam.stream().map(String::valueOf).forEach(joiner::add);
-            return joiner.toString();
-        });
-
-        installFunction(SqlFunction.bitand, param -> {
-            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-            if (listParam.isEmpty()) {
-                throw new IllegalArgumentException("[BITAND]参数不能为空");
-            }
-            StringJoiner joiner = new StringJoiner("&");
-            listParam.stream().map(String::valueOf).forEach(joiner::add);
-            return joiner.toString();
-        });
+//        installFunction(SqlFunction.concat, param -> {
+//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
+//            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
+//            listParam.stream().map(String::valueOf).forEach(joiner::add);
+//            return joiner.toString();
+//        });
+//
+//        installFunction(SqlFunction.bitand, param -> {
+//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
+//            if (listParam.isEmpty()) {
+//                throw new IllegalArgumentException("[BITAND]参数不能为空");
+//            }
+//            StringJoiner joiner = new StringJoiner("&");
+//            listParam.stream().map(String::valueOf).forEach(joiner::add);
+//            return joiner.toString();
+//        });
     }
 
     @Override

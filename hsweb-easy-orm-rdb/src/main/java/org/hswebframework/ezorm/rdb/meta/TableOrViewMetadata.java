@@ -1,17 +1,25 @@
 package org.hswebframework.ezorm.rdb.meta;
 
+import org.hswebframework.ezorm.core.meta.Feature;
+import org.hswebframework.ezorm.core.meta.FeatureSupportMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Optional.of;
 
 /**
  * DQL 对象元数据: 表或者视图
  *
  * @since 4.0
  */
-public interface TableOrViewMetadata extends ObjectMetadata {
+public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportMetadata {
     /**
      * @return 元数据所在schema
      */
@@ -62,4 +70,23 @@ public interface TableOrViewMetadata extends ObjectMetadata {
 
     @Override
     ObjectType getObjectType();
+
+    Dialect getDialect();
+
+    default <T extends Feature> Optional<T> findFeature(String id) {
+        return of(this.<T>getFeature(id))
+                .filter(Optional::isPresent)
+                .orElseGet(() -> getSchema().getFeature(id));
+    }
+
+    default List<Feature> findFeatures(Predicate<Feature> predicate) {
+        return Stream.concat(getSchema().getFeatureList().stream(), getFeatureList().stream())
+                .filter(predicate)
+                .collect(Collectors.toList());
+
+    }
+
+    default List<Feature> findFeatures() {
+        return findFeatures((feature -> true));
+    }
 }

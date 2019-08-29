@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.CastUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
@@ -34,6 +31,9 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     @Getter
     @Setter
     private String alias;
+
+    @Getter
+    private Map<String, Feature> features = new HashMap<>();
 
     @Override
     public abstract List<ObjectType> getAllObjectType();
@@ -77,5 +77,9 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         return of(metaRepository.computeIfAbsent(type.getType(), t -> new ConcurrentHashMap<>()))
                 .map(repo -> repo.computeIfAbsent(name, __ -> parseMeta(type, name)))
                 .map(CastUtil::cast);
+    }
+
+    public void addFeature(Feature feature) {
+        features.put(feature.getId(), feature);
     }
 }

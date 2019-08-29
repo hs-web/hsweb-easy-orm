@@ -65,21 +65,21 @@ public class MSSQLDialect extends DefaultDialect {
         setJdbcTypeMapping("varbinary", JDBCType.VARBINARY);
         setJdbcTypeMapping("varchar", JDBCType.VARCHAR);
 
-        installFunction(SqlFunction.concat, param -> {
-            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
-            listParam.stream().map(String::valueOf).forEach(joiner::add);
-            return joiner.toString();
-        });
-        installFunction(SqlFunction.bitand, param -> {
-            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-            if (listParam.size() != 2) {
-                throw new IllegalArgumentException("[bitand]参数长度必须为2");
-            }
-            StringJoiner joiner = new StringJoiner(",", "bitand(", ")");
-            listParam.stream().map(String::valueOf).forEach(joiner::add);
-            return joiner.toString();
-        });
+//        installFunction(SqlFunction.concat, param -> {
+//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
+//            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
+//            listParam.stream().map(String::valueOf).forEach(joiner::add);
+//            return joiner.toString();
+//        });
+//        installFunction(SqlFunction.bitand, param -> {
+//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
+//            if (listParam.size() != 2) {
+//                throw new IllegalArgumentException("[bitand]参数长度必须为2");
+//            }
+//            StringJoiner joiner = new StringJoiner(",", "bitand(", ")");
+//            listParam.stream().map(String::valueOf).forEach(joiner::add);
+//            return joiner.toString();
+//        });
 
     }
 

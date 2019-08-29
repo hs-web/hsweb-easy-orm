@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.meta;
 import org.hswebframework.ezorm.core.meta.AbstractSchemaMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +13,20 @@ import java.util.stream.Collectors;
 public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
 
     private List<ObjectType> allObjectType = Arrays.asList(RDBObjectType.table, RDBObjectType.view);
+
+
+    public DefaultRDBSchemaMetadata() {
+        {
+            /* 通用查询条件 */
+            addFeature(RDBFutures.eq);
+            addFeature(RDBFutures.isNull);
+            addFeature(RDBFutures.notNull);
+            addFeature(RDBFutures.not);
+            // TODO: 2019-08-29 更多设置
+        }
+
+    }
+
 
     @Override
     @SuppressWarnings("all")
@@ -63,5 +78,9 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
     @Override
     public List<ObjectType> getAllObjectType() {
         return allObjectType;
+    }
+
+    public Dialect getDialect() {
+        return getDatabase().getDialect();
     }
 }

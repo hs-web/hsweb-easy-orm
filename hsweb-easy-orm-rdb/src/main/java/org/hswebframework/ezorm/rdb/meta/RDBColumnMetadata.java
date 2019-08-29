@@ -3,17 +3,24 @@ package org.hswebframework.ezorm.rdb.meta;
 import lombok.*;
 import org.hswebframework.ezorm.core.meta.AbstractColumnMetadata;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
+import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
-import java.io.Serializable;
 import java.sql.JDBCType;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Optional.*;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnMetadata, Serializable, Cloneable, Comparable<RDBColumnMetadata> {
+public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnMetadata, Cloneable, Comparable<RDBColumnMetadata> {
 
     /**
      * 数据类型,如:varchar(32)
@@ -80,11 +87,15 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     /**
      * 所有者
      */
-    private AbstractTableOrViewMetadata owner;
+    private TableOrViewMetadata owner;
+
+    public Dialect getDialect() {
+        return getOwner().getDialect();
+    }
 
     @Override
-    public int compareTo(RDBColumnMetadata o) {
-        return Integer.compare(sortIndex, o.getSortIndex());
+    public int compareTo(RDBColumnMetadata target) {
+        return Integer.compare(sortIndex, target.getSortIndex());
     }
 
     @Override
@@ -104,8 +115,23 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
                 '}';
     }
 
+
     @Override
     public ObjectType getObjectType() {
         return RDBObjectType.column;
     }
+
+    public <T extends Feature> Optional<T> findFeature(String id) {
+        return of(this.<T>getFeature(id))
+                .filter(Optional::isPresent)
+                .orElseGet(() -> owner.findFeature(id));
+    }
+
+    public List<Feature> findFeatures(Predicate<Feature> predicate) {
+        return Stream.concat(owner.findFeatures().stream(), getFeatureList().stream())
+                .filter(predicate)
+                .collect(Collectors.toList());
+
+    }
+
 }

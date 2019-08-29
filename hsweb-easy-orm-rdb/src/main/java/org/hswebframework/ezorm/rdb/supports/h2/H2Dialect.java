@@ -26,22 +26,22 @@ public class H2Dialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
-        installFunction(SqlFunction.concat, param -> {
-            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-            StringJoiner joiner = new StringJoiner("||");
-            listParam.stream().map(String::valueOf).forEach(joiner::add);
-            return joiner.toString();
-        });
-
-        installFunction(SqlFunction.bitand, param -> {
-            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-            if (listParam.size() != 2) {
-                throw new IllegalArgumentException("[BITAND]参数长度必须为2");
-            }
-            StringJoiner joiner = new StringJoiner(",", "BITAND(", ")");
-            listParam.stream().map(String::valueOf).forEach(joiner::add);
-            return joiner.toString();
-        });
+//        installFunction(SqlFunction.concat, param -> {
+//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
+//            StringJoiner joiner = new StringJoiner("||");
+//            listParam.stream().map(String::valueOf).forEach(joiner::add);
+//            return joiner.toString();
+//        });
+//
+//        installFunction(SqlFunction.bitand, param -> {
+//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
+//            if (listParam.size() != 2) {
+//                throw new IllegalArgumentException("[BITAND]参数长度必须为2");
+//            }
+//            StringJoiner joiner = new StringJoiner(",", "BITAND(", ")");
+//            listParam.stream().map(String::valueOf).forEach(joiner::add);
+//            return joiner.toString();
+//        });
 
     }
 

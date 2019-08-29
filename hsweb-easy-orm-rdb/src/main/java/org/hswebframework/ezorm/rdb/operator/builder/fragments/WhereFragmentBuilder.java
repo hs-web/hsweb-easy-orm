@@ -1,11 +1,9 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
-import org.hswebframework.ezorm.rdb.operator.builder.PrepareSqlFragment;
-import org.hswebframework.ezorm.rdb.operator.builder.SqlFragment;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 
 import java.util.ArrayList;
@@ -13,13 +11,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import static org.hswebframework.ezorm.rdb.meta.RDBFeatureType.*;
+
 @AllArgsConstructor(staticName = "of")
-public class WhereFragment implements SqlFragment {
+public class WhereFragmentBuilder implements SqlFragmentBuilder {
 
     private TableOrViewMetadata metaData;
 
     @Override
-    public PrepareSqlFragment getFragment(ComplexQueryParameter parameter) {
+    public String getId() {
+        return RDBFutures.where;
+    }
+
+    @Override
+    public String getText() {
+        return "条件";
+    }
+
+    @Override
+    public PrepareSqlFragments createFragments(ComplexQueryParameter parameter) {
         List<Term> terms = parameter.getWhere();
         if (terms == null || terms.isEmpty()) {
             return null;
@@ -45,23 +55,22 @@ public class WhereFragment implements SqlFragment {
                 String columnName = term.getColumn();
 
                 if (columnName != null && !columnName.isEmpty()) {
-                    PrepareSqlFragment fragment = metaData
+                    SqlFragments fragments = metaData
                             .getColumn(columnName)
                             .flatMap(column -> {
                                 String tableAlias = column.getOwner().getName();
 
-                                return metaData.getSchema()
-                                        .getDatabase()
-                                        .getDialect()
-                                        .getTermFragment(term.getTermType())
+                                return column
+                                        .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
                                         .map(termFragment -> termFragment.createFragments(tableAlias, column, term));
 
                             }).orElse(null);
-                    if (fragment == null) {
+                    if (fragments == null || fragments.isEmpty()) {
+
                         continue;
                     }
-                    sql.add(fragment.getSql());
-                    parameters.addAll(fragment.getParameters());
+                    sql.addAll(fragments.getSql());
+                    parameters.addAll(fragments.getParameters());
                 }
 
                 if (index != 0) {
@@ -80,8 +89,9 @@ public class WhereFragment implements SqlFragment {
 
         } while (!nests.isEmpty());
 
-        PrepareSqlFragment fragment=new PrepareSqlFragment();
-        fragment.setSql(String.join(" ", sql));
+        PrepareSqlFragments fragment = PrepareSqlFragments.of();
+
+        fragment.setSql(sql);
         fragment.setParameters(parameters);
 
         return fragment;
