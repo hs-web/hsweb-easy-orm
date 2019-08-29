@@ -1,20 +1,16 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.junit.After;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.math.BigDecimal;
 import java.sql.JDBCType;
 
-import static org.hswebframework.ezorm.rdb.executor.SqlRequest.*;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 
 public class MysqlTableMetaParserTest {
@@ -37,11 +33,11 @@ public class MysqlTableMetaParserTest {
                 "age int" +
                 ")"));
         try {
-            RDBTableMetaData metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {
-                RDBColumnMetaData column = metaData.getColumn("id");
+                RDBColumnMetadata column = metaData.getColumn("id").orElseThrow(NullPointerException::new);
 
                 Assert.assertNotNull(column);
 
@@ -55,7 +51,7 @@ public class MysqlTableMetaParserTest {
 
             //name
             {
-                RDBColumnMetaData column = metaData.getColumn("name");
+                RDBColumnMetadata column = metaData.getColumn("name").orElseThrow(NullPointerException::new);
 
                 Assert.assertNotNull(column);
 
@@ -68,7 +64,7 @@ public class MysqlTableMetaParserTest {
 
             //age
             {
-                RDBColumnMetaData column = metaData.getColumn("age");
+                RDBColumnMetadata column = metaData.getColumn("age").orElseThrow(NullPointerException::new);
 
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getPrecision(), 10);

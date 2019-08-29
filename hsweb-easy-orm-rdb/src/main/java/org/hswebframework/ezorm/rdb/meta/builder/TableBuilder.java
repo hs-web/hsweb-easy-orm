@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.meta.builder;
 
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -9,9 +9,9 @@ import java.util.function.Consumer;
 
 public interface TableBuilder {
 
-    TableBuilder addColumn(Set<RDBColumnMetaData> columns);
+    TableBuilder addColumn(Set<RDBColumnMetadata> columns);
 
-    TableBuilder custom(Consumer<RDBTableMetaData> consumer);
+    TableBuilder custom(Consumer<RDBTableMetadata> consumer);
 
     ColumnBuilder addColumn();
 

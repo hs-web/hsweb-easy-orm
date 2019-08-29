@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface ObjectMetaDataParserStrategy<T extends ObjectMetaData> {
+public interface ObjectMetaDataParserStrategy<T extends ObjectMetadata> {
 
     ObjectType getSupportType();
 

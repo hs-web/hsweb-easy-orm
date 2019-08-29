@@ -2,20 +2,16 @@ package org.hswebframework.ezorm.rdb.supports.h2;
 
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
-import org.hswebframework.ezorm.rdb.render.Sql;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
-
-import static org.hswebframework.ezorm.rdb.executor.SqlRequest.*;
 
 public class H2TableMetaParserTest {
 
@@ -42,11 +38,11 @@ public class H2TableMetaParserTest {
                 "age number(4)" +
                 ")"));
         try {
-            RDBTableMetaData metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {
-                RDBColumnMetaData column = metaData.getColumn("id");
+                RDBColumnMetadata column = metaData.getColumn("id").orElseThrow(NullPointerException::new);
 
                 Assert.assertNotNull(column);
 
@@ -60,7 +56,7 @@ public class H2TableMetaParserTest {
 
             //name
             {
-                RDBColumnMetaData column = metaData.getColumn("name");
+                RDBColumnMetadata column = metaData.getColumn("name").orElseThrow(NullPointerException::new);
 
                 Assert.assertNotNull(column);
 
@@ -73,7 +69,7 @@ public class H2TableMetaParserTest {
 
             //age
             {
-                RDBColumnMetaData column = metaData.getColumn("age");
+                RDBColumnMetadata column = metaData.getColumn("age").orElseThrow(NullPointerException::new);
 
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getPrecision(), 4);

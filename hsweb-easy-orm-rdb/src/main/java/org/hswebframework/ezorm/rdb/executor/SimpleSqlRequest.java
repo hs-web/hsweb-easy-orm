@@ -16,7 +16,6 @@ public class SimpleSqlRequest implements SqlRequest {
 
     private Object[] parameters;
 
-
     public String toNativeSql() {
 
         String[] stringParameter = new String[parameters.length];

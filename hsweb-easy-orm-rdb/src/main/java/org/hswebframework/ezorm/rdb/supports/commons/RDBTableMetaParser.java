@@ -9,9 +9,9 @@ import org.hswebframework.ezorm.rdb.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.*;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBObjectType;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.hswebframework.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.list;
 
-public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy<RDBTableMetaData> {
+public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy<RDBTableMetadata> {
 
     private static final Map<JDBCType, Class> defaultJavaTypeMap = new HashMap<>();
 
@@ -72,15 +72,15 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
     }
 
     @SneakyThrows
-    protected Optional<RDBTableMetaData> doParse(String name) {
-        RDBTableMetaData metaData = new RDBTableMetaData();
+    protected Optional<RDBTableMetadata> doParse(String name) {
+        RDBTableMetadata metaData = new RDBTableMetadata();
         metaData.setName(name);
         metaData.setAlias(name);
         Map<String, Object> param = new HashMap<>();
         param.put("table", name);
 
         //列
-        List<RDBColumnMetaData> metaDataList = sqlExecutor.select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
+        List<RDBColumnMetadata> metaDataList = sqlExecutor.select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
         metaDataList.forEach(metaData::addColumn);
         //说明
         Map<String, Object> comment = sqlExecutor.select(template(getTableCommentSql(name), param), ResultWrappers.singleMap());
@@ -92,7 +92,7 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
     }
 
     @Override
-    public Optional<RDBTableMetaData> parse(String name) {
+    public Optional<RDBTableMetadata> parse(String name) {
         if (!objectExists(name)) {
             return Optional.empty();
         }
@@ -117,11 +117,12 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
                 .map(map -> map.get("name"))
                 .filter(Objects::nonNull)
                 .map(String::valueOf)
+                .map(String::toLowerCase)
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public List<RDBTableMetaData> parseAll() {
+    public List<RDBTableMetadata> parseAll() {
         return getAllNames()
                 .parallelStream()
                 .map(this::doParse)
@@ -143,15 +144,15 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
     }
 
     @SuppressWarnings("all")
-    class RDBColumnMetaDataWrapper implements ResultWrapper<RDBColumnMetaData, RDBColumnMetaData> {
+    class RDBColumnMetaDataWrapper implements ResultWrapper<RDBColumnMetadata, RDBColumnMetadata> {
 
-        public Class<RDBColumnMetaData> getType() {
-            return RDBColumnMetaData.class;
+        public Class<RDBColumnMetadata> getType() {
+            return RDBColumnMetadata.class;
         }
 
         @Override
-        public RDBColumnMetaData newRowInstance() {
-            return new RDBColumnMetaData();
+        public RDBColumnMetadata newRowInstance() {
+            return new RDBColumnMetadata();
         }
 
         @Override
@@ -165,12 +166,12 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
         }
 
         @Override
-        public RDBColumnMetaData getResult() {
+        public RDBColumnMetadata getResult() {
             return null;
         }
 
         @Override
-        public boolean completedWrapRow(int rowIndex, RDBColumnMetaData instance) {
+        public boolean completedWrapRow(int rowIndex, RDBColumnMetadata instance) {
             String data_type = instance.getProperty("data_type").toString().toLowerCase();
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();
@@ -190,11 +191,11 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
         }
 
         @Override
-        public void wrapColumn(ColumnWrapperContext<RDBColumnMetaData> context) {
+        public void wrapColumn(ColumnWrapperContext<RDBColumnMetadata> context) {
             doWrap(context.getInstance(), context.getColumnLabel(), context.getResult());
         }
 
-        public void doWrap(RDBColumnMetaData instance, String attr, Object value) {
+        public void doWrap(RDBColumnMetadata instance, String attr, Object value) {
             String stringValue;
             if (value instanceof String) {
                 stringValue = ((String) value).toLowerCase();

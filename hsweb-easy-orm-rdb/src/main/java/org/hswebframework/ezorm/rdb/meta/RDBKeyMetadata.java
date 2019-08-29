@@ -2,14 +2,14 @@ package org.hswebframework.ezorm.rdb.meta;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hswebframework.ezorm.core.meta.ObjectMetaData;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 
 import java.util.Set;
 
 @Getter
 @Setter
-public class RDBKeyMetadata implements ObjectMetaData {
+public class RDBKeyMetadata implements ObjectMetadata {
 
     private String name;
 

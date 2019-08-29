@@ -1,11 +1,11 @@
 package org.hswebframework.ezorm.rdb.meta.builder.simple;
 
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.TableBuilder;
 import org.hswebframework.ezorm.rdb.codec.BooleanValueCodec;
 import org.hswebframework.utils.ClassUtils;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
 import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
 
 import java.sql.JDBCType;
@@ -15,11 +15,11 @@ import java.util.function.Consumer;
  * @author zhouhao
  */
 public class SimpleColumnBuilder implements ColumnBuilder {
-    RDBColumnMetaData columnMetaData;
+    RDBColumnMetadata columnMetaData;
     TableBuilder      tableBuilder;
-    RDBTableMetaData  tableMetaData;
+    RDBTableMetadata tableMetaData;
 
-    public SimpleColumnBuilder(RDBColumnMetaData columnMetaData, TableBuilder tableBuilder, RDBTableMetaData tableMetaData) {
+    public SimpleColumnBuilder(RDBColumnMetadata columnMetaData, TableBuilder tableBuilder, RDBTableMetadata tableMetaData) {
         this.columnMetaData = columnMetaData;
         this.tableBuilder = tableBuilder;
         this.tableMetaData = tableMetaData;
@@ -32,7 +32,7 @@ public class SimpleColumnBuilder implements ColumnBuilder {
     }
 
     @Override
-    public ColumnBuilder custom(Consumer<RDBColumnMetaData> consumer) {
+    public ColumnBuilder custom(Consumer<RDBColumnMetadata> consumer) {
         consumer.accept(columnMetaData);
         return this;
     }
@@ -108,7 +108,7 @@ public class SimpleColumnBuilder implements ColumnBuilder {
     @Override
     public TableBuilder commit() {
         if (columnMetaData.getDataType() == null) {
-            String dataType = tableMetaData.getDatabaseMetaData().getDialect().buildDataType(columnMetaData);
+            String dataType = tableMetaData.getSchema().getDatabase().getDialect().buildDataType(columnMetaData);
             columnMetaData.setDataType(dataType);
         }
         if (columnMetaData.getJavaType() != null) {

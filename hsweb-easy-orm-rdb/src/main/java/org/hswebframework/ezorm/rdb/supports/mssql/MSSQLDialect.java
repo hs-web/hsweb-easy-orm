@@ -1,12 +1,9 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.dialect.AutomaticConvertValueTermTypeMapper;
 import org.hswebframework.utils.StringUtils;
-import org.hswebframework.ezorm.rdb.meta.parser.SqlServer2012TableMetaParser;
 
 import java.sql.JDBCType;
 import java.util.List;
@@ -112,8 +109,5 @@ public class MSSQLDialect extends DefaultDialect {
         return false;
     }
 
-    @Override
-    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
-        return new SqlServer2012TableMetaParser(sqlExecutor);
-    }
+
 }

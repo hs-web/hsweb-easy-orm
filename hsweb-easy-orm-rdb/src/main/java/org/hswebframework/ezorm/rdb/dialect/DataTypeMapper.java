@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.dialect;
 
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 
  public interface DataTypeMapper {
-    String getDataType(RDBColumnMetaData columnMetaData);
+    String getDataType(RDBColumnMetadata columnMetaData);
 }

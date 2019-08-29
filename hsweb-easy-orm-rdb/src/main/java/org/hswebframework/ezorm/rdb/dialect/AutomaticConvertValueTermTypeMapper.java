@@ -1,8 +1,8 @@
 package org.hswebframework.ezorm.rdb.dialect;
 
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hswebframework.ezorm.rdb.render.SqlAppender;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+//import org.hswebframework.ezorm.rdb.render.SqlAppender;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,39 +10,39 @@ import java.util.stream.Collectors;
 
 public interface AutomaticConvertValueTermTypeMapper extends TermTypeMapper {
 
-    static AutomaticConvertValueTermTypeMapper supportArray(TermTypeMapper mapper) {
-        return new AutomaticConvertValueTermTypeMapper() {
-            @Override
-            public boolean supportArray() {
-                return true;
-            }
-
-            @Override
-            public SqlAppender accept(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias) {
-                convertValue(column, term);
-                return mapper.accept(wherePrefix, term, column, tableAlias);
-            }
-        };
-    }
-
-    static AutomaticConvertValueTermTypeMapper notSupportArray(TermTypeMapper mapper) {
-        return new AutomaticConvertValueTermTypeMapper() {
-            @Override
-            public boolean supportArray() {
-                return false;
-            }
-
-            @Override
-            public SqlAppender accept(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias) {
-                convertValue(column, term);
-                return mapper.accept(wherePrefix, term, column, tableAlias);
-            }
-        };
-    }
+//    static AutomaticConvertValueTermTypeMapper supportArray(TermTypeMapper mapper) {
+//        return new AutomaticConvertValueTermTypeMapper() {
+//            @Override
+//            public boolean supportArray() {
+//                return true;
+//            }
+//
+//            @Override
+//            public SqlAppender accept(String wherePrefix, Term term, RDBColumnMetadata column, String tableAlias) {
+//                convertValue(column, term);
+//                return mapper.accept(wherePrefix, term, column, tableAlias);
+//            }
+//        };
+//    }
+//
+//    static AutomaticConvertValueTermTypeMapper notSupportArray(TermTypeMapper mapper) {
+//        return new AutomaticConvertValueTermTypeMapper() {
+//            @Override
+//            public boolean supportArray() {
+//                return false;
+//            }
+//
+//            @Override
+//            public SqlAppender accept(String wherePrefix, Term term, RDBColumnMetadata column, String tableAlias) {
+//                convertValue(column, term);
+//                return mapper.accept(wherePrefix, term, column, tableAlias);
+//            }
+//        };
+//    }
 
     boolean supportArray();
 
-    default void convertValue(RDBColumnMetaData column, Term term) {
+    default void convertValue(RDBColumnMetadata column, Term term) {
         if (supportArray()) {
             term.setValue(convertList(column, term.getValue()));
         } else {
@@ -51,7 +51,7 @@ public interface AutomaticConvertValueTermTypeMapper extends TermTypeMapper {
     }
 
     @SuppressWarnings("unchecked")
-    static Object convertValue(RDBColumnMetaData column, Object value) {
+    static Object convertValue(RDBColumnMetadata column, Object value) {
         if (null == value) return null;
         Object newValue = null;
         if (column.getDictionaryCodec() != null) {
@@ -91,7 +91,7 @@ public interface AutomaticConvertValueTermTypeMapper extends TermTypeMapper {
     }
 
     @SuppressWarnings("unchecked")
-    static List<Object> convertList(RDBColumnMetaData column, Object value) {
+    static List<Object> convertList(RDBColumnMetadata column, Object value) {
         if (value == null) return new ArrayList<>();
         if (value instanceof List) return (List) value;
         if (value instanceof Collection) return new ArrayList<>(((Collection) value));

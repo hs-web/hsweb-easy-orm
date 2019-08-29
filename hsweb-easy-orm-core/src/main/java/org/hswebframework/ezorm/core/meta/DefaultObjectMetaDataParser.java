@@ -7,12 +7,12 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
 
     private Map<String, ObjectMetaDataParserStrategy> strategies = new ConcurrentHashMap<>();
 
-    protected void registerStrategy(ObjectMetaDataParserStrategy strategy) {
+    public void registerStrategy(ObjectMetaDataParserStrategy strategy) {
         strategies.put(strategy.getSupportType().getType(), strategy);
     }
 
     @SuppressWarnings("all")
-    protected <T extends ObjectMetaData> Optional<ObjectMetaDataParserStrategy<T>> getStrategy(ObjectType type) {
+    protected <T extends ObjectMetadata> Optional<ObjectMetaDataParserStrategy<T>> getStrategy(ObjectType type) {
         return Optional.ofNullable(strategies.get(type.getType()));
     }
 
@@ -24,7 +24,7 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
     }
 
     @Override
-    public <T extends ObjectMetaData> Optional<T> parse(ObjectType type, String name) {
+    public <T extends ObjectMetadata> Optional<T> parse(ObjectType type, String name) {
 
         return this.<T>getStrategy(type)
                 .flatMap(strategy -> strategy.parse(name));
@@ -38,7 +38,7 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
     }
 
     @Override
-    public <T extends ObjectMetaData> List<T> parseAll(ObjectType type) {
+    public <T extends ObjectMetadata> List<T> parseAll(ObjectType type) {
         return this.<T>getStrategy(type)
                 .map(ObjectMetaDataParserStrategy::parseAll)
                 .orElseGet(ArrayList::new);

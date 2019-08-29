@@ -1,8 +1,5 @@
 package org.hswebframework.ezorm.rdb.supports.posgres;
 
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.parser.PGSqlTableMetaParser;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.dialect.AutomaticConvertValueTermTypeMapper;
@@ -100,10 +97,5 @@ public class PGSqlDialect extends DefaultDialect {
     @Override
     public boolean columnToUpperCase() {
         return false;
-    }
-
-    @Override
-    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
-        return new PGSqlTableMetaParser(sqlExecutor);
     }
 }

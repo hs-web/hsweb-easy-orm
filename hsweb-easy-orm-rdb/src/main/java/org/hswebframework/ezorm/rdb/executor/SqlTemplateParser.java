@@ -4,6 +4,8 @@ package org.hswebframework.ezorm.rdb.executor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.core.ObjectPropertyOperator;
+import org.hswebframework.ezorm.rdb.config.GlobalConfig;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
 import java.util.ArrayList;
@@ -67,7 +69,7 @@ public class SqlTemplateParser {
 
     @SneakyThrows
     protected Object getProperty(String name) {
-        return PropertiesUtils
+        return GlobalConfig.getPropertyOperator()
                 .getProperty(parameter, name)
                 .orElse(null);
     }
@@ -99,7 +101,7 @@ public class SqlTemplateParser {
         if (isPrepareEnd()) {
             newArr[len++] = '?';
             parameters.add(propertyMapping.apply(new String(expression, 0, expressionPos)));
-        }else{
+        } else {
             newArr[len++] = symbol;
         }
 

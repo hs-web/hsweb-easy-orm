@@ -1,12 +1,9 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
-import org.hswebframework.ezorm.rdb.meta.parser.H2TableMetaParser;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.dialect.AutomaticConvertValueTermTypeMapper;
 import org.hswebframework.utils.StringUtils;
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
 
 import java.sql.JDBCType;
 import java.util.List;
@@ -76,8 +73,5 @@ public class H2Dialect extends DefaultDialect {
         return true;
     }
 
-    @Override
-    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
-        return new H2TableMetaParser(sqlExecutor);
-    }
+
 }

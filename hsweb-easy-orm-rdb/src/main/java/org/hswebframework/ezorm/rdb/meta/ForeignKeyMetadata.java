@@ -1,27 +1,32 @@
 package org.hswebframework.ezorm.rdb.meta;
 
-import org.hswebframework.ezorm.core.meta.ColumnMetaData;
-import org.hswebframework.ezorm.core.meta.ObjectMetaData;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 
-public interface ForeignKeyMetadata extends ObjectMetaData {
+public interface ForeignKeyMetadata extends ObjectMetadata {
 
     @Override
     default ObjectType getObjectType() {
         return RDBObjectType.foreign_key;
     }
 
+    /**
+     * @return 是否为逻辑外键
+     */
     boolean isLogical();
 
+    /**
+     * @return 是否n对多
+     */
     boolean isToMany();
 
-    DQLObjectMetaData getSource();
+    TableOrViewMetadata getSource();
 
-    DQLObjectMetaData getTarget();
+    TableOrViewMetadata getTarget();
 
-    ColumnMetaData getSourceColumn();
+    RDBColumnMetadata getSourceColumn();
 
-    ColumnMetaData getTargetColumn();
+    RDBColumnMetadata getTargetColumn();
 
     Terms getJoinTerms();
 }

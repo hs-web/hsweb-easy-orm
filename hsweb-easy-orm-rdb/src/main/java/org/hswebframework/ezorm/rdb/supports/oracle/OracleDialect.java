@@ -1,8 +1,5 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.parser.OracleTableMetaParser;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.dialect.AutomaticConvertValueTermTypeMapper;
@@ -86,8 +83,4 @@ public class OracleDialect extends DefaultDialect {
         return true;
     }
 
-    @Override
-    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
-        return new OracleTableMetaParser(sqlExecutor);
-    }
 }

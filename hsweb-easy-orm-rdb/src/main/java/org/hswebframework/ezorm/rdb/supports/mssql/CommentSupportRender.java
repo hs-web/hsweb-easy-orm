@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
-import org.hswebframework.ezorm.rdb.executor.SQL;
-import org.hswebframework.ezorm.rdb.supports.commons.SimpleSQL;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,33 +22,33 @@ public abstract class CommentSupportRender {
     private static final String dropAndCreateColumnComment = dropTableCommentSql.concat(";").concat(tableCommentSql);
 
 
-    public SQL buildDropTableCommentSql(String tableName, String comment) {
+    public SqlRequest buildDropTableCommentSql(String tableName, String comment) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", tableName);
         param.put("comment", comment);
-        return new SimpleSQL(dropTableCommentSql, param);
+        return SqlRequests.template(dropTableCommentSql, param);
     }
 
-    public SQL buildTableCommentSql(String tableName, String comment) {
+    public SqlRequest buildTableCommentSql(String tableName, String comment) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", tableName);
         param.put("comment", comment);
-        return new SimpleSQL(isDropCommentBefore() ? dropAndCreateTableComment : tableCommentSql, param);
+        return SqlRequests.template(isDropCommentBefore() ? dropAndCreateTableComment : tableCommentSql, param);
     }
 
-    public SQL buildColumnCommentSql(String tableName, String column, String comment) {
+    public SqlRequest buildColumnCommentSql(String tableName, String column, String comment) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", tableName);
         param.put("comment", comment);
         param.put("column", column);
-        return new SimpleSQL(isDropCommentBefore() ? dropAndCreateColumnComment : columnCommentSql, param);
+        return SqlRequests.template(isDropCommentBefore() ? dropAndCreateColumnComment : columnCommentSql, param);
     }
 
-    public SQL buildDropColumnCommentSql(String tableName, String column, String comment) {
+    public SqlRequest buildDropColumnCommentSql(String tableName, String column, String comment) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", tableName);
         param.put("comment", comment);
         param.put("column", column);
-        return new SimpleSQL(dropColumnCommentSql, param);
+        return SqlRequests.template(dropColumnCommentSql, param);
     }
 }

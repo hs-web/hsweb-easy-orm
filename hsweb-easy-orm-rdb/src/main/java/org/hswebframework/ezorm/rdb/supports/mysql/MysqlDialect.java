@@ -1,8 +1,5 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.parser.MysqlTableMetaParser;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
 import org.hswebframework.ezorm.rdb.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.dialect.AutomaticConvertValueTermTypeMapper;
@@ -82,11 +79,6 @@ public class MysqlDialect extends DefaultDialect {
     @Override
     public boolean columnToUpperCase() {
         return false;
-    }
-
-    @Override
-    public TableMetaParser getDefaultParser(SqlExecutor sqlExecutor) {
-        return new MysqlTableMetaParser(sqlExecutor);
     }
 
 }

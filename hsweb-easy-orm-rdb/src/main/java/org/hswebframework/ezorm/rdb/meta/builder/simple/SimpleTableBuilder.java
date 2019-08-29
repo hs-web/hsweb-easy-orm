@@ -1,13 +1,11 @@
 package org.hswebframework.ezorm.rdb.meta.builder.simple;
 
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetaData;
+import org.hswebframework.ezorm.core.meta.ObjectMetaDataParser;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.meta.builder.ColumnBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.IndexBuilder;
 import org.hswebframework.ezorm.rdb.meta.builder.TableBuilder;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
-import org.hswebframework.ezorm.rdb.RDBDatabase;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -17,19 +15,12 @@ import java.util.function.Consumer;
  * @author zhouhao
  */
 public class SimpleTableBuilder implements TableBuilder {
-    public RDBTableMetaData rdbTableMetaData;
-    public RDBDatabase      database;
-    public SqlExecutor      sqlExecutor;
-    public TableMetaParser  parser;
+    public RDBTableMetadata rdbTableMetaData;
+    public ObjectMetaDataParser parser;
 
-    public SimpleTableBuilder(RDBTableMetaData rdbTableMetaData, RDBDatabase database, SqlExecutor sqlExecutor) {
+    public SimpleTableBuilder(RDBTableMetadata rdbTableMetaData, ObjectMetaDataParser parser) {
         this.rdbTableMetaData = rdbTableMetaData;
-        this.database = database;
-        this.sqlExecutor = sqlExecutor;
-        this.parser = database.getMeta().getParser();
-        if (this.parser == null) {
-            this.parser = database.getMeta().getDialect().getDefaultParser(sqlExecutor);
-        }
+        this.parser = parser;
     }
 
     @Override
@@ -37,24 +28,26 @@ public class SimpleTableBuilder implements TableBuilder {
         return new IndexBuilder(this, rdbTableMetaData);
     }
 
-    public TableBuilder custom(Consumer<RDBTableMetaData> consumer) {
+    public TableBuilder custom(Consumer<RDBTableMetadata> consumer) {
         consumer.accept(rdbTableMetaData);
         return this;
     }
 
     @Override
-    public TableBuilder addColumn(Set<RDBColumnMetaData> columns) {
+    public TableBuilder addColumn(Set<RDBColumnMetadata> columns) {
         columns.forEach(rdbTableMetaData::addColumn);
         return this;
     }
 
     @Override
     public ColumnBuilder addOrAlterColumn(String name) {
-        RDBColumnMetaData rdbColumnMetaData = rdbTableMetaData.getColumn(name);
-        if (null == rdbColumnMetaData) {
-            rdbColumnMetaData = new RDBColumnMetaData();
-            rdbColumnMetaData.setName(name);
-        }
+        RDBColumnMetadata rdbColumnMetaData = rdbTableMetaData.getColumn(name)
+                .orElseGet(() -> {
+                    RDBColumnMetadata columnMetaData = new RDBColumnMetadata();
+                    columnMetaData.setName(name);
+                    return columnMetaData;
+                });
+
         return new SimpleColumnBuilder(rdbColumnMetaData, this, rdbTableMetaData);
     }
 
@@ -66,9 +59,8 @@ public class SimpleTableBuilder implements TableBuilder {
 
     @Override
     public ColumnBuilder addColumn() {
-        RDBColumnMetaData rdbColumnMetaData = new RDBColumnMetaData();
-        SimpleColumnBuilder columnBuilder = new SimpleColumnBuilder(rdbColumnMetaData, this, rdbTableMetaData);
-        return columnBuilder;
+        RDBColumnMetadata rdbColumnMetaData = new RDBColumnMetadata();
+        return new SimpleColumnBuilder(rdbColumnMetaData, this, rdbTableMetaData);
     }
 
     @Override
@@ -79,7 +71,7 @@ public class SimpleTableBuilder implements TableBuilder {
 
     @Override
     public TableBuilder property(String propertyName, Object value) {
-        rdbTableMetaData.setProperty(propertyName, value);
+        // rdbTableMetaData.setProperty(propertyName, value);
         return this;
     }
 
@@ -91,13 +83,6 @@ public class SimpleTableBuilder implements TableBuilder {
 
     @Override
     public void commit() throws SQLException {
-        RDBTableMetaData old = parser.parse(rdbTableMetaData.getName());
-        if (null != old) {
-            //加载旧的表结构
-            database.reloadTable(old);
-            database.alterTable(rdbTableMetaData);
-        } else {
-            database.createTable(rdbTableMetaData);
-        }
+        // TODO: 2019-08-29
     }
 }

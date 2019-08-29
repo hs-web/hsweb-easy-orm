@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.dialect;
 
-import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.executor.SqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetaData;
-import org.hswebframework.ezorm.rdb.meta.parser.TableMetaParser;
-import org.hswebframework.ezorm.rdb.render.SqlAppender;
+import org.hswebframework.ezorm.rdb.operator.builder.TermFragment;
+import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLDialect;
@@ -14,6 +11,7 @@ import org.hswebframework.ezorm.rdb.supports.posgres.PGSqlDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
+import java.util.Optional;
 
 /**
  * 数据库方言
@@ -26,6 +24,11 @@ import java.sql.JDBCType;
  * @since 1.0
  */
 public interface Dialect {
+
+    Optional<TermFragment> getTermFragment(String termType);
+
+    void addTermFragment(String termType, TermFragment fragment);
+
     void setTermTypeMapper(String termType, TermTypeMapper mapper);
 
     boolean isSupportTermType(String termType);
@@ -40,9 +43,7 @@ public interface Dialect {
         return getQuoteStart().concat(keyword).concat(getQuoteEnd());
     }
 
-    SqlAppender buildCondition(String wherePrefix, Term term, RDBColumnMetaData column, String tableAlias);
-
-    String buildDataType(RDBColumnMetaData columnMetaData);
+    String buildDataType(RDBColumnMetadata columnMetaData);
 
     String doPaging(String sql, int pageIndex, int pageSize);
 
@@ -64,14 +65,13 @@ public interface Dialect {
         return StringUtils.concat(tableName, ".", getQuoteStart(), columnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
     }
 
-    TableMetaParser getDefaultParser(SqlExecutor sqlExecutor);
 
     JDBCType getJdbcType(String dataType);
 
-    Dialect MYSQL    = new MysqlDialect();
-    Dialect ORACLE   = new OracleDialect();
-    Dialect H2       = new H2Dialect();
-    Dialect MSSQL    = new MSSQLDialect();
+    Dialect MYSQL = new MysqlDialect();
+    Dialect ORACLE = new OracleDialect();
+    Dialect H2 = new H2Dialect();
+    Dialect MSSQL = new MSSQLDialect();
     Dialect POSTGRES = new PGSqlDialect();
 
 }

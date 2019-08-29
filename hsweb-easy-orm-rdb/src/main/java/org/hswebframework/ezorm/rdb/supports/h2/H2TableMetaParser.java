@@ -1,8 +1,8 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
 
 public class H2TableMetaParser extends RDBTableMetaParser {
     private static final String TABLE_META_SQL =
@@ -20,7 +20,7 @@ public class H2TableMetaParser extends RDBTableMetaParser {
                     "FROM information_schema.tables WHERE table_type='TABLE' and table_name=upper(#{table}) and table_schema=%s";
     private static final String ALL_TABLE_SQL =
             "select table_name as \"name\" " +
-                    "FROM information_schema.tables where table_type='TABLE'  and table_name=upper(#{table}) and table_schema=%s";
+                    "FROM information_schema.tables where table_type='TABLE' and table_schema=%s";
 
     private static final String TABLE_EXISTS_SQL = "SELECT count(1) as \"total\" FROM information_schema.columns " +
             "WHERE table_name = upper(#{table}) and table_schema=%s";
