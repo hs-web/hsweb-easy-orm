@@ -12,6 +12,8 @@ public interface FeatureSupportMetadata {
 
     Map<String, Feature> getFeatures();
 
+    void  registerFeature(Feature feature);
+
     default List<Feature> getFeatureList() {
         return Optional.ofNullable(getFeatures())
                 .map(Map::values)

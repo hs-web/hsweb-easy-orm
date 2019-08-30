@@ -5,7 +5,6 @@ import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
-import org.hswebframework.ezorm.rdb.operator.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.SelectColumn;
@@ -13,8 +12,6 @@ import org.hswebframework.ezorm.rdb.operator.dml.SelectColumn;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static java.util.Optional.*;
 
 @AllArgsConstructor(staticName = "of")
 public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
@@ -58,10 +55,10 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     }
 
     public PrepareSqlFragments createFragments(ComplexQueryParameter parameter, SelectColumn column) {
-        if (column instanceof NativeSql) {
+        if (column instanceof NativeSqlFragments) {
             return PrepareSqlFragments.of()
-                    .addSql(((NativeSql) column).getSql())
-                    .addParameter(((NativeSql) column).getParameters());
+                    .addSql(((NativeSqlFragments) column).getSql())
+                    .addParameter(((NativeSqlFragments) column).getParameters());
         }
         String columnStr = column.getColumn();
         //关联表 table.column

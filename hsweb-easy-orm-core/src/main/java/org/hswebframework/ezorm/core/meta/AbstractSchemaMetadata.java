@@ -87,7 +87,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
                 .map(CastUtil::cast);
     }
 
-    public void addFeature(Feature feature) {
+    public void registerFeature(Feature feature) {
         features.put(feature.getId(), feature);
     }
 }

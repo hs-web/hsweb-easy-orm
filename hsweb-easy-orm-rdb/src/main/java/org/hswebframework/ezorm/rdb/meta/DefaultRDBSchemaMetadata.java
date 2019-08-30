@@ -19,13 +19,14 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
     public DefaultRDBSchemaMetadata() {
         {
             /* 通用查询条件 */
-            addFeature(RDBFutures.eq);
-            addFeature(RDBFutures.isNull);
-            addFeature(RDBFutures.notNull);
-            addFeature(RDBFutures.not);
+            registerFeature(RDBFutures.eq);
+            registerFeature(RDBFutures.isNull);
+            registerFeature(RDBFutures.notNull);
+            registerFeature(RDBFutures.not);
 
             //自动关联外键条件
-            addFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);
+            registerFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);
+
 
             // TODO: 2019-08-29 更多设置
         }

@@ -7,39 +7,63 @@ import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.QuerySqlFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
 
-@AllArgsConstructor
+import java.util.Optional;
+
+import static org.hswebframework.ezorm.rdb.meta.RDBFutures.*;
+
 public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
-    private ComplexQueryParameter parameter;
+    protected ComplexQueryParameter parameter;
 
-    private DefaultRDBSchemaMetadata schema;
+    protected TableOrViewMetadata metadata;
 
-    @Override
-    public SqlRequest build() {
+    public DefaultQuerySqlBuilder(ComplexQueryParameter parameter, DefaultRDBSchemaMetadata schema) {
         String from = parameter.getFrom();
         if (from == null || from.isEmpty()) {
             throw new UnsupportedOperationException("from table or view not set");
         }
-        TableOrViewMetadata metadata = schema.getTableOrView(from)
+        this.metadata = schema.getTableOrView(from)
                 .orElseThrow(() -> new UnsupportedOperationException("table or view [" + from + "] doesn't exist "));
+        this.parameter = parameter;
+    }
+
+    protected Optional<SqlFragments> select() {
+        return metadata.<QuerySqlFragmentBuilder>getFeature(select)
+                .map(builder -> builder.createFragments(parameter))
+                .filter(sqlFragments -> !sqlFragments.isEmpty());
+    }
+
+    protected Optional<SqlFragments> where() {
+        return metadata.<QuerySqlFragmentBuilder>getFeature(RDBFutures.where)
+                .map(builder -> builder.createFragments(parameter))
+                .filter(sqlFragments -> !sqlFragments.isEmpty());
+    }
+
+    @Override
+    public SqlRequest build() {
+
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
         fragments.addSql("select");
 
-        fragments.addFragments(RDBFutures.select(metadata).createFragments(parameter));
+        fragments.addFragments(select().orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
 
         fragments.addSql("from")
-                .addSql(from);
+                .addSql(metadata.getFullName())
+                .addSql(metadata.getName());
 
         // TODO: 2019-08-30 JOIN
 
-        fragments.addSql("where");
+        //where
 
-        //where 片段构造器
-        QuerySqlFragmentBuilder where = RDBFutures.where(metadata);
-        fragments.addFragments(where.createFragments(parameter));
+        where().ifPresent(where -> fragments.addSql("where").addFragments(where));
+
+        //group by
+
+        //having
 
 
         return fragments.toRequest();

@@ -34,7 +34,7 @@ public class WhereFragmentBuilder implements QuerySqlFragmentBuilder {
         return "条件";
     }
 
-    private PrepareSqlFragments createFragments(ComplexQueryParameter parameter, List<Term> terms) {
+    private SqlFragments createFragments(ComplexQueryParameter parameter, List<Term> terms) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
         int index = 0;
@@ -44,16 +44,16 @@ public class WhereFragmentBuilder implements QuerySqlFragmentBuilder {
             List<Term> nest = term.getTerms();
             index++;
             SqlFragments termFragments = createTermFragments(parameter, term);
-            termAvailable = termFragments != null && !termFragments.isEmpty();
+            termAvailable = !termFragments.isEmpty();
             if (termAvailable) {
-                if (index != 1) {
+                if (index != 1 && lastTermAvailable) {
                     //and or
                     fragments.addSql(term.getType().name());
                 }
                 fragments.addFragments(termFragments);
             }
             if (nest != null && !nest.isEmpty()) {
-                PrepareSqlFragments nestFragments = createFragments(parameter, nest);
+                SqlFragments nestFragments = createFragments(parameter, nest);
                 //嵌套
                 if (!nestFragments.isEmpty()) {
                     //and or
@@ -91,16 +91,15 @@ public class WhereFragmentBuilder implements QuerySqlFragmentBuilder {
             if (metaData.equalsNameOrAlias(arr[0]) || alias.contains(arr[0])) {
                 columnName = arr[1];
             } else {
-                //先找join的表
-                return parameter.findJoin(arr[0])
+
+                return parameter.findJoin(arr[0]) //先找join的表
                         .flatMap(join -> metaData.getSchema()
                                 .getTableOrView(join.getTarget())
                                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
                                 .flatMap(column -> column
                                         .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
                                         .map(termFragment -> termFragment.createFragments(join.getAlias(), column, term))))
-                        .orElseGet(() -> {
-                            //外键关联查询
+                        .orElseGet(() -> {//外键关联查询
                             return metaData.getForeignKey(arr[0])
                                     .flatMap(key -> key.getSourceColumn()
                                             .<ForeignKeyTermFragmentBuilder>getFeature(foreignKeyTerm.getId())
@@ -144,7 +143,7 @@ public class WhereFragmentBuilder implements QuerySqlFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments createFragments(ComplexQueryParameter parameter) {
+    public SqlFragments createFragments(ComplexQueryParameter parameter) {
         return createFragments(parameter, parameter.getWhere());
     }
 }

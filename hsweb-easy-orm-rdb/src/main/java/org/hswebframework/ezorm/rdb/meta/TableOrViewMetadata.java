@@ -78,6 +78,10 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportMetad
 
     Dialect getDialect();
 
+    default String getFullName() {
+        return getSchema().getName().concat(".").concat(getName());
+    }
+
     default <T extends Feature> Optional<T> findFeature(String id) {
         return of(this.<T>getFeature(id))
                 .filter(Optional::isPresent)

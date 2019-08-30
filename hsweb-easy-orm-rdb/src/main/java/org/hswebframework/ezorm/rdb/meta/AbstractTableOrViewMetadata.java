@@ -4,12 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.WhereFragmentBuilder;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Optional.*;
 
@@ -28,6 +28,14 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     private List<ForeignKeyMetadata> foreignKey = new ArrayList<>();
 
     private Map<String, Feature> features = new HashMap<>();
+
+    public AbstractTableOrViewMetadata() {
+        //注册默认的where条件构造器
+        registerFeature(WhereFragmentBuilder.of(this));
+        //注册默认的查询列构造器
+        registerFeature(SelectColumnFragmentBuilder.of(this));
+
+    }
 
     public boolean isTable() {
         return this instanceof RDBTableMetadata;
@@ -158,7 +166,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                 .findFirst();
     }
 
-    public void addFeature(Feature feature) {
+    public void registerFeature(Feature feature) {
         features.put(feature.getId(), feature);
     }
 
