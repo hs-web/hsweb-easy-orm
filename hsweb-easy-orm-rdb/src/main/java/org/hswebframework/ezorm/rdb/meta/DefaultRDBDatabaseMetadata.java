@@ -20,4 +20,9 @@ public class DefaultRDBDatabaseMetadata<S extends DefaultRDBSchemaMetadata> exte
         return this.getObject(name, DefaultRDBSchemaMetadata::getTableOrView);
     }
 
+    @Override
+    public void addSchema(S schema) {
+        schema.setDatabase(this);
+        super.addSchema(schema);
+    }
 }

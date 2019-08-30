@@ -10,7 +10,7 @@ package org.hswebframework.ezorm.core.meta;
  */
 public interface ObjectType {
 
-    String getType();
+    String getId();
 
     String getName();
 

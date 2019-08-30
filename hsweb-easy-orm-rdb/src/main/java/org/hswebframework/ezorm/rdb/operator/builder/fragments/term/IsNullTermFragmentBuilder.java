@@ -6,8 +6,8 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 
 public class IsNullTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    public IsNullTermFragmentBuilder(String termType, String text) {
-        super(termType, text);
+    public IsNullTermFragmentBuilder(String termType, String name) {
+        super(termType, name);
     }
 
     @Override

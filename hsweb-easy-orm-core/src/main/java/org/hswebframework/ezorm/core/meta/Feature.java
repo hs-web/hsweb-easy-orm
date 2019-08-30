@@ -6,8 +6,8 @@ public interface Feature {
 
     String getId();
 
-    FeatureType getType();
+    String getName();
 
-    String getText();
+    FeatureType getType();
 
 }

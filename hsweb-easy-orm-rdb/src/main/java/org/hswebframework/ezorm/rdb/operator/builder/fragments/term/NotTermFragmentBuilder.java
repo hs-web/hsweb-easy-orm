@@ -6,8 +6,8 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 
 public class NotTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    public NotTermFragmentBuilder(String termType, String text) {
-        super(termType, text);
+    public NotTermFragmentBuilder(String termType, String name) {
+        super(termType, name);
     }
 
     @Override
@@ -15,7 +15,7 @@ public class NotTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
         // column != ?
         return PrepareSqlFragments.of()
-                .addSql(getColumnFullName(tableName, column), "!=?")
+                .addSql(getColumnFullName(tableName, column), "!= ?")
                 .addParameter(convertValue(column, term));
     }
 }

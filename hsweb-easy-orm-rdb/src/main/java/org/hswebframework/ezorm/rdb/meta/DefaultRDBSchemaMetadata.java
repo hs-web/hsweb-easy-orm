@@ -42,11 +42,16 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
         return getObject(RDBObjectType.view, name);
     }
 
+    public void addTable(RDBTableMetadata metadata){
+        metadata.setSchema(this);
+        addObject(metadata);
+    }
+
     public Optional<TableOrViewMetadata> getTableOrView(String name) {
-        return Optional.of(getObject(RDBObjectType.table, name)
+        return Optional.of(getTable(name)
                 .map(AbstractTableOrViewMetadata.class::cast))
                 .filter(Optional::isPresent)
-                .orElseGet(() -> getObject(RDBObjectType.view, name)
+                .orElseGet(() -> getView(name)
                         .map(AbstractTableOrViewMetadata.class::cast))
                 .map(TableOrViewMetadata.class::cast);
     }

@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
 
-public interface SqlFragmentBuilder extends Feature {
+public interface QuerySqlFragmentBuilder extends Feature {
 
     @Override
     default FeatureType getType() {

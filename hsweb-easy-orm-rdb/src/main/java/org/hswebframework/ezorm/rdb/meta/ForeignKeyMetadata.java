@@ -2,6 +2,9 @@ package org.hswebframework.ezorm.rdb.meta;
 
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.core.param.Term;
+
+import java.util.List;
 
 public interface ForeignKeyMetadata extends ObjectMetadata {
 
@@ -28,5 +31,5 @@ public interface ForeignKeyMetadata extends ObjectMetadata {
 
     RDBColumnMetadata getTargetColumn();
 
-    Terms getJoinTerms();
+    List<Term> getTerms();
 }

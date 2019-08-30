@@ -8,12 +8,12 @@ public class DefaultObjectMetaDataParser implements ObjectMetaDataParser {
     private Map<String, ObjectMetaDataParserStrategy> strategies = new ConcurrentHashMap<>();
 
     public void registerStrategy(ObjectMetaDataParserStrategy strategy) {
-        strategies.put(strategy.getSupportType().getType(), strategy);
+        strategies.put(strategy.getSupportType().getId(), strategy);
     }
 
     @SuppressWarnings("all")
     protected <T extends ObjectMetadata> Optional<ObjectMetaDataParserStrategy<T>> getStrategy(ObjectType type) {
-        return Optional.ofNullable(strategies.get(type.getType()));
+        return Optional.ofNullable(strategies.get(type.getId()));
     }
 
     @Override

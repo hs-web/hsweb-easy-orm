@@ -6,8 +6,8 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 
 public class NotNullTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    public NotNullTermFragmentBuilder(String termType, String text) {
-        super(termType, text);
+    public NotNullTermFragmentBuilder(String termType, String name) {
+        super(termType, name);
     }
 
     @Override

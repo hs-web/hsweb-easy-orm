@@ -134,4 +134,12 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     }
 
+    public String getFullName(String ownerName){
+        return getDialect().buildColumnName(ownerName,getName());
+    }
+
+    public String getFullName(){
+        return  getFullName(getOwner().getName());
+    }
+
 }

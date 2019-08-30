@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor(staticName = "of")
+@AllArgsConstructor(staticName = "of")
 public class PrepareSqlFragments implements SqlFragments {
 
     @Override
@@ -24,9 +26,23 @@ public class PrepareSqlFragments implements SqlFragments {
 
     private List<Object> parameters = new ArrayList<>(8);
 
+    public void removeLastSql(){
+        sql.remove(sql.size()-1);
+    }
+
+    public PrepareSqlFragments addFragments(SqlFragments fragments) {
+
+        return addSql(fragments.getSql())
+                .addParameter(fragments.getParameters());
+    }
 
     public PrepareSqlFragments addSql(String... sql) {
         this.sql.addAll(Arrays.asList(sql));
+        return this;
+    }
+
+    public PrepareSqlFragments addSql(Collection<String> sql) {
+        this.sql.addAll(sql);
         return this;
     }
 

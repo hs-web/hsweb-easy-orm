@@ -19,7 +19,7 @@ public enum RDBObjectType implements ObjectType {
     private String name;
 
     @Override
-    public String getType() {
+    public String getId() {
         return name();
     }
 

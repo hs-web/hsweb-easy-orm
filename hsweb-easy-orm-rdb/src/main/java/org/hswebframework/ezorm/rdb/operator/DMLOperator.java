@@ -1,10 +1,10 @@
 package org.hswebframework.ezorm.rdb.operator;
 
-import org.hswebframework.ezorm.rdb.operator.dml.Query;
+import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 
 public interface DMLOperator {
 
-    Query query();
+    QueryOperator query();
 
 
 }

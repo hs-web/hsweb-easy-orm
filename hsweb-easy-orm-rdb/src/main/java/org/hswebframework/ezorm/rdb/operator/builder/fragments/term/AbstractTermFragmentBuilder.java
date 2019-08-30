@@ -22,7 +22,7 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
 
     @Getter
     @Setter
-    private String text;
+    private String name;
 
     @SuppressWarnings("all")
     protected List<Object> convertList(RDBColumnMetadata column, Term term) {
@@ -50,9 +50,7 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
     protected String getColumnFullName(String tableAlias, RDBColumnMetadata column) {
 
 
-        return tableAlias
-                .concat(".")
-                .concat(column.getName());
+        return column.getFullName(tableAlias);
     }
 
     protected Object convertValue(RDBColumnMetadata column, Object term) {

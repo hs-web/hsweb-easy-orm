@@ -19,4 +19,5 @@ public interface SchemaMetadata extends ObjectMetadata,FeatureSupportMetadata {
 
     <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name);
 
+    void addObject(ObjectMetadata metadata);
 }

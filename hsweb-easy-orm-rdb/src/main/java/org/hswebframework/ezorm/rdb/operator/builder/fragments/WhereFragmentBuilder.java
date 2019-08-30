@@ -3,18 +3,17 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
 
 import static org.hswebframework.ezorm.rdb.meta.RDBFeatureType.*;
 
 @AllArgsConstructor(staticName = "of")
-public class WhereFragmentBuilder implements SqlFragmentBuilder {
+public class WhereFragmentBuilder implements QuerySqlFragmentBuilder {
 
     private TableOrViewMetadata metaData;
 
@@ -24,76 +23,87 @@ public class WhereFragmentBuilder implements SqlFragmentBuilder {
     }
 
     @Override
-    public String getText() {
+    public String getName() {
         return "条件";
+    }
+
+    private PrepareSqlFragments createFragments(ComplexQueryParameter parameter, List<Term> terms) {
+        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+
+        int index = 0;
+        boolean termAvailable;
+        for (Term term : terms) {
+
+            List<Term> nest = term.getTerms();
+
+            SqlFragments termFragments = createTermFragments(parameter, term);
+            termAvailable = termFragments != null && !termFragments.isEmpty();
+            if (termAvailable) {
+                if (index != 0) {
+                    //and or
+                    fragments.addSql(term.getType().name());
+                }
+                fragments.addFragments(termFragments);
+            }
+            if (nest != null && !nest.isEmpty()) {
+                PrepareSqlFragments nestFragments = createFragments(parameter, nest);
+                //嵌套
+                if (!nestFragments.isEmpty()) {
+                    //and or
+                    fragments.addSql(term.getType().name());
+                    fragments.addSql("(");
+                    fragments.addFragments(nestFragments);
+                    fragments.addSql(")");
+                }
+            }
+            index++;
+        }
+
+        return fragments;
+    }
+
+
+    private SqlFragments createTermFragments(ComplexQueryParameter parameter, Term term) {
+        String columnName = term.getColumn();
+        if (columnName == null) {
+            return EmptySqlFragments.INSTANCE;
+        }
+
+        if (columnName.contains(".")) {
+            String[] arr = columnName.split("[.]");
+            //先找join的表
+          return parameter.findJoin(arr[0])
+                    .flatMap(join -> metaData.getSchema()
+                            .getTableOrView(join.getTarget())
+                            .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
+                            .flatMap(column -> column
+                                    .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
+                                    .map(termFragment -> termFragment.createFragments(join.getAlias(), column, term))))
+                    .orElseGet(() -> {
+                        //外键关联查询
+                        return metaData.getForeignKey(arr[0])
+                                .flatMap(key -> key.getSourceColumn()
+                                        .<ForeignKeyTermFragmentBuilder>getFeature(foreignKeyTerm.getId())
+                                        .map(builder -> builder.createFragments(key.getName(), key, Collections.singletonList(term))))
+                                .orElse(EmptySqlFragments.INSTANCE);
+                    });
+        }
+
+        return metaData
+                .findColumn(columnName)
+                .flatMap(column -> {
+                    String tableAlias = column.getOwner().getName();
+
+                    return column
+                            .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
+                            .map(termFragment -> termFragment.createFragments(tableAlias, column, term));
+
+                }).orElse(EmptySqlFragments.INSTANCE);
+
     }
 
     @Override
     public PrepareSqlFragments createFragments(ComplexQueryParameter parameter) {
-        List<Term> terms = parameter.getWhere();
-        if (terms == null || terms.isEmpty()) {
-            return null;
-        }
-        List<String> sql = new ArrayList<>(terms.size());
-        List<Object> parameters = new ArrayList<>();
-
-        Queue<List<Term>> nests = new LinkedList<>();
-        nests.add(terms);
-
-        do {
-            List<Term> termList = nests.poll();
-            if (termList == null) {
-                break;
-            }
-            sql.add("(");
-            int index = 0;
-
-            for (Term term : termList) {
-                if (term.getValue() == null) {
-                    continue;
-                }
-                String columnName = term.getColumn();
-
-                if (columnName != null && !columnName.isEmpty()) {
-                    SqlFragments fragments = metaData
-                            .getColumn(columnName)
-                            .flatMap(column -> {
-                                String tableAlias = column.getOwner().getName();
-
-                                return column
-                                        .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
-                                        .map(termFragment -> termFragment.createFragments(tableAlias, column, term));
-
-                            }).orElse(null);
-                    if (fragments == null || fragments.isEmpty()) {
-
-                        continue;
-                    }
-                    sql.addAll(fragments.getSql());
-                    parameters.addAll(fragments.getParameters());
-                }
-
-                if (index != 0) {
-                    sql.add(term.getType() == Term.Type.or ? "or" : "and");
-                }
-
-                List<Term> nest = term.getTerms();
-                if (null != nest && !nest.isEmpty()) {
-                    nests.add(nest);
-                }
-                index++;
-
-            }
-
-            sql.add(")");
-
-        } while (!nests.isEmpty());
-
-        PrepareSqlFragments fragment = PrepareSqlFragments.of();
-
-        fragment.setSql(sql);
-        fragment.setParameters(parameters);
-
-        return fragment;
+        return createFragments(parameter, parameter.getWhere());
     }
 }

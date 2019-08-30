@@ -1,7 +1,5 @@
 package org.hswebframework.ezorm.rdb.operator.dml;
 
-public interface ColumnOperator<R> {
-
-    R get();
-
+public enum JoinType {
+    inner, left, right, full;
 }

@@ -308,6 +308,10 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return new Query<>(param);
     }
 
+    public static <R> Query<R, QueryParam> of() {
+        return new Query<>(new QueryParam());
+    }
+
     public static <R> Query<R, QueryParam> forTotal(TotalExecutor<QueryParam> executor) {
         return forTotal(executor, new QueryParam());
     }

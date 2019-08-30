@@ -30,6 +30,9 @@ public interface Dialect {
     String getQuoteEnd();
 
     default String quote(String keyword) {
+        if (keyword.startsWith(getQuoteStart()) && keyword.endsWith(getQuoteEnd())) {
+            return keyword;
+        }
         return getQuoteStart().concat(keyword).concat(getQuoteEnd());
     }
 
