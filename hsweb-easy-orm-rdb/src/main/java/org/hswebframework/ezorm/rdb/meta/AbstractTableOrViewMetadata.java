@@ -110,6 +110,33 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         return empty();
     }
 
+    @Override
+    public void addForeignKey(ForeignKeyMetadata metadata) {
+        foreignKey.add(metadata);
+
+    }
+
+    @Override
+    public ForeignKeyMetadata addForeignKey(ForeignKeyBuilder builder) {
+        DefaultForeignKeyMetadata foreignKeyMetadata = new DefaultForeignKeyMetadata();
+        foreignKeyMetadata.setName(builder.getName());
+        foreignKeyMetadata.setAlias(builder.getAlias());
+        foreignKeyMetadata.setLogical(true);
+        foreignKeyMetadata.setToMany(builder.isToMany());
+        foreignKeyMetadata.setTarget(schema.getTableOrView(builder.getTarget())
+                .orElseThrow(() -> new IllegalArgumentException("target [" + builder.getTarget() + "] doesn't exist")));
+
+        foreignKeyMetadata.setSourceColumn(getColumn(builder.getSourceColumn())
+                .orElseThrow(() -> new IllegalArgumentException("source column [" + builder.getSourceColumn() + "] doesn't exist")));
+        foreignKeyMetadata.setTargetColumn(foreignKeyMetadata.getTarget().getColumn(builder.getTargetColumn())
+                .orElseThrow(() -> new IllegalArgumentException("target column [" + builder.getTargetColumn() + "] doesn't exist")));
+        foreignKeyMetadata.setSource(this);
+
+        foreignKeyMetadata.setTerms(builder.getTerms());
+        addForeignKey(foreignKeyMetadata);
+        return foreignKeyMetadata;
+    }
+
     private Optional<RDBColumnMetadata> findColumnFromSchema(DefaultRDBSchemaMetadata schema, String tableName, String column) {
         return of(schema.getTableOrView(tableName)
                 .flatMap(meta -> meta.getColumn(column)))

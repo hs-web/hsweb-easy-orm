@@ -8,6 +8,8 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.IsNullTermFr
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.NotNullTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.NotTermFragmentBuilder;
 
+import java.util.HashSet;
+
 public interface RDBFutures {
 
 
@@ -17,7 +19,7 @@ public interface RDBFutures {
 
 
     static WhereFragmentBuilder where(TableOrViewMetadata metadata) {
-        return WhereFragmentBuilder.of(metadata);
+        return WhereFragmentBuilder.of(metadata,new HashSet<>());
     }
 
     static SelectColumnFragmentBuilder select(TableOrViewMetadata metadata) {

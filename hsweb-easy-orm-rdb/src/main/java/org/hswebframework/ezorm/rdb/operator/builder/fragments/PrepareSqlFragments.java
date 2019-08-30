@@ -26,8 +26,8 @@ public class PrepareSqlFragments implements SqlFragments {
 
     private List<Object> parameters = new ArrayList<>(8);
 
-    public void removeLastSql(){
-        sql.remove(sql.size()-1);
+    public void removeLastSql() {
+        sql.remove(sql.size() - 1);
     }
 
     public PrepareSqlFragments addFragments(SqlFragments fragments) {
@@ -37,7 +37,11 @@ public class PrepareSqlFragments implements SqlFragments {
     }
 
     public PrepareSqlFragments addSql(String... sql) {
-        this.sql.addAll(Arrays.asList(sql));
+        for (String _sql : sql) {
+            if (null != _sql) {
+                this.sql.add(_sql);
+            }
+        }
         return this;
     }
 

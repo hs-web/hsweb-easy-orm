@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.meta.AbstractSchemaMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.DefaultForeignKeyTermFragmentBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,10 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFutures.isNull);
             addFeature(RDBFutures.notNull);
             addFeature(RDBFutures.not);
+
+            //自动关联外键条件
+            addFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);
+
             // TODO: 2019-08-29 更多设置
         }
 
@@ -42,7 +47,7 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
         return getObject(RDBObjectType.view, name);
     }
 
-    public void addTable(RDBTableMetadata metadata){
+    public void addTable(RDBTableMetadata metadata) {
         metadata.setSchema(this);
         addObject(metadata);
     }

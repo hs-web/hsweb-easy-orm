@@ -15,6 +15,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class WhereFragmentBuilderTest {
@@ -50,10 +52,10 @@ public class WhereFragmentBuilderTest {
         table.addColumn(id);
         table.addColumn(name);
 
-        builder = WhereFragmentBuilder.of(table);
+        builder = WhereFragmentBuilder.of(table,new HashSet<>());
     }
 
-    private SqlRequest createSqlRequest(List<Term> terms){
+    private SqlRequest createSqlRequest(List<Term> terms) {
 
         ComplexQueryParameter parameter = new ComplexQueryParameter();
         parameter.setFrom("test");
@@ -75,18 +77,36 @@ public class WhereFragmentBuilderTest {
     }
 
     @Test
-    public void testSimple(){
+    public void testComplex() {
+        Term term = new Term();
+
+        term.and("id", "1")
+                .and("name", "2")
+                .nest()
+                .and("name", "1234")
+                .or("name", "12345")
+                .nest()
+                .and("name", "1234")
+                .or("name", "12345");
+
+        SqlRequest sql = createSqlRequest(Collections.singletonList(term));
+
+        System.out.println(sql.getSql());
+    }
+
+    @Test
+    public void testSimple() {
         assertSql(
                 Query.of().is("id", "1").is("name", "123"),
-                "test.id = ? and test.name = ?"
+                "test.\"ID\" = ? and test.\"NAME\" = ?"
         );
     }
 
     @Test
-    public void testFullColumnName(){
+    public void testFullColumnName() {
         assertSql(
                 Query.of().is("test.id", "1").is("test.name", "123"),
-                "test.id = ? and test.name = ?"
+                "test.\"ID\" = ? and test.\"NAME\" = ?"
         );
     }
 
@@ -104,7 +124,7 @@ public class WhereFragmentBuilderTest {
                         .end()
                         .end()
                 ,
-                "test.id = ? and ( test.name = ? or ( test.id = ? and test.id = ? ) )"
+                "test.\"ID\" = ? and ( test.\"NAME\" = ? or ( test.\"ID\" = ? and test.\"ID\" = ? ) )"
         );
     }
 

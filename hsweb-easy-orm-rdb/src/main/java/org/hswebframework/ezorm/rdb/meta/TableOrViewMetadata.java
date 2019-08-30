@@ -68,6 +68,11 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportMetad
      */
     Optional<ForeignKeyMetadata> getForeignKey(String targetName);
 
+    void addForeignKey(ForeignKeyMetadata metadata);
+
+    ForeignKeyMetadata addForeignKey(ForeignKeyBuilder builder);
+
+
     @Override
     ObjectType getObjectType();
 

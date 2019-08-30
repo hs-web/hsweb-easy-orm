@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.operator.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.SelectColumn;
@@ -57,6 +58,11 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     }
 
     public PrepareSqlFragments createFragments(ComplexQueryParameter parameter, SelectColumn column) {
+        if (column instanceof NativeSql) {
+            return PrepareSqlFragments.of()
+                    .addSql(((NativeSql) column).getSql())
+                    .addParameter(((NativeSql) column).getParameters());
+        }
         String columnStr = column.getColumn();
         //关联表 table.column
         if (columnStr.contains(".")) {
