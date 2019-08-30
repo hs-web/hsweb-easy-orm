@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.sql.JDBCType;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class SelectColumnFragmentBuilderTest {
 
@@ -75,6 +76,23 @@ public class SelectColumnFragmentBuilderTest {
         ComplexQueryParameter parameter = new ComplexQueryParameter();
         parameter.setSelect(Arrays.asList(column,name));
         parameter.setJoins(Arrays.asList(join));
+
+        SqlFragments fragments = builder.createFragments(parameter);
+        Assert.assertNotNull(fragments);
+        System.out.println(fragments.toRequest().getSql());
+
+    }
+
+    @Test
+    public void testFunction() {
+        SelectColumn column = new SelectColumn();
+        column.setColumn("id");
+        column.setAlias("total");
+        column.setFunction("count");
+        column.setOpts(Collections.singletonMap("arg","1"));
+
+        ComplexQueryParameter parameter = new ComplexQueryParameter();
+        parameter.setSelect(Arrays.asList(column));
 
         SqlFragments fragments = builder.createFragments(parameter);
         Assert.assertNotNull(fragments);

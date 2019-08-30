@@ -20,6 +20,14 @@ public interface Selects {
         return new SelectOperator(name, RDBFutures.max.getFunction());
     }
 
+    static SelectOperator min(String name) {
+        return new SelectOperator(name, RDBFutures.min.getFunction());
+    }
+
+
+    static SelectOperator avg(String name) {
+        return new SelectOperator(name, RDBFutures.avg.getFunction());
+    }
 
 
 }

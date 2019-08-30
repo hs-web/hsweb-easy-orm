@@ -67,7 +67,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
             return parameter.findJoin(arr[0])
                     .flatMap(join -> metadata.getSchema()
                             .getTableOrView(join.getTarget())
-                            .flatMap(table -> table.findColumn(arr[1]))
+                            .flatMap(table -> table.getColumn(arr[1]))
                             .flatMap(columnMetadata ->
                                     createFragments(columnMetadata.getFullName(join.getAlias()), columnMetadata, column)
                                             .map(fragments -> {
@@ -93,6 +93,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     public Optional<SqlFragments> createFragments(String columnFullName, RDBColumnMetadata columnMetadata, SelectColumn column) {
         String function = column.getFunction();
         if (function != null) {
+
             return columnMetadata
                     .<FunctionFragmentBuilder>findFeature(RDBFeatureType.function.getFeatureId(function))
                     .map(fragment -> fragment.create(columnFullName, columnMetadata, column.getOpts()));

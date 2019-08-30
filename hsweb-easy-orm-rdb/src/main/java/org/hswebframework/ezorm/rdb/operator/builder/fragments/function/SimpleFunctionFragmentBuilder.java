@@ -20,6 +20,10 @@ public class SimpleFunctionFragmentBuilder implements FunctionFragmentBuilder {
     @Override
     public SqlFragments create(String columnFullName, RDBColumnMetadata metadata, Map<String, String> opts) {
 
+        String arg = opts.get("arg");
+        if ("1".equals(arg)) {
+            columnFullName = arg;
+        }
         return PrepareSqlFragments
                 .of()
                 .addSql(function.concat("(").concat(columnFullName).concat(")"));

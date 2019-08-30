@@ -28,6 +28,13 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
             registerFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);
 
 
+            /*  函数  */
+            registerFeature(RDBFutures.count);
+            registerFeature(RDBFutures.sum);
+            registerFeature(RDBFutures.max);
+            registerFeature(RDBFutures.min);
+            registerFeature(RDBFutures.avg);
+
             // TODO: 2019-08-29 更多设置
         }
 
