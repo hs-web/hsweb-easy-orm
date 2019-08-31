@@ -16,7 +16,17 @@ import java.util.Optional;
 @AllArgsConstructor(staticName = "of")
 public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
-    TableOrViewMetadata metadata;
+    private TableOrViewMetadata metadata;
+
+    @Override
+    public String getId() {
+        return RDBFutures.select;
+    }
+
+    @Override
+    public String getName() {
+        return "查询列";
+    }
 
     @Override
     public SqlFragments createFragments(ComplexQueryParameter parameter) {
@@ -102,13 +112,4 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         }
     }
 
-    @Override
-    public String getId() {
-        return RDBFutures.select;
-    }
-
-    @Override
-    public String getName() {
-        return "查询列";
-    }
 }

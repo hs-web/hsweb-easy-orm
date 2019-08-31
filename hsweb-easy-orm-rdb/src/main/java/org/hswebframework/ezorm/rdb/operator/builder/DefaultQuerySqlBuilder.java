@@ -25,7 +25,7 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         if (from == null || from.isEmpty()) {
             throw new UnsupportedOperationException("from table or view not set");
         }
-        this.metadata = schema.getTableOrView(from)
+        this.metadata = schema.findTableOrView(from)
                 .orElseThrow(() -> new UnsupportedOperationException("table or view [" + from + "] doesn't exist "));
         this.parameter = parameter;
     }

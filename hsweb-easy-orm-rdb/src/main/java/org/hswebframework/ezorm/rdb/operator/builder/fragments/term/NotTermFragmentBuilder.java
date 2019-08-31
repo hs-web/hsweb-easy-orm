@@ -11,11 +11,11 @@ public class NotTermFragmentBuilder extends AbstractTermFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments createFragments(String tableName, RDBColumnMetadata column, Term term) {
+    public PrepareSqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
 
         // column != ?
         return PrepareSqlFragments.of()
-                .addSql(getColumnFullName(tableName, column), "!= ?")
+                .addSql(columnFullName, "!= ?")
                 .addParameter(convertValue(column, term));
     }
 }

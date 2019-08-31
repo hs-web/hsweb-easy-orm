@@ -25,6 +25,6 @@ public interface TermFragmentBuilder extends Feature {
 
     String getTermType();
 
-    SqlFragments createFragments(String tableName, RDBColumnMetadata column, Term term);
+    SqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term);
 
 }

@@ -60,6 +60,10 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
         addObject(metadata);
     }
 
+    public Optional<TableOrViewMetadata> findTableOrView(String name) {
+        return getDatabase().getTableOrView(name);
+    }
+
     public Optional<TableOrViewMetadata> getTableOrView(String name) {
         return Optional.of(getTable(name)
                 .map(AbstractTableOrViewMetadata.class::cast))

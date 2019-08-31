@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.meta;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 
 import java.util.List;
 

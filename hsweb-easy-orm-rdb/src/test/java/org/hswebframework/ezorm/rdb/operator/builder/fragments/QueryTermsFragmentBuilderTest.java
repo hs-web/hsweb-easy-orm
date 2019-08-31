@@ -19,12 +19,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-public class WhereFragmentBuilderTest {
+public class QueryTermsFragmentBuilderTest {
 
 
     public RDBTableMetadata table;
 
-    public WhereFragmentBuilder builder;
+    public QueryTermsFragmentBuilder builder;
 
     @Before
     public void init() {
@@ -52,7 +52,7 @@ public class WhereFragmentBuilderTest {
         table.addColumn(id);
         table.addColumn(name);
 
-        builder = WhereFragmentBuilder.of(table,new HashSet<>());
+        builder = QueryTermsFragmentBuilder.of(table,new HashSet<>());
     }
 
     private SqlRequest createSqlRequest(List<Term> terms) {

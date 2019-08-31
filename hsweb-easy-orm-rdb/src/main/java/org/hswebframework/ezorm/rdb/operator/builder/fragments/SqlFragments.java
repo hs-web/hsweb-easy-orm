@@ -9,6 +9,10 @@ public interface SqlFragments {
 
     boolean isEmpty();
 
+    default boolean isNotEmpty(){
+        return !isEmpty();
+    }
+
     List<String> getSql();
 
     List<Object> getParameters();

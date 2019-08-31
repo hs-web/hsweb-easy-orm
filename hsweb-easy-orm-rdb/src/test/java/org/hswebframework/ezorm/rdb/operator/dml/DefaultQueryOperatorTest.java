@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.dml;
 
+import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,7 +14,7 @@ public class DefaultQueryOperatorTest {
 
         query.select(count("id").as("total"))
                 .from("u_user")
-                .leftJoin("u_detail", join -> join.as("detail").on("detail.id = u_user.id"))
+                .join(Joins.left("detail").as("info"))
                 .where(dsl -> dsl.like("name", "1234"))
                 .limit(10, 0);
 

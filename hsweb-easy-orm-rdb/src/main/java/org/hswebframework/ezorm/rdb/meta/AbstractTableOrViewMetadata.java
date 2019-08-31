@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.WhereFragmentBuilder;
 
 import java.util.*;
 import java.util.function.Function;
@@ -31,7 +31,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     public AbstractTableOrViewMetadata() {
         //注册默认的where条件构造器
-        registerFeature(WhereFragmentBuilder.of(this));
+        registerFeature(QueryTermsFragmentBuilder.of(this));
         //注册默认的查询列构造器
         registerFeature(SelectColumnFragmentBuilder.of(this));
 

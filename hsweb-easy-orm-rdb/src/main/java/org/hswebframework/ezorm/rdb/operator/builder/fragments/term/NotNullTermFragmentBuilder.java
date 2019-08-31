@@ -11,10 +11,10 @@ public class NotNullTermFragmentBuilder extends AbstractTermFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments createFragments(String tableName, RDBColumnMetadata column, Term term) {
+    public PrepareSqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
 
         // column = ?
         return PrepareSqlFragments.of()
-                .addSql(getColumnFullName(tableName, column), "not null");
+                .addSql(columnFullName, "not null");
     }
 }

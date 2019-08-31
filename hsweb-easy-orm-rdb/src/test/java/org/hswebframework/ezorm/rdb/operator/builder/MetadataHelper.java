@@ -14,7 +14,7 @@ public class MetadataHelper {
     public static DefaultRDBSchemaMetadata createMockSchema() {
         DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> database = new DefaultRDBDatabaseMetadata<>(Dialect.H2);
         DefaultRDBSchemaMetadata schema = new DefaultRDBSchemaMetadata();
-        schema.setName("DEFAULT");
+        schema.setName("PUBLIC");
 
         database.setCurrentSchema(schema);
         database.addSchema(schema);

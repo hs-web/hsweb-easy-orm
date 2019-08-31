@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.meta;
 
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.WhereFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EqTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.IsNullTermFragmentBuilder;
@@ -18,8 +18,8 @@ public interface RDBFutures {
     String select = "selectColumns";
 
 
-    static WhereFragmentBuilder where(TableOrViewMetadata metadata) {
-        return WhereFragmentBuilder.of(metadata,new HashSet<>());
+    static QueryTermsFragmentBuilder where(TableOrViewMetadata metadata) {
+        return QueryTermsFragmentBuilder.of(metadata,new HashSet<>());
     }
 
     static SelectColumnFragmentBuilder select(TableOrViewMetadata metadata) {

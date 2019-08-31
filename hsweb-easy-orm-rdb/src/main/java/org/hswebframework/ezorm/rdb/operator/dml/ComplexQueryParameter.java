@@ -16,6 +16,8 @@ public class ComplexQueryParameter {
 
     private String from;
 
+    private String fromAlias;
+
     private List<Term> where = new ArrayList<>();
 
     private List<Join> joins = new ArrayList<>();
@@ -38,5 +40,13 @@ public class ComplexQueryParameter {
                         .stream()
                         .filter(join -> join.equalsTargetOrAlias(targetName))
                         .findFirst());
+    }
+
+    public String getFromAlias() {
+        if (fromAlias == null) {
+            return from;
+        }
+
+        return fromAlias;
     }
 }

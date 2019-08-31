@@ -30,7 +30,6 @@ public abstract class SqlConditionSupport<T> {
         sqlTerm.setColumn(sql);
         sqlTerm.setValue(params);
         sqlTerm.setSql(sql);
-        sqlTerm.setParam(params);
         sqlTerm.setType(getNowTermType());
         return addSqlTerm(sqlTerm);
     }

@@ -47,12 +47,6 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         return Arrays.asList(value);
     }
 
-    protected String getColumnFullName(String tableAlias, RDBColumnMetadata column) {
-
-
-        return column.getFullName(tableAlias);
-    }
-
     protected Object convertValue(RDBColumnMetadata column, Object term) {
 
         return term;
