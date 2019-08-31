@@ -97,6 +97,7 @@ public class SelectColumnFragmentBuilderTest {
         SqlFragments fragments = builder.createFragments(parameter);
         Assert.assertNotNull(fragments);
         System.out.println(fragments.toRequest().getSql());
+        Assert.assertEquals(fragments.toRequest().getSql(),"count(1) as \"total\"");
 
     }
 
