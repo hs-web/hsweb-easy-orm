@@ -48,7 +48,7 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
         return new SimplePropertyWrapper(properties.put(property, value));
     }
 
-    public void registerFeature(Feature feature) {
+    public void addFeature(Feature feature) {
         if (features == null) {
             features = new HashMap<>();
         }

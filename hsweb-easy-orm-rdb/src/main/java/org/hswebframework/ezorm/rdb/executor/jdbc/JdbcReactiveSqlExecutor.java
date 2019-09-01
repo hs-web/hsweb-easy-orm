@@ -47,7 +47,7 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
     }
 
     @Override
-    public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, E> wrapper) {
+    public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
 
         return Flux.create(sink -> {
             Disposable disposable = toFlux(request)

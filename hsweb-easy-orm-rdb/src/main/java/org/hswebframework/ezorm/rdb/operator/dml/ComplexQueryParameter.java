@@ -28,9 +28,9 @@ public class ComplexQueryParameter {
 
     private List<FunctionTerm> having = new ArrayList<>();
 
-    private Integer limit;
+    private Integer pageIndex;
 
-    private Integer offset;
+    private Integer pageSize;
 
     private Boolean forUpdate;
 

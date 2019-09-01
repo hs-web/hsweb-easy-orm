@@ -36,11 +36,11 @@ public abstract class ResultWrappers {
         return convert(ListResultWrapper.arrayList(wrapper), List::stream);
     }
 
-    public static <E> ResultWrapper<E, Integer> consumer(ResultWrapper<E, E> wrapper, Consumer<E> consumer) {
+    public static <E> ResultWrapper<E, Integer> consumer(ResultWrapper<E, ?> wrapper, Consumer<E> consumer) {
         return new ConsumerResultWrapper<>(wrapper, consumer);
     }
 
-    public static <E> ResultWrapper<E, Integer> consumer(ResultWrapper<E, E> wrapper, Consumer<E> consumer, Runnable onCompleted) {
+    public static <E> ResultWrapper<E, Integer> consumer(ResultWrapper<E, ?> wrapper, Consumer<E> consumer, Runnable onCompleted) {
         return new ConsumerResultWrapper<>(wrapper, consumer, onCompleted);
     }
 

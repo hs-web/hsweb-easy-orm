@@ -32,11 +32,11 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     public AbstractTableOrViewMetadata() {
         //注册默认的where条件构造器
-        registerFeature(QueryTermsFragmentBuilder.of(this));
+        addFeature(QueryTermsFragmentBuilder.of(this));
         //注册默认的查询列构造器
-        registerFeature(SelectColumnFragmentBuilder.of(this));
+        addFeature(SelectColumnFragmentBuilder.of(this));
         //JOIN
-        registerFeature(JoinFragmentBuilder.of(this));
+        addFeature(JoinFragmentBuilder.of(this));
     }
 
     public boolean isTable() {
@@ -168,7 +168,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                 .findFirst();
     }
 
-    public void registerFeature(Feature feature) {
+    public void addFeature(Feature feature) {
         features.put(feature.getId(), feature);
     }
 

@@ -7,7 +7,7 @@ import java.util.Optional;
  * @author zhouhao
  * @since 4.0.0
  */
-public interface SchemaMetadata extends ObjectMetadata,FeatureSupportMetadata {
+public interface SchemaMetadata extends ObjectMetadata, FeatureSupportedMetadata {
 
     String getName();
 

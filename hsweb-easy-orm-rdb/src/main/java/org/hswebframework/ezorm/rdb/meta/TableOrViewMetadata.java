@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.meta;
 
 import org.hswebframework.ezorm.core.meta.Feature;
-import org.hswebframework.ezorm.core.meta.FeatureSupportMetadata;
+import org.hswebframework.ezorm.core.meta.FeatureSupportedMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
@@ -19,7 +19,7 @@ import static java.util.Optional.of;
  *
  * @since 4.0
  */
-public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportMetadata {
+public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMetadata {
     /**
      * @return 元数据所在schema
      */

@@ -3,16 +3,14 @@ package org.hswebframework.ezorm.core.meta;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import static java.util.Optional.*;
 
-public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata> implements DatabaseMetadata<S> {
+public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
+        implements DatabaseMetadata<S>, FeatureSupportedMetadata {
 
     private Map<String, S> schemas = new ConcurrentHashMap<>();
 
@@ -31,6 +29,9 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata> impleme
     @Getter
     @Setter
     private String alias;
+
+    @Getter
+    private Map<String,Feature> features=new HashMap<>();
 
     public void addSchema(S schema) {
         schemas.put(schema.getName(), schema);
@@ -61,5 +62,10 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata> impleme
         }
         return of(this.getCurrentSchema())
                 .flatMap(schema -> mapper.apply(schema, name));
+    }
+
+    @Override
+    public void addFeature(Feature feature) {
+        features.put(feature.getId(),feature);
     }
 }

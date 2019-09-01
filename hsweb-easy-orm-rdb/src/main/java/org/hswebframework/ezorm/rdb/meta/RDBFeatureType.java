@@ -3,22 +3,25 @@ package org.hswebframework.ezorm.rdb.meta;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hswebframework.ezorm.core.FeatureType;
-import org.hswebframework.ezorm.core.meta.Feature;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermsFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.QuerySqlFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 
 @Getter
 @AllArgsConstructor
 public enum RDBFeatureType implements FeatureType {
-    termType("SQL条件", TermFragmentBuilder.class),
-    termsType("SQL条件组合", TermsFragmentBuilder.class),
+    termType("SQL条件"),
+    termsType("SQL条件组合"),
 
-    function("函数", FunctionFragmentBuilder.class),
-    fragment("SQL片段", QuerySqlFragmentBuilder.class),
-    foreignKeyTerm("外键关联条件", ForeignKeyTermFragmentBuilder.class);
+    query("查询"),
+
+    paginator("分页器"),
+
+    sqlBuilder("SQL构造器"),
+
+    sqlExecutor("SQL执行器"),
+
+
+    function("函数"),
+    fragment("SQL片段"),
+    foreignKeyTerm("外键关联条件");
 
     @Override
     public String getId() {
@@ -26,8 +29,6 @@ public enum RDBFeatureType implements FeatureType {
     }
 
     private String name;
-
-    private Class<? extends Feature> typeClass;
 
     public String getFeatureId(String sortId) {
         return getId().concat(":").concat(sortId);

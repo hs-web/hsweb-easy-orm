@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.*;
 
-public interface FeatureSupportMetadata {
+public interface FeatureSupportedMetadata {
 
     Map<String, Feature> getFeatures();
 
-    void  registerFeature(Feature feature);
+    void addFeature(Feature feature);
 
     default List<Feature> getFeatureList() {
         return Optional.ofNullable(getFeatures())

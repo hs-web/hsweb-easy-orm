@@ -27,7 +27,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     @Override
-    public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, E> wrapper) {
+    public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
 
         return null;
     }

@@ -4,7 +4,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.concurrent.CompletionStage;
 
-public interface DQLOperator<E, R> {
+public interface ResultOperator<E, R> {
 
     R sync();
 

@@ -22,7 +22,7 @@ public class SelectColumnFragmentBuilderTest {
 
     @Before
     public void init() {
-        DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> database = new DefaultRDBDatabaseMetadata<>(Dialect.H2);
+        DefaultRDBDatabaseMetadata database = new DefaultRDBDatabaseMetadata(Dialect.H2);
         DefaultRDBSchemaMetadata schema = new DefaultRDBSchemaMetadata();
         schema.setName("DEFAULT");
 

@@ -19,35 +19,35 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
     public DefaultRDBSchemaMetadata() {
         {
             /* 通用查询条件 */
-            registerFeature(RDBFutures.eq);
-            registerFeature(RDBFutures.not);
-            registerFeature(RDBFutures.gt);
-            registerFeature(RDBFutures.gte);
-            registerFeature(RDBFutures.lt);
-            registerFeature(RDBFutures.lte);
-            registerFeature(RDBFutures.like);
-            registerFeature(RDBFutures.nlike);
+            addFeature(RDBFutures.eq);
+            addFeature(RDBFutures.not);
+            addFeature(RDBFutures.gt);
+            addFeature(RDBFutures.gte);
+            addFeature(RDBFutures.lt);
+            addFeature(RDBFutures.lte);
+            addFeature(RDBFutures.like);
+            addFeature(RDBFutures.nlike);
 
-            registerFeature(RDBFutures.in);
-            registerFeature(RDBFutures.notIn);
-            registerFeature(RDBFutures.between);
-            registerFeature(RDBFutures.notBetween);
+            addFeature(RDBFutures.in);
+            addFeature(RDBFutures.notIn);
+            addFeature(RDBFutures.between);
+            addFeature(RDBFutures.notBetween);
 
-            registerFeature(RDBFutures.eq);
-            registerFeature(RDBFutures.isNull);
-            registerFeature(RDBFutures.notNull);
+            addFeature(RDBFutures.eq);
+            addFeature(RDBFutures.isNull);
+            addFeature(RDBFutures.notNull);
 
 
             //自动关联外键条件
-            registerFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);
+            addFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);
 
 
             /*  函数  */
-            registerFeature(RDBFutures.count);
-            registerFeature(RDBFutures.sum);
-            registerFeature(RDBFutures.max);
-            registerFeature(RDBFutures.min);
-            registerFeature(RDBFutures.avg);
+            addFeature(RDBFutures.count);
+            addFeature(RDBFutures.sum);
+            addFeature(RDBFutures.max);
+            addFeature(RDBFutures.min);
+            addFeature(RDBFutures.avg);
 
             // TODO: 2019-08-29 更多设置
         }
@@ -57,7 +57,7 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
 
     @Override
     @SuppressWarnings("all")
-    public DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> getDatabase() {
+    public DefaultRDBDatabaseMetadata getDatabase() {
         return ((DefaultRDBDatabaseMetadata) super.getDatabase());
     }
 

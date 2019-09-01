@@ -9,7 +9,6 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
-@ToString
 public class SimpleSqlRequest implements SqlRequest {
 
     private String sql;
@@ -50,5 +49,10 @@ public class SimpleSqlRequest implements SqlRequest {
         }
 
         return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        return toNativeSql();
     }
 }

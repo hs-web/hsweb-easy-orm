@@ -65,10 +65,10 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     }
 
     public PrepareSqlFragments createFragments(ComplexQueryParameter parameter, SelectColumn column) {
-        if (column instanceof NativeSqlFragments) {
+        if (column instanceof NativeSql) {
             return PrepareSqlFragments.of()
-                    .addSql(((NativeSqlFragments) column).getSql())
-                    .addParameter(((NativeSqlFragments) column).getParameters());
+                    .addSql(((NativeSql) column).getSql())
+                    .addParameter(((NativeSql) column).getParameters());
         }
         String columnStr = column.getColumn();
         //关联表 table.column

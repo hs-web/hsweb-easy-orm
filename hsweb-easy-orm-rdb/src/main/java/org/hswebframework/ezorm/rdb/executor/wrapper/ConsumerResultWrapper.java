@@ -5,13 +5,13 @@ import java.util.function.Consumer;
 
 public class ConsumerResultWrapper<T> implements ResultWrapper<T, Integer> {
 
-    private ResultWrapper<T, T> wrapper;
+    private ResultWrapper<T, ?> wrapper;
 
     private Consumer<T> consumer;
 
     private Runnable whenComplete;
 
-    public ConsumerResultWrapper(ResultWrapper<T, T> wrapper, Consumer<T> consumer,Runnable whenComplete) {
+    public ConsumerResultWrapper(ResultWrapper<T, ?> wrapper, Consumer<T> consumer,Runnable whenComplete) {
         Objects.requireNonNull(wrapper);
         Objects.requireNonNull(consumer);
 
@@ -20,7 +20,7 @@ public class ConsumerResultWrapper<T> implements ResultWrapper<T, Integer> {
         this.whenComplete=whenComplete;
     }
 
-    public ConsumerResultWrapper(ResultWrapper<T, T> wrapper, Consumer<T> consumer){
+    public ConsumerResultWrapper(ResultWrapper<T, ?> wrapper, Consumer<T> consumer){
         this(wrapper,consumer,null);
     }
 

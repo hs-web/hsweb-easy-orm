@@ -59,4 +59,8 @@ public class PrepareSqlFragments implements SqlFragments {
         return this.addParameter(Arrays.asList(parameter));
     }
 
+    @Override
+    public String toString() {
+        return toRequest().getSql();
+    }
 }

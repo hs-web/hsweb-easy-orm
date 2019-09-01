@@ -19,7 +19,7 @@ public class DefaultRDBSchemaMetadataTest {
 
     @Before
     public void init() {
-        DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> database = new DefaultRDBDatabaseMetadata<>(Dialect.H2);
+        DefaultRDBDatabaseMetadata database = new DefaultRDBDatabaseMetadata(Dialect.H2);
 
         schema = new DefaultRDBSchemaMetadata();
         schema.setName("PUBLIC");

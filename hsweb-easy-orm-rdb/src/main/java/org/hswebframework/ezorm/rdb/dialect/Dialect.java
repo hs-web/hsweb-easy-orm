@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.dialect;
 
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
@@ -38,8 +39,10 @@ public interface Dialect {
 
     String buildDataType(RDBColumnMetadata columnMetaData);
 
+    @Deprecated
     String doPaging(String sql, int pageIndex, int pageSize);
 
+    @Deprecated
     String doPaging(String sql, int pageIndex, int pageSize, boolean prepare);
 
     boolean columnToUpperCase();

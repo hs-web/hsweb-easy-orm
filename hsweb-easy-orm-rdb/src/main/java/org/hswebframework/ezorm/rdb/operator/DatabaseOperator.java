@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 
 public interface DatabaseOperator {
 
-    DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> getMetadata();
+    DefaultRDBDatabaseMetadata getMetadata();
 
     DMLOperator dml();
 

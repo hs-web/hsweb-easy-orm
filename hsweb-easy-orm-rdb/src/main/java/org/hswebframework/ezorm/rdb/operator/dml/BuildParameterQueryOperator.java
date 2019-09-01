@@ -8,15 +8,15 @@ import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.operator.DQLOperator;
+import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-public class DefaultQueryOperator extends QueryOperator {
+public class BuildParameterQueryOperator extends QueryOperator {
 
     @Getter
-    private ComplexQueryParameter parameter=new ComplexQueryParameter();
+    private ComplexQueryParameter parameter = new ComplexQueryParameter();
 
     @Override
     public QueryOperator select(String... columns) {
@@ -86,14 +86,20 @@ public class DefaultQueryOperator extends QueryOperator {
     }
 
     @Override
+    public QueryOperator orderBy(Operator... operators) {
+        return null;
+    }
+
+    @Override
     public QueryOperator having(Operator... operators) {
         return this;
     }
 
+
     @Override
-    public QueryOperator limit(int limit, int offset) {
-        parameter.setLimit(limit);
-        parameter.setOffset(offset);
+    public QueryOperator paging(int pageIndex, int pageSize) {
+        parameter.setPageIndex(pageIndex);
+        parameter.setPageSize(pageSize);
         return this;
     }
 
@@ -105,11 +111,11 @@ public class DefaultQueryOperator extends QueryOperator {
 
     @Override
     public SqlRequest getSql() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public <E, R> DQLOperator<E,R> fetch(ResultWrapper<E, R> wrapper) {
-        return null;
+    public <E, R> ResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
+        throw new UnsupportedOperationException();
     }
 }

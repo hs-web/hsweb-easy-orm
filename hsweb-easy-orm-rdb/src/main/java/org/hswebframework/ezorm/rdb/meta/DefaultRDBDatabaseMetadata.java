@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.dialect.Dialect;
 
 import java.util.Optional;
 
-public class DefaultRDBDatabaseMetadata<S extends DefaultRDBSchemaMetadata> extends AbstractDatabaseMetadata<S> {
+public class DefaultRDBDatabaseMetadata extends AbstractDatabaseMetadata<DefaultRDBSchemaMetadata> {
     protected Dialect dialect;
 
     public DefaultRDBDatabaseMetadata(Dialect dialect) {
@@ -21,7 +21,7 @@ public class DefaultRDBDatabaseMetadata<S extends DefaultRDBSchemaMetadata> exte
     }
 
     @Override
-    public void addSchema(S schema) {
+    public void addSchema(DefaultRDBSchemaMetadata schema) {
         schema.setDatabase(this);
         super.addSchema(schema);
     }

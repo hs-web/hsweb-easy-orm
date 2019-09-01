@@ -7,9 +7,8 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.dml.DefaultQueryOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.query.Selects;
+import org.hswebframework.ezorm.rdb.operator.dml.BuildParameterQueryOperator;
+import org.hswebframework.ezorm.rdb.supports.oracle.OraclePaginator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +16,6 @@ import org.junit.Test;
 import java.sql.JDBCType;
 
 import static org.hswebframework.ezorm.rdb.operator.dml.query.Selects.*;
-import static org.junit.Assert.*;
 
 public class DefaultQuerySqlBuilderTest {
 
@@ -26,7 +24,7 @@ public class DefaultQuerySqlBuilderTest {
 
     @Before
     public void init() {
-        DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> database = new DefaultRDBDatabaseMetadata<>(Dialect.H2);
+        DefaultRDBDatabaseMetadata database = new DefaultRDBDatabaseMetadata(Dialect.H2);
         schema = new DefaultRDBSchemaMetadata();
         schema.setName("DEFAULT");
 
@@ -66,17 +64,26 @@ public class DefaultQuerySqlBuilderTest {
 
     @Test
     public void test() {
-        DefaultQueryOperator query = new DefaultQueryOperator();
+        BuildParameterQueryOperator query = new BuildParameterQueryOperator();
 
         query.select("id")
                 .select(select("info.comment").as("test"))
                 .from("test")
-                .leftJoin("detail",join->join.as("info").on("test.id=info.id"))
-                .where(dsl -> dsl.is("name", "1234").is("info.comment","1234"));
+                .leftJoin("detail", join -> join.as("info").on("test.id=info.id"))
+                .where(dsl -> dsl.is("name", "1234").is("info.comment", "1234"))
+                .paging(0, 10);
 
-        DefaultQuerySqlBuilder sqlBuilder = new DefaultQuerySqlBuilder(query.getParameter(), schema);
+        schema.addFeature(new OraclePaginator());
 
-        SqlRequest sqlRequest = sqlBuilder.build();
+        DefaultQuerySqlBuilder sqlBuilder = new DefaultQuerySqlBuilder(schema);
+
+        SqlRequest sqlRequest = null;
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++) {
+            sqlRequest = sqlBuilder.build(query.getParameter());
+
+        }
+        System.out.println(System.currentTimeMillis()-time);
 
         Assert.assertNotNull(sqlRequest);
         Assert.assertNotNull(sqlRequest.getSql());

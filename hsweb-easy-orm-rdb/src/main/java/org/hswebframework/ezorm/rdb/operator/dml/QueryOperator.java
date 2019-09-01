@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.operator.DQLOperator;
+import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.JoinOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
 
@@ -80,17 +80,20 @@ public abstract class QueryOperator {
         return join(operator.get());
     }
 
+    public abstract QueryOperator orderBy(Operator... operators);
+
+
     public abstract QueryOperator groupBy(Operator... operators);
 
     public abstract QueryOperator having(Operator... operators);
 
-    public abstract QueryOperator limit(int limit, int offset);
+    public abstract QueryOperator paging(int pageIndex, int pageSize);
 
     public abstract QueryOperator forUpdate();
 
     public abstract SqlRequest getSql();
 
-    public abstract <E, R> DQLOperator<E, R> fetch(ResultWrapper<E, R> wrapper);
+    public abstract <E, R> ResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper);
 
 
 }

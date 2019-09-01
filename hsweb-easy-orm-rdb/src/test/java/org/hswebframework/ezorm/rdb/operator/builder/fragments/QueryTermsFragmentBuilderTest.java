@@ -28,7 +28,7 @@ public class QueryTermsFragmentBuilderTest {
 
     @Before
     public void init() {
-        DefaultRDBDatabaseMetadata<DefaultRDBSchemaMetadata> database = new DefaultRDBDatabaseMetadata<>(Dialect.H2);
+        DefaultRDBDatabaseMetadata database = new DefaultRDBDatabaseMetadata(Dialect.H2);
         DefaultRDBSchemaMetadata schema = new DefaultRDBSchemaMetadata();
         schema.setName("DEFAULT");
 
@@ -53,6 +53,7 @@ public class QueryTermsFragmentBuilderTest {
         table.addColumn(name);
 
         builder = QueryTermsFragmentBuilder.of(table,new HashSet<>());
+        builder.setUseBlock(true);
     }
 
     private SqlRequest createSqlRequest(List<Term> terms) {
@@ -65,6 +66,8 @@ public class QueryTermsFragmentBuilderTest {
         Assert.assertNotNull(fragments.getSql());
         SqlRequest request = fragments.toRequest();
         System.out.println(request.getSql());
+        System.out.println(fragments.toString());
+
         return request;
     }
 
@@ -91,7 +94,7 @@ public class QueryTermsFragmentBuilderTest {
 
         SqlRequest sql = createSqlRequest(Collections.singletonList(term));
 
-        System.out.println(sql.getSql());
+//        System.out.println(sql.getSql());
     }
 
     @Test
