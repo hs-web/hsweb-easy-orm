@@ -67,20 +67,17 @@ public class OracleDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
-        return new StringBuilder()
-                .append("SELECT * FROM ( SELECT row_.*, rownum rownum_ FROM (")
-                .append(sql)
-                .append(") row_ )")
-                .append("WHERE rownum_ <= ")
-                .append(prepare ? "#{pageSize} * (#{pageIndex} + 1)" : pageSize * (pageIndex + 1))
-                .append(" AND rownum_ > ")
-                .append(prepare ? "#{pageSize} * #{pageIndex}" : pageSize * pageIndex).toString();
-    }
-
-    @Override
     public boolean columnToUpperCase() {
         return true;
     }
 
+    @Override
+    public String getId() {
+        return "oracle";
+    }
+
+    @Override
+    public String getName() {
+        return "Oracle";
+    }
 }

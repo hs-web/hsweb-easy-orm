@@ -65,20 +65,17 @@ public class MysqlDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize,boolean prepare) {
-        if (prepare) {
-            return sql + " paging #{pageSize}*#{pageIndex} , #{pageSize}";
-        }
-        return new StringBuilder(sql)
-                .append(" paging ")
-                .append(pageSize * pageIndex)
-                .append(",")
-                .append(pageSize).toString();
-    }
-
-    @Override
     public boolean columnToUpperCase() {
         return false;
     }
 
+    @Override
+    public String getId() {
+        return "mysql";
+    }
+
+    @Override
+    public String getName() {
+        return "Mysql";
+    }
 }

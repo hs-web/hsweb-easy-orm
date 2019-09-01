@@ -13,10 +13,10 @@ import java.util.StringJoiner;
  * @author zhouhao
  * @since 3.0
  */
-public class PGSqlDialect extends DefaultDialect {
+public class PostgreSQLDialect extends DefaultDialect {
 
 
-    public PGSqlDialect() {
+    public PostgreSQLDialect() {
         defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
         setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
@@ -82,20 +82,17 @@ public class PGSqlDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
-        if (prepare) {
-            return sql + " paging #{pageSize} offset #{pageSize}*#{pageIndex}";
-        }
-        return new StringBuilder(sql)
-                .append(" paging ")
-                .append(pageSize)
-                .append(" offset ")
-                .append(pageSize * pageIndex)
-                .toString();
+    public boolean columnToUpperCase() {
+        return false;
     }
 
     @Override
-    public boolean columnToUpperCase() {
-        return false;
+    public String getId() {
+        return "PostgreSQL";
+    }
+
+    @Override
+    public String getName() {
+        return "PostgreSQL";
     }
 }

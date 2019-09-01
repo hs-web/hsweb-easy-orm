@@ -1,14 +1,11 @@
 package org.hswebframework.ezorm.rdb.dialect;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 
 import java.sql.JDBCType;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public abstract class DefaultDialect implements Dialect {
@@ -56,12 +53,4 @@ public abstract class DefaultDialect implements Dialect {
         return jdbcType;
     }
 
-    @Setter
-    @Getter
-    private boolean preparePagingSql = Boolean.getBoolean("easyorm.paging.prepare");
-
-    @Override
-    public String doPaging(String sql, int pageIndex, int pageSize) {
-        return doPaging(sql, pageIndex, pageSize, preparePagingSql);
-    }
 }

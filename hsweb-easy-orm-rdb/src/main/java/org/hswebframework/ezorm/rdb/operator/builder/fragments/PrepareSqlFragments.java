@@ -17,6 +17,11 @@ import java.util.List;
 @AllArgsConstructor(staticName = "of")
 public class PrepareSqlFragments implements SqlFragments {
 
+    public static PrepareSqlFragments of(String sql,Object... parameter){
+        return PrepareSqlFragments.of()
+                .addSql(sql)
+                .addParameter(parameter);
+    }
     @Override
     public boolean isEmpty() {
         return sql.isEmpty();

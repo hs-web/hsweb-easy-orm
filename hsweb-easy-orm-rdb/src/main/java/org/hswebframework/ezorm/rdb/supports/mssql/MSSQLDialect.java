@@ -94,20 +94,18 @@ public class MSSQLDialect extends DefaultDialect {
     }
 
     @Override
-    public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
-        if (!sql.contains("order") && !sql.contains("ORDER")) {
-            sql = sql.concat(" order by 1");
-        }
-        if (prepare) {
-            return sql + " OFFSET #{pageSize}*#{pageIndex}  ROWS FETCH NEXT #{pageSize} ROWS ONLY";
-        }
-        return sql.concat(" OFFSET " + (pageIndex * pageSize) + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY");
-    }
-
-    @Override
     public boolean columnToUpperCase() {
         return false;
     }
 
 
+    @Override
+    public String getId() {
+        return "microsoft-mssql-server";
+    }
+
+    @Override
+    public String getName() {
+        return "Microsoft MSSQL Server";
+    }
 }

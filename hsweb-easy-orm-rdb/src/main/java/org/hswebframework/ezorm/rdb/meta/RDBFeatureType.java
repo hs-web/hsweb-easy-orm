@@ -7,6 +7,8 @@ import org.hswebframework.ezorm.core.FeatureType;
 @Getter
 @AllArgsConstructor
 public enum RDBFeatureType implements FeatureType {
+
+    dialect("数据库方言"),
     termType("SQL条件"),
     termsType("SQL条件组合"),
 

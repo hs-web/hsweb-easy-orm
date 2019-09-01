@@ -1,13 +1,13 @@
 package org.hswebframework.ezorm.rdb.dialect;
 
+import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
-import org.hswebframework.ezorm.rdb.supports.posgres.PGSqlDialect;
+import org.hswebframework.ezorm.rdb.supports.posgres.PostgreSQLDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
@@ -19,10 +19,15 @@ import java.sql.JDBCType;
  * @see MysqlDialect
  * @see OracleDialect
  * @see H2Dialect
- * @see PGSqlDialect
+ * @see PostgreSQLDialect
  * @since 1.0
  */
-public interface Dialect {
+public interface Dialect extends Feature {
+
+    @Override
+    default RDBFeatureType getType() {
+        return RDBFeatureType.dialect;
+    }
 
     void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
 
@@ -38,12 +43,6 @@ public interface Dialect {
     }
 
     String buildDataType(RDBColumnMetadata columnMetaData);
-
-    @Deprecated
-    String doPaging(String sql, int pageIndex, int pageSize);
-
-    @Deprecated
-    String doPaging(String sql, int pageIndex, int pageSize, boolean prepare);
 
     boolean columnToUpperCase();
 
@@ -64,6 +63,6 @@ public interface Dialect {
     Dialect ORACLE = new OracleDialect();
     Dialect H2 = new H2Dialect();
     Dialect MSSQL = new MSSQLDialect();
-    Dialect POSTGRES = new PGSqlDialect();
+    Dialect POSTGRES = new PostgreSQLDialect();
 
 }

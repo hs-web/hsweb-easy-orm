@@ -8,6 +8,8 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.BuildParameterQueryOperator;
+import org.hswebframework.ezorm.rdb.supports.mssql.SqlServer2012Paginator;
+import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerPaginator;
 import org.hswebframework.ezorm.rdb.supports.oracle.OraclePaginator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,7 +75,7 @@ public class DefaultQuerySqlBuilderTest {
                 .where(dsl -> dsl.is("name", "1234").is("info.comment", "1234"))
                 .paging(0, 10);
 
-        schema.addFeature(new OraclePaginator());
+        schema.addFeature(new SqlServer2012Paginator());
 
         DefaultQuerySqlBuilder sqlBuilder = new DefaultQuerySqlBuilder(schema);
 

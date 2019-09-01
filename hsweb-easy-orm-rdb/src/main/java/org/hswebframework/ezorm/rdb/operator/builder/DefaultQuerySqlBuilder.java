@@ -42,7 +42,8 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
         fragments.addBlock(FragmentBlock.before, "select");
 
-        fragments.addBlock(FragmentBlock.selectColumn, select(parameter, metadata).orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
+        fragments.addBlock(FragmentBlock.selectColumn, select(parameter, metadata)
+                .orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
 
         fragments.addBlock(FragmentBlock.selectFrom, PrepareSqlFragments.of()
                 .addSql("from")
