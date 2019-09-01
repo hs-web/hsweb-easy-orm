@@ -20,9 +20,23 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
         {
             /* 通用查询条件 */
             registerFeature(RDBFutures.eq);
+            registerFeature(RDBFutures.not);
+            registerFeature(RDBFutures.gt);
+            registerFeature(RDBFutures.gte);
+            registerFeature(RDBFutures.lt);
+            registerFeature(RDBFutures.lte);
+            registerFeature(RDBFutures.like);
+            registerFeature(RDBFutures.nlike);
+
+            registerFeature(RDBFutures.in);
+            registerFeature(RDBFutures.notIn);
+            registerFeature(RDBFutures.between);
+            registerFeature(RDBFutures.notBetween);
+
+            registerFeature(RDBFutures.eq);
             registerFeature(RDBFutures.isNull);
             registerFeature(RDBFutures.notNull);
-            registerFeature(RDBFutures.not);
+
 
             //自动关联外键条件
             registerFeature(DefaultForeignKeyTermFragmentBuilder.INSTANCE);

@@ -19,13 +19,8 @@ public class SqlTerm extends Term {
     public SqlTerm() {
     }
 
-    public SqlTerm(String sql) {
-        this(sql, null);
-    }
-
-    public SqlTerm(String sql, Object value) {
+    public SqlTerm(String sql, Object... value) {
         this.sql = sql;
-//        setColumn(sql);
         setValue(value);
     }
 

@@ -4,10 +4,13 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 
-public class NotNullTermFragmentBuilder extends AbstractTermFragmentBuilder {
+public class NullTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    public NotNullTermFragmentBuilder(String termType, String name) {
+    private String symbol;
+
+    public NullTermFragmentBuilder(String termType, String name, boolean isNot) {
         super(termType, name);
+        symbol = isNot ? "not" : "is";
     }
 
     @Override
@@ -15,6 +18,6 @@ public class NotNullTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
         // column = ?
         return PrepareSqlFragments.of()
-                .addSql(columnFullName, "not null");
+                .addSql(columnFullName, symbol, "null");
     }
 }

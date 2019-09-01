@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.JoinFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
 
@@ -34,7 +35,8 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         registerFeature(QueryTermsFragmentBuilder.of(this));
         //注册默认的查询列构造器
         registerFeature(SelectColumnFragmentBuilder.of(this));
-
+        //JOIN
+        registerFeature(JoinFragmentBuilder.of(this));
     }
 
     public boolean isTable() {

@@ -5,24 +5,21 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+public class JoinFragmentBuilderTest {
 
-public class JoinSqlFragmentBuilderTest {
-
-    JoinSqlFragmentBuilder builder;
+    JoinFragmentBuilder builder;
 
     @Before
     public void init() {
         DefaultRDBSchemaMetadata schema = MetadataHelper.createMockSchema();
 
-        builder = JoinSqlFragmentBuilder.of(schema.getTableOrView("test").orElseThrow(NullPointerException::new));
+        builder = JoinFragmentBuilder.of(schema.getTableOrView("test").orElseThrow(NullPointerException::new));
 
     }
 

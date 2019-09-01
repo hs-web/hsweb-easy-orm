@@ -12,7 +12,7 @@ import java.util.List;
 import static java.util.Optional.*;
 
 @AllArgsConstructor(staticName = "of")
-public class JoinSqlFragmentBuilder implements QuerySqlFragmentBuilder {
+public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
 
     private TableOrViewMetadata metadata;
 
@@ -59,11 +59,11 @@ public class JoinSqlFragmentBuilder implements QuerySqlFragmentBuilder {
 
     @Override
     public String getId() {
-        return "selectJoin";
+        return RDBFutures.selectJoin;
     }
 
     @Override
     public String getName() {
-        return "表链接";
+        return "表连接";
     }
 }

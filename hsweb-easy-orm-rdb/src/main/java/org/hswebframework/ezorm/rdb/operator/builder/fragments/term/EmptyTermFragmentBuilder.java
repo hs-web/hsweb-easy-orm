@@ -4,18 +4,20 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 
-public class NotTermFragmentBuilder extends AbstractTermFragmentBuilder {
+public class EmptyTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    public NotTermFragmentBuilder(String termType, String name) {
+    private String symbol;
+
+    public EmptyTermFragmentBuilder(String termType, String name, boolean isNot) {
         super(termType, name);
+        symbol = isNot ? "=" : "!=";
     }
 
     @Override
     public PrepareSqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
 
-        // column != ?
+        // column = ?
         return PrepareSqlFragments.of()
-                .addSql(columnFullName, "!= ?")
-                .addParameter(convertValue(column, term));
+                .addSql(columnFullName, symbol, "''");
     }
 }

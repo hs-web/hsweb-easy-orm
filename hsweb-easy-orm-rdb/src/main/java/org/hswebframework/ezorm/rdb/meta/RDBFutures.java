@@ -3,10 +3,7 @@ package org.hswebframework.ezorm.rdb.meta;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EqTermFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.IsNullTermFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.NotNullTermFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.NotTermFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.*;
 
 import java.util.HashSet;
 
@@ -17,9 +14,11 @@ public interface RDBFutures {
 
     String select = "selectColumns";
 
+    String selectJoin = "selectJoin";
+
 
     static QueryTermsFragmentBuilder where(TableOrViewMetadata metadata) {
-        return QueryTermsFragmentBuilder.of(metadata,new HashSet<>());
+        return QueryTermsFragmentBuilder.of(metadata, new HashSet<>());
     }
 
     static SelectColumnFragmentBuilder select(TableOrViewMetadata metadata) {
@@ -28,13 +27,30 @@ public interface RDBFutures {
 
 
     /*查询条件*/
-    EqTermFragmentBuilder eq = new EqTermFragmentBuilder("eq", "等于");
+    SymbolTermFragmentBuilder eq = new SymbolTermFragmentBuilder("eq", "等于", "=");
 
-    NotTermFragmentBuilder not = new NotTermFragmentBuilder("not", "不等于");
+    SymbolTermFragmentBuilder not = new SymbolTermFragmentBuilder("not", "不等于", "!=");
 
-    IsNullTermFragmentBuilder isNull = new IsNullTermFragmentBuilder("isnull", "为空");
+    SymbolTermFragmentBuilder like = new SymbolTermFragmentBuilder("like", "模糊匹配", "like");
+    SymbolTermFragmentBuilder nlike = new SymbolTermFragmentBuilder("nlike", "不模糊匹配", "not like");
 
-    NotNullTermFragmentBuilder notNull = new NotNullTermFragmentBuilder("notnull", "不为空");
+
+    SymbolTermFragmentBuilder gt = new SymbolTermFragmentBuilder("gt", "大于", ">");
+    SymbolTermFragmentBuilder lt = new SymbolTermFragmentBuilder("lt", "小于", "<");
+    SymbolTermFragmentBuilder gte = new SymbolTermFragmentBuilder("gte", "大于等于", ">=");
+    SymbolTermFragmentBuilder lte = new SymbolTermFragmentBuilder("lte", "小于等于", "<=");
+
+    BetweenAndTermFragmentBuilder between = new BetweenAndTermFragmentBuilder("bwt", "在...之间", false);
+    BetweenAndTermFragmentBuilder notBetween = new BetweenAndTermFragmentBuilder("nbwt", "不在...之间", true);
+
+    InTermFragmentBuilder in = new InTermFragmentBuilder("in", "在...之中", false);
+    InTermFragmentBuilder notIn = new InTermFragmentBuilder("nin", "不在...之中", true);
+
+    EmptyTermFragmentBuilder isEmpty = new EmptyTermFragmentBuilder("empty", "为空字符", false);
+    EmptyTermFragmentBuilder notEmpty = new EmptyTermFragmentBuilder("notempty", "不为空字符", true);
+
+    NullTermFragmentBuilder isNull = new NullTermFragmentBuilder("isnull", "为null", false);
+    NullTermFragmentBuilder notNull = new NullTermFragmentBuilder("notnull", "不为null", true);
 
 
 

@@ -15,10 +15,8 @@ public abstract class AbstractTermsFragmentBuilder<T> {
         boolean termAvailable;
         boolean lastTermAvailable = false;
         for (Term term : terms) {
-
             index++;
             SqlFragments termFragments;
-
             if (term instanceof SqlTerm) {
                 termFragments = PrepareSqlFragments.of()
                         .addSql(((SqlTerm) term).getSql())
@@ -27,7 +25,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                 termFragments = createTermFragments(parameter, term);
             }
 
-            termAvailable = !termFragments.isEmpty();
+            termAvailable = termFragments.isNotEmpty();
             if (termAvailable) {
                 if (index != 1 && lastTermAvailable) {
                     //and or
@@ -41,7 +39,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             if (nest != null && !nest.isEmpty()) {
                 //递归....
                 SqlFragments nestFragments = createFragments(parameter, nest);
-                if (!nestFragments.isEmpty()) {
+                if (nestFragments.isNotEmpty()) {
                     //and or
                     if (termAvailable || lastTermAvailable) {
                         fragments.addSql(term.getType().name());

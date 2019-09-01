@@ -40,7 +40,7 @@ public class DefaultForeignKeyTermFragmentBuilder implements ForeignKeyTermFragm
                     }
                     parameter.getWhere().add(term);
                     SqlFragments fragments = builder.createFragments(parameter);
-                    if (!fragments.isEmpty()) {
+                    if (fragments.isNotEmpty()) {
                         prepareSqlFragments.addSql("and").addFragments(fragments);
                     }
                 });

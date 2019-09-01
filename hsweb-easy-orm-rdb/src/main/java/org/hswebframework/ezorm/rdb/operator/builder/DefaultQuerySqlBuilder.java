@@ -33,13 +33,19 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
     protected Optional<SqlFragments> select() {
         return metadata.<QuerySqlFragmentBuilder>getFeature(select)
                 .map(builder -> builder.createFragments(parameter))
-                .filter(sqlFragments -> !sqlFragments.isEmpty());
+                .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> where() {
-        return metadata.<QuerySqlFragmentBuilder>getFeature(RDBFutures.where)
+        return metadata.<QuerySqlFragmentBuilder>getFeature(where)
                 .map(builder -> builder.createFragments(parameter))
-                .filter(sqlFragments -> !sqlFragments.isEmpty());
+                .filter(SqlFragments::isNotEmpty);
+    }
+
+    protected Optional<SqlFragments> join() {
+        return metadata.<QuerySqlFragmentBuilder>getFeature(selectJoin)
+                .map(builder -> builder.createFragments(parameter))
+                .filter(SqlFragments::isNotEmpty);
     }
 
     @Override
@@ -55,8 +61,7 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
                 .addSql(metadata.getFullName())
                 .addSql(metadata.getName());
 
-        // TODO: 2019-08-30 JOIN
-
+        join().ifPresent(fragments::addFragments);
         //where
 
         where().ifPresent(where -> fragments.addSql("where").addFragments(where));
