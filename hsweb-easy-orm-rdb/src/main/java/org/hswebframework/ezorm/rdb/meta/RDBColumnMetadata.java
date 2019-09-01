@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.core.meta.AbstractColumnMetadata;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.ObjectType;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -138,7 +138,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         if (ownerName == null || ownerName.isEmpty()) {
             ownerName = getOwner().getName();
         }
-        return getDialect().buildColumnName(ownerName, getName());
+        return getDialect().buildColumnFullName(ownerName, getName());
     }
 
     public String getFullName() {

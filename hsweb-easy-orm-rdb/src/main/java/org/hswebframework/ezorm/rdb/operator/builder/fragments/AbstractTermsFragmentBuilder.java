@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock;
-import org.hswebframework.ezorm.rdb.utils.RDBUtils;
+import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             if (term instanceof SqlTerm) {
                 termFragments = PrepareSqlFragments.of()
                         .addSql(((SqlTerm) term).getSql())
-                        .addParameter(RDBUtils.convertList(term.getValue()));
+                        .addParameter(PropertiesUtils.convertList(term.getValue()));
             } else {
                 termFragments = createTermFragments(parameter, term);
             }
@@ -84,7 +84,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             if (term instanceof SqlTerm) {
                 termFragments = PrepareSqlFragments.of()
                         .addSql(((SqlTerm) term).getSql())
-                        .addParameter(RDBUtils.convertList(term.getValue()));
+                        .addParameter(PropertiesUtils.convertList(term.getValue()));
             } else {
                 termFragments = createTermFragments(parameter, term);
             }

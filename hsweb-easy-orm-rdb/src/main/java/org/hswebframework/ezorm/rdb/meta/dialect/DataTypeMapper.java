@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.dialect;
+package org.hswebframework.ezorm.rdb.meta.dialect;
 
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 

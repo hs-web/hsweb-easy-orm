@@ -68,7 +68,7 @@ public class BlobValueCodec implements ValueCodec<Blob, Object> {
                 } catch (IOException e) {
                     //可能不是对象
                 } catch (ClassNotFoundException e) {
-                    log.warn("blob is class,but class not found!", e);
+                    log.warn(e.getMessage(), e);
                 }
                 //转为bytes
                 return blobValue.getBytes(0, (int) blobValue.length());

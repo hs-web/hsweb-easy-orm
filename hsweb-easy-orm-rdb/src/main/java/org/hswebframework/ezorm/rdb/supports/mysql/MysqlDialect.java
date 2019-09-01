@@ -1,57 +1,36 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
-import org.hswebframework.ezorm.rdb.dialect.DefaultDialect;
-import org.hswebframework.ezorm.rdb.dialect.function.SqlFunction;
-import org.hswebframework.ezorm.rdb.dialect.AutomaticConvertValueTermTypeMapper;
+import org.hswebframework.ezorm.rdb.meta.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
-import java.util.List;
-import java.util.StringJoiner;
 
 public class MysqlDialect extends DefaultDialect {
     public MysqlDialect() {
         defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
-        setDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
-        setDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
-        setDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime(6)");
+        addDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
+        addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime(6)");
 
-        setDataTypeMapper(JDBCType.TIME, (meta) -> "time");
-        setDataTypeMapper(JDBCType.DATE, (meta) -> "date");
-        setDataTypeMapper(JDBCType.CLOB, (meta) -> "text");
-        setDataTypeMapper(JDBCType.LONGVARBINARY, (meta) -> "longblob");
-        setDataTypeMapper(JDBCType.LONGVARCHAR, (meta) -> "longtext");
-        setDataTypeMapper(JDBCType.BLOB, (meta) -> "blob");
-        setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
-        setDataTypeMapper(JDBCType.DOUBLE, (meta) -> "double");
-        setDataTypeMapper(JDBCType.INTEGER, (meta) -> "int");
-        setDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        setDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        setDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
-        setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
-        setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+        addDataTypeMapper(JDBCType.TIME, (meta) -> "time");
+        addDataTypeMapper(JDBCType.DATE, (meta) -> "date");
+        addDataTypeMapper(JDBCType.CLOB, (meta) -> "text");
+        addDataTypeMapper(JDBCType.LONGVARBINARY, (meta) -> "longblob");
+        addDataTypeMapper(JDBCType.LONGVARCHAR, (meta) -> "longtext");
+        addDataTypeMapper(JDBCType.BLOB, (meta) -> "blob");
+        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeMapper(JDBCType.DOUBLE, (meta) -> "double");
+        addDataTypeMapper(JDBCType.INTEGER, (meta) -> "int");
+        addDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
+        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
-        setJdbcTypeMapping("int", JDBCType.INTEGER);
-        setJdbcTypeMapping("year", JDBCType.TIME);
-        setJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
-        setJdbcTypeMapping("text", JDBCType.CLOB);
-
-//        installFunction(SqlFunction.concat, param -> {
-//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-//            StringJoiner joiner = new StringJoiner(",", "concat(", ")");
-//            listParam.stream().map(String::valueOf).forEach(joiner::add);
-//            return joiner.toString();
-//        });
-//
-//        installFunction(SqlFunction.bitand, param -> {
-//            List<Object> listParam = AutomaticConvertValueTermTypeMapper.convertList(param.getParam());
-//            if (listParam.isEmpty()) {
-//                throw new IllegalArgumentException("[BITAND]参数不能为空");
-//            }
-//            StringJoiner joiner = new StringJoiner("&");
-//            listParam.stream().map(String::valueOf).forEach(joiner::add);
-//            return joiner.toString();
-//        });
+        addJdbcTypeMapping("int", JDBCType.INTEGER);
+        addJdbcTypeMapping("year", JDBCType.TIME);
+        addJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
+        addJdbcTypeMapping("text", JDBCType.CLOB);
     }
 
     @Override
@@ -65,7 +44,7 @@ public class MysqlDialect extends DefaultDialect {
     }
 
     @Override
-    public boolean columnToUpperCase() {
+    public boolean isColumnToUpperCase() {
         return false;
     }
 

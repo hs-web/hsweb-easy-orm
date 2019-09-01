@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.meta;
 
 import org.hswebframework.ezorm.core.meta.AbstractDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 import java.util.Optional;
 

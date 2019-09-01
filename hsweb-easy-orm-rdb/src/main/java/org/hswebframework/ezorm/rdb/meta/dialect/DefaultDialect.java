@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.dialect;
+package org.hswebframework.ezorm.rdb.meta.dialect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
@@ -10,16 +10,17 @@ import java.util.Map;
 @Slf4j
 public abstract class DefaultDialect implements Dialect {
     protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
+
     protected DataTypeMapper defaultDataTypeMapper = null;
 
     protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
 
     @Override
-    public void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
+    public void addDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
         dataTypeMappers.put(jdbcType.getName(), mapper);
     }
 
-    public void setJdbcTypeMapping(String dataType, JDBCType jdbcType) {
+    public void addJdbcTypeMapping(String dataType, JDBCType jdbcType) {
         jdbcTypeMap.put(dataType, jdbcType);
     }
 

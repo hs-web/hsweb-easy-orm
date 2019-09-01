@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 public class OracleTableMetaParser extends RDBTableMetaParser {
     private final static String TABLE_META_SQL = "select distinct(cols.column_name) as \"name\"" +

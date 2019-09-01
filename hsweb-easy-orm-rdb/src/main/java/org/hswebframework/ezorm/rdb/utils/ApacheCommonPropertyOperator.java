@@ -16,7 +16,7 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator {
 
     private static PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
-    public static final ObjectPropertyOperator INSANCE = new ApacheCommonPropertyOperator();
+    public static final ObjectPropertyOperator INSTANCE = new ApacheCommonPropertyOperator();
 
     @Override
     public Optional<Object> getProperty(Object object, String name) {

@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.dialect;
+package org.hswebframework.ezorm.rdb.meta.dialect;
 
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
@@ -29,7 +29,9 @@ public interface Dialect extends Feature {
         return RDBFeatureType.dialect;
     }
 
-    void setDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
+    void addDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
+
+    String buildDataType(RDBColumnMetadata columnMetaData);
 
     String getQuoteStart();
 
@@ -42,18 +44,16 @@ public interface Dialect extends Feature {
         return getQuoteStart().concat(keyword).concat(getQuoteEnd());
     }
 
-    String buildDataType(RDBColumnMetadata columnMetaData);
+    boolean isColumnToUpperCase();
 
-    boolean columnToUpperCase();
-
-    default String buildColumnName(String tableName, String columnName) {
+    default String buildColumnFullName(String tableName, String columnName) {
         if (columnName.contains(".")) {
             return columnName;
         }
         if (StringUtils.isNullOrEmpty(tableName)) {
-            return StringUtils.concat(getQuoteStart(), columnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
+            return StringUtils.concat(getQuoteStart(), isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
         }
-        return StringUtils.concat(tableName, ".", getQuoteStart(), columnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
+        return StringUtils.concat(tableName, ".", getQuoteStart(), isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
     }
 
 

@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.meta;
 
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.core.meta.DefaultObjectMetaDataParser;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;

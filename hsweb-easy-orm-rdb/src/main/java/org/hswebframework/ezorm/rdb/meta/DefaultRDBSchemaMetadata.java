@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.meta;
 import org.hswebframework.ezorm.core.meta.AbstractSchemaMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.DefaultForeignKeyTermFragmentBuilder;
 
 import java.util.Arrays;

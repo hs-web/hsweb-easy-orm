@@ -47,14 +47,22 @@ public class NumberValueCodec implements ValueCodec {
 
     @Override
     public Object encode(Object value) {
-        if (StringUtils.isNullOrEmpty(value)) return null;
-        if (value instanceof Number) return value;
+        if (StringUtils.isNullOrEmpty(value)) {
+            return null;
+        }
+        if (value instanceof Number) {
+            return value;
+        }
         if (value instanceof Date) {
             value = ((Date) value).getTime();
         } else if (!StringUtils.isNumber(value)) {
+            //尝试转换字符格式的日期
             Date date = DateFormatter.fromString(String.valueOf(value));
-            if (null != date) value = date.getTime();
+            if (null != date) {
+                value = date.getTime();
+            }
         }
+
         if (StringUtils.isNumber(value)) {
             return converter.apply(new BigDecimal(String.valueOf(value)));
         }

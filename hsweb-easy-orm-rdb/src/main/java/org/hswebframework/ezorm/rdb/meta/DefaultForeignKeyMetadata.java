@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.rdb.meta;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hswebframework.ezorm.core.meta.SchemaMetadata;
 import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.List;

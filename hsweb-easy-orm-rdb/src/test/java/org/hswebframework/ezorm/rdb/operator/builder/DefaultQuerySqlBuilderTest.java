@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SimpleSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
@@ -9,8 +9,6 @@ import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.BuildParameterQueryOperator;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServer2012Paginator;
-import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerPaginator;
-import org.hswebframework.ezorm.rdb.supports.oracle.OraclePaginator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.mssql;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 /**
  * @author zhouhao

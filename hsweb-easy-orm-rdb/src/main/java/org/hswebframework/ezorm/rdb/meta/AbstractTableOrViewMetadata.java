@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.meta;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.Feature;
-import org.hswebframework.ezorm.rdb.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.JoinFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
