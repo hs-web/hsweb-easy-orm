@@ -1,7 +1,8 @@
-package org.hswebframework.ezorm.rdb.operator.dml;
+package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 
 @Getter
 @Setter

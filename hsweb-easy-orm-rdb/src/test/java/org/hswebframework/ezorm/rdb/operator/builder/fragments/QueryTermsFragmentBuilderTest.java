@@ -9,7 +9,8 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class QueryTermsFragmentBuilderTest {
 
     private SqlRequest createSqlRequest(List<Term> terms) {
 
-        ComplexQueryParameter parameter = new ComplexQueryParameter();
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
         parameter.setFrom("test");
         parameter.setWhere(terms);
 

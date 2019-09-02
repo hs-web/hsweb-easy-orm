@@ -22,7 +22,9 @@ public enum RDBFeatureType implements FeatureType {
 
 
     function("函数"),
+
     fragment("SQL片段"),
+
     foreignKeyTerm("外键关联条件");
 
     @Override
@@ -32,7 +34,7 @@ public enum RDBFeatureType implements FeatureType {
 
     private String name;
 
-    public String getFeatureId(String sortId) {
-        return getId().concat(":").concat(sortId);
+    public String getFeatureId(String suffix) {
+        return getId().concat(":").concat(suffix);
     }
 }

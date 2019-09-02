@@ -1,7 +1,8 @@
-package org.hswebframework.ezorm.rdb.operator.builder.fragments;
+package org.hswebframework.ezorm.rdb.operator.builder;
 
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 public interface Paginator extends Feature {
 

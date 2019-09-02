@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.operator.dml.ExecutableQueryOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.ExecutableQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 
 @AllArgsConstructor

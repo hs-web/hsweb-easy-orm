@@ -1,13 +1,16 @@
-package org.hswebframework.ezorm.rdb.operator.builder.fragments;
+package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
-import org.hswebframework.ezorm.rdb.operator.dml.SelectColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +32,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     }
 
     @Override
-    public SqlFragments createFragments(ComplexQueryParameter parameter) {
+    public SqlFragments createFragments(QueryOperatorParameter parameter) {
 
         List<SelectColumn> columns = parameter.getSelect();
 
@@ -64,7 +67,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
     }
 
-    public PrepareSqlFragments createFragments(ComplexQueryParameter parameter, SelectColumn column) {
+    public PrepareSqlFragments createFragments(QueryOperatorParameter parameter, SelectColumn column) {
         if (column instanceof NativeSql) {
             return PrepareSqlFragments.of()
                     .addSql(((NativeSql) column).getSql())

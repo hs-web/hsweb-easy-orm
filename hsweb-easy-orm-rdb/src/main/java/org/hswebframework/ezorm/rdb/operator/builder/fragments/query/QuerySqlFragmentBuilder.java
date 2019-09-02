@@ -1,9 +1,10 @@
-package org.hswebframework.ezorm.rdb.operator.builder.fragments;
+package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import org.hswebframework.ezorm.core.FeatureType;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 public interface QuerySqlFragmentBuilder extends Feature {
 
@@ -12,6 +13,6 @@ public interface QuerySqlFragmentBuilder extends Feature {
         return RDBFeatureType.fragment;
     }
 
-    SqlFragments createFragments(ComplexQueryParameter parameter);
+    SqlFragments createFragments(QueryOperatorParameter parameter);
 
 }

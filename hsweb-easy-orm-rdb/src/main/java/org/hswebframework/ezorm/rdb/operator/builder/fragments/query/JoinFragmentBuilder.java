@@ -1,9 +1,11 @@
-package org.hswebframework.ezorm.rdb.operator.builder.fragments;
+package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 
@@ -17,7 +19,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
     private TableOrViewMetadata metadata;
 
     @Override
-    public SqlFragments createFragments(ComplexQueryParameter parameter) {
+    public SqlFragments createFragments(QueryOperatorParameter parameter) {
 
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
@@ -40,7 +42,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
                                 target.<QuerySqlFragmentBuilder>getFeature(RDBFutures.where)
                                         .map(builder -> {
 
-                                            ComplexQueryParameter joinOnParameter = new ComplexQueryParameter();
+                                            QueryOperatorParameter joinOnParameter = new QueryOperatorParameter();
                                             joinOnParameter.setFrom(target.getName());
                                             joinOnParameter.setFromAlias(join.getAlias());
                                             joinOnParameter.getWhere().addAll(join.getTerms());

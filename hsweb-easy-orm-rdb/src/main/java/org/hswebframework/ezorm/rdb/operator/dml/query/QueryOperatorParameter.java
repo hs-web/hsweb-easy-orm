@@ -1,8 +1,9 @@
-package org.hswebframework.ezorm.rdb.operator.dml;
+package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.operator.dml.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Optional;
 
 @Getter
 @Setter
-public class ComplexQueryParameter {
+public class QueryOperatorParameter {
 
     private List<SelectColumn> select = new ArrayList<>();
 

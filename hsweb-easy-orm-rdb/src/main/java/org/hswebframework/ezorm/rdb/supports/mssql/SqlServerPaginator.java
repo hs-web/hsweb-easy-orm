@@ -2,15 +2,15 @@ package org.hswebframework.ezorm.rdb.supports.mssql;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BlockSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.Paginator;
+import org.hswebframework.ezorm.rdb.operator.builder.Paginator;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 import static org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock.*;
 
 /**
- * select top pageSize *
- * from (select row_number()
+ * column top pageSize *
+ * from (column row_number()
  * over(order by sno asc) as rownumber,*
  * from student) temp_row
  * where rownumber>((pageIndex-1)*pageSize);

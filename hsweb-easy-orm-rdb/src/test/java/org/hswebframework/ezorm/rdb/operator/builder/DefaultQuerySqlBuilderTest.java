@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SimpleSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
@@ -7,14 +9,18 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.operator.dml.BuildParameterQueryOperator;
-import org.hswebframework.ezorm.rdb.supports.mssql.SqlServer2012Paginator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.Orders;
+import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerPaginator;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlPaginator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.JDBCType;
 
+import static org.hswebframework.ezorm.rdb.operator.dml.query.Joins.*;
+import static org.hswebframework.ezorm.rdb.operator.dml.query.Orders.*;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.Selects.*;
 
 public class DefaultQuerySqlBuilderTest {
@@ -66,24 +72,23 @@ public class DefaultQuerySqlBuilderTest {
     public void test() {
         BuildParameterQueryOperator query = new BuildParameterQueryOperator();
 
-        query.select("id")
-                .select(select("info.comment").as("test"))
-                .from("test")
-                .leftJoin("detail", join -> join.as("info").on("test.id=info.id"))
-                .where(dsl -> dsl.is("name", "1234").is("info.comment", "1234"))
-                .paging(0, 10);
+//        schema.addFeature(new SqlServerPaginator());
 
-        schema.addFeature(new SqlServer2012Paginator());
+        query.select("*")
+                .from("test")
+//                .leftJoin("detail", join -> join.as("info").on("test.id=info.id"))
+//                .where(dsl -> dsl.is("name", "1234").is("info.comment", "1234"))
+                .orderBy(Orders.count("name").asc(), desc("info.comment"))
+//                .forUpdate()
+                .paging(0, 10);
 
         DefaultQuerySqlBuilder sqlBuilder = new DefaultQuerySqlBuilder(schema);
 
-        SqlRequest sqlRequest = null;
         long time = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
-            sqlRequest = sqlBuilder.build(query.getParameter());
 
-        }
-        System.out.println(System.currentTimeMillis()-time);
+        SqlRequest sqlRequest =  sqlBuilder.build(query.getParameter());
+
+        System.out.println(System.currentTimeMillis() - time);
 
         Assert.assertNotNull(sqlRequest);
         Assert.assertNotNull(sqlRequest.getSql());

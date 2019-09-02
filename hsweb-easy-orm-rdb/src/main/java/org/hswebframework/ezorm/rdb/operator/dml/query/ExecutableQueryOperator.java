@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.operator.dml;
+package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
@@ -6,8 +6,7 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
-import org.hswebframework.ezorm.rdb.operator.builder.QuerySqlBuilder;
-import org.hswebframework.ezorm.rdb.operator.dml.query.QueryResultOperator;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 
 @AllArgsConstructor
 public class ExecutableQueryOperator extends BuildParameterQueryOperator {

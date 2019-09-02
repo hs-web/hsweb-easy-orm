@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.dml;
 
+import org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +20,7 @@ public class BuildParameterQueryOperatorTest {
                 .where(dsl -> dsl.like("name", "1234"))
                 .paging(10, 0);
 
-        ComplexQueryParameter parameter = query.getParameter();
+        QueryOperatorParameter parameter = query.getParameter();
 
         Assert.assertEquals(parameter.getFrom(), "u_user");
         Assert.assertFalse(parameter.getSelect().isEmpty());

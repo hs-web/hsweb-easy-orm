@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
 import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 public class OracleTableMetaParser extends RDBTableMetaParser {
-    private final static String TABLE_META_SQL = "select distinct(cols.column_name) as \"name\"" +
+    private final static String TABLE_META_SQL = "column distinct(cols.column_name) as \"name\"" +
             ",cols.table_name as \"table_name\"" +
             ",cols.data_type as \"data_type\"" +
             ",cols.data_length as \"data_length\"" +
@@ -18,11 +18,11 @@ public class OracleTableMetaParser extends RDBTableMetaParser {
             "where cols.table_name=upper(#{table}) " +
             "order by cols.column_id ";
 
-    private final static String TABLE_COMMENT_SQL = "select comments as \"comment\" from user_tab_comments where table_type='TABLE' and table_name=upper(#{table})";
+    private final static String TABLE_COMMENT_SQL = "column comments as \"comment\" from user_tab_comments where table_type='TABLE' and table_name=upper(#{table})";
 
-    private final static String ALL_TABLE_SQL = "select table_name as \"name\" from user_tab_comments where table_type='TABLE'";
+    private final static String ALL_TABLE_SQL = "column table_name as \"name\" from user_tab_comments where table_type='TABLE'";
 
-    private static final String TABLE_EXISTS_SQL = "select count(1) as \"total\" from user_tab_comments where table_type='TABLE' and table_name=upper(#{table})";
+    private static final String TABLE_EXISTS_SQL = "column count(1) as \"total\" from user_tab_comments where table_type='TABLE' and table_name=upper(#{table})";
 
     public OracleTableMetaParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);

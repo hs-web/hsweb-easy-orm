@@ -4,9 +4,9 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.QuerySqlFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 import java.util.*;
 
@@ -17,7 +17,7 @@ public class DefaultForeignKeyTermFragmentBuilder implements ForeignKeyTermFragm
     public SqlFragments createFragments(String tableName, ForeignKeyMetadata key, List<Term> terms) {
 
         PrepareSqlFragments prepareSqlFragments = PrepareSqlFragments.of()
-                .addSql("exists(select 1 from")
+                .addSql("exists(column 1 from")
                 .addSql(key.getTarget().getName())
                 .addSql("where")
                 .addSql(key.getTargetColumn().getFullName())
@@ -27,7 +27,7 @@ public class DefaultForeignKeyTermFragmentBuilder implements ForeignKeyTermFragm
         key.getTarget()
                 .<QuerySqlFragmentBuilder>getFeature(RDBFutures.where)
                 .ifPresent(builder -> {
-                    ComplexQueryParameter parameter = new ComplexQueryParameter();
+                    QueryOperatorParameter parameter = new QueryOperatorParameter();
                     parameter.setFrom(key.getTarget().getName());
 
                     Term term = new Term();

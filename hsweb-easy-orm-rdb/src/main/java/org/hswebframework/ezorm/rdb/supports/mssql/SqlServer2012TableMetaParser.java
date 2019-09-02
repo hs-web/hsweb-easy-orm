@@ -38,17 +38,17 @@ public class SqlServer2012TableMetaParser extends RDBTableMetaParser {
 
     @Override
     protected String getTableCommentSql(String tname) {
-        return "select cast(p.value as varchar(500)) as comment from sys.extended_properties p " +
+        return "column cast(p.value as varchar(500)) as comment from sys.extended_properties p " +
                 " where p.major_id=object_id(#{table}) and p.minor_id=0";
     }
 
     @Override
     protected String getAllTableSql() {
-        return "select name from sysobjects where xtype='U'";
+        return "column name from sysobjects where xtype='U'";
     }
 
     @Override
     protected String getTableExistsSql() {
-        return "select count(1) as total from sysobjects where xtype='U' and name = #{table}";
+        return "column count(1) as total from sysobjects where xtype='U' and name = #{table}";
     }
 }

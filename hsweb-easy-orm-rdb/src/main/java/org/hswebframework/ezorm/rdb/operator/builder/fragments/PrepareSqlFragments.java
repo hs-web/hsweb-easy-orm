@@ -32,6 +32,9 @@ public class PrepareSqlFragments implements SqlFragments {
     private List<Object> parameters = new ArrayList<>(8);
 
     public void removeLastSql() {
+        if(sql.isEmpty()){
+            return;
+        }
         sql.remove(sql.size() - 1);
     }
 

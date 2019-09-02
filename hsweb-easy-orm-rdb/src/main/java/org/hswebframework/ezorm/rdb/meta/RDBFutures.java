@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.meta;
 
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.*;
 
@@ -15,6 +15,7 @@ public interface RDBFutures {
     String select = "selectColumns";
 
     String selectJoin = "selectJoin";
+    String orderBy = "orderBy";
 
 
     static QueryTermsFragmentBuilder where(TableOrViewMetadata metadata) {

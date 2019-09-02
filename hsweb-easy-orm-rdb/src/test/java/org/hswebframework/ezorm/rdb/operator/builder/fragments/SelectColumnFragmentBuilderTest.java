@@ -5,9 +5,10 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
-import org.hswebframework.ezorm.rdb.operator.dml.SelectColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +74,7 @@ public class SelectColumnFragmentBuilderTest {
         SelectColumn name = new SelectColumn();
         name.setColumn("detail.comment");
 
-        ComplexQueryParameter parameter = new ComplexQueryParameter();
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
         parameter.setSelect(Arrays.asList(column,name));
         parameter.setJoins(Arrays.asList(join));
 
@@ -91,7 +92,7 @@ public class SelectColumnFragmentBuilderTest {
         column.setFunction("count");
         column.setOpts(Collections.singletonMap("arg","1"));
 
-        ComplexQueryParameter parameter = new ComplexQueryParameter();
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
         parameter.setSelect(Arrays.asList(column));
 
         SqlFragments fragments = builder.createFragments(parameter);
@@ -110,7 +111,7 @@ public class SelectColumnFragmentBuilderTest {
         SelectColumn name = new SelectColumn();
         name.setColumn("name");
         name.setAlias("_name");
-        ComplexQueryParameter parameter = new ComplexQueryParameter();
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
         parameter.setSelect(Arrays.asList(column,name));
 
         SqlFragments fragments = builder.createFragments(parameter);

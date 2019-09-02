@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
 import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 public class MysqlTableMetaParser extends RDBTableMetaParser {
-    private static final String TABLE_META_SQL = " select " +
+    private static final String TABLE_META_SQL = " column " +
             "column_name as `name`, " +
             "data_type as `data_type`, " +
             "character_maximum_length as `data_length`, " +
@@ -15,13 +15,13 @@ public class MysqlTableMetaParser extends RDBTableMetaParser {
             "case when is_nullable='YES' then 0 else 1 end as 'not-null' " +
             "from information_schema.columns where table_schema=%s and table_name=#{table}";
 
-    private static final String TABLE_COMMENT_SQL = " select " +
+    private static final String TABLE_COMMENT_SQL = " column " +
             "table_comment as `comment` " +
             "from information_schema.tables where table_schema=%s and table_name=#{table}";
 
-    private static final String ALL_TABLE_SQL = "select table_name as `name` from information_schema.`TABLES` where table_schema=%s";
+    private static final String ALL_TABLE_SQL = "column table_name as `name` from information_schema.`TABLES` where table_schema=%s";
 
-    private static final String TABLE_EXISTS_SQL = "select count(1) as 'total' from information_schema.`TABLES` where table_schema=%s and table_name=#{table}";
+    private static final String TABLE_EXISTS_SQL = "column count(1) as 'total' from information_schema.`TABLES` where table_schema=%s and table_name=#{table}";
 
     public MysqlTableMetaParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);

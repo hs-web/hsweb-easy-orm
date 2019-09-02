@@ -4,29 +4,29 @@ import org.hswebframework.ezorm.rdb.meta.RDBFutures;
 
 public interface Selects {
 
-    static SelectOperator select(String name) {
-        return new SelectOperator(name);
+    static SelectColumnOperator column(String name) {
+        return new SelectColumnOperator(name);
     }
 
-    static SelectOperator sum(String name) {
-        return new SelectOperator(name, RDBFutures.sum.getFunction());
+    static SelectColumnOperator sum(String name) {
+        return new SelectColumnOperator(name, RDBFutures.sum.getFunction());
     }
 
-    static SelectOperator count(String name) {
-        return new SelectOperator(name, RDBFutures.count.getFunction());
+    static SelectColumnOperator count(String name) {
+        return new SelectColumnOperator(name, RDBFutures.count.getFunction());
     }
 
-    static SelectOperator max(String name) {
-        return new SelectOperator(name, RDBFutures.max.getFunction());
+    static SelectColumnOperator max(String name) {
+        return new SelectColumnOperator(name, RDBFutures.max.getFunction());
     }
 
-    static SelectOperator min(String name) {
-        return new SelectOperator(name, RDBFutures.min.getFunction());
+    static SelectColumnOperator min(String name) {
+        return new SelectColumnOperator(name, RDBFutures.min.getFunction());
     }
 
 
-    static SelectOperator avg(String name) {
-        return new SelectOperator(name, RDBFutures.avg.getFunction());
+    static SelectColumnOperator avg(String name) {
+        return new SelectColumnOperator(name, RDBFutures.avg.getFunction());
     }
 
 

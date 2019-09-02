@@ -45,7 +45,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectSingle() {
-        Map<String, Object> data = executor.select(prepare("select 1 as data"), singleMap());
+        Map<String, Object> data = executor.select(prepare("column 1 as data"), singleMap());
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }
@@ -53,7 +53,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectPrepare() {
-        Map<String, Object> data = executor.select(prepare("select 1 as data where 1 = ?", 1), singleMap());
+        Map<String, Object> data = executor.select(prepare("column 1 as data where 1 = ?", 1), singleMap());
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }
@@ -61,7 +61,7 @@ public class JdbcSyncSqlExecutorTest {
     @SneakyThrows
     @Test
     public void testSelectTemplate() {
-        Map<String, Object> data = executor.select(template("select 1 as data where 1 = #{id}", Collections.singletonMap("id", 1)), singleMap());
+        Map<String, Object> data = executor.select(template("column 1 as data where 1 = #{id}", Collections.singletonMap("id", 1)), singleMap());
         Assert.assertNotNull(data);
         Assert.assertEquals(data.get("DATA"), 1);
     }

@@ -8,14 +8,17 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.JoinOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
  * database
  * .dml()
  * .query()
- * .select(count("id","total"))
+ * .column(count("id","total"))
  * .from("user")
  * .where(dsl->dsl.is("name","1"))
  * .execute()
@@ -26,9 +29,14 @@ public abstract class QueryOperator {
 
     public abstract QueryOperator select(String... columns);
 
-    public abstract QueryOperator select(StaticMethodReferenceColumn... columns);
+    @SafeVarargs
+    public final <T> QueryOperator select(StaticMethodReferenceColumn<T>... columns) {
+        return select(Arrays.stream(columns)
+                .map(StaticMethodReferenceColumn::getColumn)
+                .toArray(String[]::new));
+    }
 
-    public abstract QueryOperator select(MethodReferenceColumn... columns);
+    public abstract QueryOperator select(MethodReferenceColumn<?>... columns);
 
     public abstract QueryOperator select(SelectColumn... column);
 
@@ -80,8 +88,15 @@ public abstract class QueryOperator {
         return join(operator.get());
     }
 
-    public abstract QueryOperator orderBy(Operator... operators);
+    @SafeVarargs
+    public final QueryOperator orderBy(Operator<SortOrder>... operators) {
+        for (Operator<SortOrder> operator : operators) {
+            orderBy(operator.get());
+        }
+        return this;
+    }
 
+    public abstract QueryOperator orderBy(SortOrder... operators);
 
     public abstract QueryOperator groupBy(Operator... operators);
 

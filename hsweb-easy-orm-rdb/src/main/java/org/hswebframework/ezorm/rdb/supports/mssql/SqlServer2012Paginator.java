@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.mssql;
 
 import org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BlockSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.Paginator;
+import org.hswebframework.ezorm.rdb.operator.builder.Paginator;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 

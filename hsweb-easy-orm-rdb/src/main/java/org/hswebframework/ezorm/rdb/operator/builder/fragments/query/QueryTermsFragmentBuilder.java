@@ -1,11 +1,15 @@
-package org.hswebframework.ezorm.rdb.operator.builder.fragments;
+package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFutures;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 
 import java.util.*;
@@ -13,7 +17,7 @@ import java.util.*;
 import static org.hswebframework.ezorm.rdb.meta.RDBFeatureType.*;
 
 @AllArgsConstructor(staticName = "of")
-public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<ComplexQueryParameter> implements QuerySqlFragmentBuilder {
+public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<QueryOperatorParameter> implements QuerySqlFragmentBuilder {
 
     private TableOrViewMetadata metaData;
 
@@ -33,7 +37,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Comp
         return "条件";
     }
 
-    protected SqlFragments createTermFragments(ComplexQueryParameter parameter, Term term) {
+    protected SqlFragments createTermFragments(QueryOperatorParameter parameter, Term term) {
         String columnName = term.getColumn();
         if (columnName == null) {
             return EmptySqlFragments.INSTANCE;
@@ -79,7 +83,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Comp
     }
 
     @Override
-    public SqlFragments createFragments(ComplexQueryParameter parameter) {
+    public SqlFragments createFragments(QueryOperatorParameter parameter) {
         return createFragments(parameter, parameter.getWhere());
     }
 }

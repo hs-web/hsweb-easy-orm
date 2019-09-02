@@ -3,7 +3,8 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class JoinFragmentBuilderTest {
 
     @Test
     public void test(){
-        ComplexQueryParameter parameter=new ComplexQueryParameter();
+        QueryOperatorParameter parameter=new QueryOperatorParameter();
         Join join=new Join();
         join.setTarget("detail");
         join.setAlias("_detail");
@@ -40,7 +41,7 @@ public class JoinFragmentBuilderTest {
 
     @Test
     public void testTerm(){
-        ComplexQueryParameter parameter=new ComplexQueryParameter();
+        QueryOperatorParameter parameter=new QueryOperatorParameter();
         Join join=new Join();
         join.setTarget("detail");
         join.setAlias("_detail");

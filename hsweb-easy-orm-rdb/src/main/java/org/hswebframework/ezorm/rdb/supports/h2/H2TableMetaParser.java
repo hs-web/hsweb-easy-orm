@@ -19,7 +19,7 @@ public class H2TableMetaParser extends RDBTableMetaParser {
             "SELECT remarks as \"comment\" " +
                     "FROM information_schema.tables WHERE table_type='TABLE' and table_name=upper(#{table}) and table_schema=%s";
     private static final String ALL_TABLE_SQL =
-            "select table_name as \"name\" " +
+            "column table_name as \"name\" " +
                     "FROM information_schema.tables where table_type='TABLE' and table_schema=%s";
 
     private static final String TABLE_EXISTS_SQL = "SELECT count(1) as \"total\" FROM information_schema.columns " +

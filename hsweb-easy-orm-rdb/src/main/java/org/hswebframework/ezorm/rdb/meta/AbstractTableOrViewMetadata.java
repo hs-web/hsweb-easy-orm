@@ -4,9 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.JoinFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.QueryTermsFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SelectColumnFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SortOrderFragmentBuilder;
 
 import java.util.*;
 import java.util.function.Function;
@@ -37,6 +38,8 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         addFeature(SelectColumnFragmentBuilder.of(this));
         //JOIN
         addFeature(JoinFragmentBuilder.of(this));
+        //order
+        addFeature(SortOrderFragmentBuilder.of(this));
     }
 
     public boolean isTable() {

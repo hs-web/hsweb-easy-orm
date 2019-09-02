@@ -5,7 +5,9 @@ import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
-import org.hswebframework.ezorm.rdb.operator.dml.ComplexQueryParameter;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 import java.util.Optional;
 
@@ -19,25 +21,31 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         this.schema = schema;
     }
 
-    protected Optional<SqlFragments> select(ComplexQueryParameter parameter, TableOrViewMetadata metadata) {
+    protected Optional<SqlFragments> select(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.<QuerySqlFragmentBuilder>getFeature(select)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }
 
-    protected Optional<SqlFragments> where(ComplexQueryParameter parameter, TableOrViewMetadata metadata) {
+    protected Optional<SqlFragments> where(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.<QuerySqlFragmentBuilder>getFeature(where)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }
 
-    protected Optional<SqlFragments> join(ComplexQueryParameter parameter, TableOrViewMetadata metadata) {
+    protected Optional<SqlFragments> join(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.<QuerySqlFragmentBuilder>getFeature(selectJoin)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }
 
-    protected SqlRequest build(TableOrViewMetadata metadata, ComplexQueryParameter parameter) {
+    protected Optional<SqlFragments> orderBy(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
+        return metadata.<QuerySqlFragmentBuilder>getFeature(orderBy)
+                .map(builder -> builder.createFragments(parameter))
+                .filter(SqlFragments::isNotEmpty);
+    }
+
+    protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
         BlockSqlFragments fragments = BlockSqlFragments.of();
 
         fragments.addBlock(FragmentBlock.before, "select");
@@ -64,6 +72,11 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
         //having
 
+        //order by
+        orderBy(parameter,metadata)
+                .ifPresent(order-> fragments.addBlock(FragmentBlock.orderBy,"order by")
+                        .addBlock(FragmentBlock.orderBy, order));
+
         if (Boolean.TRUE.equals(parameter.getForUpdate())) {
             fragments.addBlock(FragmentBlock.after, PrepareSqlFragments.of().addSql("for update"));
         }
@@ -79,7 +92,7 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
     }
 
     @Override
-    public SqlRequest build(ComplexQueryParameter parameter) {
+    public SqlRequest build(QueryOperatorParameter parameter) {
         String from = parameter.getFrom();
         if (from == null || from.isEmpty()) {
             throw new UnsupportedOperationException("from table or view not set");
