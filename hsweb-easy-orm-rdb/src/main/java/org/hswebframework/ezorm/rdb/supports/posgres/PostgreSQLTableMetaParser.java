@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
 import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 public class PostgreSQLTableMetaParser extends RDBTableMetaParser {
-    private static final String TABLE_META_SQL = "column column_name as \"name\"" +
+    private static final String TABLE_META_SQL = "select column_name as \"name\"" +
             " , udt_name as \"data_type\"" +
             " , character_maximum_length as \"data_length\"" +
             " , numeric_precision as \"data_precision\"" +
@@ -18,14 +18,14 @@ public class PostgreSQLTableMetaParser extends RDBTableMetaParser {
             " and table_schema = %s" +
             " and table_name = #{table}";
 
-    private static final String TABLE_COMMENT_SQL = "column cast(obj_description(relfilenode,'pg_class') as varchar)" +
+    private static final String TABLE_COMMENT_SQL = "select cast(obj_description(relfilenode,'pg_class') as varchar)" +
             "  as \"comment\" from pg_class c" +
             " where relname=#{table} and relkind = 'r' and relname not like 'pg_%'" +
             " and relname not like 'sql_%'";
 
-    private static final String ALL_TABLE_SQL = "column table_name as \"name\" from information_schema.TABLES where table_schema=%s";
+    private static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=%s";
 
-    private static final String TABLE_EXISTS_SQL = "column count(1) as total from information_schema.TABLES where table_schema=%s and table_name=#{table}";
+    private static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=%s and table_name=#{table}";
 
     public PostgreSQLTableMetaParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);

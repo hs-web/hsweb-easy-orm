@@ -57,7 +57,7 @@ public class JdbcReactiveSqlExecutorTest {
                 .expectNext(10)
                 .verifyComplete();
 
-        Mono<Long> data = sqlExecutor.select(Mono.just(of("column * from test")), map())
+        Mono<Long> data = sqlExecutor.select(Mono.just(of("select * from test")), map())
                 .doOnError(Throwable::printStackTrace)
                 .map(map -> map.get("ID"))
                 .count();
@@ -68,7 +68,7 @@ public class JdbcReactiveSqlExecutorTest {
 
         Mono<Long> count = sqlExecutor.select(Flux.range(0,10)
                 .map(String::valueOf)
-                .map(num->of("column * from test where id = ?",num)), map())
+                .map(num->of("select * from test where id = ?",num)), map())
                 .doOnError(Throwable::printStackTrace)
                 .map(map -> map.get("ID"))
                 .count();
