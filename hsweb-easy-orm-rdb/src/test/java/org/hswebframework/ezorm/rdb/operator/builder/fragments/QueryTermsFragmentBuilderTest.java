@@ -5,8 +5,8 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
@@ -29,8 +29,8 @@ public class QueryTermsFragmentBuilderTest {
 
     @Before
     public void init() {
-        DefaultRDBDatabaseMetadata database = new DefaultRDBDatabaseMetadata(Dialect.H2);
-        DefaultRDBSchemaMetadata schema = new DefaultRDBSchemaMetadata();
+        RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
+        RDBSchemaMetadata schema = new RDBSchemaMetadata();
         schema.setName("DEFAULT");
 
         database.setCurrentSchema(schema);

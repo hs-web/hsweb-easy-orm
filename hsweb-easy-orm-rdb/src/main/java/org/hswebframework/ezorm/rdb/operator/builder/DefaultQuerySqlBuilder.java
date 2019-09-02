@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
@@ -15,9 +15,9 @@ import static org.hswebframework.ezorm.rdb.meta.RDBFutures.*;
 
 public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
-    protected DefaultRDBSchemaMetadata schema;
+    protected RDBSchemaMetadata schema;
 
-    public DefaultQuerySqlBuilder(DefaultRDBSchemaMetadata schema) {
+    public DefaultQuerySqlBuilder(RDBSchemaMetadata schema) {
         this.schema = schema;
     }
 

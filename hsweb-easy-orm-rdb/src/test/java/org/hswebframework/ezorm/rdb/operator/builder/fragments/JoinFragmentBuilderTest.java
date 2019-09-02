@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.core.param.SqlTerm;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
@@ -18,7 +18,7 @@ public class JoinFragmentBuilderTest {
 
     @Before
     public void init() {
-        DefaultRDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
 
         builder = JoinFragmentBuilder.of(schema.getTableOrView("test").orElseThrow(NullPointerException::new));
 

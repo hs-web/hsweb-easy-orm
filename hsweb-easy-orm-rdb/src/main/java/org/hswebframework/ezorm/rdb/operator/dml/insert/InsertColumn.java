@@ -8,5 +8,5 @@ import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 @Setter
 public class InsertColumn extends FunctionColumn {
 
-    private Object value;
+
 }

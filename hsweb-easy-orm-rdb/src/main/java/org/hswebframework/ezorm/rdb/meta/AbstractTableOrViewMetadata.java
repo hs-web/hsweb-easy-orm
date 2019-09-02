@@ -23,7 +23,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     private String alias;
 
-    private DefaultRDBSchemaMetadata schema;
+    private RDBSchemaMetadata schema;
 
     private final Map<String, RDBColumnMetadata> allColumns = new HashMap<>();
 
@@ -57,7 +57,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     }
 
     @Override
-    public DefaultRDBSchemaMetadata getSchema() {
+    public RDBSchemaMetadata getSchema() {
         return schema;
     }
 
@@ -150,7 +150,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         return foreignKeyMetadata;
     }
 
-    private Optional<RDBColumnMetadata> findColumnFromSchema(DefaultRDBSchemaMetadata schema, String tableName, String column) {
+    private Optional<RDBColumnMetadata> findColumnFromSchema(RDBSchemaMetadata schema, String tableName, String column) {
         return of(schema.getTableOrView(tableName)
                 .flatMap(meta -> meta.getColumn(column)))
                 .filter(Optional::isPresent)

@@ -48,16 +48,8 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
     }
 
     private Object convertValue(RDBColumnMetadata column, Object val) {
-        if (column == null) {
-            return val;
-        }
-        if (column.getValueCodec() != null) {
-            val = column.getValueCodec().encode(val);
-        }
-        if (column.getDictionaryCodec() != null) {
-            val = column.getDictionaryCodec().encode(val);
-        }
-        return val;
+
+        return column.encode(val);
     }
 
     protected Object convertValue(RDBColumnMetadata column, Term term) {

@@ -1,11 +1,10 @@
 package org.hswebframework.ezorm.rdb.operator;
 
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
 
 public interface DatabaseOperator {
 
-    DefaultRDBDatabaseMetadata getMetadata();
+    RDBDatabaseMetadata getMetadata();
 
     DMLOperator dml();
 

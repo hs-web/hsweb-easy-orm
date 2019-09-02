@@ -35,10 +35,10 @@ public interface DictionaryCodec {
     String getFieldName();
 
     /**
-     * 将提交的数据,转换为目标数据
+     * 将提交的数据,转换为数据库存储的数据
      *
      * @param value 提交的数据
-     * @return 转换结果
+     * @return 数据库存储的数据
      */
     Object encode(Object value);
 

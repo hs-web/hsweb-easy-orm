@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
+public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     private List<ObjectType> allObjectType = Arrays.asList(RDBObjectType.table, RDBObjectType.view);
 
 
-    public DefaultRDBSchemaMetadata() {
+    public RDBSchemaMetadata() {
         {
             /* 通用查询条件 */
             addFeature(RDBFutures.eq);
@@ -57,8 +57,8 @@ public class DefaultRDBSchemaMetadata extends AbstractSchemaMetadata {
 
     @Override
     @SuppressWarnings("all")
-    public DefaultRDBDatabaseMetadata getDatabase() {
-        return ((DefaultRDBDatabaseMetadata) super.getDatabase());
+    public RDBDatabaseMetadata getDatabase() {
+        return ((RDBDatabaseMetadata) super.getDatabase());
     }
 
     public Optional<RDBTableMetadata> getTable(String name) {

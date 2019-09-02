@@ -12,6 +12,8 @@ public class InsertOperatorParameter {
 
     private String into;
 
-    private List<List<InsertColumn>> values = new ArrayList<>();
+    private List<InsertColumn> columns = new ArrayList<>();
+
+    private List<List<Object>> values = new ArrayList<>();
 
 }

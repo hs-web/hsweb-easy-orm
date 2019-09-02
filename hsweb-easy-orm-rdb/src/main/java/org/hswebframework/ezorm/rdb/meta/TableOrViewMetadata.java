@@ -23,7 +23,7 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     /**
      * @return 元数据所在schema
      */
-    DefaultRDBSchemaMetadata getSchema();
+    RDBSchemaMetadata getSchema();
 
     /**
      * @return 获取当前表或者视图所有列

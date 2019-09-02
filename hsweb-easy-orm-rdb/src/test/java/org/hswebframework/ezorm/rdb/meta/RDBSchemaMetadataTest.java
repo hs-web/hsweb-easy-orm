@@ -11,17 +11,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefaultRDBSchemaMetadataTest {
+public class RDBSchemaMetadataTest {
 
     public SyncSqlExecutor executor;
 
-    private DefaultRDBSchemaMetadata schema;
+    private RDBSchemaMetadata schema;
 
     @Before
     public void init() {
-        DefaultRDBDatabaseMetadata database = new DefaultRDBDatabaseMetadata(Dialect.H2);
+        RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
 
-        schema = new DefaultRDBSchemaMetadata();
+        schema = new RDBSchemaMetadata();
         schema.setName("PUBLIC");
         schema.setDatabase(database);
         executor = new TestSyncSqlExecutor(new H2ConnectionProvider());

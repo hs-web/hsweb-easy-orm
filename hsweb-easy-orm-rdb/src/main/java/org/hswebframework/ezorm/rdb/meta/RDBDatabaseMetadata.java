@@ -5,10 +5,10 @@ import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
 
 import java.util.Optional;
 
-public class DefaultRDBDatabaseMetadata extends AbstractDatabaseMetadata<DefaultRDBSchemaMetadata> {
+public class RDBDatabaseMetadata extends AbstractDatabaseMetadata<RDBSchemaMetadata> {
     protected Dialect dialect;
 
-    public DefaultRDBDatabaseMetadata(Dialect dialect) {
+    public RDBDatabaseMetadata(Dialect dialect) {
         this.dialect = dialect;
     }
 
@@ -17,11 +17,11 @@ public class DefaultRDBDatabaseMetadata extends AbstractDatabaseMetadata<Default
     }
 
     public Optional<TableOrViewMetadata> getTableOrView(String name) {
-        return this.getObject(name, DefaultRDBSchemaMetadata::getTableOrView);
+        return this.getObject(name, RDBSchemaMetadata::getTableOrView);
     }
 
     @Override
-    public void addSchema(DefaultRDBSchemaMetadata schema) {
+    public void addSchema(RDBSchemaMetadata schema) {
         schema.setDatabase(this);
         super.addSchema(schema);
     }

@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import reactor.core.publisher.Flux;
@@ -16,7 +16,7 @@ import java.util.concurrent.CompletionStage;
 public class QueryResultOperator<E, R> implements ResultOperator<E, R> {
 
     private SqlRequest sqlRequest;
-    private DefaultRDBDatabaseMetadata metadata;
+    private RDBDatabaseMetadata metadata;
     private ResultWrapper<E, R> wrapper;
 
     public QueryResultOperator(SqlRequest sqlRequest,

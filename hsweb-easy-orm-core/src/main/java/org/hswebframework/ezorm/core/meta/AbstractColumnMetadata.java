@@ -32,6 +32,34 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
         return alias;
     }
 
+    public Object decode(Object data) {
+        if (data == null) {
+            return null;
+        }
+        if (valueCodec != null) {
+            data = valueCodec.decode(data);
+        }
+        if (dictionaryCodec != null) {
+            data = dictionaryCodec.decode(data);
+        }
+
+        return data;
+    }
+
+    public Object encode(Object data) {
+        if (data == null) {
+            return null;
+        }
+        if (valueCodec != null) {
+            data = valueCodec.encode(data);
+        }
+        if (dictionaryCodec != null) {
+            data = dictionaryCodec.encode(data);
+        }
+
+        return data;
+    }
+
     @Override
     public PropertyWrapper getProperty(String property) {
         return new SimplePropertyWrapper(properties.get(property));

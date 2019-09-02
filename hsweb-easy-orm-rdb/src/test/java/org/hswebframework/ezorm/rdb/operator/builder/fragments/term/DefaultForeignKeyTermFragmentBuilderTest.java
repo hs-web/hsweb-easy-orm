@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.DefaultRDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.meta.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
@@ -25,7 +25,7 @@ public class DefaultForeignKeyTermFragmentBuilderTest {
     public void init() {
 
 
-        DefaultRDBSchemaMetadata metadata = MetadataHelper.createMockSchema();
+        RDBSchemaMetadata metadata = MetadataHelper.createMockSchema();
 
 
         builder = new DefaultForeignKeyTermFragmentBuilder();
