@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 
-public interface DatabaseMetadata<S extends SchemaMetadata> extends ObjectMetadata {
+public interface DatabaseMetadata<S extends SchemaMetadata> extends ObjectMetadata,FeatureSupportedMetadata {
 
     String getName();
 

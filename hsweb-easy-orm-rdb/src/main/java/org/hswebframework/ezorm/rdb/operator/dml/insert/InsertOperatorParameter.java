@@ -10,8 +10,6 @@ import java.util.List;
 @Setter
 public class InsertOperatorParameter {
 
-    private String into;
-
     private List<InsertColumn> columns = new ArrayList<>();
 
     private List<List<Object>> values = new ArrayList<>();

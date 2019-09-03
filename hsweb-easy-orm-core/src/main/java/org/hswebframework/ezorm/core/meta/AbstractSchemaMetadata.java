@@ -91,4 +91,11 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     public void addFeature(Feature feature) {
         features.put(feature.getId(), feature);
     }
+
+    public <T extends Feature> Optional<T> findFeature(String id) {
+        return of(this.<T>getFeature(id))
+                .filter(Optional::isPresent)
+                .orElseGet(() -> getDatabase().getFeature(id));
+    }
+
 }

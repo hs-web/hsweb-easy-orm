@@ -9,4 +9,11 @@ import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 public class InsertColumn extends FunctionColumn {
 
 
+    public static InsertColumn of(String column){
+        InsertColumn insertColumn=new InsertColumn();
+
+        insertColumn.setColumn(column);
+
+        return insertColumn;
+    }
 }

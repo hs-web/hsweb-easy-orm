@@ -36,7 +36,6 @@ public class BatchInsertSqlBuilderTest {
             insert.getColumns().add(column);
         }
 
-        insert.setInto("test");
         insert.getValues().add(Arrays.asList("1", "2"));
         insert.getValues().add(Arrays.asList("3", "4"));
 

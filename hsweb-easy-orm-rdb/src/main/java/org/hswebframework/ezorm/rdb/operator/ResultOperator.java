@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator;
 
-import reactor.core.publisher.Flux;
+import org.reactivestreams.Publisher;
 
 import java.util.concurrent.CompletionStage;
 
@@ -10,6 +10,6 @@ public interface ResultOperator<E, R> {
 
     CompletionStage<R> async();
 
-    Flux<E> reactive();
+    Publisher<E> reactive();
 
 }

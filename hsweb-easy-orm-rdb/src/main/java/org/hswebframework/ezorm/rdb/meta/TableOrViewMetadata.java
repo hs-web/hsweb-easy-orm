@@ -85,7 +85,7 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     default <T extends Feature> Optional<T> findFeature(String id) {
         return of(this.<T>getFeature(id))
                 .filter(Optional::isPresent)
-                .orElseGet(() -> getSchema().getFeature(id));
+                .orElseGet(() -> getSchema().findFeature(id));
     }
 
     default List<Feature> findFeatures(Predicate<Feature> predicate) {

@@ -22,7 +22,7 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
     }
 
     @Override
-    public <E, R> ResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
+    public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
         String from = this.getParameter().getFrom();
         TableOrViewMetadata tableOrViewMetadata = metadata
                 .getTableOrView(this.getParameter().getFrom())
