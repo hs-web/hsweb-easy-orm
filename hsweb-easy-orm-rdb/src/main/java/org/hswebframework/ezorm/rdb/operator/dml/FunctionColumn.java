@@ -12,6 +12,6 @@ public class FunctionColumn {
 
     private String function;
 
-    private Map<String, String> opts;
+    private Map<String, Object> opts;
 
 }

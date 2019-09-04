@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.dml;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
@@ -10,9 +11,11 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.JoinOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
+import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * database
@@ -41,8 +44,8 @@ public abstract class QueryOperator {
     public abstract QueryOperator select(SelectColumn... column);
 
     @SafeVarargs
-    public final QueryOperator select(Operator<SelectColumn>... operators) {
-        for (Operator<SelectColumn> operator : operators) {
+    public final QueryOperator select(Supplier<SelectColumn>... operators) {
+        for (Supplier<SelectColumn> operator : operators) {
             select(operator.get());
         }
         return this;
@@ -52,13 +55,21 @@ public abstract class QueryOperator {
 
     public abstract QueryOperator where(Consumer<Conditional<?>> conditionalConsumer);
 
-    public abstract QueryOperator where(Operator... condition);
+    public abstract QueryOperator where(Term term);
+
+    @SafeVarargs
+    public final QueryOperator where(Supplier<Term>... condition) {
+        for (Supplier<Term> operator : condition) {
+            where(operator.get());
+        }
+        return this;
+    }
 
     public abstract QueryOperator join(Join... on);
 
     @SafeVarargs
-    public final QueryOperator join(Operator<Join>... on) {
-        for (Operator<Join> joinOperator : on) {
+    public final QueryOperator join(Supplier<Join>... on) {
+        for (Supplier<Join> joinOperator : on) {
             join(joinOperator.get());
         }
         return this;
@@ -89,8 +100,8 @@ public abstract class QueryOperator {
     }
 
     @SafeVarargs
-    public final QueryOperator orderBy(Operator<SortOrder>... operators) {
-        for (Operator<SortOrder> operator : operators) {
+    public final QueryOperator orderBy(Supplier<SortOrder>... operators) {
+        for (Supplier<SortOrder> operator : operators) {
             orderBy(operator.get());
         }
         return this;

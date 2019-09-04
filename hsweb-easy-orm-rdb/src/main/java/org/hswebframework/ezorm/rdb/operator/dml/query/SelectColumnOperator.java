@@ -1,8 +1,9 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
-import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 
-public class SelectColumnOperator implements Operator<SelectColumn> {
+import java.util.function.Supplier;
+
+public class SelectColumnOperator implements Supplier<SelectColumn> {
     private SelectColumn column = new SelectColumn();
 
     public SelectColumnOperator(String name){
@@ -17,7 +18,7 @@ public class SelectColumnOperator implements Operator<SelectColumn> {
         return column;
     }
 
-    public Operator<SelectColumn> as(String alias) {
+    public Supplier<SelectColumn> as(String alias) {
         column.setAlias(alias);
         return this;
     }

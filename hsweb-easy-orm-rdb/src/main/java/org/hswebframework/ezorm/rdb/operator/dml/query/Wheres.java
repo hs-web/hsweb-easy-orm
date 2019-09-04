@@ -4,9 +4,11 @@ import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 
+import java.util.function.Supplier;
+
 public interface Wheres {
 
-    static Operator<Term> sql(String sql) {
+    static Supplier<Term> sql(String sql) {
         SqlTerm term = new SqlTerm(sql);
 
         return () -> term;

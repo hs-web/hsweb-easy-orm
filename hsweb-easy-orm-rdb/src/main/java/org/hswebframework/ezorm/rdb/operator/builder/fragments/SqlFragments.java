@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
+import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 
@@ -10,7 +11,7 @@ public interface SqlFragments {
 
     boolean isEmpty();
 
-    default boolean isNotEmpty(){
+    default boolean isNotEmpty() {
         return !isEmpty();
     }
 
@@ -18,31 +19,34 @@ public interface SqlFragments {
 
     List<Object> getParameters();
 
-   default SqlRequest toRequest(){
-       return SqlRequests.prepare(String.join(" ",getSql()),getParameters().toArray());
-   }
+    default SqlRequest toRequest() {
+        if (isEmpty()) {
+            return EmptySqlRequest.INSTANCE;
+        }
+        return SqlRequests.prepare(String.join(" ", getSql()), getParameters().toArray());
+    }
 
-    static SqlFragments single(String sql){
-       return new SqlFragments() {
-           @Override
-           public boolean isEmpty() {
-               return false;
-           }
+    static SqlFragments single(String sql) {
+        return new SqlFragments() {
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
 
-           @Override
-           public List<String> getSql() {
-               return Collections.singletonList(sql);
-           }
+            @Override
+            public List<String> getSql() {
+                return Collections.singletonList(sql);
+            }
 
-           @Override
-           public List<Object> getParameters() {
-               return Collections.emptyList();
-           }
+            @Override
+            public List<Object> getParameters() {
+                return Collections.emptyList();
+            }
 
-           @Override
-           public String toString() {
-               return sql;
-           }
-       };
-   }
+            @Override
+            public String toString() {
+                return sql;
+            }
+        };
+    }
 }

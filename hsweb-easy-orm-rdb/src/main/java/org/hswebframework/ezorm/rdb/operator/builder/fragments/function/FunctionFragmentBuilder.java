@@ -21,6 +21,6 @@ public interface FunctionFragmentBuilder extends Feature {
 
     String getFunction();
 
-    SqlFragments create(String columnFullName, RDBColumnMetadata metadata, Map<String, String> opts);
+    SqlFragments create(String columnFullName, RDBColumnMetadata metadata, Map<String, Object> opts);
 
 }

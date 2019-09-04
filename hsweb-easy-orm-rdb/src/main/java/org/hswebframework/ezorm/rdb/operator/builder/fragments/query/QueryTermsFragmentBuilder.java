@@ -84,6 +84,6 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
     @Override
     public SqlFragments createFragments(QueryOperatorParameter parameter) {
-        return createFragments(parameter, parameter.getWhere());
+        return createTermFragments(parameter, parameter.getWhere());
     }
 }

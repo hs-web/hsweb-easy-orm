@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.update.DefaultUpdateSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.update.ExecutableUpdateOperator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata {
 
     public RDBTableMetadata() {
         addFeature(BatchInsertSqlBuilder.of(this));
+        addFeature(DefaultUpdateSqlBuilder.of(this));
     }
 
     @Override

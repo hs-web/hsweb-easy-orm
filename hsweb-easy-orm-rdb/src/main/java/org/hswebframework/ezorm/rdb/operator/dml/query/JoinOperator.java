@@ -9,8 +9,9 @@ import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class JoinOperator implements Operator<Join> {
+public class JoinOperator implements Supplier<Join> {
 
     private Join join = new Join();
 
@@ -25,11 +26,11 @@ public class JoinOperator implements Operator<Join> {
         return this;
     }
 
-    public final Operator<Join> on(String sql) {
+    public final Supplier<Join> on(String sql) {
         return on(Wheres.sql(sql));
     }
 
-    public final Operator<Join> on(Consumer<Conditional<?>> consumer) {
+    public final Supplier<Join> on(Consumer<Conditional<?>> consumer) {
         Query<?, QueryParam> query = Query.of();
         consumer.accept(query);
         join.getTerms().addAll(query.getParam().getTerms());
@@ -37,8 +38,8 @@ public class JoinOperator implements Operator<Join> {
     }
 
     @SafeVarargs
-    public final Operator<Join> on(Operator<Term>... conditions) {
-        for (Operator<Term> condition : conditions) {
+    public final Supplier<Join> on(Supplier<Term>... conditions) {
+        for (Supplier<Term> condition : conditions) {
             join.getTerms().add(condition.get());
         }
         return this;

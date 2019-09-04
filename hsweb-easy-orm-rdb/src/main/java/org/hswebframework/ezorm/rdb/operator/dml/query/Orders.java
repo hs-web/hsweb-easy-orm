@@ -4,9 +4,11 @@ import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.Functions;
 import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 
+import java.util.function.Supplier;
+
 public interface Orders {
 
-    static OrderOperator function(Operator<FunctionColumn> column){
+    static OrderOperator function(Supplier<FunctionColumn> column){
         return new OrderOperator(column.get());
     }
 
@@ -14,11 +16,11 @@ public interface Orders {
         return function(Functions.count(name));
     }
 
-    static Operator<SortOrder> asc(String column){
+    static Supplier<SortOrder> asc(String column){
         return new OrderOperator(column).asc();
     }
 
-    static Operator<SortOrder> desc(String column){
+    static Supplier<SortOrder> desc(String column){
         return new OrderOperator(column).desc();
     }
 }

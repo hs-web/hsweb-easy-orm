@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.dml;
 
-public class FunctionColumnOperator implements Operator<FunctionColumn> {
+import java.util.function.Supplier;
+
+public class FunctionColumnOperator implements Supplier<FunctionColumn> {
 
     private FunctionColumn column=new FunctionColumn();
 

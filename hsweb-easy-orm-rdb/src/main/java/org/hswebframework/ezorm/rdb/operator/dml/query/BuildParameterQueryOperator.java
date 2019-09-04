@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.QueryParam;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
@@ -71,7 +72,8 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
-    public QueryOperator where(Operator... condition) {
+    public QueryOperator where(Term term) {
+        parameter.getWhere().add(term);
         return this;
     }
 

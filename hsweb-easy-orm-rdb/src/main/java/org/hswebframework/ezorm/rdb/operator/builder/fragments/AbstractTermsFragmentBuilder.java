@@ -50,7 +50,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             //嵌套条件
             if (nest != null && !nest.isEmpty()) {
                 //递归....
-                SqlFragments nestFragments = createFragments(parameter, nest);
+                SqlFragments nestFragments = createTermFragments(parameter, nest);
                 if (nestFragments.isNotEmpty()) {
                     //and or
                     if (termAvailable || lastTermAvailable) {
@@ -102,7 +102,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             //嵌套条件
             if (nest != null && !nest.isEmpty()) {
                 //递归....
-                SqlFragments nestFragments = createFragments(parameter, nest);
+                SqlFragments nestFragments = createTermFragments(parameter, nest);
                 if (nestFragments.isNotEmpty()) {
                     //and or
                     if (termAvailable || lastTermAvailable) {
@@ -122,7 +122,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
         return fragments;
     }
 
-    protected SqlFragments createFragments(T parameter, List<Term> terms) {
+    protected SqlFragments createTermFragments(T parameter, List<Term> terms) {
         return isUseBlock() ? createBlockFragments(parameter, terms) : createPrepareFragments(parameter, terms);
     }
 

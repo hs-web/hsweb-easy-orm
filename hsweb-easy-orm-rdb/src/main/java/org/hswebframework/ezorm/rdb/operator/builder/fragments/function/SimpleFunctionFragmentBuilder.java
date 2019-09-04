@@ -18,10 +18,10 @@ public class SimpleFunctionFragmentBuilder implements FunctionFragmentBuilder {
 
 
     @Override
-    public SqlFragments create(String columnFullName, RDBColumnMetadata metadata, Map<String, String> opts) {
+    public SqlFragments create(String columnFullName, RDBColumnMetadata metadata, Map<String, Object> opts) {
 
         if (opts != null) {
-            String arg = opts.get("arg");
+            String arg = String.valueOf(opts.get("arg"));
             if ("1".equals(arg)) {
                 columnFullName = arg;
             }
