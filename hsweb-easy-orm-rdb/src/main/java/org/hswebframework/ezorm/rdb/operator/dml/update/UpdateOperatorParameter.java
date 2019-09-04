@@ -13,5 +13,6 @@ public class UpdateOperatorParameter {
 
     List<UpdateColumn> columns = new ArrayList<>();
 
-    List<Term> where=new ArrayList<>();
+    List<Term> where = new ArrayList<>();
+
 }

@@ -48,7 +48,6 @@ public class BuildParameterInsertOperator extends InsertOperator {
 
     @Override
     public InsertOperator value(Object value) {
-
         return this;
     }
 

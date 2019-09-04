@@ -11,7 +11,7 @@ public interface Orders {
     }
 
     static OrderOperator count(String name){
-        return new OrderOperator(Functions.count(name).get());
+        return function(Functions.count(name));
     }
 
     static Operator<SortOrder> asc(String column){
