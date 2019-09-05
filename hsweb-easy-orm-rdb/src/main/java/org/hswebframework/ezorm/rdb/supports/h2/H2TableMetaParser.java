@@ -1,8 +1,12 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
+
+import java.util.Optional;
 
 public class H2TableMetaParser extends RDBTableMetaParser {
     private static final String TABLE_META_SQL =
@@ -35,6 +39,15 @@ public class H2TableMetaParser extends RDBTableMetaParser {
             return "schema()";
         }
         return "'" + db + "'";
+    }
+
+    @Override
+    protected Optional<RDBTableMetadata> doParse(String name) {
+        Optional<RDBTableMetadata> optional =  super.doParse(name);
+        optional.ifPresent(meta->{
+            meta.addFeature(BatchInsertSqlBuilder.of(meta));
+        });
+        return optional;
     }
 
     @Override

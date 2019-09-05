@@ -5,9 +5,9 @@ import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
@@ -19,10 +19,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Optional.*;
-import static org.hswebframework.ezorm.rdb.meta.RDBFeatureType.foreignKeyTerm;
-import static org.hswebframework.ezorm.rdb.meta.RDBFeatureType.termType;
+import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.foreignKeyTerm;
+import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.termType;
 
 @AllArgsConstructor(staticName = "of")
+@SuppressWarnings("all")
 public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<UpdateOperatorParameter> implements UpdateSqlBuilder {
 
     @Getter

@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;

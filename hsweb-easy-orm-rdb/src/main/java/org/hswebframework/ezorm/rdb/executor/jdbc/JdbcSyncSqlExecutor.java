@@ -2,16 +2,11 @@ package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.rdb.executor.SimpleSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 
-import java.io.ByteArrayInputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import static org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSqlExecutorHelper.*;
 

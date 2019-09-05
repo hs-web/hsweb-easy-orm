@@ -1,8 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;

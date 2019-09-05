@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.function;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 

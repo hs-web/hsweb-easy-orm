@@ -1,10 +1,10 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
-import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;

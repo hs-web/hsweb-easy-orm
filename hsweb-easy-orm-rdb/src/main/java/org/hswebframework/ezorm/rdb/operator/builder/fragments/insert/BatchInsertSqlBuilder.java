@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.*;
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
@@ -31,7 +31,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         Map<Integer, SqlFragments> functionValues = new HashMap<>();
 
         int index = 0;
-        List<InsertColumn> columns = parameter.getColumns();
+        Set<InsertColumn> columns = parameter.getColumns();
 
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())

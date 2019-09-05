@@ -1,10 +1,9 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.rdb.executor.SimpleSqlRequest;
+import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.slf4j.Logger;
-import reactor.core.publisher.Flux;
 
 import java.io.ByteArrayInputStream;
 import java.sql.*;
@@ -36,8 +35,8 @@ public class JdbcSqlExecutorHelper {
             log.debug("==>  Preparing: {}", sqlRequest.getSql());
             if (sqlRequest.getParameters() != null && sqlRequest.getParameters().length > 0) {
                 log.debug("==> Parameters: {}", sqlParameterToString(sqlRequest.getParameters()));
-                if (sqlRequest instanceof SimpleSqlRequest) {
-                    log.debug("==>     Native: {}", ((SimpleSqlRequest) sqlRequest).toNativeSql());
+                if (sqlRequest instanceof PrepareSqlRequest) {
+                    log.debug("==>     Native: {}", ((PrepareSqlRequest) sqlRequest).toNativeSql());
                 }
             }
         }

@@ -4,13 +4,22 @@ import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
-import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.builder.DefaultTableBuilder;
+import org.hswebframework.ezorm.rdb.metadata.builder.TableBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.delete.ExecutableDeleteOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.insert.ExecutableInsertOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.ExecutableQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.update.ExecutableUpdateOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
-@AllArgsConstructor
+@AllArgsConstructor(staticName = "of")
 public class DefaultDatabaseOperator
-        implements DatabaseOperator, DMLOperator, SQLOperator {
+        implements DatabaseOperator, DMLOperator, SQLOperator, DDLOperator {
 
     private RDBDatabaseMetadata metadata;
 
@@ -26,7 +35,7 @@ public class DefaultDatabaseOperator
 
     @Override
     public DDLOperator ddl() {
-        return null;
+        return this;
     }
 
     @Override
@@ -35,8 +44,30 @@ public class DefaultDatabaseOperator
     }
 
     @Override
+    public DeleteOperator delete(String table) {
+        return ExecutableDeleteOperator.of(metadata
+                .getTable(table)
+                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+    }
+
+    @Override
     public QueryOperator query() {
         return new ExecutableQueryOperator(metadata);
+    }
+
+    @Override
+    public UpdateOperator update(String table) {
+
+        return ExecutableUpdateOperator.of(metadata
+                .getTable(table)
+                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+    }
+
+    @Override
+    public InsertOperator insert(String table) {
+        return ExecutableInsertOperator.of(metadata
+                .getTable(table)
+                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }
 
     @Override
@@ -55,5 +86,12 @@ public class DefaultDatabaseOperator
     public ReactiveSqlExecutor reactive() {
         return metadata.<ReactiveSqlExecutor>getFeature(ReactiveSqlExecutor.id)
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
+    }
+
+    @Override
+    public TableBuilder createOrAlter(String schema) {
+
+        return new DefaultTableBuilder(metadata.getSchema(schema)
+                .orElseThrow(() -> new UnsupportedOperationException("schema [" + schema + "] doesn't exist ")));
     }
 }

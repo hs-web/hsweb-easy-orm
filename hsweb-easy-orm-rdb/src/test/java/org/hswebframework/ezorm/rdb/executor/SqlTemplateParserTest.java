@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.executor;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -17,9 +16,9 @@ public class SqlTemplateParserTest {
         assertEquals(request.getSql(),"select * from user where name = ? and status=1");
         assertArrayEquals(request.getParameters(),new Object[]{"1234"} );
 
-        assertTrue(request instanceof SimpleSqlRequest);
+        assertTrue(request instanceof PrepareSqlRequest);
 
-        assertEquals(((SimpleSqlRequest) request).toNativeSql(),"select * from user where name = '1234' and status=1");
+        assertEquals(((PrepareSqlRequest) request).toNativeSql(),"select * from user where name = '1234' and status=1");
 
 
     }

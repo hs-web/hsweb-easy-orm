@@ -2,8 +2,8 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 
 /**
  * SQL条件片段构造器

@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.core.param.SqlTerm;
-import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;

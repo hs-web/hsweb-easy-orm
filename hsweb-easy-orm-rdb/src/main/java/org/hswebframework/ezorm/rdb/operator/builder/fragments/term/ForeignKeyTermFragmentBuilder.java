@@ -3,8 +3,8 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 import org.hswebframework.ezorm.core.FeatureType;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 import java.util.List;

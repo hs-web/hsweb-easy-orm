@@ -5,13 +5,13 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.ObjectMetaDataParserStrategy;
 import org.hswebframework.ezorm.core.meta.ObjectType;
-import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.*;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBObjectType;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBObjectType;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.utils.StringUtils;
 
 import java.math.BigDecimal;

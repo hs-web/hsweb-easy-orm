@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.posgres;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
-import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 public class PostgreSQLTableMetaParser extends RDBTableMetaParser {
     private static final String TABLE_META_SQL = "select column_name as \"name\"" +

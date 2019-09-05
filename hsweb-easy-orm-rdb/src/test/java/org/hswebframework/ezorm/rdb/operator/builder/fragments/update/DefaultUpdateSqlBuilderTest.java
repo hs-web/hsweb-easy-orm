@@ -1,18 +1,15 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.update;
 
 import org.hswebframework.ezorm.core.dsl.Query;
-import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperatorParameter;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

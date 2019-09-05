@@ -28,7 +28,7 @@ public abstract class InsertOperator {
     }
 
     @SafeVarargs
-    public final <T> InsertOperator columns(MethodReferenceColumn<T>... columns) {
+    public final <T> InsertOperator values(MethodReferenceColumn<T>... columns) {
         String[] column = new String[columns.length];
         Object[] value = new Object[columns.length];
 

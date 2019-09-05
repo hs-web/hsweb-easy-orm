@@ -2,19 +2,19 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.meta.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
-import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.*;
 
-import static org.hswebframework.ezorm.rdb.meta.RDBFeatureType.*;
+import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.*;
 
 @AllArgsConstructor(staticName = "of")
 public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<QueryOperatorParameter> implements QuerySqlFragmentBuilder {

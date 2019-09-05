@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator;
 
-import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 
 public interface DatabaseOperator {
 

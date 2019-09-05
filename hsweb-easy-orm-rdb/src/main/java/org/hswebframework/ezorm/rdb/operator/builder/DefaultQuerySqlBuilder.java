@@ -1,9 +1,10 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
+import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
-import org.hswebframework.ezorm.rdb.meta.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
@@ -11,15 +12,12 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 import java.util.Optional;
 
-import static org.hswebframework.ezorm.rdb.meta.RDBFutures.*;
+import static org.hswebframework.ezorm.rdb.metadata.RDBFutures.*;
 
+@AllArgsConstructor(staticName = "of")
 public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
     protected RDBSchemaMetadata schema;
-
-    public DefaultQuerySqlBuilder(RDBSchemaMetadata schema) {
-        this.schema = schema;
-    }
 
     protected Optional<SqlFragments> select(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.<QuerySqlFragmentBuilder>getFeature(select)

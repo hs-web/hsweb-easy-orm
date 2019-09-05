@@ -68,4 +68,5 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
     public void addFeature(Feature feature) {
         features.put(feature.getId(),feature);
     }
+
 }

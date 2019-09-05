@@ -1,12 +1,12 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
-import org.hswebframework.ezorm.rdb.meta.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.executor.SimpleSqlRequest;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.RDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Orders;
 import org.junit.Assert;
@@ -76,7 +76,7 @@ public class DefaultQuerySqlBuilderTest {
 //                .forUpdate()
                 .paging(0, 10);
 
-        DefaultQuerySqlBuilder sqlBuilder = new DefaultQuerySqlBuilder(schema);
+        DefaultQuerySqlBuilder sqlBuilder =DefaultQuerySqlBuilder.of(schema);
 
         long time = System.currentTimeMillis();
 
@@ -86,7 +86,7 @@ public class DefaultQuerySqlBuilderTest {
 
         Assert.assertNotNull(sqlRequest);
         Assert.assertNotNull(sqlRequest.getSql());
-        System.out.println(((SimpleSqlRequest) sqlRequest).toNativeSql());
+        System.out.println(((PrepareSqlRequest) sqlRequest).toNativeSql());
 
     }
 }

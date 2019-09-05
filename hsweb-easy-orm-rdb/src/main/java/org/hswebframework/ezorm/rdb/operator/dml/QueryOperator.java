@@ -7,10 +7,7 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.query.JoinOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
-import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
-import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
+import org.hswebframework.ezorm.rdb.operator.dml.query.*;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 import java.util.Arrays;
@@ -119,7 +116,7 @@ public abstract class QueryOperator {
 
     public abstract SqlRequest getSql();
 
-    public abstract <E, R> ResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper);
+    public abstract <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper);
 
 
 }

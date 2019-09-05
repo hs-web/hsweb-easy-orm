@@ -10,9 +10,9 @@ import java.sql.SQLException;
 
 public class H2ConnectionProvider implements ConnectionProvider {
 
-    static Connection connection;
+    private Connection connection;
 
-    static {
+    public H2ConnectionProvider() {
         Driver.load();
         try {
             connection = DriverManager.getConnection("jdbc:h2:mem:ezorm", "sa", "");

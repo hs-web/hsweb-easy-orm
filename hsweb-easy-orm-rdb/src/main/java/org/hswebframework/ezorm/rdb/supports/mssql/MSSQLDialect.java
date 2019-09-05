@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
-import org.hswebframework.ezorm.rdb.meta.dialect.DefaultDialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;

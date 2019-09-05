@@ -14,7 +14,7 @@ public abstract class SqlRequests {
     }
 
     public static SqlRequest prepare(String sql, Object... parameters) {
-        return SimpleSqlRequest.of(sql, parameters);
+        return PrepareSqlRequest.of(sql, parameters);
     }
 
     public static SqlRequest template(String template, Object parameter) {

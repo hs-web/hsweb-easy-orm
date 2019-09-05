@@ -124,7 +124,7 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
-    public <E, R> ResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
+    public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
         throw new UnsupportedOperationException();
     }
 }

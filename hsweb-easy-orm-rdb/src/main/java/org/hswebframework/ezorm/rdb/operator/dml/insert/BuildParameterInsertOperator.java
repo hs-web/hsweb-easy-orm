@@ -15,6 +15,7 @@ public class BuildParameterInsertOperator extends InsertOperator {
 
     private boolean columnValueModel = false;
 
+
     @Override
     public InsertOperator columns(String... columns) {
         for (String column : columns) {
@@ -38,7 +39,7 @@ public class BuildParameterInsertOperator extends InsertOperator {
         }
         parameter.getColumns().add(InsertColumn.of(column));
         List<List<Object>> values = parameter.getValues();
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             values.add(new ArrayList<>());
         }
         values.get(0).add(value);

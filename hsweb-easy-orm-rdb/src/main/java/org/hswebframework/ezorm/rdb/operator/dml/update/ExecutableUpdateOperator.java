@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.dml.update;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.meta.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.update.UpdateSqlBuilder;
 
 @AllArgsConstructor(staticName = "of")

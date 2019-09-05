@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.executor;
 
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.meta.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 
 import java.util.concurrent.CompletionStage;
 

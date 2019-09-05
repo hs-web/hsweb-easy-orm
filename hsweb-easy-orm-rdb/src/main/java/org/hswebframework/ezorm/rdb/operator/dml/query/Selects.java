@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
-import org.hswebframework.ezorm.rdb.meta.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
 
 public interface Selects {
 
