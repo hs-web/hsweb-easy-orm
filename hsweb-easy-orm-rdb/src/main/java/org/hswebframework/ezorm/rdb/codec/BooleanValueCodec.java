@@ -23,7 +23,7 @@ public class BooleanValueCodec implements ValueCodec<Object, Boolean> {
             return jdbcType == JDBCType.BOOLEAN ? true : 1;
         }
         if (Boolean.FALSE.equals(value)) {
-            return jdbcType == JDBCType.BOOLEAN ? true : 0;
+            return jdbcType == JDBCType.BOOLEAN ? false : 0;
         }
         return value;
     }
