@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.ConnectionProvider;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Random;
 
 public class H2ConnectionProvider implements ConnectionProvider {
 
@@ -15,7 +16,7 @@ public class H2ConnectionProvider implements ConnectionProvider {
     public H2ConnectionProvider() {
         Driver.load();
         try {
-            connection = DriverManager.getConnection("jdbc:h2:mem:ezorm", "sa", "");
+            connection = DriverManager.getConnection("jdbc:h2:mem:ezorm" + new Random().nextInt(10000), "sa", "");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
