@@ -56,7 +56,7 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
             return empty();
         }
         if (name.contains(".")) {
-            String[] arr = name.split(".");
+            String[] arr = name.split("[.]");
             return this.getSchema(arr[0])
                     .flatMap(schema -> mapper.apply(schema, arr[1]));
         }

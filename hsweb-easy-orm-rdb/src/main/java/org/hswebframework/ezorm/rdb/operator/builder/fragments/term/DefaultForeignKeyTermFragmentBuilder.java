@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -25,7 +25,7 @@ public class DefaultForeignKeyTermFragmentBuilder implements ForeignKeyTermFragm
                 .addSql(key.getSourceColumn().getFullName(tableName));
 
         key.getTarget()
-                .<QuerySqlFragmentBuilder>getFeature(RDBFutures.where)
+                .<QuerySqlFragmentBuilder>getFeature(RDBFeatures.where)
                 .ifPresent(builder -> {
                     QueryOperatorParameter parameter = new QueryOperatorParameter();
                     parameter.setFrom(key.getTarget().getName());

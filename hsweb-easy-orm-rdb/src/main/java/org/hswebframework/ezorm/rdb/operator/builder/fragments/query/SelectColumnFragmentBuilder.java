@@ -1,17 +1,17 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
-import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
-import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
+import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,7 +23,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
     @Override
     public String getId() {
-        return RDBFutures.select;
+        return RDBFeatures.select;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     private String getAlias(String owner, RDBColumnMetadata metadata, SelectColumn column) {
 
         if (column.getAlias() != null) {
-            return metadata.getDialect().quote(column.getAlias());
+            return metadata.getDialect().quote(column.getAlias(), false);
         }
         String alias = metadata.getAlias();
 
@@ -61,19 +61,36 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
             return alias;
         }
         if (owner != null) {
-            return owner.concat(".").concat(metadata.getDialect().quote(alias));
+            return owner.concat(".").concat(metadata.getDialect().quote(alias,false));
         }
-        return metadata.getDialect().quote(alias);
+        return metadata.getDialect().quote(alias,false);
 
     }
 
-    public PrepareSqlFragments createFragments(QueryOperatorParameter parameter, SelectColumn column) {
-        if (column instanceof NativeSql) {
-            return PrepareSqlFragments.of()
-                    .addSql(((NativeSql) column).getSql())
-                    .addParameter(((NativeSql) column).getParameters());
+    protected Join createJoin(String owner, String target, ForeignKeyMetadata key) {
+        SqlTerm on = new SqlTerm(key.getTargetColumn().getFullName(owner) +
+                " = " +
+                key.getSourceColumn().getFullName(target));
+        if (key.getTerms() != null) {
+            on.getTerms().addAll(key.getTerms());
         }
-        String columnStr = column.getColumn();
+        Join join = new Join();
+        join.setType(key.getJoinType());
+        join.setTarget(key.getTarget().getFullName());
+        join.setAlias(owner);
+        join.addAlias(key.getTarget().getAlias());
+        join.setTerms(Collections.singletonList(on));
+
+        return join;
+    }
+
+    public PrepareSqlFragments createFragments(QueryOperatorParameter parameter, SelectColumn selectColumn) {
+        if (selectColumn instanceof NativeSql) {
+            return PrepareSqlFragments.of()
+                    .addSql(((NativeSql) selectColumn).getSql())
+                    .addParameter(((NativeSql) selectColumn).getParameters());
+        }
+        String columnStr = selectColumn.getColumn();
         //关联表 table.column
         if (columnStr.contains(".")) {
             String[] arr = columnStr.split("[.]");
@@ -82,22 +99,38 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                             .getTableOrView(join.getTarget())
                             .flatMap(table -> table.getColumn(arr[1]))
                             .flatMap(columnMetadata ->
-                                    createFragments(columnMetadata.getFullName(join.getAlias()), columnMetadata, column)
-                                            .map(fragments -> {
-                                                PrepareSqlFragments sqlFragments = PrepareSqlFragments.of().addFragments(fragments);
-                                                sqlFragments.addSql("as").addSql(getAlias(join.getAlias(), columnMetadata, column));
+                                    createFragments(columnMetadata.getFullName(join.getAlias()), columnMetadata, selectColumn)
+                                            .map(fragments -> PrepareSqlFragments.of()
+                                                    .addFragments(fragments)
+                                                    .addSql("as", getAlias(join.getAlias(), columnMetadata, selectColumn)))))
+                    .orElseGet(() ->
+                            metadata.getForeignKey(arr[0])
+                                    .filter(ForeignKeyMetadata::isAutoJoin) //自动关联查询
+                                    .filter(key -> key.getTarget().findColumn(arr[1]).isPresent()) //存在这个字段
+                                    .map(foreignKey -> {
+                                        //自动join
+                                        if (!parameter.findJoin(arr[0]).isPresent()) {
+                                            Join join = createJoin(arr[0], parameter.getFromAlias(), foreignKey);
+                                            // TODO: 2019-09-06 关联外键处理
+                                            parameter.getJoins().add(join);
+                                        }
+                                        PrepareSqlFragments sqlFragments = PrepareSqlFragments.of();
+                                        RDBColumnMetadata targetColumn = foreignKey.getTarget().getColumn(arr[1]).orElse(null);
+                                        if (targetColumn == null) {
+                                            return null;
+                                        }
+                                        sqlFragments.addSql(targetColumn.getFullName(arr[0]), "as", getAlias(arr[0], targetColumn, selectColumn));
 
-                                                return sqlFragments;
-                                            })))
-                    .orElse(null);
+                                        return sqlFragments;
+                                    }).orElse(null));
         }
 
         return metadata
-                .findColumn(column.getColumn())
-                .flatMap(columnMetadata -> createFragments(columnMetadata.getFullName(), columnMetadata, column)
+                .findColumn(selectColumn.getColumn())
+                .flatMap(columnMetadata -> createFragments(columnMetadata.getFullName(), columnMetadata, selectColumn)
                         .map(fragments -> {
                             PrepareSqlFragments sqlFragments = PrepareSqlFragments.of().addFragments(fragments);
-                            sqlFragments.addSql("as").addSql(getAlias(null, columnMetadata, column));
+                            sqlFragments.addSql("as").addSql(getAlias(null, columnMetadata, selectColumn));
                             return sqlFragments;
                         }))
                 .orElse(null);

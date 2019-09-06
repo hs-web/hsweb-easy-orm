@@ -35,13 +35,6 @@ public class BuildParameterQueryOperator extends QueryOperator {
         return this;
     }
 
-//    @Override
-//    public QueryOperator select(StaticMethodReferenceColumn... columns) {
-//        return select(Arrays.stream(columns)
-//                .map(StaticMethodReferenceColumn::getColumn)
-//                .toArray(String[]::new));
-//    }
-
     @Override
     public QueryOperator select(MethodReferenceColumn... columns) {
         return select(Arrays.stream(columns)

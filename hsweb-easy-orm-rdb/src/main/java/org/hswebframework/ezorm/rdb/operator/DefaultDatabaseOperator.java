@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.builder.DefaultTableBuilder;
 import org.hswebframework.ezorm.rdb.metadata.builder.TableBuilder;
@@ -89,9 +90,23 @@ public class DefaultDatabaseOperator
     }
 
     @Override
-    public TableBuilder createOrAlter(String schema) {
+    public TableBuilder createOrAlter(String name) {
+        RDBTableMetadata table = metadata.getTable(name)
+                .orElseGet(() -> {
+                    String tableName = name;
+                    RDBSchemaMetadata schema;
+                    if (name.contains(".")) {
+                        String[] arr = name.split("[.]");
+                        tableName = arr[1];
+                        schema = metadata.getSchema(arr[0]).orElseThrow(() -> new UnsupportedOperationException("schema [" + arr[0] + "] doesn't exist "));
+                    }else {
+                        schema = metadata.getCurrentSchema();
+                    }
+                    RDBTableMetadata newTable = new RDBTableMetadata(tableName);
+                    newTable.setSchema(schema);
+                    return newTable;
+                });
 
-        return new DefaultTableBuilder(metadata.getSchema(schema)
-                .orElseThrow(() -> new UnsupportedOperationException("schema [" + schema + "] doesn't exist ")));
+        return new DefaultTableBuilder(table);
     }
 }

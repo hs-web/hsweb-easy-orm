@@ -26,7 +26,7 @@ public class H2CreateTableSqlBuilder implements CreateTableSqlBuilder {
             if (index++ != 0) {
                 createTable.addSql(",");
             }
-            createTable.addSql(column.getDialect().quote(getName()));
+            createTable.addSql(column.getQuoteName());
             if (column.getColumnDefinition() != null) {
                 createTable.addSql(column.getColumnDefinition());
             } else {

@@ -1,12 +1,12 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 import org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Orders;
 import org.junit.Assert;
@@ -39,34 +39,72 @@ public class DefaultQuerySqlBuilderTest {
         schema.addTable(table);
         schema.addTable(detail);
 
-        RDBColumnMetadata id = new RDBColumnMetadata();
-        id.setName("id");
-        id.setJdbcType(JDBCType.VARCHAR);
-        id.setLength(32);
+        {
+            RDBColumnMetadata id = new RDBColumnMetadata();
+            id.setName("id");
+            id.setJdbcType(JDBCType.VARCHAR);
+            id.setLength(32);
 
-        RDBColumnMetadata name = new RDBColumnMetadata();
-        name.setName("name");
-        name.setJdbcType(JDBCType.VARCHAR);
-        name.setLength(64);
+            RDBColumnMetadata name = new RDBColumnMetadata();
+            name.setName("name");
+            name.setJdbcType(JDBCType.VARCHAR);
+            name.setLength(64);
 
-        table.addColumn(id);
-        table.addColumn(name);
+            table.addColumn(id);
+            table.addColumn(name);
+        }
 
-        RDBColumnMetadata detailInfo = new RDBColumnMetadata();
-        detailInfo.setName("comment");
-        detailInfo.setJdbcType(JDBCType.VARCHAR);
-        detailInfo.setLength(64);
+        {
+            RDBColumnMetadata id = new RDBColumnMetadata();
+            id.setName("id");
+            id.setJdbcType(JDBCType.VARCHAR);
+            id.setLength(32);
+            RDBColumnMetadata detailInfo = new RDBColumnMetadata();
+            detailInfo.setName("comment");
+            detailInfo.setJdbcType(JDBCType.VARCHAR);
+            detailInfo.setLength(64);
+            detail.addColumn(id);
+            detail.addColumn(detailInfo);
+        }
 
-        detail.addColumn(detailInfo);
+        table.addForeignKey(ForeignKeyBuilder.builder()
+                .target("detail")
+                .alias("info")
+                .autoJoin(true)
+                .joinType(JoinType.left)
+                .sourceColumn("id")
+                .targetColumn("id")
+                .build());
 
     }
 
+    @Getter
+    @Setter
+    public class User{
+        private String id;
+    }
+
+    @Test
+    public void testAutoJoin() {
+        BuildParameterQueryOperator query = new BuildParameterQueryOperator();
+
+        query.select("id", "info.comment")
+                .from("test")
+                .where(dsl -> dsl.is("info.comment", "1234"));
+
+        DefaultQuerySqlBuilder sqlBuilder = DefaultQuerySqlBuilder.of(schema);
+        SqlRequest sqlRequest = sqlBuilder.build(query.getParameter());
+
+        System.out.println(sqlRequest);
+        String sql = sqlRequest.getSql();
+        Assert.assertTrue(sql.contains("where"));
+        Assert.assertTrue(sql.contains("join"));
+
+    }
 
     @Test
     public void test() {
         BuildParameterQueryOperator query = new BuildParameterQueryOperator();
-
-//        schema.addFeature(new SqlServerPaginator());
 
         query.select("*")
                 .from("test")
@@ -76,11 +114,11 @@ public class DefaultQuerySqlBuilderTest {
 //                .forUpdate()
                 .paging(0, 10);
 
-        DefaultQuerySqlBuilder sqlBuilder =DefaultQuerySqlBuilder.of(schema);
+        DefaultQuerySqlBuilder sqlBuilder = DefaultQuerySqlBuilder.of(schema);
 
         long time = System.currentTimeMillis();
 
-        SqlRequest sqlRequest =  sqlBuilder.build(query.getParameter());
+        SqlRequest sqlRequest = sqlBuilder.build(query.getParameter());
 
         System.out.println(System.currentTimeMillis() - time);
 

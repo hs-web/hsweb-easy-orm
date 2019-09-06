@@ -11,6 +11,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;
+import org.hswebframework.ezorm.rdb.supports.h2.H2DatabaseMetadata;
 import org.hswebframework.ezorm.rdb.supports.h2.H2TableMetaParser;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +21,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.of;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.mapStream;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.singleMap;
 
 public class DefaultDatabaseOperatorTest {
@@ -30,7 +32,7 @@ public class DefaultDatabaseOperatorTest {
 
     @Before
     public void init() {
-        database = new RDBDatabaseMetadata(Dialect.H2);
+        database = new H2DatabaseMetadata();
 
         SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new H2ConnectionProvider());
 
@@ -46,6 +48,36 @@ public class DefaultDatabaseOperatorTest {
         database.addFeature(sqlExecutor);
         operator = DefaultDatabaseOperator.of(database);
 
+    }
+
+
+    @Test
+    public void testDDLCreate(){
+        operator.ddl()
+                .createOrAlter("test_ddl_create")
+                .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
+                .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
+                .addColumn().name("comment").columnDef("varchar(32) not null default '1'").commit()
+                .commit();
+
+        operator.dml()
+                .insert("test_ddl_create")
+                .value("id","1234")
+                .value("name","名称")
+                .execute()
+                .sync();
+
+        int sum =operator.dml()
+                .query()
+                .select("comment")
+                .from("test_ddl_create")
+                .fetch(mapStream())
+                .sync()
+                .map(map->map.get("comment"))
+                .map(String::valueOf)
+                .mapToInt(Integer::valueOf)
+                .sum();
+        Assert.assertEquals(sum,1);
     }
 
     @Getter

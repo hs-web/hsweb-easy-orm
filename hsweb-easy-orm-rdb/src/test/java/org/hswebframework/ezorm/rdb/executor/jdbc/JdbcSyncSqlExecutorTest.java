@@ -1,7 +1,9 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSyncSqlExecutor;
 import org.junit.Assert;
@@ -40,6 +42,40 @@ public class JdbcSyncSqlExecutorTest {
 
             }
         };
+    }
+
+    @Test
+    public void testBatch() {
+        {
+            DefaultBatchSqlRequest batch = new DefaultBatchSqlRequest();
+
+
+            batch.addBatch(SqlRequests.of("create table test( id varchar(32) )"));
+            batch.addBatch(SqlRequests.of("COMMENT on table test  is 'test'"));
+
+            executor.execute(batch);
+
+        }
+
+        {
+            DefaultBatchSqlRequest batch = new DefaultBatchSqlRequest();
+
+
+            batch.addBatch(SqlRequests.of("insert into test (id) values(?)", "1"));
+            batch.addBatch(SqlRequests.of("insert into test (id) values(?)", "2"));
+            batch.addBatch(SqlRequests.of("update test set id = ? where id = ?", "3", "2"));
+
+            Assert.assertEquals(executor.update(batch),3);
+
+            int sum = executor.select(SqlRequests.of("select id from test"), mapStream())
+                    .map(map -> map.get("ID"))
+                    .map(String::valueOf)
+                    .mapToInt(Integer::valueOf)
+                    .sum();
+            Assert.assertEquals(sum,4);
+
+        }
+
     }
 
     @SneakyThrows

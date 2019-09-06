@@ -12,7 +12,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 import java.util.Optional;
 
-import static org.hswebframework.ezorm.rdb.metadata.RDBFutures.*;
+import static org.hswebframework.ezorm.rdb.metadata.RDBFeatures.*;
 
 @AllArgsConstructor(staticName = "of")
 public class DefaultQuerySqlBuilder implements QuerySqlBuilder {

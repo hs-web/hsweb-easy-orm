@@ -6,6 +6,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
@@ -45,6 +46,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
         int index = 0;
         for (UpdateColumn column : parameter.getColumns()) {
             SqlFragments columnFragments = table.getColumn(column.getColumn())
+                    .filter(RDBColumnMetadata::isUpdatable)
                     .<SqlFragments>map(columnMetadata -> {
                         PrepareSqlFragments sqlFragments = PrepareSqlFragments.of();
                         sqlFragments.addSql(columnMetadata.getName(), "=");

@@ -12,7 +12,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 
 import static java.util.Optional.*;
-import static org.hswebframework.ezorm.rdb.metadata.RDBFutures.orderBy;
+import static org.hswebframework.ezorm.rdb.metadata.RDBFeatures.orderBy;
 
 @AllArgsConstructor(staticName = "of")
 public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {

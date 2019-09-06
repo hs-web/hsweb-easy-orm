@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 
 import java.sql.JDBCType;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,6 +53,33 @@ public abstract class DefaultDialect implements Dialect {
             }
         }
         return jdbcType;
+    }
+
+
+    protected String doClearQuote(String string) {
+        if (string.startsWith(getQuoteStart())) {
+            string = string.substring(getQuoteStart().length());
+        }
+        if (string.endsWith(getQuoteEnd())) {
+            string = string.substring(0, string.length() - getQuoteEnd().length());
+        }
+        return string;
+    }
+
+    @Override
+    public String clearQuote(String string) {
+        if (string == null || string.isEmpty()) {
+            return string;
+        }
+        if (string.contains(".")) {
+            String[] arr = string.split("[.]");
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = doClearQuote(arr[i]);
+            }
+            return String.join(".", arr);
+        }
+
+        return doClearQuote(string);
     }
 
 }

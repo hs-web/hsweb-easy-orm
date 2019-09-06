@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.slf4j.Logger;
 
 import java.sql.*;
 
@@ -12,6 +13,10 @@ import static org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSqlExecutorHelper.*
 
 @Slf4j
 public abstract class JdbcSyncSqlExecutor extends JdbcSqlExecutor implements SyncSqlExecutor {
+
+    public JdbcSyncSqlExecutor() {
+        super(log);
+    }
 
     public abstract Connection getConnection(SqlRequest sqlRequest);
 
@@ -30,7 +35,6 @@ public abstract class JdbcSyncSqlExecutor extends JdbcSqlExecutor implements Syn
     @Override
     @SneakyThrows
     public int update(SqlRequest request) {
-        printSql(log, request);
         Connection connection = getConnection(request);
         try {
             return doUpdate(connection, request);
@@ -42,11 +46,9 @@ public abstract class JdbcSyncSqlExecutor extends JdbcSqlExecutor implements Syn
     @Override
     @SneakyThrows
     public void execute(SqlRequest request) {
-        printSql(log, request);
-
         Connection connection = getConnection(request);
         try {
-              doExecute(connection, request);
+            doExecute(connection, request);
         } finally {
             releaseConnection(connection, request);
         }
@@ -55,8 +57,6 @@ public abstract class JdbcSyncSqlExecutor extends JdbcSqlExecutor implements Syn
     @Override
     @SneakyThrows
     public <T, R> R select(SqlRequest request, ResultWrapper<T, R> wrapper) {
-        printSql(log, request);
-
         Connection connection = getConnection(request);
         try {
             return doSelect(connection, request, wrapper);

@@ -33,6 +33,8 @@ public class H2Dialect extends DefaultDialect {
         return "\"";
     }
 
+
+
     @Override
     public boolean isColumnToUpperCase() {
         return true;

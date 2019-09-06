@@ -5,7 +5,9 @@ import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * join targetTable alias on ....
@@ -22,7 +24,14 @@ public class Join {
 
     private String alias;
 
+    private Set<String> aliasList = new HashSet<>();
+
     private List<Term> terms = new ArrayList<>();
+
+    public void addAlias(String alias) {
+        aliasList.add(alias);
+
+    }
 
     public String getAlias() {
         if (alias == null) {
@@ -32,6 +41,9 @@ public class Join {
     }
 
     public boolean equalsTargetOrAlias(String name) {
-        return getAlias().equals(name) || getTarget().equals(name);
+        return getAlias().equalsIgnoreCase(name)
+                ||
+                getTarget().equalsIgnoreCase(name)
+                || aliasList.contains(name);
     }
 }

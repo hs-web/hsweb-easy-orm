@@ -23,23 +23,23 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(DefaultQuerySqlBuilder.of(this));
 
             /* 通用查询条件 */
-            addFeature(RDBFutures.eq);
-            addFeature(RDBFutures.not);
-            addFeature(RDBFutures.gt);
-            addFeature(RDBFutures.gte);
-            addFeature(RDBFutures.lt);
-            addFeature(RDBFutures.lte);
-            addFeature(RDBFutures.like);
-            addFeature(RDBFutures.nlike);
+            addFeature(RDBFeatures.eq);
+            addFeature(RDBFeatures.not);
+            addFeature(RDBFeatures.gt);
+            addFeature(RDBFeatures.gte);
+            addFeature(RDBFeatures.lt);
+            addFeature(RDBFeatures.lte);
+            addFeature(RDBFeatures.like);
+            addFeature(RDBFeatures.nlike);
 
-            addFeature(RDBFutures.in);
-            addFeature(RDBFutures.notIn);
-            addFeature(RDBFutures.between);
-            addFeature(RDBFutures.notBetween);
+            addFeature(RDBFeatures.in);
+            addFeature(RDBFeatures.notIn);
+            addFeature(RDBFeatures.between);
+            addFeature(RDBFeatures.notBetween);
 
-            addFeature(RDBFutures.eq);
-            addFeature(RDBFutures.isNull);
-            addFeature(RDBFutures.notNull);
+            addFeature(RDBFeatures.eq);
+            addFeature(RDBFeatures.isNull);
+            addFeature(RDBFeatures.notNull);
 
 
             //自动关联外键条件
@@ -47,11 +47,11 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
 
             /*  函数  */
-            addFeature(RDBFutures.count);
-            addFeature(RDBFutures.sum);
-            addFeature(RDBFutures.max);
-            addFeature(RDBFutures.min);
-            addFeature(RDBFutures.avg);
+            addFeature(RDBFeatures.count);
+            addFeature(RDBFeatures.sum);
+            addFeature(RDBFeatures.max);
+            addFeature(RDBFeatures.min);
+            addFeature(RDBFeatures.avg);
 
             // TODO: 2019-08-29 更多设置
         }
@@ -66,6 +66,10 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Optional<RDBTableMetadata> getTable(String name) {
+        if(name.contains(".")){
+            return findTableOrView(name)
+                    .map(RDBTableMetadata.class::cast);
+        }
         return getObject(RDBObjectType.table, name);
     }
 
@@ -76,6 +80,11 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     public void addTable(RDBTableMetadata metadata) {
         metadata.setSchema(this);
         addObject(metadata);
+    }
+
+    @Override
+    public <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name) {
+        return super.getObject(type, getDialect().clearQuote(name));
     }
 
     public Optional<TableOrViewMetadata> findTableOrView(String name) {

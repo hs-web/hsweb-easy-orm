@@ -51,11 +51,6 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     private int scale;
 
     /**
-     * 是否不能为空
-     */
-    private boolean notNull;
-
-    /**
      * 是否主键
      */
     private boolean primaryKey;
@@ -72,7 +67,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
      *
      * @since 4.0
      */
-    private boolean updatable;
+    private boolean updatable = true;
 
     /**
      * JDBC Type
@@ -89,15 +84,31 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
      */
     private TableOrViewMetadata owner;
 
+    /**
+     * 曾经的名字
+     */
+    private String previousName;
+
     public Dialect getDialect() {
         return getOwner().getDialect();
     }
 
+    public String getQuoteName() {
+        return getDialect().quote(getName());
+    }
+
     public String getDataType() {
         if (dataType == null) {
-            dataType = getDialect().buildDataType(this);
+            return getDialect().buildDataType(this);
         }
         return dataType;
+    }
+
+    public String getPreviousName() {
+        if (previousName == null) {
+            previousName = name;
+        }
+        return previousName;
     }
 
     @Override
@@ -109,7 +120,11 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     @SuppressWarnings("all")
     @SneakyThrows
     public RDBColumnMetadata clone() {
-        return ((RDBColumnMetadata) super.clone());
+        RDBColumnMetadata columnMetadata = ((RDBColumnMetadata) super.clone());
+        columnMetadata.setProperties(new HashMap<>(getProperties()));
+        columnMetadata.setFeatures(new HashMap<>(getFeatures()));
+
+        return columnMetadata;
     }
 
     @Override
@@ -151,5 +166,16 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public String getFullName() {
         return getFullName(getOwner().getName());
     }
+
+    public boolean isChanged(RDBColumnMetadata after) {
+
+        return !this.getName().equals(this.getPreviousName())
+                || this.getJdbcType() != after.getJdbcType()
+                || !this.getDataType().equals(after.getDataType())
+                || this.getLength() != after.getLength()
+                || this.getScale() != after.getScale()
+                || (this.getColumnDefinition() != null && !this.getColumnDefinition().equals(after.getColumnDefinition()));
+    }
+
 
 }

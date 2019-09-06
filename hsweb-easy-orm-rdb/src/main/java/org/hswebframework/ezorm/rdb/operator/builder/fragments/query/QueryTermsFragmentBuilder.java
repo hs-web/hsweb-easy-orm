@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -29,7 +29,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
     @Override
     public String getId() {
-        return RDBFutures.where;
+        return RDBFeatures.where;
     }
 
     @Override

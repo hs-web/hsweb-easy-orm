@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.*;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class ForeignKeyBuilder {
 
     private boolean toMany;
 
+    private boolean autoJoin;
+
     private String sourceColumn;
 
     private String target;
@@ -24,4 +27,10 @@ public class ForeignKeyBuilder {
     private String targetColumn;
 
     private List<Term> terms;
+
+    private JoinType joinType;
+
+    private List<ForeignKeyMetadata> preForeignKey;
+
+
 }

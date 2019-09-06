@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 
 import java.util.List;
 
@@ -18,6 +19,8 @@ public class DefaultForeignKeyMetadata implements ForeignKeyMetadata {
 
     private boolean toMany;
 
+    private boolean autoJoin;
+
     private TableOrViewMetadata source;
 
     private TableOrViewMetadata target;
@@ -26,7 +29,16 @@ public class DefaultForeignKeyMetadata implements ForeignKeyMetadata {
 
     private RDBColumnMetadata targetColumn;
 
+    private JoinType joinType = JoinType.left;
+
     private List<Term> terms;
 
+    private List<ForeignKeyMetadata> preForeignKey;
 
+    public String getAlias() {
+        if (alias == null) {
+            alias = name;
+        }
+        return alias;
+    }
 }

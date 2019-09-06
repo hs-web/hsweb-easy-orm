@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColum
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SortOrderFragmentBuilder;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,11 +26,11 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     private RDBSchemaMetadata schema;
 
-    private final Map<String, RDBColumnMetadata> allColumns = new HashMap<>();
+    protected Map<String, RDBColumnMetadata> allColumns = new ConcurrentHashMap<>();
 
-    private List<ForeignKeyMetadata> foreignKey = new ArrayList<>();
+    protected List<ForeignKeyMetadata> foreignKey = new ArrayList<>();
 
-    private Map<String, Feature> features = new HashMap<>();
+    protected Map<String, Feature> features = new HashMap<>();
 
     public AbstractTableOrViewMetadata() {
         //注册默认的where条件构造器
@@ -52,8 +53,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     }
 
     public void removeColumn(String name) {
-        synchronized (allColumns) {
-            allColumns.remove(name);
+        RDBColumnMetadata metadata = allColumns.remove(name);
+        if (metadata != null) {
+            allColumns.remove(metadata.getAlias());
         }
     }
 
@@ -63,12 +65,13 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     }
 
     public void addColumn(RDBColumnMetadata column) {
-        synchronized (allColumns) {
-            column.setOwner(this);
-            allColumns.put(column.getName(), column);
-            allColumns.put(column.getAlias(), column);
-        }
+
+        column.setOwner(this);
+        allColumns.put(column.getName(), column);
+        allColumns.put(column.getAlias(), column);
+
     }
+
 
     @Override
     public List<RDBColumnMetadata> getColumns() {
@@ -136,6 +139,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         foreignKeyMetadata.setName(builder.getName());
         foreignKeyMetadata.setAlias(builder.getAlias());
         foreignKeyMetadata.setLogical(true);
+        foreignKeyMetadata.setAutoJoin(builder.isAutoJoin());
         foreignKeyMetadata.setToMany(builder.isToMany());
         foreignKeyMetadata.setTarget(schema.getTableOrView(builder.getTarget())
                 .orElseThrow(() -> new IllegalArgumentException("target [" + builder.getTarget() + "] doesn't exist")));
@@ -168,7 +172,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     public Optional<ForeignKeyMetadata> getForeignKey(String targetName) {
         return foreignKey
                 .stream()
-                .filter(key -> key.getTarget().equalsNameOrAlias(targetName))
+                .filter(key -> key.getTarget().equalsNameOrAlias(targetName) || key.equalsNameOrAlias(targetName))
                 .findFirst();
     }
 

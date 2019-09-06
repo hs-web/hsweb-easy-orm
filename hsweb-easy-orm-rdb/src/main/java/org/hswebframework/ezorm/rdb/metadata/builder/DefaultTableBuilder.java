@@ -3,6 +3,8 @@ package org.hswebframework.ezorm.rdb.metadata.builder;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterRequest;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
 
 import java.util.Set;
@@ -12,12 +14,13 @@ import java.util.function.Consumer;
  * @author zhouhao
  */
 public class DefaultTableBuilder implements TableBuilder {
-    private RDBTableMetadata table = new RDBTableMetadata();
+    private RDBTableMetadata table;
 
     private RDBSchemaMetadata schema;
 
-    public DefaultTableBuilder(RDBSchemaMetadata schema) {
-        this.schema = schema;
+    public DefaultTableBuilder(RDBTableMetadata table) {
+        this.table = table;
+        this.schema = table.getSchema();
     }
 
     @Override
@@ -86,8 +89,13 @@ public class DefaultTableBuilder implements TableBuilder {
 
         //alter
         if (oldTable != null) {
-            // TODO: 2019-09-05
-
+            schema.<AlterTableSqlBuilder>findFeature(AlterTableSqlBuilder.id)
+                    .map(builder -> builder.build(AlterRequest.builder()
+                            .allowDrop(false)
+                            .newTable(table)
+                            .oldTable(oldTable)
+                            .build()))
+                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported AlterTableSqlBuilder"));
         } else {
             //create
             SqlRequest createTableSql = schema.<CreateTableSqlBuilder>findFeature(CreateTableSqlBuilder.id)
@@ -95,6 +103,8 @@ public class DefaultTableBuilder implements TableBuilder {
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported CreateTableSqlBuilder"));
             executor.execute(createTableSql);
         }
+
+        schema.addTable(table);
 
     }
 }

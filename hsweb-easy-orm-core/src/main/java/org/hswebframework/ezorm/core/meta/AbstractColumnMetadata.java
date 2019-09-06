@@ -16,13 +16,15 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     protected String alias;
     protected String comment;
     protected Class javaType;
+    protected boolean updatable;
+    protected boolean notNull;
     protected DictionaryCodec dictionaryCodec;
     protected ValueCodec valueCodec = DefaultValueCodec.INSTANCE;
     protected DefaultValue defaultValue;
     protected Validator validator;
     protected Map<String, Object> properties = new HashMap<>();
 
-    private Map<String, Feature> features;
+    private Map<String, Feature> features = new HashMap<>();
 
     @Override
     public String getAlias() {

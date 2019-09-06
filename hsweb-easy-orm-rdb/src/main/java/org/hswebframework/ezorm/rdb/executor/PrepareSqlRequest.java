@@ -15,6 +15,11 @@ public class PrepareSqlRequest implements SqlRequest {
 
     private Object[] parameters;
 
+    @Override
+    public boolean isEmpty() {
+        return sql == null || sql.isEmpty();
+    }
+
     public String toNativeSql() {
 
         String[] stringParameter = new String[parameters.length];
@@ -53,6 +58,9 @@ public class PrepareSqlRequest implements SqlRequest {
 
     @Override
     public String toString() {
+        if (isEmpty()) {
+            return "empty sql";
+        }
         return toNativeSql();
     }
 }

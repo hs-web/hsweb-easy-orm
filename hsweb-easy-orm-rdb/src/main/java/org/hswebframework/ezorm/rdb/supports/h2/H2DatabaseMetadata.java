@@ -8,6 +8,6 @@ public class H2DatabaseMetadata extends RDBDatabaseMetadata {
     public H2DatabaseMetadata() {
         super(Dialect.H2);
         addFeature(new H2CreateTableSqlBuilder());
-
+        addFeature(new H2AlterTableSqlBuilder());
     }
 }

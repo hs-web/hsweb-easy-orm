@@ -37,11 +37,17 @@ public interface Dialect extends Feature {
 
     String getQuoteEnd();
 
-    default String quote(String keyword) {
+    String clearQuote(String string);
+
+    default String quote(String keyword, boolean changeCase) {
         if (keyword.startsWith(getQuoteStart()) && keyword.endsWith(getQuoteEnd())) {
             return keyword;
         }
-        return getQuoteStart().concat(isColumnToUpperCase() ? keyword.toUpperCase() : keyword).concat(getQuoteEnd());
+        return getQuoteStart().concat(isColumnToUpperCase() && changeCase ? keyword.toUpperCase() : keyword).concat(getQuoteEnd());
+    }
+
+    default String quote(String keyword) {
+        return quote(keyword, true);
     }
 
     boolean isColumnToUpperCase();

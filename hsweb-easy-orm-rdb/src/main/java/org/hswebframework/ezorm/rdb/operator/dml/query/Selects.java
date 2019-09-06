@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
-import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 
 public interface Selects {
 
@@ -9,24 +9,24 @@ public interface Selects {
     }
 
     static SelectColumnOperator sum(String name) {
-        return new SelectColumnOperator(name, RDBFutures.sum.getFunction());
+        return new SelectColumnOperator(name, RDBFeatures.sum.getFunction());
     }
 
     static SelectColumnOperator count(String name) {
-        return new SelectColumnOperator(name, RDBFutures.count.getFunction());
+        return new SelectColumnOperator(name, RDBFeatures.count.getFunction());
     }
 
     static SelectColumnOperator max(String name) {
-        return new SelectColumnOperator(name, RDBFutures.max.getFunction());
+        return new SelectColumnOperator(name, RDBFeatures.max.getFunction());
     }
 
     static SelectColumnOperator min(String name) {
-        return new SelectColumnOperator(name, RDBFutures.min.getFunction());
+        return new SelectColumnOperator(name, RDBFeatures.min.getFunction());
     }
 
 
     static SelectColumnOperator avg(String name) {
-        return new SelectColumnOperator(name, RDBFutures.avg.getFunction());
+        return new SelectColumnOperator(name, RDBFeatures.avg.getFunction());
     }
 
 

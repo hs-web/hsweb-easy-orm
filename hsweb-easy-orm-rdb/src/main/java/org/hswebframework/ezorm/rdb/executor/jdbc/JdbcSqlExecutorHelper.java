@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.slf4j.Logger;
@@ -32,11 +33,13 @@ public class JdbcSqlExecutorHelper {
 
     public static void printSql(Logger log, SqlRequest sqlRequest) {
         if (log.isDebugEnabled()) {
-            log.debug("==>  Preparing: {}", sqlRequest.getSql());
-            if (sqlRequest.getParameters() != null && sqlRequest.getParameters().length > 0) {
-                log.debug("==> Parameters: {}", sqlParameterToString(sqlRequest.getParameters()));
-                if (sqlRequest instanceof PrepareSqlRequest) {
-                    log.debug("==>     Native: {}", ((PrepareSqlRequest) sqlRequest).toNativeSql());
+            if (sqlRequest.isNotEmpty()) {
+                log.debug("==>  Preparing: {}", sqlRequest.getSql());
+                if (sqlRequest.getParameters() != null && sqlRequest.getParameters().length > 0) {
+                    log.debug("==> Parameters: {}", sqlParameterToString(sqlRequest.getParameters()));
+                    if (sqlRequest instanceof PrepareSqlRequest) {
+                        log.debug("==>     Native: {}", ((PrepareSqlRequest) sqlRequest).toNativeSql());
+                    }
                 }
             }
         }
@@ -56,7 +59,10 @@ public class JdbcSqlExecutorHelper {
     }
 
 
-    public static void preparedStatementParameter(PreparedStatement statement, Object[] parameter) throws SQLException {
+    protected static void preparedStatementParameter(PreparedStatement statement, Object[] parameter) throws SQLException {
+        if (parameter == null || parameter.length == 0) {
+            return;
+        }
         int index = 1;
         //预编译参数
         for (Object object : parameter) {

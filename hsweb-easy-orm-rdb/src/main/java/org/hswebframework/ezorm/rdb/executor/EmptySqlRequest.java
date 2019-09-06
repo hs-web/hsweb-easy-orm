@@ -22,4 +22,9 @@ public final class EmptySqlRequest implements SqlRequest {
     public String toString() {
         return "empty sql";
     }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
 }

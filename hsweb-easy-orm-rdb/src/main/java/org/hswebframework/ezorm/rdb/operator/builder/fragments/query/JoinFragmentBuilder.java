@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.rdb.metadata.RDBFutures;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -39,7 +39,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
                                 .addSql("on");
 
                         fragments.addFragments(
-                                target.<QuerySqlFragmentBuilder>getFeature(RDBFutures.where)
+                                target.<QuerySqlFragmentBuilder>getFeature(RDBFeatures.where)
                                         .map(builder -> {
 
                                             QueryOperatorParameter joinOnParameter = new QueryOperatorParameter();
@@ -61,7 +61,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
 
     @Override
     public String getId() {
-        return RDBFutures.selectJoin;
+        return RDBFeatures.selectJoin;
     }
 
     @Override

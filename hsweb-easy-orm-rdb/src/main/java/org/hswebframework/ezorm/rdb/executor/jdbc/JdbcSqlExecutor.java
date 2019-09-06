@@ -1,8 +1,11 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
+import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,7 +15,10 @@ import java.util.List;
 
 import static org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSqlExecutorHelper.*;
 
+@AllArgsConstructor
 public abstract class JdbcSqlExecutor {
+
+    private Logger logger;
 
     @SneakyThrows
     protected void releaseStatement(Statement statement) {
@@ -26,27 +32,69 @@ public abstract class JdbcSqlExecutor {
 
     @SneakyThrows
     protected int doUpdate(Connection connection, SqlRequest request) {
-        PreparedStatement statement = connection.prepareStatement(request.getSql());
+        printSql(logger, request);
+        PreparedStatement statement = null;
         try {
-            preparedStatementParameter(statement, request.getParameters());
+            int count = 0;
+            if (!request.isEmpty()) {
+                statement = connection.prepareStatement(request.getSql());
+                preparedStatementParameter(statement, request.getParameters());
+                count += statement.executeUpdate();
+                logger.debug("==>    Updated: {}", count);
+            }
 
-            int num = statement.executeUpdate();
-            // TODO: 2019-08-21 批量sql
-            return num;
+            if (request instanceof BatchSqlRequest) {
+                for (SqlRequest batch : ((BatchSqlRequest) request).getBatch()) {
+                    if (!batch.isEmpty()) {
+
+                        if (null != statement) {
+                            releaseStatement(statement);
+                        }
+                        printSql(logger, batch);
+                        statement = connection.prepareStatement(batch.getSql());
+                        preparedStatementParameter(statement, batch.getParameters());
+                        int rows = statement.executeUpdate();
+                        count += rows;
+                        logger.debug("==>    Updated: {}", rows);
+                    }
+                }
+            }
+            return count;
         } finally {
-            releaseStatement(statement);
+            if (null != statement) {
+                releaseStatement(statement);
+            }
         }
     }
 
     @SneakyThrows
     protected void doExecute(Connection connection, SqlRequest request) {
-        PreparedStatement statement = connection.prepareStatement(request.getSql());
+        PreparedStatement statement = null;
         try {
-            preparedStatementParameter(statement, request.getParameters());
+            if (!request.isEmpty()) {
+                printSql(logger, request);
+                statement = connection.prepareStatement(request.getSql());
+                preparedStatementParameter(statement, request.getParameters());
+                statement.execute();
+            }
 
-            statement.execute();
+            if (request instanceof BatchSqlRequest) {
+                for (SqlRequest batch : ((BatchSqlRequest) request).getBatch()) {
+                    if (!batch.isEmpty()) {
+                        if (null != statement) {
+                            releaseStatement(statement);
+                        }
+                        printSql(logger, batch);
+                        statement = connection.prepareStatement(batch.getSql());
+                        preparedStatementParameter(statement, batch.getParameters());
+                        statement.execute();
+                    }
+                }
+            }
         } finally {
-            releaseStatement(statement);
+            if (null != statement) {
+                releaseStatement(statement);
+            }
         }
     }
 
@@ -55,6 +103,7 @@ public abstract class JdbcSqlExecutor {
     public <T, R> R doSelect(Connection connection, SqlRequest request, ResultWrapper<T, R> wrapper) {
         PreparedStatement statement = connection.prepareStatement(request.getSql());
         try {
+            printSql(logger, request);
             preparedStatementParameter(statement, request.getParameters());
             ResultSet resultSet = statement.executeQuery();
             List<String> columns = getResultColumns(resultSet);
@@ -75,6 +124,7 @@ public abstract class JdbcSqlExecutor {
                 }
             }
             wrapper.completedWrap();
+            logger.debug("==>    Results: {}", index);
             releaseResultSet(resultSet);
             return wrapper.getResult();
         } finally {

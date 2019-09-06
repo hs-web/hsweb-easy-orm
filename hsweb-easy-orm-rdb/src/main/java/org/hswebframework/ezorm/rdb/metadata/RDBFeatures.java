@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.*;
 
 import java.util.HashSet;
 
-public interface RDBFutures {
+public interface RDBFeatures {
 
 
     String where = "where";
