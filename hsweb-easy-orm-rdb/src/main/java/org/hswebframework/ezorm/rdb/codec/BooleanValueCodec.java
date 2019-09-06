@@ -12,14 +12,18 @@ public class BooleanValueCodec implements ValueCodec<Object, Boolean> {
 
     @Override
     public Object encode(Object value) {
-        if (jdbcType == JDBCType.BOOLEAN || value == null) {
-            return value;
+        if (value == null) {
+            return null;
         }
+        if (!(value instanceof Boolean)) {
+            value = "1".equals(String.valueOf(value)) || "true".equals(String.valueOf(value));
+        }
+
         if (Boolean.TRUE.equals(value)) {
-            return 1;
+            return jdbcType == JDBCType.BOOLEAN ? true : 1;
         }
         if (Boolean.FALSE.equals(value)) {
-            return 0;
+            return jdbcType == JDBCType.BOOLEAN ? true : 0;
         }
         return value;
     }

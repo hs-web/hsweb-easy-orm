@@ -7,7 +7,7 @@ import java.sql.Clob;
 
 public class JdbcResultDecoder implements Decoder<Object> {
 
-    public static final JdbcResultDecoder INSTANCE=new JdbcResultDecoder();
+    public static final JdbcResultDecoder INSTANCE = new JdbcResultDecoder();
 
     @Override
     public Object decode(Object data) {
@@ -16,7 +16,7 @@ public class JdbcResultDecoder implements Decoder<Object> {
         }
 
         if (data instanceof Blob) {
-            return BlobValueCodec.INSTANCE.decode(data);
+            return ClobValueCodec.INSTANCE.decode(data);
         }
 
         return data;

@@ -23,9 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.rowset.serial.SerialBlob;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.sql.Blob;
 import java.sql.SQLException;
 
@@ -37,20 +35,28 @@ public class BlobValueCodec implements ValueCodec<Blob, Object> {
     @Override
     @SneakyThrows
     public Blob encode(Object value) {
-        Blob blob;
+        if (value == null) {
+            return null;
+        }
         if (value instanceof Blob) {
             return ((Blob) value);
         }
-        if (value instanceof String) {
-            value = ((String) value).getBytes();
-        } else {
-            value = value.toString().getBytes();
-        }
+        if (!(value instanceof byte[])) {
 
-        // if (value instanceof byte[]) {
-        blob = new SerialBlob(((byte[]) value));
-        //}
-        return blob;
+            if (value instanceof Serializable) {
+                try (ByteArrayOutputStream output = new ByteArrayOutputStream();
+                     ObjectOutputStream object = new ObjectOutputStream(output)) {
+                    object.writeObject(value);
+                    object.flush();
+                    object.close();
+                    value = output.toByteArray();
+                }
+            } else {
+                throw new NotSerializableException("unsupported encode type " + value.getClass());
+            }
+
+        }
+        return new SerialBlob(((byte[]) value));
     }
 
     @Override
@@ -71,7 +77,7 @@ public class BlobValueCodec implements ValueCodec<Blob, Object> {
                     log.warn(e.getMessage(), e);
                 }
                 //转为bytes
-                return blobValue.getBytes(0, (int) blobValue.length());
+                return blobValue.getBytes(1, (int) blobValue.length());
             } catch (Exception e) {
                 log.warn("blob data error", e);
             }

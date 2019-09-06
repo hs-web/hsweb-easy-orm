@@ -3,10 +3,11 @@ package org.hswebframework.ezorm.rdb.codec;
 import org.hswebframework.utils.DateTimeUtils;
 import org.hswebframework.utils.time.DateFormatter;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -23,21 +24,34 @@ public class DateTimeCodec implements ValueCodec {
         this.toType = toType;
     }
 
+    protected Date doParse(String dateString) {
+        Date smartFormat = DateFormatter.fromString(dateString);
+        if (smartFormat != null) {
+            return smartFormat;
+        }
+        return DateTimeFormat.forPattern(format).parseDateTime(dateString).toDate();
+    }
+
     @Override
     public Object encode(Object value) {
-        if (value instanceof Date) return value;
+        if (value instanceof Date) {
+            return value;
+        }
         if (value instanceof String) {
             if (((String) value).contains(",")) {
                 return Arrays.stream(((String) value).split(","))
-                        .map(DateFormatter::fromString)
+                        .map(this::doParse)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList());
             }
-            return DateFormatter.fromString(((String) value));
+
+            return doParse(((String) value));
         }
         return value;
     }
 
     @Override
+    @SuppressWarnings("all")
     public Object decode(Object data) {
         if (data instanceof Number) {
             data = new Date(((Number) data).longValue());
@@ -50,19 +64,23 @@ public class DateTimeCodec implements ValueCodec {
                 return DateTimeUtils.format(((Date) data), format);
             }
         }
+        if (data instanceof Collection) {
+            return ((Collection<?>) data)
+                    .stream()
+                    .map(this::decode)
+                    .collect((Collector) (toType == String.class ? Collectors.joining(",") : Collectors.toList()));
+
+        }
         if (data instanceof String) {
             String stringData = ((String) data);
             if (toType == Date.class) {
                 if ((stringData).contains(",")) {
                     return Arrays.stream(stringData.split(","))
-                            .map(DateFormatter::fromString)
+                            .map(this::doParse)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toList());
                 }
-                data = DateFormatter.fromString(stringData);
-                if (data == null) {
-                    data = DateTimeUtils.formatDateString(stringData, format);
-                }
+                data = this.doParse(stringData);
             }
         }
         return data;

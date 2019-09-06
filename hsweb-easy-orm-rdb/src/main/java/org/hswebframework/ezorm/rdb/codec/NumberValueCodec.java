@@ -22,14 +22,14 @@ public class NumberValueCodec implements ValueCodec {
             converter = Number::intValue;
         } else if (javaType == double.class || javaType == Double.class) {
             converter = Number::doubleValue;
+        } else if (javaType == float.class || javaType == Float.class) {
+            converter = Number::floatValue;
         } else if (javaType == long.class || javaType == Long.class) {
             converter = Number::longValue;
         } else if (javaType == byte.class || javaType == Byte.class) {
             converter = Number::byteValue;
         } else if (javaType == boolean.class || javaType == Boolean.class) {
             converter = num -> num.byteValue() != 0;
-        } else if (javaType == char.class || javaType == Character.class) {
-            converter = num -> (char) num.intValue();
         } else if (ClassUtils.instanceOf(javaType, Date.class)) {
             converter = num -> {
                 try {
@@ -54,7 +54,7 @@ public class NumberValueCodec implements ValueCodec {
             return value;
         }
         if (value instanceof Date) {
-            value = ((Date) value).getTime();
+            return ((Date) value).getTime();
         } else if (!StringUtils.isNumber(value)) {
             //尝试转换字符格式的日期
             Date date = DateFormatter.fromString(String.valueOf(value));
