@@ -1,10 +1,10 @@
 package org.hswebframework.ezorm.rdb.supports.posgres;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
+import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
-public class PostgreSQLTableMetaParser extends RDBTableMetaParser {
+public class PostgreSQLTableMetadataParser extends RDBTableMetadataParser {
     private static final String TABLE_META_SQL = "select column_name as \"name\"" +
             " , udt_name as \"data_type\"" +
             " , character_maximum_length as \"data_length\"" +
@@ -27,7 +27,7 @@ public class PostgreSQLTableMetaParser extends RDBTableMetaParser {
 
     private static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=%s and table_name=#{table}";
 
-    public PostgreSQLTableMetaParser(SyncSqlExecutor sqlExecutor) {
+    public PostgreSQLTableMetadataParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);
     }
 

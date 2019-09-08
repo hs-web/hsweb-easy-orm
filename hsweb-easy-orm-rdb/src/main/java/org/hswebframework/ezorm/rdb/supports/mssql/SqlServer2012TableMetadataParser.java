@@ -1,15 +1,15 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
+import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 /**
  * @author zhouhao
  */
-public class SqlServer2012TableMetaParser extends RDBTableMetaParser {
+public class SqlServer2012TableMetadataParser extends RDBTableMetadataParser {
 
-    public SqlServer2012TableMetaParser(SyncSqlExecutor sqlExecutor) {
+    public SqlServer2012TableMetadataParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);
     }
 

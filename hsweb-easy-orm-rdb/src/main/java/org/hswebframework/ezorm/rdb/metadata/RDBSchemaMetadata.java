@@ -132,4 +132,9 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     public Dialect getDialect() {
         return getDatabase().getDialect();
     }
+
+    @Override
+    public RDBSchemaMetadata clone() {
+        return (RDBSchemaMetadata)super.clone();
+    }
 }

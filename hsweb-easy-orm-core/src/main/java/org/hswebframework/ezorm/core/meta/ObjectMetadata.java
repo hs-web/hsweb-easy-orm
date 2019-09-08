@@ -4,7 +4,7 @@ package org.hswebframework.ezorm.core.meta;
  * @author zhouhao
  * @since 4.0.0
  */
-public interface ObjectMetadata {
+public interface ObjectMetadata extends Cloneable {
 
     String getName();
 
@@ -17,4 +17,6 @@ public interface ObjectMetadata {
                 && (nameOrAlias.equalsIgnoreCase(getName()) || nameOrAlias.equalsIgnoreCase(getAlias())
         );
     }
+
+    ObjectMetadata clone();
 }

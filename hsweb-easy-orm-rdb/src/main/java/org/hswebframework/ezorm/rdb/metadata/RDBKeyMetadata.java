@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 
@@ -24,5 +25,11 @@ public class RDBKeyMetadata implements ObjectMetadata {
     @Override
     public ObjectType getObjectType() {
         return RDBObjectType.key;
+    }
+
+    @Override
+    @SneakyThrows
+    public RDBKeyMetadata clone() {
+        return (RDBKeyMetadata)super.clone();
     }
 }

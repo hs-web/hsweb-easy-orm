@@ -15,7 +15,7 @@ import java.sql.JDBCType;
 
 public class H2TableMetaParserTest {
 
-    private H2TableMetaParser parser;
+    private H2TableMetadataParser parser;
 
     private SyncSqlExecutor executor;
 
@@ -26,7 +26,7 @@ public class H2TableMetaParserTest {
         Class.forName("org.h2.Driver");
         executor = new TestSyncSqlExecutor(new H2ConnectionProvider());
 
-        parser = new H2TableMetaParser(executor);
+        parser = new H2TableMetadataParser(executor);
         parser.setSchemaName("PUBLIC");
     }
 

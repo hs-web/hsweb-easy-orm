@@ -2,6 +2,8 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 
@@ -40,5 +42,11 @@ public class DefaultForeignKeyMetadata implements ForeignKeyMetadata {
             alias = name;
         }
         return alias;
+    }
+
+    @Override
+    @SneakyThrows
+    public DefaultForeignKeyMetadata clone() {
+        return  (DefaultForeignKeyMetadata)super.clone();
     }
 }

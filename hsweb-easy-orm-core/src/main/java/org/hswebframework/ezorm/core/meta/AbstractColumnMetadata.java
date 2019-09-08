@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.core.meta;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.*;
 
 import java.util.*;
@@ -85,4 +86,9 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
         features.put(feature.getId(), feature);
     }
 
+    @Override
+    @SneakyThrows
+    public ObjectMetadata clone() {
+        return (ObjectMetadata)super.clone();
+    }
 }

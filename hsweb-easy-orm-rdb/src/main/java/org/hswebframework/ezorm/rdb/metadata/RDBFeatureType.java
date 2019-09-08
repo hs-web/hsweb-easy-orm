@@ -20,6 +20,7 @@ public enum RDBFeatureType implements FeatureType {
 
     sqlExecutor("SQL执行器"),
 
+    metadataParser("元数据解析器"),
 
     function("函数"),
 

@@ -16,13 +16,13 @@ public class StaticMethodReferenceColumnConvertTest {
         TestClass testClass = new TestClass();
 
 
-        Assert.assertEquals(MethodReferenceConvert.convertToColumn(TestClass::getName), "name");
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(TestClass::getName), "name");
 
-        Assert.assertEquals(MethodReferenceConvert.convertToColumn(TestClass::isEnabled), "enabled");
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(TestClass::isEnabled), "enabled");
 
-        Assert.assertEquals(MethodReferenceConvert.convertToColumn(testClass::getName), "name");
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(testClass::getName), "name");
 
-        Assert.assertEquals(MethodReferenceConvert.convertToColumn(testClass::isEnabled), "enabled");
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(testClass::isEnabled), "enabled");
 
     }
 

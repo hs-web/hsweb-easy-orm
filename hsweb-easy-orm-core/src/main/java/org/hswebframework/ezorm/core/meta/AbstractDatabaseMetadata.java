@@ -2,6 +2,8 @@ package org.hswebframework.ezorm.core.meta;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import org.hswebframework.ezorm.core.CastUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +33,7 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
     private String alias;
 
     @Getter
-    private Map<String,Feature> features=new HashMap<>();
+    private Map<String, Feature> features = new HashMap<>();
 
     public void addSchema(S schema) {
         schemas.put(schema.getName(), schema);
@@ -66,7 +68,22 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
 
     @Override
     public void addFeature(Feature feature) {
-        features.put(feature.getId(),feature);
+        features.put(feature.getId(), feature);
     }
 
+    @Override
+    @SneakyThrows
+    @SuppressWarnings("all")
+    public AbstractDatabaseMetadata<S> clone() {
+        AbstractDatabaseMetadata<S> metadata = (AbstractDatabaseMetadata) super.clone();
+        metadata.schemas = new ConcurrentHashMap<>();
+        getSchemas().stream()
+                .map(SchemaMetadata::clone)
+                .map(CastUtil::<S>cast)
+                .forEach(metadata::addSchema);
+
+        metadata.features = new HashMap<>(getFeatures());
+
+        return metadata;
+    }
 }

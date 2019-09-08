@@ -12,6 +12,10 @@ import java.util.stream.Stream;
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 public abstract class ResultWrappers {
 
+    public static <E, R> ResultWrapper<E, R> lowerCase(ResultWrapper<E, R> wrapper) {
+        return LowerCaseColumnResultWrapper.of(wrapper);
+    }
+
     public static ResultWrapper<Map<String, Object>, Map<String, Object>> map() {
         return MapResultWrapper.defaultInstance();
     }

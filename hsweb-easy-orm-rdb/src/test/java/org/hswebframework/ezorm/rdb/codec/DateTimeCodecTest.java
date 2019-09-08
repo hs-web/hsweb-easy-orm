@@ -13,14 +13,14 @@ public class DateTimeCodecTest {
 
     @Test
     public void testDecodeString() {
-        DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd", String.class);
+        DateTimeCodec codec = new DateTimeCodec("yyyy:MM:dd", String.class);
 
         Date data = new Date();
 
         Object val = codec.encode(data);
         assertEquals(data, val);
 
-        assertEquals(codec.decode(codec.encode("2019-01-01")), "2019-01-01");
+        assertEquals(codec.decode(codec.encode("2019:01:01")), "2019:01:01");
 
     }
 

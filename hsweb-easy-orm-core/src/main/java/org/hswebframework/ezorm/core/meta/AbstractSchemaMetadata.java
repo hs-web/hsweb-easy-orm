@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.core.meta;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.CastUtil;
 
 import java.util.*;
@@ -82,7 +83,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
     @Override
     public <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name) {
-        Objects.requireNonNull(name,"name");
+        Objects.requireNonNull(name, "name");
         return of(metaRepository.computeIfAbsent(type.getId(), t -> new ConcurrentHashMap<>()))
                 .map(repo -> repo.computeIfAbsent(name, __ -> parseMeta(type, name)))
                 .map(CastUtil::cast);
@@ -98,4 +99,11 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
                 .orElseGet(() -> getDatabase().getFeature(id));
     }
 
+    @Override
+    @SneakyThrows
+    public AbstractSchemaMetadata clone() {
+        AbstractSchemaMetadata schema = (AbstractSchemaMetadata) super.clone();
+        schema.features = new HashMap<>(features);
+        return schema;
+    }
 }

@@ -5,7 +5,7 @@ import org.hswebframework.utils.StringUtils;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MethodReferenceConvert {
+public class MethodReferenceConverter {
 
     private static final Map<Class, String> cache = new ConcurrentHashMap<>();
 
@@ -20,6 +20,7 @@ public class MethodReferenceConvert {
     public static String convertToColumn(Object column) {
         return cache.computeIfAbsent(column.getClass(), t -> {
             SerializedLambda lambda = SerializedLambda.of(column);
+
             String methodName = lambda.getMethodName();
             if (methodName.startsWith("get")) {
                 return StringUtils.toLowerCaseFirstOne(methodName.substring(3));

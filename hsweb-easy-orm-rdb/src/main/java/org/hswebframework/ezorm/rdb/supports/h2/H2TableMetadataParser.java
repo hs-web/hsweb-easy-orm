@@ -4,11 +4,11 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
-import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
+import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 
 import java.util.Optional;
 
-public class H2TableMetaParser extends RDBTableMetaParser {
+public class H2TableMetadataParser extends RDBTableMetadataParser {
     private static final String TABLE_META_SQL =
             "SELECT column_name AS \"name\"," +
                     "type_name AS \"data_type\"," +
@@ -29,7 +29,7 @@ public class H2TableMetaParser extends RDBTableMetaParser {
     private static final String TABLE_EXISTS_SQL = "SELECT count(1) as \"total\" FROM information_schema.columns " +
             "WHERE table_name = upper(#{table}) and table_schema=%s";
 
-    public H2TableMetaParser(SyncSqlExecutor sqlExecutor) {
+    public H2TableMetadataParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);
     }
 

@@ -2,7 +2,9 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.Feature;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
@@ -184,5 +186,11 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     public Dialect getDialect() {
         return getSchema()
                 .getDialect();
+    }
+
+    @Override
+    @SneakyThrows
+    public ObjectMetadata clone() {
+        return (ObjectMetadata)super.clone();
     }
 }

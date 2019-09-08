@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.codec;
 
+import org.hswebframework.ezorm.core.Encoder;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.utils.StringUtils;
@@ -28,6 +29,8 @@ public class NumberValueCodec implements ValueCodec {
             converter = Number::longValue;
         } else if (javaType == byte.class || javaType == Byte.class) {
             converter = Number::byteValue;
+        } else if (javaType == short.class || javaType == Short.class) {
+            converter = Number::shortValue;
         } else if (javaType == boolean.class || javaType == Boolean.class) {
             converter = num -> num.byteValue() != 0;
         } else if (ClassUtils.instanceOf(javaType, Date.class)) {
@@ -50,9 +53,7 @@ public class NumberValueCodec implements ValueCodec {
         if (StringUtils.isNullOrEmpty(value)) {
             return null;
         }
-        if (value instanceof Number) {
-            return value;
-        }
+
         if (value instanceof Date) {
             return ((Date) value).getTime();
         } else if (!StringUtils.isNumber(value)) {
@@ -62,15 +63,17 @@ public class NumberValueCodec implements ValueCodec {
                 value = date.getTime();
             }
         }
-
+        if (value instanceof Number) {
+            return converter.apply(((Number) value));
+        }
         if (StringUtils.isNumber(value)) {
             return converter.apply(new BigDecimal(String.valueOf(value)));
         }
         if (Boolean.TRUE.equals(value)) {
-            return 1;
+            return converter.apply(1);
         }
         if (Boolean.FALSE.equals(value)) {
-            return 0;
+            return converter.apply(0);
         }
         throw new UnsupportedOperationException("值" + value + "无法转换为数字");
     }

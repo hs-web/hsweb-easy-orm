@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.list;
 
-public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy<RDBTableMetadata> {
+public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStrategy<RDBTableMetadata> {
 
     private static final Map<JDBCType, Class> defaultJavaTypeMap = new HashMap<>();
 
@@ -62,7 +62,7 @@ public abstract class RDBTableMetaParser implements ObjectMetaDataParserStrategy
 
     protected abstract String getTableExistsSql();
 
-    public RDBTableMetaParser(SyncSqlExecutor executor) {
+    public RDBTableMetadataParser(SyncSqlExecutor executor) {
         this.sqlExecutor = executor;
     }
 

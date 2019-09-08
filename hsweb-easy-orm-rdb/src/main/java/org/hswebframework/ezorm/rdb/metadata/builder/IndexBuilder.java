@@ -20,7 +20,7 @@ public class IndexBuilder {
     private RDBIndexMetadata index = new RDBIndexMetadata();
 
     public IndexBuilder name(String indexName) {
-        index.setIndexName(indexName);
+        index.setName(indexName);
         return this;
     }
     public IndexBuilder unique() {
@@ -31,8 +31,8 @@ public class IndexBuilder {
         return column(column, null);
     }
 
-    public IndexBuilder column(String column, String sort) {
-        index.getColumnName().add(RDBIndexMetadata.IndexColumn.of(column, sort));
+    public IndexBuilder column(String column, RDBIndexMetadata.IndexSort sort) {
+        index.getColumns().add(RDBIndexMetadata.IndexColumn.of(column, sort));
         return this;
     }
 

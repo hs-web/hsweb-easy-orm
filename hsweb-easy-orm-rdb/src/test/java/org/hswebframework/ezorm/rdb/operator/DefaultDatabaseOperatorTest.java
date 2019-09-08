@@ -9,10 +9,9 @@ import org.hswebframework.ezorm.core.meta.DefaultObjectMetaDataParser;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;
 import org.hswebframework.ezorm.rdb.supports.h2.H2DatabaseMetadata;
-import org.hswebframework.ezorm.rdb.supports.h2.H2TableMetaParser;
+import org.hswebframework.ezorm.rdb.supports.h2.H2TableMetadataParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class DefaultDatabaseOperatorTest {
         schema.setName("PUBLIC");
 
         DefaultObjectMetaDataParser parser = new DefaultObjectMetaDataParser();
-        parser.registerStrategy(new H2TableMetaParser(sqlExecutor));
+        parser.registerStrategy(new H2TableMetadataParser(sqlExecutor));
         schema.setParser(parser);
         database.addSchema(schema);
         database.setCurrentSchema(schema);

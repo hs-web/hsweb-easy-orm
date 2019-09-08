@@ -17,12 +17,12 @@ public class MysqlTableMetaParserTest {
 
     private SyncSqlExecutor executor;
 
-    private MysqlTableMetaParser parser;
+    private MysqlTableMetadataParser parser;
 
     @Before
     public void init() {
         executor = new TestSyncSqlExecutor(new MysqlConnectionProvider());
-        parser = new MysqlTableMetaParser(executor);
+        parser = new MysqlTableMetadataParser(executor);
     }
 
     @Test

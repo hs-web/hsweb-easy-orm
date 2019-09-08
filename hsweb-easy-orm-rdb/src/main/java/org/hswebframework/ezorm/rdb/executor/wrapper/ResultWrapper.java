@@ -20,7 +20,8 @@ public interface ResultWrapper<E, R> {
      *
      * @param context 包装器上下文
      */
-    void beforeWrap(ResultWrapperContext context);
+    default void beforeWrap(ResultWrapperContext context) {
+    }
 
     /**
      * 包装一列时执行
@@ -41,7 +42,8 @@ public interface ResultWrapper<E, R> {
     /**
      * 全部包装完成时执行此方法
      */
-    void completedWrap();
+    default void completedWrap() {
+    }
 
     /**
      * @return 当前包装结果

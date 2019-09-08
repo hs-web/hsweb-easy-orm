@@ -1,10 +1,10 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetaParser;
+import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
-public class MysqlTableMetaParser extends RDBTableMetaParser {
+public class MysqlTableMetadataParser extends RDBTableMetadataParser {
     private static final String TABLE_META_SQL = " select " +
             "column_name as `name`, " +
             "data_type as `data_type`, " +
@@ -23,7 +23,7 @@ public class MysqlTableMetaParser extends RDBTableMetaParser {
 
     private static final String TABLE_EXISTS_SQL = "select count(1) as 'total' from information_schema.`TABLES` where table_schema=%s and table_name=#{table}";
 
-    public MysqlTableMetaParser(SyncSqlExecutor sqlExecutor) {
+    public MysqlTableMetadataParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);
     }
 
