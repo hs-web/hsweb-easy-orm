@@ -8,15 +8,15 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 public class PostgreSQLPaginator implements Paginator {
     @Override
-    public SqlFragments doPaging(SqlFragments fragments, int limit, int offset) {
+    public SqlFragments doPaging(SqlFragments fragments, int pageIndex, int pageSize) {
 
         if (fragments instanceof PrepareSqlFragments) {
             ((PrepareSqlFragments) fragments).addSql("limit ? offset ?")
-                    .addParameter(limit, offset);
+                    .addParameter(pageSize, pageIndex * pageSize);
         } else if (fragments instanceof BlockSqlFragments) {
             ((BlockSqlFragments) fragments).addBlock(FragmentBlock.after, PrepareSqlFragments.of()
                     .addSql("limit ? offset ?")
-                    .addParameter(limit, offset));
+                    .addParameter(pageSize, pageIndex * pageSize));
         }
 
         return fragments;

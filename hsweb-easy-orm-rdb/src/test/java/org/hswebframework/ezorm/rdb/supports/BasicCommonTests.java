@@ -122,7 +122,7 @@ public abstract class BasicCommonTests {
             Assert.assertEquals(sum, 2);
 
             int deleted = operator.dml().delete("test_dml_crud")
-                    .where(dsl -> dsl.where("comment", 2))
+                    .where(dsl -> dsl.where("comment", "2"))
                     .execute()
                     .sync();
             Assert.assertEquals(deleted, 1);
