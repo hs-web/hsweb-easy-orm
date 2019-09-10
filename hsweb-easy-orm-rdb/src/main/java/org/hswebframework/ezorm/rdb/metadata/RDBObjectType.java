@@ -12,6 +12,7 @@ public enum RDBObjectType implements ObjectType {
     column("列"),
     foreign_key("外键"),
     key("键"),
+    dataType("数据类型"),
     index("索引"),
     view("视图"),
     function("函数");

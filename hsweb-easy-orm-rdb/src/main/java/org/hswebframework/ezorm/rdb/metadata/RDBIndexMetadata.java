@@ -6,10 +6,10 @@ import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author zhouhao
@@ -27,7 +27,7 @@ public class RDBIndexMetadata implements ObjectMetadata {
 
     private String comment;
 
-    private List<IndexColumn> columns = new LinkedList<>();
+    private List<IndexColumn> columns = new CopyOnWriteArrayList<>();
 
     private boolean unique;
 
@@ -48,7 +48,7 @@ public class RDBIndexMetadata implements ObjectMetadata {
             }
             builder.append(column.getColumn())
                     .append(" ")
-                    .append(column.getSort() == IndexSort.non ? "" : column.getSort().name());
+                    .append(column.getSort().name());
         }
         builder.append(")");
 
@@ -69,6 +69,8 @@ public class RDBIndexMetadata implements ObjectMetadata {
     public RDBIndexMetadata clone() {
         RDBIndexMetadata metadata = (RDBIndexMetadata) super.clone();
 
+        metadata.columns.clear();
+
         columns.stream()
                 .map(IndexColumn::clone)
                 .forEach(metadata.columns::add);
@@ -77,7 +79,26 @@ public class RDBIndexMetadata implements ObjectMetadata {
     }
 
     public enum IndexSort {
-        non, asc, desc
+        asc, desc
+    }
+
+    public boolean isChanged(RDBIndexMetadata old) {
+        if (old.getColumns().size() != getColumns().size()) {
+            return true;
+        }
+
+        Map<String, IndexColumn> nameMapping = getColumns()
+                .stream()
+                .collect(Collectors.toMap(IndexColumn::getColumn, Function.identity()));
+
+        for (IndexColumn oldColumn : old.getColumns()) {
+            IndexColumn column = nameMapping.get(oldColumn.column);
+            if (column == null || column.getSort() != oldColumn.getSort()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Getter
@@ -85,7 +106,7 @@ public class RDBIndexMetadata implements ObjectMetadata {
     public static class IndexColumn implements Cloneable, Comparable<IndexColumn> {
         private String column;
 
-        private IndexSort sort;
+        private IndexSort sort = IndexSort.asc;
 
         private int sortIndex;
 

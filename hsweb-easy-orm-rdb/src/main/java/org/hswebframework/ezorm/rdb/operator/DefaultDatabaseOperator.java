@@ -7,8 +7,8 @@ import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.metadata.builder.DefaultTableBuilder;
-import org.hswebframework.ezorm.rdb.metadata.builder.TableBuilder;
+import org.hswebframework.ezorm.rdb.operator.ddl.DefaultTableBuilder;
+import org.hswebframework.ezorm.rdb.operator.ddl.TableBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.ExecutableDeleteOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.ExecutableInsertOperator;
@@ -92,6 +92,7 @@ public class DefaultDatabaseOperator
     @Override
     public TableBuilder createOrAlter(String name) {
         RDBTableMetadata table = metadata.getTable(name)
+                .map(RDBTableMetadata::clone)
                 .orElseGet(() -> {
                     String tableName = name;
                     RDBSchemaMetadata schema;

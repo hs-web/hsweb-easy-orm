@@ -1,5 +1,6 @@
-package org.hswebframework.ezorm.rdb.metadata.builder;
+package org.hswebframework.ezorm.rdb.operator.ddl;
 
+import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.core.DefaultValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -80,6 +81,12 @@ public class DefaultColumnBuilder implements ColumnBuilder {
     @Override
     public ColumnBuilder columnDef(String def) {
         columnMetaData.setColumnDefinition(def);
+        return this;
+    }
+
+    @Override
+    public ColumnBuilder defaultValue(DefaultValue value) {
+        columnMetaData.setDefaultValue(value);
         return this;
     }
 

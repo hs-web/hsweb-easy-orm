@@ -5,6 +5,10 @@ import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.DefaultQuerySqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonAlterTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateIndexSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.DefaultForeignKeyTermFragmentBuilder;
 
 import java.util.Arrays;
@@ -21,6 +25,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         {
             //查询
             addFeature(DefaultQuerySqlBuilder.of(this));
+
 
             /* 通用查询条件 */
             addFeature(RDBFeatures.eq);
@@ -53,7 +58,13 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFeatures.min);
             addFeature(RDBFeatures.avg);
 
-            // TODO: 2019-08-29 更多设置
+
+            /* DDL */
+
+            addFeature(CommonCreateTableSqlBuilder.INSTANCE);
+            addFeature(CommonAlterTableSqlBuilder.INSTANCE);
+            addFeature(CommonCreateIndexSqlBuilder.INSTANCE);
+            addFeature(CommonDropIndexSqlBuilder.INSTANCE);
         }
 
     }

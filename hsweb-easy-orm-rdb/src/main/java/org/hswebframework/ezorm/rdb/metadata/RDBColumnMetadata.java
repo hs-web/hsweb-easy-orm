@@ -171,7 +171,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
         return !this.getName().equals(this.getPreviousName())
                 || this.getJdbcType() != after.getJdbcType()
-                || !this.getDataType().equals(after.getDataType())
+                || (this.getDataType() != null && !this.getDataType().equals(after.getDataType()))
                 || this.getLength() != after.getLength()
                 || this.getScale() != after.getScale()
                 || (this.getColumnDefinition() != null && !this.getColumnDefinition().equals(after.getColumnDefinition()));

@@ -27,4 +27,22 @@ public class DefaultBatchSqlRequest extends PrepareSqlRequest implements BatchSq
         return this;
     }
 
+    @Override
+    public String toString() {
+
+        StringBuilder builder=new StringBuilder();
+        if(isNotEmpty()){
+            builder.append(super.toString());
+        }
+        for (SqlRequest request : batch) {
+            if(request.isNotEmpty()){
+                if(builder.length()>0){
+                    builder.append("\n");
+                }
+                builder.append(request.toString());
+            }
+
+        }
+        return builder.toString();
+    }
 }

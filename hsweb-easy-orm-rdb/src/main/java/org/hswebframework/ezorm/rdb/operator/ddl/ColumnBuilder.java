@@ -1,6 +1,9 @@
-package org.hswebframework.ezorm.rdb.metadata.builder;
+package org.hswebframework.ezorm.rdb.operator.ddl;
 
+import org.hswebframework.ezorm.core.DefaultValue;
+import org.hswebframework.ezorm.rdb.metadata.NativeSqlDefaultValue;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 
 import java.sql.JDBCType;
 import java.util.function.Consumer;
@@ -34,6 +37,12 @@ public interface ColumnBuilder {
     default ColumnBuilder varchar(int length) {
         return jdbcType(JDBCType.VARCHAR).length(length);
     }
+
+    default ColumnBuilder defaultValue(String defaultSql) {
+        return defaultValue(NativeSqlDefaultValue.of(defaultSql));
+    }
+
+    ColumnBuilder defaultValue(DefaultValue value);
 
     default ColumnBuilder number(int precision, int scale) {
         return jdbcType(JDBCType.NUMERIC).length(precision, scale);

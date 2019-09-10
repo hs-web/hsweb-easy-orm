@@ -1,0 +1,35 @@
+version: '2'
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: ezorm-mysql
+    ports:
+      - "13306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ezorm
+      TZ: Asia/Shanghai
+  postgres:
+    image: postgres:11-alpine
+    container_name: ezorm-postgres
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ezorm
+      TZ: Asia/Shanghai
+  oracle:
+     image: iatebes/oracle_11g
+     container_name: ezorm-oracle
+     ports:
+       - "11521:1521"
+     environment:
+       TZ: Asia/Shanghai
+  mssql:
+     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+     environment:
+        SA_PASSWORD: ezorm!PasswOrd
+        ACCEPT_EULA: Y
+        MSSQL_PID: Enterprise
+     ports:
+        - "11433:1433"

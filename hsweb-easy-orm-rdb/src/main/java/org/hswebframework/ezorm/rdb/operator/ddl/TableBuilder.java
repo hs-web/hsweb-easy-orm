@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.metadata.builder;
+package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -18,6 +18,8 @@ public interface TableBuilder {
 
     TableBuilder removeColumn(String name);
 
+    TableBuilder dropColumn(String name);
+
     TableBuilder comment(String comment);
 
     TableBuilder property(String propertyName, Object value);
@@ -25,6 +27,8 @@ public interface TableBuilder {
     TableBuilder alias(String name);
 
     IndexBuilder index();
+
+    ForeignKeyDSLBuilder  foreignKey();
 
     void commit();
 }

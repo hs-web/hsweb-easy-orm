@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.metadata.builder;
+package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -18,6 +18,8 @@ public class DefaultTableBuilder implements TableBuilder {
 
     private RDBSchemaMetadata schema;
 
+    private boolean dropColumn = false;
+
     public DefaultTableBuilder(RDBTableMetadata table) {
         this.table = table;
         this.schema = table.getSchema();
@@ -26,6 +28,11 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public IndexBuilder index() {
         return new IndexBuilder(this, table);
+    }
+
+    @Override
+    public ForeignKeyDSLBuilder foreignKey() {
+        return new ForeignKeyDSLBuilder(table);
     }
 
     public TableBuilder custom(Consumer<RDBTableMetadata> consumer) {
@@ -54,6 +61,13 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public TableBuilder removeColumn(String name) {
         table.removeColumn(name);
+        return this;
+    }
+
+    @Override
+    public TableBuilder dropColumn(String name) {
+        table.removeColumn(name);
+        dropColumn = true;
         return this;
     }
 
@@ -89,13 +103,14 @@ public class DefaultTableBuilder implements TableBuilder {
 
         //alter
         if (oldTable != null) {
-            schema.<AlterTableSqlBuilder>findFeature(AlterTableSqlBuilder.id)
+            SqlRequest alterTableSql = schema.<AlterTableSqlBuilder>findFeature(AlterTableSqlBuilder.id)
                     .map(builder -> builder.build(AlterRequest.builder()
-                            .allowDrop(false)
+                            .allowDrop(dropColumn)
                             .newTable(table)
                             .oldTable(oldTable)
                             .build()))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported AlterTableSqlBuilder"));
+            executor.execute(alterTableSql);
         } else {
             //create
             SqlRequest createTableSql = schema.<CreateTableSqlBuilder>findFeature(CreateTableSqlBuilder.id)

@@ -34,8 +34,10 @@ public class JdbcSqlExecutorHelper {
     public static void printSql(Logger log, SqlRequest sqlRequest) {
         if (log.isDebugEnabled()) {
             if (sqlRequest.isNotEmpty()) {
-                log.debug("==>  Preparing: {}", sqlRequest.getSql());
-                if (sqlRequest.getParameters() != null && sqlRequest.getParameters().length > 0) {
+                boolean hasParameter = sqlRequest.getParameters() != null && sqlRequest.getParameters().length > 0;
+
+                log.debug("==>  {}: {}", hasParameter ? "Preparing" : "  Execute", sqlRequest.getSql());
+                if (hasParameter) {
                     log.debug("==> Parameters: {}", sqlParameterToString(sqlRequest.getParameters()));
                     if (sqlRequest instanceof PrepareSqlRequest) {
                         log.debug("==>     Native: {}", ((PrepareSqlRequest) sqlRequest).toNativeSql());

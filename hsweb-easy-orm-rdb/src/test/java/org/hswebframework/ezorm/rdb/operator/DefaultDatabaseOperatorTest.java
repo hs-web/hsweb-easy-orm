@@ -57,6 +57,7 @@ public class DefaultDatabaseOperatorTest {
                 .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
                 .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
                 .addColumn().name("comment").columnDef("varchar(32) not null default '1'").commit()
+                .index().name("index_").column("name").commit()
                 .commit();
 
         operator.dml()

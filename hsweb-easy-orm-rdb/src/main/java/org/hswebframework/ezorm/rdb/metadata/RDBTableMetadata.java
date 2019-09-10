@@ -3,15 +3,17 @@ package org.hswebframework.ezorm.rdb.metadata;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.core.CastUtil;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonAlterTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateIndexSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.delete.DefaultDeleteSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.update.DefaultUpdateSqlBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -23,19 +25,31 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
 
     private List<RDBIndexMetadata> indexes = new ArrayList<>();
 
-    private List<RDBKeyMetadata> keys = new ArrayList<>();
-
     public RDBTableMetadata(String name) {
         this();
         setName(name);
+    }
+
+    public Optional<RDBIndexMetadata> getIndex(String indexName) {
+        return indexes.stream()
+                .filter(index -> index.getName().equalsIgnoreCase(indexName))
+                .findFirst();
     }
 
     public RDBTableMetadata() {
         super();
         addFeature(BatchInsertSqlBuilder.of(this));
         addFeature(DefaultUpdateSqlBuilder.of(this));
-
         addFeature(DefaultDeleteSqlBuilder.of(this));
+
+    }
+
+    public void addIndex(RDBIndexMetadata index) {
+        Objects.requireNonNull(index.getName(), "index name can not be null");
+        index.setTableName(getName());
+
+        indexes.add(index);
+
     }
 
     @Override
@@ -48,15 +62,25 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
     public RDBTableMetadata clone() {
         RDBTableMetadata clone = (RDBTableMetadata) super.clone();
         clone.setAllColumns(new ConcurrentHashMap<>());
-        getColumns()
+
+        this.getColumns()
                 .stream()
                 .map(RDBColumnMetadata::clone)
                 .forEach(clone::addColumn);
 
         clone.setFeatures(new HashMap<>(getFeatures()));
-        clone.setIndexes(new ArrayList<>(getIndexes()));
-        clone.setKeys(new ArrayList<>(getKeys()));
-        clone.setForeignKey(new ArrayList<>(getForeignKey()));
+
+        clone.setIndexes(getIndexes()
+                .stream()
+                .map(RDBIndexMetadata::clone)
+                .collect(Collectors.toList()));
+
+        this.getForeignKey()
+                .stream()
+                .map(ForeignKeyMetadata::clone)
+                .map(CastUtil::<ForeignKeyMetadata>cast)
+                .forEach(clone::addForeignKey);
+
         return clone;
     }
 }

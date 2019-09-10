@@ -20,7 +20,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.list;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
 
 public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStrategy<RDBTableMetadata> {
 
@@ -83,7 +85,7 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
         List<RDBColumnMetadata> metaDataList = sqlExecutor.select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
         metaDataList.forEach(metaData::addColumn);
         //说明
-        Map<String, Object> comment = sqlExecutor.select(template(getTableCommentSql(name), param), ResultWrappers.singleMap());
+        Map<String, Object> comment = sqlExecutor.select(template(getTableCommentSql(name), param), singleMap());
         if (null != comment && comment.get("comment") != null) {
             metaData.setComment(String.valueOf(comment.get("comment")));
         }
@@ -104,7 +106,7 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
     public boolean objectExists(String name) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", name);
-        Map<String, Object> res = sqlExecutor.select(template(getTableExistsSql(), param), lowerCasePropertySimpleMapWrapper);
+        Map<String, Object> res = sqlExecutor.select(template(getTableExistsSql(), param), lowerCase(singleMap()));
         return res.get("total") != null && StringUtils.toInt(res.get("total")) > 0;
     }
 
@@ -112,7 +114,7 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
     @SneakyThrows
     public Set<String> getAllNames() {
         return sqlExecutor
-                .select(SqlRequests.of(getAllTableSql()), list(lowerCasePropertySimpleMapWrapper))
+                .select(SqlRequests.of(getAllTableSql()), list(lowerCase(singleMap())))
                 .stream()
                 .map(map -> map.get("name"))
                 .filter(Objects::nonNull)
@@ -131,17 +133,7 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
                 .collect(Collectors.toList());
     }
 
-    protected static LowerCasePropertySimpleMapWrapper lowerCasePropertySimpleMapWrapper = new LowerCasePropertySimpleMapWrapper();
-
     protected RDBColumnMetaDataWrapper columnMetaDataWrapper = new RDBColumnMetaDataWrapper();
-
-    static class LowerCasePropertySimpleMapWrapper extends MapResultWrapper {
-        @Override
-        protected void doWrap(Map<String, Object> instance, String column, Object value) {
-            column = column.toLowerCase();
-            super.doWrap(instance, column, value);
-        }
-    }
 
     @SuppressWarnings("all")
     class RDBColumnMetaDataWrapper implements ResultWrapper<RDBColumnMetadata, RDBColumnMetadata> {
@@ -153,16 +145,6 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
         @Override
         public RDBColumnMetadata newRowInstance() {
             return new RDBColumnMetadata();
-        }
-
-        @Override
-        public void beforeWrap(ResultWrapperContext context) {
-
-        }
-
-        @Override
-        public void completedWrap() {
-
         }
 
         @Override

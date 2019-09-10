@@ -18,7 +18,7 @@ public class MysqlConnectionProvider implements ConnectionProvider {
 
         String username = System.getProperty("mysql.username", "root");
         String password = System.getProperty("mysql.password", "root");
-        String url = System.getProperty("mysql.url", "127.0.0.1:3306");
+        String url = System.getProperty("mysql.url", "127.0.0.1:13306");
         String db = System.getProperty("mysql.db", "ezorm");
         return DriverManager.getConnection("jdbc:mysql://" + url + "/" + db + "?useSSL=false", username, password);
 
