@@ -22,11 +22,9 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
     @Override
     public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
-        String from = this.getParameter().getFrom();
-        TableOrViewMetadata tableOrViewMetadata = metadata
+        return metadata
                 .getTableOrView(this.getParameter().getFrom())
-                .orElseThrow(() -> new UnsupportedOperationException("table or view [" + from + "] doesn't exist "));
-
-        return new QueryResultOperator<>(getSql(), tableOrViewMetadata, wrapper);
+                .map(metadata -> new QueryResultOperator<>(getSql(), metadata, wrapper))
+                .orElseThrow(() -> new UnsupportedOperationException("table or view [" + getParameter().getFrom() + "] doesn't exist "));
     }
 }
