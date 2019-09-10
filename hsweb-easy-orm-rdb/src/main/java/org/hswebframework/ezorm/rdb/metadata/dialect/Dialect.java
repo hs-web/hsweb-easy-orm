@@ -4,7 +4,7 @@ import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
-import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLDialect;
+import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgreSQLDialect;
@@ -68,7 +68,7 @@ public interface Dialect extends Feature {
     Dialect MYSQL = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();
     Dialect H2 = new H2Dialect();
-    Dialect MSSQL = new MSSQLDialect();
+    Dialect MSSQL = new SqlServerDialect();
     Dialect POSTGRES = new PostgreSQLDialect();
 
 }

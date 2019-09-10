@@ -13,8 +13,7 @@ public class MetadataHelper {
 
     public static RDBSchemaMetadata createMockSchema() {
         RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
-        RDBSchemaMetadata schema = new RDBSchemaMetadata();
-        schema.setName("PUBLIC");
+        RDBSchemaMetadata schema = new RDBSchemaMetadata("PUBLIC");
 
         database.setCurrentSchema(schema);
         database.addSchema(schema);

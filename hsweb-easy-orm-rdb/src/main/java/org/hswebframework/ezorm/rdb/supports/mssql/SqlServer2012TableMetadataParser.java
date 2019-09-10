@@ -28,7 +28,7 @@ public class SqlServer2012TableMetadataParser extends RDBTableMetadataParser {
 
     @Override
     protected Dialect getDialect() {
-        return MSSQLDialect.MSSQL;
+        return SqlServerDialect.MSSQL;
     }
 
     @Override

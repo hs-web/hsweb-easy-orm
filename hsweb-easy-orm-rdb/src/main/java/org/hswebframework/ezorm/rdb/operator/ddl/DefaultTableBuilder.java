@@ -41,13 +41,13 @@ public class DefaultTableBuilder implements TableBuilder {
     }
 
     @Override
-    public TableBuilder addColumn(Set<RDBColumnMetadata> columns) {
-        columns.forEach(table::addColumn);
+    public TableBuilder addColumn(RDBColumnMetadata column) {
+        table.addColumn(column);
         return this;
     }
 
     @Override
-    public ColumnBuilder addOrAlterColumn(String name) {
+    public ColumnBuilder addColumn(String name) {
         RDBColumnMetadata rdbColumnMetaData = table.getColumn(name)
                 .orElseGet(() -> {
                     RDBColumnMetadata columnMetaData = new RDBColumnMetadata();
@@ -80,12 +80,6 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public TableBuilder comment(String comment) {
         table.setComment(comment);
-        return this;
-    }
-
-    @Override
-    public TableBuilder property(String propertyName, Object value) {
-        // table.setProperty(propertyName, value);
         return this;
     }
 

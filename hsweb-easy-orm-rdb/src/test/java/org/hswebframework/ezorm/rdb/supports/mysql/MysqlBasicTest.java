@@ -9,10 +9,7 @@ import org.hswebframework.ezorm.rdb.supports.BasicCommonTests;
 public class MysqlBasicTest extends BasicCommonTests {
     @Override
     protected RDBSchemaMetadata getSchema() {
-        MysqlSchemaMetadata schema=new MysqlSchemaMetadata();
-        schema.setName("ezorm");
-
-        return schema;
+        return new MysqlSchemaMetadata("ezorm");
     }
 
     @Override

@@ -28,14 +28,6 @@ public class OracleTableMetadataParser extends RDBTableMetadataParser {
         super(sqlExecutor);
     }
 
-    private String getRealDatabaseName() {
-        String db = getSchemaName();
-        if (db == null) {
-            return "database()";
-        }
-        return "'" + db + "'";
-    }
-
     @Override
     protected String getTableMetaSql(String name) {
         return TABLE_META_SQL;

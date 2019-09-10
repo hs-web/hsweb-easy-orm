@@ -26,7 +26,6 @@ public class RDBDatabaseMetadata extends AbstractDatabaseMetadata<RDBSchemaMetad
 
     @Override
     public Optional<RDBSchemaMetadata> getSchema(String name) {
-
         return super.getSchema(getDialect().clearQuote(name));
     }
 

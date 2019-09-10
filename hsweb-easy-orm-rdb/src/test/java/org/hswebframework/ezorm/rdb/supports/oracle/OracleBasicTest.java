@@ -11,10 +11,7 @@ import org.hswebframework.ezorm.rdb.supports.mysql.MysqlSchemaMetadata;
 public class OracleBasicTest extends BasicCommonTests {
     @Override
     protected RDBSchemaMetadata getSchema() {
-        RDBSchemaMetadata schema=new RDBSchemaMetadata();
-        schema.setName("SYSTEM");
-
-        return schema;
+        return new OracleSchemaMetadata("SYSTEM");
     }
 
     @Override

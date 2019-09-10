@@ -24,8 +24,7 @@ public class SelectColumnFragmentBuilderTest {
     @Before
     public void init() {
         RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
-        RDBSchemaMetadata schema = new RDBSchemaMetadata();
-        schema.setName("DEFAULT");
+        RDBSchemaMetadata schema = new RDBSchemaMetadata("DEFAULT");
 
         database.setCurrentSchema(schema);
         database.addSchema(schema);

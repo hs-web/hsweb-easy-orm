@@ -25,8 +25,7 @@ public class DefaultQuerySqlBuilderTest {
     @Before
     public void init() {
         RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
-        schema = new RDBSchemaMetadata();
-        schema.setName("DEFAULT");
+        schema = new RDBSchemaMetadata("DEFAULT");
 
         database.setCurrentSchema(schema);
         database.addSchema(schema);

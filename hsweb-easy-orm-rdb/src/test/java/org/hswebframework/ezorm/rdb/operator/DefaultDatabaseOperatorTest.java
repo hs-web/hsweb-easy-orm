@@ -8,9 +8,9 @@ import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.core.meta.DefaultObjectMetaDataParser;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;
-import org.hswebframework.ezorm.rdb.supports.h2.H2DatabaseMetadata;
+import org.hswebframework.ezorm.rdb.supports.h2.H2SchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.h2.H2TableMetadataParser;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,18 +25,17 @@ import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.singl
 
 public class DefaultDatabaseOperatorTest {
 
-    RDBDatabaseMetadata database;
+    private RDBDatabaseMetadata database;
 
-    DatabaseOperator operator;
+    private DatabaseOperator operator;
 
     @Before
     public void init() {
-        database = new H2DatabaseMetadata();
+        database = new RDBDatabaseMetadata(Dialect.H2);
 
         SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new H2ConnectionProvider());
 
-        RDBSchemaMetadata schema = new RDBSchemaMetadata();
-        schema.setName("PUBLIC");
+        H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
 
         DefaultObjectMetaDataParser parser = new DefaultObjectMetaDataParser();
         parser.registerStrategy(new H2TableMetadataParser(sqlExecutor));
@@ -51,7 +50,7 @@ public class DefaultDatabaseOperatorTest {
 
 
     @Test
-    public void testDDLCreate(){
+    public void testDDLCreate() {
         operator.ddl()
                 .createOrAlter("test_ddl_create")
                 .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
@@ -62,22 +61,22 @@ public class DefaultDatabaseOperatorTest {
 
         operator.dml()
                 .insert("test_ddl_create")
-                .value("id","1234")
-                .value("name","名称")
+                .value("id", "1234")
+                .value("name", "名称")
                 .execute()
                 .sync();
 
-        int sum =operator.dml()
+        int sum = operator.dml()
                 .query()
                 .select("comment")
                 .from("test_ddl_create")
                 .fetch(mapStream())
                 .sync()
-                .map(map->map.get("comment"))
+                .map(map -> map.get("comment"))
                 .map(String::valueOf)
                 .mapToInt(Integer::valueOf)
                 .sum();
-        Assert.assertEquals(sum,1);
+        Assert.assertEquals(sum, 1);
     }
 
     @Getter
@@ -100,7 +99,7 @@ public class DefaultDatabaseOperatorTest {
 
         TestEntity entity = TestEntity.of("test", "test_name", 1);
 
-        TestEntity entity2= TestEntity.of("test2", "test2_name", 1);
+        TestEntity entity2 = TestEntity.of("test2", "test2_name", 1);
 
         int len = operator
                 .dml()

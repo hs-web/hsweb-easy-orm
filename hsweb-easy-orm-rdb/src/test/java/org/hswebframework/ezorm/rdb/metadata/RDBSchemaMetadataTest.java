@@ -21,8 +21,7 @@ public class RDBSchemaMetadataTest {
     public void init() {
         RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
 
-        schema = new RDBSchemaMetadata();
-        schema.setName("PUBLIC");
+        schema = new RDBSchemaMetadata("PUBLIC");
         schema.setDatabase(database);
         executor = new TestSyncSqlExecutor(new H2ConnectionProvider());
 

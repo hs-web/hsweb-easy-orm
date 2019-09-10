@@ -11,9 +11,7 @@ public class MSSQLBasicTest extends BasicCommonTests {
 
     @Override
     protected RDBSchemaMetadata getSchema() {
-        SqlServerSchemaMetadata schema=new SqlServerSchemaMetadata();
-        schema.setName("dbo");
-        return schema;
+        return new SqlServerSchemaMetadata("dbo");
     }
 
     @Override

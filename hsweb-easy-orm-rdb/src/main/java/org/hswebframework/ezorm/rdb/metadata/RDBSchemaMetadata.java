@@ -21,7 +21,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     private List<ObjectType> allObjectType = Arrays.asList(RDBObjectType.table, RDBObjectType.view);
 
 
-    public RDBSchemaMetadata() {
+    public RDBSchemaMetadata(String name) {
         {
             //查询
             addFeature(DefaultQuerySqlBuilder.of(this));
@@ -67,8 +67,8 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(CommonDropIndexSqlBuilder.INSTANCE);
         }
 
+        this.setName(name);
     }
-
 
     @Override
     @SuppressWarnings("all")

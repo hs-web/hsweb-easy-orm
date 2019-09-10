@@ -4,10 +4,11 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 
 public class MysqlSchemaMetadata extends RDBSchemaMetadata {
 
-    public MysqlSchemaMetadata(){
-        super();
+    public MysqlSchemaMetadata(String name){
+        super(name);
 
         addFeature(new MysqlCreateTableSqlBuilder());
         addFeature(new MysqlAlterTableSqlBuilder());
+        addFeature(new MysqlPaginator());
     }
 }

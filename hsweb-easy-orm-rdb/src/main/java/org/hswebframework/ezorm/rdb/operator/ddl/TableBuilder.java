@@ -8,21 +8,19 @@ import java.util.function.Consumer;
 
 public interface TableBuilder {
 
-    TableBuilder addColumn(Set<RDBColumnMetadata> columns);
+    TableBuilder addColumn(RDBColumnMetadata column);
 
     TableBuilder custom(Consumer<RDBTableMetadata> consumer);
 
     ColumnBuilder addColumn();
 
-    ColumnBuilder addOrAlterColumn(String name);
+    ColumnBuilder addColumn(String name);
 
     TableBuilder removeColumn(String name);
 
     TableBuilder dropColumn(String name);
 
     TableBuilder comment(String comment);
-
-    TableBuilder property(String propertyName, Object value);
 
     TableBuilder alias(String name);
 

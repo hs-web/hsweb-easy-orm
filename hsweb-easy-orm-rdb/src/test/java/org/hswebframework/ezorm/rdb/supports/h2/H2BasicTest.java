@@ -10,9 +10,7 @@ public class H2BasicTest extends BasicCommonTests {
 
     @Override
     protected RDBSchemaMetadata getSchema() {
-        RDBSchemaMetadata schema=new RDBSchemaMetadata();
-        schema.setName("PUBLIC");
-        return schema;
+        return new H2SchemaMetadata("PUBLIC");
     }
 
     @Override
