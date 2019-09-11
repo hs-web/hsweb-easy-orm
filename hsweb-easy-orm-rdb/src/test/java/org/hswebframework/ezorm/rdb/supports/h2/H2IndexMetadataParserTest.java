@@ -30,8 +30,10 @@ public class H2IndexMetadataParserTest {
 
         sqlExecutor.execute(SqlRequests.of("create index test_index_3 on test_index_parser (name,addr desc)"));
 
+        H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
+        schema.addFeature(sqlExecutor);
 
-        H2IndexMetadataParser parser = H2IndexMetadataParser.of(sqlExecutor, "PUBLIC");
+        H2IndexMetadataParser parser = H2IndexMetadataParser.of(schema);
 
         List<RDBIndexMetadata> index = parser.parseTableIndex("test_index_parser");
 

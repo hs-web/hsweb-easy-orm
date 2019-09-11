@@ -1,49 +1,45 @@
-package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
+package org.hswebframework.ezorm.rdb.supports.oracle;
 
 import lombok.AllArgsConstructor;
+import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.InsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
 
 import java.util.*;
 
-import static java.util.Optional.*;
+import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor(staticName = "of")
 @SuppressWarnings("all")
-public class BatchInsertSqlBuilder implements InsertSqlBuilder {
-
+@AllArgsConstructor(staticName = "of")
+public class OracleInsertSqlBuilder implements InsertSqlBuilder {
     private RDBTableMetadata table;
 
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
-        fragments.addSql("insert into")
-                .addSql(table.getFullName())
-                .addSql("(");
+
         Map<Integer, RDBColumnMetadata> indexMapping = new HashMap<>();
         Map<Integer, SqlFragments> functionValues = new HashMap<>();
 
         int index = 0;
         Set<InsertColumn> columns = parameter.getColumns();
-
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
                     .flatMap(table::getColumn)
                     .orElse(null);
 
             if (columnMetadata != null) {
-                if (indexMapping.size() != 0) {
-                    fragments.addSql(",");
-                }
-                fragments.addSql(columnMetadata.getQuoteName());
                 indexMapping.put(index, columnMetadata);
                 //列为函数
                 SqlFragments functionFragments = Optional.of(column)
@@ -61,42 +57,58 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         if (indexMapping.isEmpty()) {
             throw new IllegalArgumentException("No operable columns");
         }
-        fragments.addSql(") values ");
-        index = 0;
+        boolean batch = parameter.getValues().size() > 1;
+
+        if (batch) {
+            fragments.addSql("insert all");
+        } else {
+            fragments.addSql("insert");
+        }
+
         for (List<Object> values : parameter.getValues()) {
-            if (index++ != 0) {
-                fragments.addSql(",");
-            }
-            fragments.addSql("(");
+            PrepareSqlFragments intoSql = PrepareSqlFragments.of();
+            PrepareSqlFragments valuesSql = PrepareSqlFragments.of();
+
+            intoSql.addSql("into")
+                    .addSql(table.getFullName())
+                    .addSql("(");
+
+            valuesSql.addSql("values (");
             int valueLen = values.size();
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
-                int valueIndex = entry.getKey();
                 RDBColumnMetadata column = entry.getValue();
-                Object value = column.encode(valueLen < valueIndex ? null : values.get(valueIndex));
+
+                Object value = column.encode(valueLen < vIndex ? null : values.get(vIndex));
                 if (vIndex++ != 0) {
-                    fragments.addSql(",");
+                    intoSql.addSql(",");
+                    valuesSql.addSql(",");
                 }
+                intoSql.addSql(column.getQuoteName());
                 if (value instanceof NativeSql) {
-                    fragments
+                    valuesSql
                             .addSql(((NativeSql) value).getSql())
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
-                SqlFragments function = functionValues.get(valueIndex);
+                SqlFragments function = functionValues.get(vIndex);
 
                 if (null != function) {
-                    fragments.addFragments(function);
+                    valuesSql.addFragments(function);
                 } else {
-                    fragments.addSql("?").addParameter(value);
+                    valuesSql.addSql("?").addParameter(value);
                 }
             }
+            intoSql.addSql(")");
+            valuesSql.addSql(")");
 
-            fragments.addSql(")");
+            fragments.addFragments(intoSql)
+                    .addFragments(valuesSql);
+        }
+        if (batch) {
+            fragments.addSql("select 1 from dual");
         }
 
         return fragments.toRequest();
     }
-
-
 }

@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
@@ -26,6 +27,13 @@ public class OracleTableMetadataParser extends RDBTableMetadataParser {
 
     public OracleTableMetadataParser(SyncSqlExecutor sqlExecutor) {
         super(sqlExecutor);
+    }
+
+    @Override
+    protected RDBTableMetadata createTable() {
+        RDBTableMetadata metadata = super.createTable();
+        metadata.addFeature(OracleInsertSqlBuilder.of(metadata));
+        return metadata;
     }
 
     @Override

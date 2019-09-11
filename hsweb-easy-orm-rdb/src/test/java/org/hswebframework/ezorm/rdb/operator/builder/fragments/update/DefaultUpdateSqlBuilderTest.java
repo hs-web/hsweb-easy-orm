@@ -46,7 +46,7 @@ public class DefaultUpdateSqlBuilderTest {
 
         SqlRequest request = builder.build(parameter);
         System.out.println(request);
-        assertEquals(request.getSql(), "update PUBLIC.test set name = ? where id = ? and name not null");
+        assertEquals(request.getSql(), "update PUBLIC.test set \"NAME\" = ? where id = ? and name not null");
         assertArrayEquals(request.getParameters(), new Object[]{"admin", "1234"});
 
     }
@@ -97,7 +97,7 @@ public class DefaultUpdateSqlBuilderTest {
 
         SqlRequest request = builder.build(parameter);
         System.out.println(request);
-        assertEquals(request.getSql(), "update PUBLIC.test set name = ? , name = name + ? where id = ?");
+        assertEquals(request.getSql(), "update PUBLIC.test set \"NAME\" = ? , \"NAME\" = name + ? where id = ?");
         assertArrayEquals(request.getParameters(), new Object[]{"admin", 1, "1234"});
 
     }

@@ -135,6 +135,10 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return this.metadataParsed(metadata);
     }
 
+    public RDBTableMetadata newTable(String name){
+        return new RDBTableMetadata(name);
+    }
+
     @Override
     public List<ObjectType> getAllObjectType() {
         return allObjectType;

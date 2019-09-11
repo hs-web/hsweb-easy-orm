@@ -7,7 +7,6 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterRequest;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
 
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**

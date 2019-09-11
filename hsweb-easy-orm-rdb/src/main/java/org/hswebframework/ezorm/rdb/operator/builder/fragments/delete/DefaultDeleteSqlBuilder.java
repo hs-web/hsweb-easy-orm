@@ -65,7 +65,7 @@ public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<Delete
                 .getColumn(columnName)
                 .flatMap(column -> column
                         .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
-                        .map(termFragment -> termFragment.createFragments(column.getName(), column, term)))
+                        .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
                 .orElse(EmptySqlFragments.INSTANCE);
     }
 

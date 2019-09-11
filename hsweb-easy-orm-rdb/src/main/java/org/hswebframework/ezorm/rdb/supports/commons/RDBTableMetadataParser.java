@@ -73,9 +73,13 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
         return RDBObjectType.table;
     }
 
+    protected RDBTableMetadata createTable(){
+        return  new RDBTableMetadata();
+    }
+
     @SneakyThrows
     protected Optional<RDBTableMetadata> doParse(String name) {
-        RDBTableMetadata metaData = new RDBTableMetadata();
+        RDBTableMetadata metaData = createTable();
         metaData.setName(name);
         metaData.setAlias(name);
         Map<String, Object> param = new HashMap<>();

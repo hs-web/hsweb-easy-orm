@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,14 +46,14 @@ public abstract class BasicCommonTests {
                     .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
                     .commit();
 
-            for (int i = 0; i < 100; i++) {
-                operator.dml()
-                        .insert("test_pager")
-                        .value("id", i + 1)
-                        .execute()
-                        .sync();
-            }
+            InsertOperator insert = operator.dml()
+                    .insert("test_pager")
+                    .columns("id");
 
+            for (int i = 0; i < 100; i++) {
+                insert.values(i + 1);
+            }
+            insert.execute().sync();
 
             for (int i = 0; i < 10; i++) {
                 long sum = operator.dml()

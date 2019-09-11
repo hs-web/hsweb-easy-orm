@@ -27,7 +27,7 @@ public class SqlServerPaginator implements Paginator {
             newBlock.addBlock(before, "select top " + pageSize + " * from (");
 
             block.getBlock(selectColumn)
-                    .add(SqlFragments.single(", row_number() over(order by sno asc) as rownumber"));
+                    .add(SqlFragments.single(", row_number() over(order by (SELECT 1)) as rownumber"));
 
             newBlock.addBlock(other, block);
 

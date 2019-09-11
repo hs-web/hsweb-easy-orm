@@ -51,13 +51,16 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
 
         //index
         for (RDBIndexMetadata index : newTable.getIndexes()) {
+            if (index.isPrimaryKey()) {
+                continue;
+            }
             RDBIndexMetadata oldIndex = oldTable.getIndex(index.getName()).orElse(null);
             if (oldIndex == null) {
                 //add index
                 appendAddIndexSql(batch, newTable, index);
                 continue;
             }
-            if (index.isChanged(index)) {
+            if (index.isChanged(oldIndex)) {
                 appendDropIndexSql(batch, newTable, index);
                 appendAddIndexSql(batch, newTable, index);
 
@@ -68,7 +71,6 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
     }
 
     protected void appendDropIndexSql(DefaultBatchSqlRequest batch, RDBTableMetadata table, RDBIndexMetadata index) {
-
         table.<DropIndexSqlBuilder>findFeature(DropIndexSqlBuilder.id)
                 .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
                 .ifPresent(batch::addBatch);

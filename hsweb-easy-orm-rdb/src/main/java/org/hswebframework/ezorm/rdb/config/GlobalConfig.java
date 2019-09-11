@@ -6,7 +6,11 @@ import org.hswebframework.ezorm.rdb.utils.ApacheCommonPropertyOperator;
 
 public class GlobalConfig {
 
-    private static ObjectPropertyOperator propertyOperator = ApacheCommonPropertyOperator.INSTANCE;
+    private static ObjectPropertyOperator propertyOperator;
+
+    static {
+        setPropertyOperator(ApacheCommonPropertyOperator.INSTANCE);
+    }
 
     private static ObjectConverter objectConverter;
 

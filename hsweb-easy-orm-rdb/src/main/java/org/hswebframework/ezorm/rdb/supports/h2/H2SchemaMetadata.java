@@ -9,5 +9,6 @@ public class H2SchemaMetadata extends RDBSchemaMetadata {
         addFeature(new H2CreateTableSqlBuilder());
         addFeature(new H2AlterTableSqlBuilder());
         addFeature(new H2Paginator());
+        addFeature(H2IndexMetadataParser.of(this));
     }
 }

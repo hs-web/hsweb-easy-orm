@@ -49,7 +49,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                     .filter(RDBColumnMetadata::isUpdatable)
                     .<SqlFragments>map(columnMetadata -> {
                         PrepareSqlFragments sqlFragments = PrepareSqlFragments.of();
-                        sqlFragments.addSql(columnMetadata.getName(), "=");
+                        sqlFragments.addSql(columnMetadata.getQuoteName(), "=");
 
                         if (column instanceof NativeSql) {
                             return PrepareSqlFragments.of()
