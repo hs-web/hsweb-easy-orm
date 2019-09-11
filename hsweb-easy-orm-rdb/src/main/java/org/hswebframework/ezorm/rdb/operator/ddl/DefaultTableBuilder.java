@@ -1,12 +1,18 @@
 package org.hswebframework.ezorm.rdb.operator.ddl;
 
+import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterRequest;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 /**
@@ -89,30 +95,27 @@ public class DefaultTableBuilder implements TableBuilder {
     }
 
     @Override
-    public void commit() {
-        SyncSqlExecutor executor = schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported SyncSqlExecutor"));
+    public TableDDLResultOperator commit() {
         RDBTableMetadata oldTable = schema.getTable(table.getName()).orElse(null);
-
+        SqlRequest sqlRequest;
         //alter
         if (oldTable != null) {
-            SqlRequest alterTableSql = schema.<AlterTableSqlBuilder>findFeature(AlterTableSqlBuilder.id)
+            sqlRequest = schema.<AlterTableSqlBuilder>findFeature(AlterTableSqlBuilder.id)
                     .map(builder -> builder.build(AlterRequest.builder()
                             .allowDrop(dropColumn)
                             .newTable(table)
                             .oldTable(oldTable)
                             .build()))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported AlterTableSqlBuilder"));
-            executor.execute(alterTableSql);
+
         } else {
             //create
-            SqlRequest createTableSql = schema.<CreateTableSqlBuilder>findFeature(CreateTableSqlBuilder.id)
+            sqlRequest = schema.<CreateTableSqlBuilder>findFeature(CreateTableSqlBuilder.id)
                     .map(builder -> builder.build(table))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported CreateTableSqlBuilder"));
-            executor.execute(createTableSql);
         }
+        return TableDDLResultOperator.of(schema, sqlRequest, () -> schema.addTable(table));
 
-        schema.addTable(table);
 
     }
 }

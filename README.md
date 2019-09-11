@@ -5,3 +5,25 @@
 [![codecov](https://codecov.io/gh/hs-web/hsweb-easy-orm/branch/4.0.x/graph/badge.svg)](https://codecov.io/gh/hs-web/hsweb-easy-orm)
 
 
+# 🌰
+
+```java
+
+DatabaseOperator operator = ...;
+//DDL
+operator.ddl()
+        .createOrAlter("test_table")
+        .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
+        .addColumn().name("name").varchar(128).comment("名称").commit()
+        .commit()
+        .sync(); //async or reactive
+     
+//Query   
+List<Map<String,Object>> dataList= operator.dml().query()
+         .select("id")
+         .from("test_table")
+         .where(dsl->dsl.is("name","张三"))
+         .fetch(mapList())
+         .sync(); //async or reactive
+
+```

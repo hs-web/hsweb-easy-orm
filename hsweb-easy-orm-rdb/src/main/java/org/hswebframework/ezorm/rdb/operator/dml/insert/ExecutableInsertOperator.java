@@ -25,30 +25,9 @@ public class ExecutableInsertOperator extends BuildParameterInsertOperator {
     }
 
     @Override
-    public ResultOperator<Integer, Integer> execute() {
-        SqlRequest sql = getSql();
+    public InsertResultOperator execute() {
 
-        return new ResultOperator<Integer, Integer>() {
-            @Override
-            public Integer sync() {
-                return table.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
-                        .map(executor -> executor.update(sql))
-                        .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
-            }
+        return InsertResultOperator.of(table,getSql());
 
-            @Override
-            public CompletionStage<Integer> async() {
-                return table.<AsyncSqlExecutor>findFeature(AsyncSqlExecutor.id)
-                        .map(executor -> executor.update(sql))
-                        .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
-            }
-
-            @Override
-            public Mono<Integer> reactive() {
-                return table.<ReactiveSqlExecutor>findFeature(ReactiveSqlExecutor.id)
-                        .map(executor -> executor.update(Mono.just(sql)))
-                        .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
-            }
-        };
     }
 }

@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.executor.jdbc;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
+import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.sql.Statement;
 import java.util.List;
 
 import static org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSqlExecutorHelper.*;
+import static org.hswebframework.ezorm.rdb.utils.SqlUtils.printSql;
 
 @AllArgsConstructor
 public abstract class JdbcSqlExecutor {
@@ -116,7 +118,7 @@ public abstract class JdbcSqlExecutor {
                 T data = wrapper.newRowInstance();
                 for (int i = 0; i < columns.size(); i++) {
                     Object value = resultSet.getObject(i + 1);
-                    wrapper.wrapColumn(new JdbcColumnWrapperContext<>(index, i, columns.get(i), value, data));
+                    wrapper.wrapColumn(new DefaultColumnWrapperContext<>(index, i, columns.get(i), value, data));
                 }
                 index++;
                 if (!wrapper.completedWrapRow(index, data)) {

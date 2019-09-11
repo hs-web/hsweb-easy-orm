@@ -58,7 +58,7 @@ public class BuildParameterInsertOperator extends InsertOperator {
     }
 
     @Override
-    public ResultOperator<Integer, Integer> execute() {
+    public InsertResultOperator execute() {
         throw new UnsupportedOperationException();
     }
 }

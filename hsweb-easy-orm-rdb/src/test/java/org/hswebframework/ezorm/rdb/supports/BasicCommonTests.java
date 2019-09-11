@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.supports;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -11,7 +12,11 @@ import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.Assert;
 import org.junit.Test;
+import reactor.core.publisher.Mono;
 
+import java.util.stream.Collectors;
+
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.mapStream;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
@@ -35,6 +40,63 @@ public abstract class BasicCommonTests {
         return metadata;
     }
 
+
+    @Test
+    public void testReactive() {
+        RDBDatabaseMetadata database = getDatabase();
+        if (!database.supportFeature(ReactiveSqlExecutor.id)) {
+            return;
+        }
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+
+        try {
+            operator.ddl()
+                    .createOrAlter("test_reactive_pager")
+                    .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
+                    .commit()
+                    .reactive()
+                    .block();
+
+            InsertOperator insert = operator.dml()
+                    .insert("test_reactive_pager")
+                    .columns("id");
+
+            for (int i = 0; i < 100; i++) {
+                insert.values(i + 1);
+            }
+
+            insert.execute()
+                    .reactive()
+                    .block();
+
+            for (int i = 0; i < 10; i++) {
+                long sum = operator.dml()
+                        .query()
+                        .select("id")
+                        .from("test_reactive_pager")
+                        .paging(i, 10)
+                        .fetch(map())
+                        .reactive()
+                        .map(map -> map.get("id"))
+                        .map(Number.class::cast)
+                        .collect(Collectors.summingInt(Number::intValue))
+                        .blockOptional()
+                        .orElse(0);
+
+                Assert.assertEquals(sum, (((i * 10) + 1) + ((i + 1) * 10)) * 10 / 2);
+            }
+        } finally {
+            try {
+                operator.sql().reactive()
+                        .execute(Mono.just(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_reactive_pager")))
+                        .block();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     @Test
     public void testPager() {
         RDBDatabaseMetadata database = getDatabase();
@@ -44,7 +106,8 @@ public abstract class BasicCommonTests {
             operator.ddl()
                     .createOrAlter("test_pager")
                     .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
-                    .commit();
+                    .commit()
+                    .sync();
 
             InsertOperator insert = operator.dml()
                     .insert("test_pager")
@@ -60,7 +123,7 @@ public abstract class BasicCommonTests {
                         .query()
                         .select("id")
                         .from("test_pager")
-//                        .orderBy(asc("id"))
+//                        .orderBy(desc("id"))
                         .paging(i, 10)
                         .fetch(mapStream())
                         .sync()
@@ -92,7 +155,7 @@ public abstract class BasicCommonTests {
                     .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
                     .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
                     .addColumn().name("comment").varchar(32).defaultValue("'1'").commit()
-                    .commit();
+                    .commit().sync();
 
             operator.dml()
                     .insert("test_dml_crud")
@@ -152,7 +215,7 @@ public abstract class BasicCommonTests {
                     .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
                     .addColumn().name("comment").varchar(32).defaultValue("'1'").commit()
                     .index().name("index_").column("name").commit()
-                    .commit();
+                    .commit().sync();
 
             //alter
             operator.ddl()
@@ -160,13 +223,13 @@ public abstract class BasicCommonTests {
                     .addColumn().name("name").varchar(128).comment("名称").commit()
                     .addColumn().name("test").varchar(32).comment("test").commit()
                     .addColumn().name("age").number(4).defaultValue("0").comment("年龄").commit()
-                    .commit();
+                    .commit().sync();
 
             //drop column
             operator.ddl()
                     .createOrAlter("test_ddl_create")
                     .dropColumn("test")
-                    .commit();
+                    .commit().sync();
 
 
         } finally {

@@ -1,7 +1,9 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.BasicCommonTests;
@@ -12,6 +14,15 @@ public class MSSQLBasicTest extends BasicCommonTests {
     @Override
     protected RDBSchemaMetadata getSchema() {
         return new SqlServerSchemaMetadata("dbo");
+    }
+
+    @Override
+    protected RDBDatabaseMetadata getDatabase() {
+        RDBDatabaseMetadata database= super.getDatabase();
+
+        database.addFeature(new TestReactiveSqlExecutor("@arg",new MSSQLR2dbcConnectionProvider()));
+
+        return database;
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -28,5 +29,5 @@ public interface TableBuilder {
 
     ForeignKeyDSLBuilder  foreignKey();
 
-    void commit();
+    TableDDLResultOperator commit();
 }

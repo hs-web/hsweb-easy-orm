@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.executor.jdbc;
+package org.hswebframework.ezorm.rdb.executor;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 @Getter
 @Setter
 @AllArgsConstructor
-public class JdbcColumnWrapperContext<T> implements ColumnWrapperContext<T> {
+public class DefaultColumnWrapperContext<T> implements ColumnWrapperContext<T> {
 
     private int rowIndex;
 

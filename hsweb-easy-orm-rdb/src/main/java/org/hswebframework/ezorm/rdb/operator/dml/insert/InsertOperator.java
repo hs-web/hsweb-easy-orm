@@ -57,6 +57,6 @@ public abstract class InsertOperator {
 
     public abstract SqlRequest getSql();
 
-    public abstract ResultOperator<Integer, Integer> execute();
+    public abstract InsertResultOperator execute();
 
 }
