@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb;
 import io.r2dbc.spi.Connection;
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.r2dbc.R2dbcReactiveSqlExecutor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 
@@ -27,7 +28,8 @@ public class TestReactiveSqlExecutor extends R2dbcReactiveSqlExecutor {
     }
 
     @Override
-    protected void releaseConnect(SignalType type, Connection connection) {
+    protected void releaseConnection(SignalType type, Connection connection) {
+
         provider.releaseConnection(connection);
     }
 

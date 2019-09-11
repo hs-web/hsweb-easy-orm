@@ -1,15 +1,8 @@
 package org.hswebframework.ezorm.rdb.executor.reactive.r2dbc;
 
-import io.r2dbc.h2.H2ConnectionFactory;
-import io.r2dbc.mssql.MssqlConnectionFactory;
-import io.r2dbc.postgresql.PostgresqlConnectionFactory;
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.ConnectionFactories;
-import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.h2.H2R2dbcConnectionProvider;
 import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLR2dbcConnectionProvider;
-import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerR2dbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgreSQLR2dbcConnectionProvider;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -18,7 +11,6 @@ import reactor.test.StepVerifier;
 
 import java.util.stream.Collectors;
 
-import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.of;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.lowerCase;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;

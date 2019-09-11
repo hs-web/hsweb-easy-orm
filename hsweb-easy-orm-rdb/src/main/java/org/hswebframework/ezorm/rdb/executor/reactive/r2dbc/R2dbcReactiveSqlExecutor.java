@@ -11,7 +11,6 @@ import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.utils.SqlUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.EmitterProcessor;
@@ -35,29 +34,26 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     protected abstract Mono<Connection> getConnection();
 
-    protected abstract void releaseConnect(SignalType type, Connection connection);
+    protected abstract void releaseConnection(SignalType type, Connection connection);
 
-
-    @SuppressWarnings("all")
     protected <T> Publisher<T> doUpdate(Connection connection, SqlRequest request, Function<Result, Publisher<T>> mapper) {
 
-        EmitterProcessor<Result> processor = EmitterProcessor.create();
-        Flux<T> resultFlux = processor.flatMap(mapper);
+        EmitterProcessor<Result> processor = EmitterProcessor.create(false);
 
-        printSql(logger, request);
-        Statement statement = connection.createStatement(request.getSql());
-        prepareStatement(statement, request);
+        return processor.flatMap(mapper)
+                .doOnSubscribe(subscription -> {
+                    printSql(logger, request);
+                    Statement statement = connection.createStatement(request.getSql());
+                    prepareStatement(statement, request);
+                    statement.execute()
+                            .subscribe(processor);
 
-        statement.execute()
-                .subscribe(processor);
-
-        return resultFlux;
+                });
     }
 
-    @SuppressWarnings("all")
     protected <E> Publisher<E> doSelect(Connection connection, SqlRequest request, ResultWrapper<E, ?> wrapper) {
-        EmitterProcessor<Result> processor = EmitterProcessor.create();
-        Flux<E> flux = processor.flatMap(result ->
+        EmitterProcessor<Result> processor = EmitterProcessor.create(false);
+        return processor.flatMap(result ->
                 result.map((row, meta) -> {
                     List<String> columns = new ArrayList<>(meta.getColumnNames());
 
@@ -70,69 +66,54 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                         processor.dispose();
                     }
                     return e;
-                })).doOnComplete(wrapper::completedWrap);
-
-        printSql(logger, request);
-        Statement statement = connection.createStatement(request.getSql());
-
-        prepareStatement(statement, request);
-
-        statement.execute().subscribe(processor);
-
-        return flux;
-
+                }))
+                .doOnComplete(wrapper::completedWrap)
+                .doOnSubscribe(subscription -> {
+                    printSql(logger, request);
+                    Statement statement = connection.createStatement(request.getSql());
+                    prepareStatement(statement, request);
+                    statement.execute().subscribe(processor);
+                });
     }
 
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-        return Mono.defer(() -> getConnection()
-                .flux()
+        return Mono.defer(() -> getConnection().flux()
                 .flatMap(connection -> this.toFlux(request)
                         .flatMap(sqlRequest -> this.doUpdate(connection, sqlRequest, Result::getRowsUpdated))
-                        .doFinally(type -> releaseConnect(type, connection))
-                )
+                        .doFinally(type -> releaseConnection(type, connection)))
                 .collect(Collectors.summingInt(Integer::intValue)));
     }
 
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
-        return Mono.defer(() -> Mono.from(getConnection()
-                .flux()
+        return Mono.defer(() -> Mono.from(getConnection().flux()
                 .flatMap(connection -> this.toFlux(request)
                         .flatMap(sqlRequest -> this.doUpdate(connection, sqlRequest, (r) -> Mono.<Void>empty()))
-                        .doFinally(type -> releaseConnect(type, connection))
+                        .doFinally(type -> releaseConnection(type, connection))
                 )));
     }
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
-        return Flux.defer(() -> getConnection()
-                .flux()
+        return Flux.defer(() -> getConnection().flux()
                 .flatMap(connection -> this.toFlux(request)
                         .flatMap(sqlRequest -> this.doSelect(connection, sqlRequest, wrapper))
-                        .doFinally(type -> releaseConnect(type, connection))
+                        .doFinally(type -> releaseConnection(type, connection))
                 ));
     }
 
     @SuppressWarnings("all")
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
-        Flux<SqlRequest> flux;
-        if (request instanceof Mono) {
-            Mono<SqlRequest> mono = ((Mono<SqlRequest>) request);
-            flux = mono.flux();
-        } else if (request instanceof Flux) {
-            flux = ((Flux<SqlRequest>) request);
-        } else {
-            return Flux.error(new UnsupportedOperationException("unsupported request type:" + request.getClass()));
-        }
-        return flux.flatMap(sql -> {
-            if (sql instanceof BatchSqlRequest) {
 
-                return Flux.merge(Flux.just(sql), Flux.fromIterable(((BatchSqlRequest) sql).getBatch()));
-            }
-            return Flux.just(sql);
-        }).filter(SqlRequest::isNotEmpty)
+        return Flux.from(request)
+                .flatMap(sql -> {
+                    if (sql instanceof BatchSqlRequest) {
+                        return Flux.merge(Flux.just(sql), Flux.fromIterable(((BatchSqlRequest) sql).getBatch()));
+                    }
+                    return Flux.just(sql);
+                }).filter(SqlRequest::isNotEmpty)
                 .map(this::convertRequest);
     }
 
@@ -146,7 +127,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     protected void prepareStatement(Statement statement, SqlRequest request) {
         int index = 0;
-        if(request.isEmpty()||request.getParameters()==null){
+        if (request.isEmpty() || request.getParameters() == null) {
             return;
         }
         for (Object parameter : request.getParameters()) {

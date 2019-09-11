@@ -67,15 +67,6 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
     }
 
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
-        Flux<SqlRequest> flux;
-        if (request instanceof Mono) {
-            Mono<SqlRequest> mono = ((Mono<SqlRequest>) request);
-            flux = mono.flux();
-        } else if (request instanceof Flux) {
-            flux = ((Flux<SqlRequest>) request);
-        } else {
-            return Flux.error(new UnsupportedOperationException("unsupported request type:" + request.getClass()));
-        }
-        return flux;
+        return Flux.from(request);
     }
 }
