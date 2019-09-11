@@ -12,8 +12,7 @@ import reactor.test.StepVerifier;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.of;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.lowerCase;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
 public class R2dbcReactiveSqlExecutorTest {
 
@@ -50,7 +49,9 @@ public class R2dbcReactiveSqlExecutorTest {
             StepVerifier.create(mono).verifyComplete();
 
             //插入100条数据
-            Mono<Integer> update = sqlExecutor.update(Flux.range(1, 100).map(i -> of("insert into test_r2dbc(id)values(?)", "" + i)));
+            Mono<Integer> update = sqlExecutor
+                    .update(Flux.range(1, 100)
+                    .map(i -> of("insert into test_r2dbc(id)values(?)", "" + i)));
 
             StepVerifier.create(update)
                     .expectNext(100)

@@ -6,6 +6,7 @@ import io.r2dbc.spi.Statement;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.CastUtil;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
@@ -13,14 +14,10 @@ import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
-import reactor.core.publisher.EmitterProcessor;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.SignalType;
+import reactor.core.publisher.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.utils.SqlUtils.*;
@@ -36,52 +33,52 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     protected abstract void releaseConnection(SignalType type, Connection connection);
 
-    protected <T> Publisher<T> doUpdate(Connection connection, SqlRequest request, Function<Result, Publisher<T>> mapper) {
+    enum Interrupted {
+        instance;
 
-        EmitterProcessor<Result> processor = EmitterProcessor.create(false);
+        static boolean nonInterrupted(Object o) {
+            return o != instance;
+        }
+    }
 
-        return processor.flatMap(mapper)
-                .doOnSubscribe(subscription -> {
-                    printSql(logger, request);
-                    Statement statement = connection.createStatement(request.getSql());
-                    prepareStatement(statement, request);
-                    statement.execute()
-                            .subscribe(processor);
+    protected Flux<Result> execute(Connection connection,
+                                   SqlRequest request) {
 
-                });
+        return Flux.defer(() -> {
+            printSql(logger, request);
+            return Flux.just(prepareStatement(connection.createStatement(request.getSql()), request))
+                    .flatMap(Statement::execute)
+                    .map(Result.class::cast);
+        });
     }
 
     protected <E> Publisher<E> doSelect(Connection connection, SqlRequest request, ResultWrapper<E, ?> wrapper) {
-        EmitterProcessor<Result> processor = EmitterProcessor.create(false);
-        return processor.flatMap(result ->
-                result.map((row, meta) -> {
+        return this.execute(connection, request)
+                .flatMap(result -> result.map((row, meta) -> {
                     List<String> columns = new ArrayList<>(meta.getColumnNames());
-
                     wrapper.beforeWrap(() -> columns);
                     E e = wrapper.newRowInstance();
                     for (int i = 0, len = columns.size(); i < len; i++) {
                         wrapper.wrapColumn(new DefaultColumnWrapperContext<>(-1, i, columns.get(i), row.get(i), e));
                     }
                     if (!wrapper.completedWrapRow(-1, e)) {
-                        processor.dispose();
+                        return Interrupted.instance;
                     }
                     return e;
                 }))
-                .doOnComplete(wrapper::completedWrap)
-                .doOnSubscribe(subscription -> {
-                    printSql(logger, request);
-                    Statement statement = connection.createStatement(request.getSql());
-                    prepareStatement(statement, request);
-                    statement.execute().subscribe(processor);
-                });
+                .takeWhile(Interrupted::nonInterrupted)
+                .map(CastUtil::<E>cast)
+                .doOnCancel(wrapper::completedWrap)
+                .doOnComplete(wrapper::completedWrap);
     }
-
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
         return Mono.defer(() -> getConnection().flux()
                 .flatMap(connection -> this.toFlux(request)
-                        .flatMap(sqlRequest -> this.doUpdate(connection, sqlRequest, Result::getRowsUpdated))
+                        .flatMap(sqlRequest ->
+                                this.execute(connection, sqlRequest))
+                        .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
                         .doFinally(type -> releaseConnection(type, connection)))
                 .collect(Collectors.summingInt(Integer::intValue)));
     }
@@ -90,7 +87,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     public Mono<Void> execute(Publisher<SqlRequest> request) {
         return Mono.defer(() -> Mono.from(getConnection().flux()
                 .flatMap(connection -> this.toFlux(request)
-                        .flatMap(sqlRequest -> this.doUpdate(connection, sqlRequest, (r) -> Mono.<Void>empty()))
+                        .flatMap(sqlRequest -> this.execute(connection, sqlRequest))
+                        .flatMap(__ -> Mono.<Void>empty())
                         .doFinally(type -> releaseConnection(type, connection))
                 )));
     }
@@ -125,10 +123,10 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return "$";
     }
 
-    protected void prepareStatement(Statement statement, SqlRequest request) {
+    protected Statement prepareStatement(Statement statement, SqlRequest request) {
         int index = 0;
         if (request.isEmpty() || request.getParameters() == null) {
-            return;
+            return statement;
         }
         for (Object parameter : request.getParameters()) {
             String symbol = getBindSymbol() + ++index;
@@ -138,5 +136,6 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 statement.bind(symbol, parameter);
             }
         }
+        return statement;
     }
 }
