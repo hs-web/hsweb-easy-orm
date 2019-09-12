@@ -18,44 +18,12 @@ import java.util.function.Supplier;
  * @see SqlConditionSupport
  * @since 1.1
  */
-public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>>, TermTypeConditionalFromBeanSupport {
-    private Q param = null;
+public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>> {
+    private Q param;
     private Accepter<Query<T, Q>, Object> accepter = this::and;
-    private ListExecutor<T, Q> listExecutor = null;
-    private TotalExecutor<Q> totalExecutor = null;
-    private SingleExecutor<T, Q> singleExecutor = null;
-    private Object bean = null;
 
     public Query(Q param) {
         this.param = param;
-    }
-
-    public Query<T, Q> setListExecutor(ListExecutor<T, Q> listExecutor) {
-        this.listExecutor = listExecutor;
-        return this;
-    }
-
-    public Query<T, Q> setTotalExecutor(TotalExecutor<Q> totalExecutor) {
-        this.totalExecutor = totalExecutor;
-        return this;
-    }
-
-    public Query<T, Q> setSingleExecutor(SingleExecutor<T, Q> singleExecutor) {
-        this.singleExecutor = singleExecutor;
-        return this;
-    }
-
-    @Override
-    public Object getBean() {
-        return bean;
-    }
-
-    /**
-     * 可使用 {@link this#where(MethodReferenceColumn)} )}替代
-     */
-    public <B> QueryFromBean<T, Q, B> fromBean(B bean) {
-        this.bean = bean;
-        return new QueryFromBean<>(this);
     }
 
     @Override
@@ -138,33 +106,6 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return this;
     }
 
-    public List<T> list(int pageIndex, int pageSize) {
-        doPaging(pageIndex, pageSize);
-        return listExecutor.doExecute(param);
-    }
-
-    public List<T> list(int pageIndex, int pageSize, int total) {
-        doPaging(pageIndex, pageSize);
-        param.rePaging(total);
-        return listExecutor.doExecute(param);
-    }
-
-    public List<T> list() {
-        return listExecutor.doExecute(param);
-    }
-
-    public List<T> listNoPaging() {
-        return noPaging().list();
-    }
-
-    public T single() {
-        return singleExecutor.doExecute(param);
-    }
-
-    public int total() {
-        return totalExecutor.doExecute(param);
-    }
-
     public Query<T, Q> forUpdate() {
         this.param.setForUpdate(true);
         return this;
@@ -172,18 +113,6 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
 
     public <R> R execute(Function<Q, R> function) {
         return function.apply(param);
-    }
-
-    public <R> List<R> list(ListExecutor<R, Q> executor) {
-        return executor.doExecute(param);
-    }
-
-    public <R> R single(SingleExecutor<R, Q> executor) {
-        return executor.doExecute(param);
-    }
-
-    public int total(TotalExecutor<Q> executor) {
-        return executor.doExecute(param);
     }
 
     public NestConditional<Query<T, Q>> nest() {
@@ -246,22 +175,6 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return accepter;
     }
 
-    @FunctionalInterface
-    public interface ListExecutor<R, P extends QueryParam> {
-        List<R> doExecute(P param);
-    }
-
-
-    @FunctionalInterface
-    public interface SingleExecutor<R, P extends QueryParam> {
-        R doExecute(P param);
-    }
-
-    @FunctionalInterface
-    public interface TotalExecutor<P extends QueryParam> {
-        int doExecute(P param);
-    }
-
     public Query<T, Q> selectExcludes(String... columns) {
         param.excludes(columns);
         return this;
@@ -272,39 +185,7 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return this;
     }
 
-    public static <R, P extends QueryParam> Query<R, P> forList(ListExecutor<R, P> executor, Supplier<P> paramGetter) {
-        return forList(executor, paramGetter.get());
-    }
-
-    public static <R, P extends QueryParam> Query<R, P> forList(ListExecutor<R, P> executor, P param) {
-        return new Query<R, P>(param).setListExecutor(executor);
-    }
-
-    public static <R> Query<R, QueryParam> forList(ListExecutor<R, QueryParam> executor) {
-        return forList(executor, new QueryParam());
-    }
-
-    public static <R, P extends QueryParam> Query<R, P> forSingle(SingleExecutor<R, P> executor, Supplier<P> paramGetter) {
-        return forSingle(executor, paramGetter.get());
-    }
-
-    public static <R, P extends QueryParam> Query<R, P> forSingle(SingleExecutor<R, P> executor, P param) {
-        return new Query<R, P>(param).setSingleExecutor(executor);
-    }
-
-    public static <R> Query<R, QueryParam> forSingle(SingleExecutor<R, QueryParam> executor) {
-        return forSingle(executor, new QueryParam());
-    }
-
-    public static <R, P extends QueryParam> Query<R, P> forTotal(TotalExecutor<P> executor, Supplier<P> paramGetter) {
-        return forTotal(executor, paramGetter.get());
-    }
-
-    public static <R, P extends QueryParam> Query<R, P> forTotal(TotalExecutor<P> executor, P param) {
-        return new Query<R, P>(param).setTotalExecutor(executor);
-    }
-
-    public static <R, P extends QueryParam> Query<R, P> empty(P param) {
+    public static <R, P extends QueryParam> Query<R, P> of(P param) {
         return new Query<>(param);
     }
 
@@ -312,7 +193,4 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
         return new Query<>(new QueryParam());
     }
 
-    public static <R> Query<R, QueryParam> forTotal(TotalExecutor<QueryParam> executor) {
-        return forTotal(executor, new QueryParam());
-    }
 }

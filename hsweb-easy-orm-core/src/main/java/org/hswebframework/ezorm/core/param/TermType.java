@@ -120,13 +120,4 @@ public interface TermType {
      */
     String nbtw    = "nbtw";
 
-    /**
-     * 此类型将直接执行sql.在类型是从客户端参数中获取的场景中,应该屏蔽此类型
-     *
-     * @see SqlTerm
-     * @since 1.0
-     * @deprecated 此属性已弃用，如果想直接拼接sql，请使用 {@link SqlTerm}
-     */
-    @Deprecated
-    String func = "func";
 }

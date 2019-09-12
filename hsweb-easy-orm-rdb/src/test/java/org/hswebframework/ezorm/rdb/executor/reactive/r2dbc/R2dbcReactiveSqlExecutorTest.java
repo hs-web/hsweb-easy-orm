@@ -51,7 +51,8 @@ public class R2dbcReactiveSqlExecutorTest {
             //插入100条数据
             Mono<Integer> update = sqlExecutor
                     .update(Flux.range(1, 100)
-                    .map(i -> of("insert into test_r2dbc(id)values(?)", "" + i)));
+                    .map(i -> of("insert into test_r2dbc(id)values(?)", "" + i)))
+                    .log(this.getClass().getName());
 
             StepVerifier.create(update)
                     .expectNext(100)
@@ -61,7 +62,8 @@ public class R2dbcReactiveSqlExecutorTest {
             Mono<Integer> sum = sqlExecutor.select(Mono.just(of("select id from test_r2dbc")), lowerCase(map()))
                     .map(map -> map.get("id"))
                     .map(String::valueOf)
-                    .collect(Collectors.summingInt(Integer::valueOf));
+                    .map(Integer::valueOf)
+                    .collect(Collectors.summingInt(Integer::intValue));
 
             StepVerifier.create(sum)
                     .expectNext(5050)

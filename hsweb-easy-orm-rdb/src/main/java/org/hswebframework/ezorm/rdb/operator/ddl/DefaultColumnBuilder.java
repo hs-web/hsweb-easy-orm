@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.core.DefaultValue;
-import org.hswebframework.ezorm.core.DefaultValueCodec;
+import org.hswebframework.ezorm.core.OriginalValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.codec.BooleanValueCodec;
@@ -112,7 +112,7 @@ public class DefaultColumnBuilder implements ColumnBuilder {
 
     @Override
     public TableBuilder commit() {
-        if (columnMetaData.getJavaType() != null && columnMetaData.getValueCodec() == DefaultValueCodec.INSTANCE) {
+        if (columnMetaData.getJavaType() != null && columnMetaData.getValueCodec() == OriginalValueCodec.INSTANCE) {
             if (Number.class.isAssignableFrom(columnMetaData.getJavaType())) {
                 columnMetaData.setValueCodec(new NumberValueCodec(columnMetaData.getJavaType()));
             }

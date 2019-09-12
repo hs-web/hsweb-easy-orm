@@ -6,17 +6,19 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.hswebframework.ezorm.core.ObjectConverter;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ApacheCommonPropertyOperator implements ObjectPropertyOperator {
+public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, ObjectConverter {
 
     private static PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
-    public static final ObjectPropertyOperator INSTANCE = new ApacheCommonPropertyOperator();
+    public static final ApacheCommonPropertyOperator INSTANCE = new ApacheCommonPropertyOperator();
 
     @Override
     public Optional<Object> getProperty(Object object, String name) {
@@ -38,5 +40,21 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator {
         } catch (NoSuchMethodException ignore) {
 
         }
+    }
+
+    @Override
+    @SneakyThrows
+    public <T> T convert(Object from, Class<T> to) {
+        T newInstance = to.newInstance();
+        BeanUtilsBean.getInstance().copyProperties(newInstance, from);
+        return newInstance;
+    }
+
+    @Override
+    @SneakyThrows
+    public <T> T convert(Object from, Supplier<T> to) {
+        T instance = to.get();
+        BeanUtilsBean.getInstance().copyProperties(instance, from);
+        return instance;
     }
 }

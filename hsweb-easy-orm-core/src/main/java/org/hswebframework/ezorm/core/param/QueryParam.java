@@ -104,10 +104,6 @@ public class QueryParam extends Param implements Serializable, Cloneable {
 
     @Override
     public QueryParam clone() {
-        QueryParam sqlParam = ((QueryParam) super.clone());
-        sqlParam.setExcludes(new LinkedHashSet<>(excludes));
-        sqlParam.setIncludes(new LinkedHashSet<>(includes));
-        sqlParam.setTerms(this.terms.stream().map(Term::clone).collect(Collectors.toList()));
-        return sqlParam;
+        return ((QueryParam) super.clone());
     }
 }

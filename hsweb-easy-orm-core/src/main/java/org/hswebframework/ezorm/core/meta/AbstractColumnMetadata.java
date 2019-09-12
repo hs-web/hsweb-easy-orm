@@ -6,9 +6,6 @@ import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Optional.ofNullable;
 
 @Getter
 @Setter
@@ -20,7 +17,7 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     protected boolean updatable;
     protected boolean notNull;
     protected DictionaryCodec dictionaryCodec;
-    protected ValueCodec valueCodec = DefaultValueCodec.INSTANCE;
+    protected ValueCodec valueCodec = OriginalValueCodec.INSTANCE;
     protected DefaultValue defaultValue;
     protected Validator validator;
     protected Map<String, Object> properties = new HashMap<>();

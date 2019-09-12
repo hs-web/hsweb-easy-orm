@@ -35,17 +35,6 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
         this.param = param;
     }
 
-    public <B> UpdateFromBean<T, Q, B> fromBean() {
-        this.bean = param.getData();
-        return new UpdateFromBean<>(this);
-    }
-
-    public UpdateFromBean<T, Q, T> fromBean(T bean) {
-        param.setData(bean);
-        this.bean = bean;
-        return new UpdateFromBean<>(this);
-    }
-
     @Override
     protected Update<T, Q> addSqlTerm(SqlTerm term) {
         return null;

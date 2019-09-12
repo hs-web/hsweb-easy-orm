@@ -10,6 +10,9 @@ public class Sort extends Column {
 
     private String order = "asc";
 
+    public Sort() {
+    }
+
     public String getOrder() {
         if ("desc".equalsIgnoreCase(order)) {
             return order;
@@ -20,9 +23,6 @@ public class Sort extends Column {
 
     public void setOrder(String order) {
         this.order = order;
-    }
-
-    public Sort() {
     }
 
     public Sort(String name) {
@@ -47,5 +47,7 @@ public class Sort extends Column {
         if (obj == null) return false;
         return this.hashCode() == obj.hashCode();
     }
+
+
 
 }

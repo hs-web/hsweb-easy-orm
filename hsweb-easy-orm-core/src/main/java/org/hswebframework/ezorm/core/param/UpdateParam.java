@@ -1,12 +1,5 @@
 package org.hswebframework.ezorm.core.param;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
-/**
- * Created by zhouhao on 16-4-19.
- */
 public class UpdateParam<T> extends Param {
     private T data;
 
@@ -34,10 +27,6 @@ public class UpdateParam<T> extends Param {
     public UpdateParam<T> clone() {
         UpdateParam<T> param = ((UpdateParam) super.clone());
         param.setData(data);
-        param.setExcludes(new LinkedHashSet<>(excludes));
-        param.setIncludes(new LinkedHashSet<>(includes));
-        List<Term> terms = this.terms.stream().map(Term::clone).collect(Collectors.toList());
-        param.setTerms(terms);
         return param;
     }
 }

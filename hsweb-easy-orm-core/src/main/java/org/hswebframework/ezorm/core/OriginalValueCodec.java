@@ -5,9 +5,9 @@ package org.hswebframework.ezorm.core;
  * @author zhouhao
  * @since 1.0
  */
-public class DefaultValueCodec implements ValueCodec {
+public class OriginalValueCodec implements ValueCodec {
 
-    public static final DefaultValueCodec INSTANCE = new DefaultValueCodec();
+    public static final OriginalValueCodec INSTANCE = new OriginalValueCodec();
 
     @Override
     public Object encode(Object value) {

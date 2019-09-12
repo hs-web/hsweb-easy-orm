@@ -10,6 +10,7 @@ public class GlobalConfig {
 
     static {
         setPropertyOperator(ApacheCommonPropertyOperator.INSTANCE);
+        setObjectConverter(ApacheCommonPropertyOperator.INSTANCE);
     }
 
     private static ObjectConverter objectConverter;

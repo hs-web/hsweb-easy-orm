@@ -95,23 +95,17 @@ public class Param implements Cloneable {
         return (T) this;
     }
 
-    public <T extends Param> T where(String key, Object value) {
-        and(key, value);
-        return (T) this;
-    }
-
-    public <T extends Param> T where(String key, String termType, Object value) {
-        and(key, termType, value);
-        return (T) this;
-    }
-
     public Set<String> getIncludes() {
-        if (includes == null) includes = new LinkedHashSet<>();
+        if (includes == null) {
+            includes = new LinkedHashSet<>();
+        }
         return includes;
     }
 
     public Set<String> getExcludes() {
-        if (excludes == null) excludes = new LinkedHashSet<>();
+        if (excludes == null){
+            excludes = new LinkedHashSet<>();
+        }
         return excludes;
     }
 
