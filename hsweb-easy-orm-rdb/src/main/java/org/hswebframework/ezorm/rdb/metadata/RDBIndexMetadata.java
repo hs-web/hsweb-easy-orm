@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 public class RDBIndexMetadata implements ObjectMetadata {
 
     private String name;
@@ -32,6 +34,10 @@ public class RDBIndexMetadata implements ObjectMetadata {
     private boolean unique;
 
     private boolean primaryKey;
+
+    public RDBIndexMetadata(String name){
+        this.name=name;
+    }
 
     @Override
     public String toString() {

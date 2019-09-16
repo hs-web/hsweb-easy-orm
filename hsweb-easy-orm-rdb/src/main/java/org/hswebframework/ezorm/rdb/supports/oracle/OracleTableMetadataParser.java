@@ -16,7 +16,7 @@ public class OracleTableMetadataParser extends RDBTableMetadataParser {
             ",case when cols.nullable='Y' then 0 else 1 end as \"not-null\"" +
             ",cols.column_id from user_tab_columns cols " +
             "left join all_col_comments acc on acc.column_name=cols.column_name and acc.table_name=cols.table_name " +
-            "where cols.table_name=upper(#{table}) " +
+            "where cols.table_name=upper(#{table}) and cols.virtual_column='NO'" +
             "order by cols.column_id ";
 
     private final static String TABLE_COMMENT_SQL = "select comments as \"comment\" from user_tab_comments where table_type='TABLE' and table_name=upper(#{table})";
