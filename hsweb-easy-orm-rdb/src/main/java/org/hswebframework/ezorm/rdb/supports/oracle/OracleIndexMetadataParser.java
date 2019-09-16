@@ -88,7 +88,7 @@ public class OracleIndexMetadataParser implements IndexMetadataParser {
         }
 
         @Override
-        public boolean completedWrapRow(int rowIndex, Map<String, String> result) {
+        public boolean completedWrapRow(Map<String, String> result) {
             RDBIndexMetadata metadata = mappingByName.computeIfAbsent(result.get("index_name"), RDBIndexMetadata::new);
             metadata.setTableName(result.get("table_name"));
             metadata.setUnique("UNIQUE".equals(result.get("uniqueness")));
