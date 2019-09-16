@@ -1,7 +1,5 @@
 package org.hswebframework.ezorm.rdb.executor.wrapper;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 public class ConvertResultWrapper<T, R, C> implements ResultWrapper<T, C> {
@@ -9,8 +7,6 @@ public class ConvertResultWrapper<T, R, C> implements ResultWrapper<T, C> {
     private ResultWrapper<T, R> wrapper;
 
     private Function<R, C> converter;
-
-    private List<T> list = new ArrayList<>();
 
     public ConvertResultWrapper(ResultWrapper<T, R> wrapper, Function<R, C> converter) {
         this.wrapper = wrapper;
@@ -34,12 +30,13 @@ public class ConvertResultWrapper<T, R, C> implements ResultWrapper<T, C> {
 
     @Override
     public boolean completedWrapRow(int rowIndex, T result) {
-        list.add(result);
+
         return wrapper.completedWrapRow(rowIndex, result);
     }
 
     @Override
     public void completedWrap() {
+        wrapper.completedWrap();
     }
 
     @Override

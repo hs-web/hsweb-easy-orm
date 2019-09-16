@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.executor.wrapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hswebframework.ezorm.core.Decoder;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,10 @@ public abstract class ResultWrappers {
         return convert(ListResultWrapper.arrayList(wrapper), List::stream);
     }
 
+    public static <R> ResultWrapper<R, R> column(String column, Decoder<R> decoder) {
+        return new SingleColumnResultWrapper<>(column, decoder);
+    }
+
     public static <E> ResultWrapper<E, Integer> consumer(ResultWrapper<E, ?> wrapper, Consumer<E> consumer) {
         return new ConsumerResultWrapper<>(wrapper, consumer);
     }
@@ -47,7 +52,6 @@ public abstract class ResultWrappers {
     public static <E> ResultWrapper<E, Integer> consumer(ResultWrapper<E, ?> wrapper, Consumer<E> consumer, Runnable onCompleted) {
         return new ConsumerResultWrapper<>(wrapper, consumer, onCompleted);
     }
-
 
     public static <E, R, C> ResultWrapper<E, C> convert(ResultWrapper<E, R> wrapper, Function<R, C> converter) {
         return new ConvertResultWrapper<>(wrapper, converter);

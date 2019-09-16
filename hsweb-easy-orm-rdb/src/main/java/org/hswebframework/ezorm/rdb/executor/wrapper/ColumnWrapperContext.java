@@ -12,4 +12,5 @@ public interface ColumnWrapperContext<T> {
 
     T getInstance();
 
+    void setInstance(T instance);
 }
