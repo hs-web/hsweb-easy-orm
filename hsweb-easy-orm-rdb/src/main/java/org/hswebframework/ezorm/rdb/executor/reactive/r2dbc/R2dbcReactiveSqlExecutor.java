@@ -83,7 +83,9 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     wrapper.beforeWrap(() -> columns);
                                     E e = wrapper.newRowInstance();
                                     for (int i = 0, len = columns.size(); i < len; i++) {
-                                        wrapper.wrapColumn(new DefaultColumnWrapperContext<>(-1, i, columns.get(i), row.get(i), e));
+                                        DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(-1, i, columns.get(i), row.get(i), e);
+                                        wrapper.wrapColumn(context);
+                                        e = context.getInstance();
                                     }
                                     if (!wrapper.completedWrapRow(-1, e)) {
                                         return Interrupted.instance;
