@@ -105,7 +105,7 @@ public class MapResultWrapper implements ResultWrapper<Map<String, Object>, Map<
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, Map<String, Object> result) {
+    public boolean completedWrapRow(Map<String, Object> result) {
         currentInstance = result;
         return true;
     }

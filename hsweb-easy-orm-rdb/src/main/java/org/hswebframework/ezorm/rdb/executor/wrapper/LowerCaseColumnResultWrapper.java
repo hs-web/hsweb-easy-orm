@@ -22,11 +22,6 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
 
         wrapper.wrapColumn(new ColumnWrapperContext<E>() {
             @Override
-            public int getRowIndex() {
-                return context.getRowIndex();
-            }
-
-            @Override
             public int getColumnIndex() {
                 return context.getColumnIndex();
             }
@@ -55,8 +50,8 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, E result) {
-        return wrapper.completedWrapRow(rowIndex, result);
+    public boolean completedWrapRow(E result) {
+        return wrapper.completedWrapRow(result);
     }
 
     @Override

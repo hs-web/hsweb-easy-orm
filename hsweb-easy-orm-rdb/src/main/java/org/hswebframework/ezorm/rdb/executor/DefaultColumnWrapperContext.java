@@ -11,8 +11,6 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 @AllArgsConstructor
 public class DefaultColumnWrapperContext<T> implements ColumnWrapperContext<T> {
 
-    private int rowIndex;
-
     private int columnIndex;
 
     private String columnLabel;

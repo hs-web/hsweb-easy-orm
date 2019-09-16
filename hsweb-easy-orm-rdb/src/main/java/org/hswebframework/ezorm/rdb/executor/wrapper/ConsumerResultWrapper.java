@@ -42,11 +42,11 @@ public class ConsumerResultWrapper<T> implements ResultWrapper<T, Integer> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, T result) {
+    public boolean completedWrapRow( T result) {
 
         counter++;
         consumer.accept(result);
-        return wrapper.completedWrapRow(rowIndex, result);
+        return wrapper.completedWrapRow( result);
     }
 
     @Override

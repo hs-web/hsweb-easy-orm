@@ -29,9 +29,9 @@ public class ConvertResultWrapper<T, R, C> implements ResultWrapper<T, C> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, T result) {
+    public boolean completedWrapRow(T result) {
 
-        return wrapper.completedWrapRow(rowIndex, result);
+        return wrapper.completedWrapRow(result);
     }
 
     @Override

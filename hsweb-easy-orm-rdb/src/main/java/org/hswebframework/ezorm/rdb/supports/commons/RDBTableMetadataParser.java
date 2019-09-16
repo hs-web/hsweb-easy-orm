@@ -157,7 +157,7 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
         }
 
         @Override
-        public boolean completedWrapRow(int rowIndex, RDBColumnMetadata instance) {
+        public boolean completedWrapRow(RDBColumnMetadata instance) {
             String data_type = instance.getProperty("data_type").toString().toLowerCase();
             int len = instance.getProperty("data_length").toInt();
             int data_precision = instance.getProperty("data_precision").toInt();

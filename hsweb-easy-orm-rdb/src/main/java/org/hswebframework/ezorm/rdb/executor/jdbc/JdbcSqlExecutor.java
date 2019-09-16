@@ -118,12 +118,12 @@ public abstract class JdbcSqlExecutor {
                 T data = wrapper.newRowInstance();
                 for (int i = 0; i < columns.size(); i++) {
                     Object value = resultSet.getObject(i + 1);
-                    DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(index, i, columns.get(i), value, data);
+                    DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(i, columns.get(i), value, data);
                     wrapper.wrapColumn(context);
                     data = context.getInstance();
                 }
                 index++;
-                if (!wrapper.completedWrapRow(index, data)) {
+                if (!wrapper.completedWrapRow(data)) {
                     break;
                 }
             }

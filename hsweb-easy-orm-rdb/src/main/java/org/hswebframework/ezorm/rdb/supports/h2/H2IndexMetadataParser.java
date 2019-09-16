@@ -59,7 +59,7 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
         }
 
         @Override
-        public boolean completedWrapRow(int rowIndex, Map<String, Object> result) {
+        public boolean completedWrapRow( Map<String, Object> result) {
             String name = (String) result.get("index_name");
             RDBIndexMetadata index = group.computeIfAbsent(name, __ -> new RDBIndexMetadata());
             index.setName(name.toLowerCase());

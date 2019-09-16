@@ -44,7 +44,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, E result) {
+    public boolean completedWrapRow(E result) {
         return true;
     }
 

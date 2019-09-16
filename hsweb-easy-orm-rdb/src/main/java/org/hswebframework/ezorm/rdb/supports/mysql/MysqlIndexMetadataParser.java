@@ -49,7 +49,7 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
         }
 
         @Override
-        public boolean completedWrapRow(int rowIndex, Map<String, String> result) {
+        public boolean completedWrapRow(Map<String, String> result) {
             String name = result.get("key_name");
 
             RDBIndexMetadata index = groupByName.computeIfAbsent(name, __ -> new RDBIndexMetadata());

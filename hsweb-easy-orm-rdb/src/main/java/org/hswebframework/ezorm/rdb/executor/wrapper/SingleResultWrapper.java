@@ -26,8 +26,8 @@ public class SingleResultWrapper<T> implements ResultWrapper<T, T> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, T result) {
-        wrapper.completedWrapRow(rowIndex, result);
+    public boolean completedWrapRow(T result) {
+        wrapper.completedWrapRow(result);
         this.result = result;
         return false;
     }

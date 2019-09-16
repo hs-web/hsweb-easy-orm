@@ -42,9 +42,9 @@ public class ListResultWrapper<T> implements ResultWrapper<T, List<T>> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, T result) {
+    public boolean completedWrapRow(T result) {
         list.add(result);
-        return wrapper.completedWrapRow(rowIndex, result);
+        return wrapper.completedWrapRow(result);
     }
 
     @Override

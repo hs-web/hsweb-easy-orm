@@ -33,11 +33,10 @@ public interface ResultWrapper<E, R> {
     /**
      * 完成一行的包装时执行
      *
-     * @param rowIndex 行号
-     * @param result   行结果对象
+     * @param result 行结果对象
      * @return 是否继续下一行
      */
-    boolean completedWrapRow(int rowIndex, E result);
+    boolean completedWrapRow(E result);
 
     /**
      * 全部包装完成时执行此方法

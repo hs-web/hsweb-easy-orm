@@ -27,7 +27,7 @@ public class SingleColumnResultWrapper<R> implements ResultWrapper<R, R> {
     }
 
     @Override
-    public boolean completedWrapRow(int rowIndex, R result) {
+    public boolean completedWrapRow( R result) {
 
         return true;
     }
