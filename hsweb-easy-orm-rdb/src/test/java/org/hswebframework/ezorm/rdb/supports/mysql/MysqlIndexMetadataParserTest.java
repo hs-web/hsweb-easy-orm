@@ -14,7 +14,7 @@ public class MysqlIndexMetadataParserTest {
     @Test
     public void test() {
 
-        SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new MysqlConnectionProvider());
+        SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new Mysql57ConnectionProvider());
         try {
 
             MysqlSchemaMetadata schema= new MysqlSchemaMetadata("ezorm");

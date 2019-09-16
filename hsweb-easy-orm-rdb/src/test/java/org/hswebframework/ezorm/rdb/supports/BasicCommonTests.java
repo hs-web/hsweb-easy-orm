@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
 
+import java.sql.JDBCType;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
@@ -77,6 +78,7 @@ public abstract class BasicCommonTests {
                         .paging(i, 10)
                         .fetch(map())
                         .reactive()
+                        .log(getClass().getName())
                         .map(map -> map.get("id"))
                         .map(Number.class::cast)
                         .collect(Collectors.summingInt(Number::intValue))
@@ -214,6 +216,17 @@ public abstract class BasicCommonTests {
                     .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
                     .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
                     .addColumn().name("comment").varchar(32).defaultValue("'1'").commit()
+
+                    .addColumn().name("number_test").number(4).commit()
+                    .addColumn().name("date_test").datetime().commit()
+                    .addColumn().name("int_test").jdbcType(JDBCType.INTEGER).commit()
+                    .addColumn().name("bigint_test").jdbcType(JDBCType.BIGINT).commit()
+                    .addColumn().name("clob_test").clob().commit()
+                    .addColumn().name("blob_test").jdbcType(JDBCType.BLOB).commit()
+                    .addColumn().name("char_test").jdbcType(JDBCType.CHAR).length(32).commit()
+                    .addColumn().name("time_test").jdbcType(JDBCType.TIME).commit()
+                    .addColumn().name("date_test").jdbcType(JDBCType.DATE).commit()
+
                     .index().name("index_").column("name").commit()
                     .commit().sync();
 

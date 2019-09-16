@@ -21,7 +21,7 @@ public class MysqlTableMetaParserTest {
 
     @Before
     public void init() {
-        executor = new TestSyncSqlExecutor(new MysqlConnectionProvider());
+        executor = new TestSyncSqlExecutor(new Mysql57ConnectionProvider());
         parser = new MysqlTableMetadataParser(executor);
     }
 

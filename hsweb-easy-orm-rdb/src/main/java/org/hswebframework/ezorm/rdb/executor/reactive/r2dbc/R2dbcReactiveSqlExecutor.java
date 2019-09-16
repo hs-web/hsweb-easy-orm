@@ -44,11 +44,10 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     protected Flux<Result> execute(Connection connection,
                                    SqlRequest request) {
 
-        return Flux.defer(() ->
-                Flux.just(prepareStatement(connection.createStatement(request.getSql()), request))
-                        .flatMap(Statement::execute)
-                        .map(Result.class::cast)
-                        .doOnSubscribe(subscription -> printSql(logger, request)));
+        return Flux.just(prepareStatement(connection.createStatement(request.getSql()), request))
+                .flatMap(Statement::execute)
+                .map(Result.class::cast)
+                .doOnSubscribe(subscription -> printSql(logger, request));
     }
 
     @Override

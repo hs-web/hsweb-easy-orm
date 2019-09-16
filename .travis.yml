@@ -5,6 +5,7 @@ jdk:
 before_install:
   - chmod +x mvnw
   - docker run -d -p 13306:3306 -e TZ=Asia/Shanghai -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=ezorm  mysql:5.7 --character-set-server=utf8mb4
+  - docker run -d -p 13307:3306 -e TZ=Asia/Shanghai -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=ezorm  mysql:8 --character-set-server=utf8mb4
   - docker run -d -p 15432:5432 -e TZ=Asia/Shanghai -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=ezorm postgres:11-alpine
   - docker run -d -p 11521:1521 -e TZ=Asia/Shanghai iatebes/oracle_11g
   - docker run -d -p 11433:1433 -e TZ=Asia/Shanghai -e SA_PASSWORD=ezorm!PasswOrd -e ACCEPT_EULA=Y -e MSSQL_PID=Enterprise mcr.microsoft.com/mssql/server:2017-latest-ubuntu

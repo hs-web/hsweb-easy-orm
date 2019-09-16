@@ -12,7 +12,7 @@ import java.sql.DriverManager;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.mapList;
 
-public class MysqlConnectionProvider implements ConnectionProvider {
+public class Mysql57ConnectionProvider implements ConnectionProvider {
 
     static {
         Driver.getPlatform();
@@ -36,7 +36,7 @@ public class MysqlConnectionProvider implements ConnectionProvider {
     }
 
     public static void main(String[] args) {
-        SyncSqlExecutor executor  =new TestSyncSqlExecutor(new MysqlConnectionProvider());;
+        SyncSqlExecutor executor  =new TestSyncSqlExecutor(new Mysql57ConnectionProvider());;
         System.out.println(executor.select(SqlRequests.of("show index from ezorm.table_name"),mapList()));
 
     }

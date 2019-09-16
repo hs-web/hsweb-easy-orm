@@ -13,7 +13,7 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar2(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar2(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
-        addDataTypeMapper(JDBCType.TIME, (meta) -> "datetime");
+        addDataTypeMapper(JDBCType.TIME, (meta) -> "timestamp");
         addDataTypeMapper(JDBCType.DATE, (meta) -> "date");
         addDataTypeMapper(JDBCType.TINYINT, (meta) -> "number(2)");
         addDataTypeMapper(JDBCType.SMALLINT, (meta) -> "number(5)");
@@ -24,7 +24,7 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.BINARY, (meta) -> "blob");
         addDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
         addDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "number(38)");
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
         addJdbcTypeMapping("varchar2", JDBCType.VARCHAR);

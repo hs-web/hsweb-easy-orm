@@ -9,6 +9,15 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ezorm
       TZ: Asia/Shanghai
+  mysql8:
+    image: mysql:8
+    container_name: ezorm-mysql8
+    ports:
+      - "13307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ezorm
+      TZ: Asia/Shanghai
   postgres:
     image: postgres:11-alpine
     container_name: ezorm-postgres
