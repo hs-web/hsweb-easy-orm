@@ -118,7 +118,8 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         param.put("schema", schema.getName());
         return getSqlExecutor()
                 .select(template(getTableExistsSql(), param),
-                        optional(column("total", res -> res != null && ((Number) res).intValue() > 0)))
+                        optional(single(column("total", Number.class::cast))))
+                .map(number -> number.intValue() > 0)
                 .orElse(false);
 
     }

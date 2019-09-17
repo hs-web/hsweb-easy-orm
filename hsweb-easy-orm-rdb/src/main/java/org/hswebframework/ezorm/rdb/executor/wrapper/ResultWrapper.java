@@ -6,7 +6,7 @@ package org.hswebframework.ezorm.rdb.executor.wrapper;
  *
  * @param <E> 结果集元素
  * @param <R> 最终返回结果
- * @see ResultWrappers#mapList()
+ * @see ResultWrappers
  */
 public interface ResultWrapper<E, R> {
 

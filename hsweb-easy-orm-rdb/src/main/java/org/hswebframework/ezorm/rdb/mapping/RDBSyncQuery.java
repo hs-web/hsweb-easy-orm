@@ -57,7 +57,7 @@ public class RDBSyncQuery<T> implements SyncQuery<T> {
                 .from(tableName)
                 .where(param.getTerms())
                 .paging(0, 1)
-                .fetch(optional(wrapper))
+                .fetch(optional(single(wrapper)))
                 .sync();
     }
 
