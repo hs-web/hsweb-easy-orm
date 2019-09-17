@@ -2,19 +2,16 @@ package org.hswebframework.ezorm.rdb.supports.h2;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapperContext;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Slf4j
@@ -92,7 +89,7 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
 
         @Override
         public void wrapColumn(ColumnWrapperContext<Map<String, Object>> context) {
-            context.getInstance().put(context.getColumnLabel().toLowerCase(), context.getResult());
+            context.getRowInstance().put(context.getColumnLabel().toLowerCase(), context.getResult());
         }
 
         @Override

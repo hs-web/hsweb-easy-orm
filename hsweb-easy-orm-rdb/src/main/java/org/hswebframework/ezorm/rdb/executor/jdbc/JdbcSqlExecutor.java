@@ -120,7 +120,7 @@ public abstract class JdbcSqlExecutor {
                     Object value = resultSet.getObject(i + 1);
                     DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(i, columns.get(i), value, data);
                     wrapper.wrapColumn(context);
-                    data = context.getInstance();
+                    data = context.getRowInstance();
                 }
                 index++;
                 if (!wrapper.completedWrapRow(data)) {

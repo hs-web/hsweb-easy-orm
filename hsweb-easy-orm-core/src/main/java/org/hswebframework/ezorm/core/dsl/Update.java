@@ -95,19 +95,12 @@ public final class Update<T, Q extends UpdateParam<T>> extends SqlConditionSuppo
         return new SimpleNestConditional<>(this, this.param.nest());
     }
 
-    public NestConditional<Update<T, Q>> nest(String column, Object value) {
-        return new SimpleNestConditional<>(this, this.param.nest(column, value));
-    }
 
     @Override
     public NestConditional<Update<T, Q>> orNest() {
         return new SimpleNestConditional<>(this, this.param.orNest());
     }
 
-    @Override
-    public NestConditional<Update<T, Q>> orNest(String column, Object value) {
-        return new SimpleNestConditional<>(this, this.param.orNest(column, value));
-    }
 
     @Override
     public Update<T, Q> and() {

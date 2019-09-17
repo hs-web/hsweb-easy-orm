@@ -15,6 +15,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 public class BuildParameterQueryOperator extends QueryOperator {
@@ -67,6 +68,12 @@ public class BuildParameterQueryOperator extends QueryOperator {
     @Override
     public QueryOperator where(Term term) {
         parameter.getWhere().add(term);
+        return this;
+    }
+
+    @Override
+    public QueryOperator where(Collection<Term> term) {
+        parameter.getWhere().addAll(term);
         return this;
     }
 

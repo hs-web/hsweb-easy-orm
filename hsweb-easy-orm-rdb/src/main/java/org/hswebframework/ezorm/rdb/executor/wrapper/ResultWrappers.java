@@ -3,6 +3,8 @@ package org.hswebframework.ezorm.rdb.executor.wrapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.hswebframework.ezorm.core.Decoder;
+import org.hswebframework.ezorm.rdb.executor.DefaultRecord;
+import org.hswebframework.ezorm.rdb.executor.Record;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -37,7 +39,7 @@ public abstract class ResultWrappers {
     }
 
     public static <E> ResultWrapper<E, Stream<E>> stream(ResultWrapper<E, ?> wrapper) {
-        return convert(ListResultWrapper.of(wrapper, new ArrayList<>()), List::stream);
+        return convert(list(wrapper), List::stream);
     }
 
     public static <R> ResultWrapper<R, R> column(String column, Decoder<R> decoder) {

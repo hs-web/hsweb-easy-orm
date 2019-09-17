@@ -92,7 +92,7 @@ public class OracleIndexMetadataParser implements IndexMetadataParser {
             if (context.getResult() == null) {
                 return;
             }
-            context.getInstance().put(context.getColumnLabel().toLowerCase(), String.valueOf(context.getResult()));
+            context.getRowInstance().put(context.getColumnLabel().toLowerCase(), String.valueOf(context.getResult()));
         }
 
         @Override

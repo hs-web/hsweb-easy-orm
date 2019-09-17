@@ -22,7 +22,7 @@ public class SingleColumnResultWrapper<R> implements ResultWrapper<R, R> {
     @Override
     public void wrapColumn(ColumnWrapperContext<R> context) {
         if (column.equalsIgnoreCase(context.getColumnLabel())) {
-            context.setInstance(decoder.decode(context.getResult()));
+            context.setRowInstance(decoder.decode(context.getResult()));
         }
     }
 

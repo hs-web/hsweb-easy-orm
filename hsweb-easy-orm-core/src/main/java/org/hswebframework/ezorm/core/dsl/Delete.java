@@ -47,18 +47,9 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
         return new SimpleNestConditional<>(this, this.param.nest());
     }
 
-    public NestConditional<Delete<P>> nest(String column, Object value) {
-        return new SimpleNestConditional<>(this, this.param.nest(column, value));
-    }
-
     @Override
     public NestConditional<Delete<P>> orNest() {
         return new SimpleNestConditional<>(this, this.param.orNest());
-    }
-
-    @Override
-    public NestConditional<Delete<P>> orNest(String column, Object value) {
-        return new SimpleNestConditional<>(this, this.param.orNest(column, value));
     }
 
 

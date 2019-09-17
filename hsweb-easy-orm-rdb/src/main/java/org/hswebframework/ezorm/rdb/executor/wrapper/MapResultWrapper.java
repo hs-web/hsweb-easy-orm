@@ -54,7 +54,7 @@ public class MapResultWrapper implements ResultWrapper<Map<String, Object>, Map<
 
     @Override
     public void wrapColumn(ColumnWrapperContext<Map<String, Object>> context) {
-        Map<String, Object> instance = context.getInstance();
+        Map<String, Object> instance = context.getRowInstance();
 
         Object value = codec.decode(context.getResult());
         String column = context.getColumnLabel();

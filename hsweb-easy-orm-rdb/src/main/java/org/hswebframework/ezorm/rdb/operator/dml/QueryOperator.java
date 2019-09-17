@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.dml;
 
 import org.hswebframework.ezorm.core.Conditional;
+import org.hswebframework.ezorm.core.LogicalOperation;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.core.param.Term;
@@ -11,6 +12,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.*;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -25,7 +27,7 @@ import java.util.function.Supplier;
  * .reactive(map())
  * .subscribe(data->);
  */
-public abstract class QueryOperator {
+public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
 
     public abstract QueryOperator select(String... columns);
 
@@ -53,6 +55,8 @@ public abstract class QueryOperator {
     public abstract QueryOperator where(Consumer<Conditional<?>> conditionalConsumer);
 
     public abstract QueryOperator where(Term term);
+
+    public abstract QueryOperator where(Collection<Term> term);
 
     @SafeVarargs
     public final QueryOperator where(Supplier<Term>... condition) {

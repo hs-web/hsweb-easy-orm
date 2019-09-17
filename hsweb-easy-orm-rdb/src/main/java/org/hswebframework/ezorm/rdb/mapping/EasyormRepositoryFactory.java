@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.orm;
+package org.hswebframework.ezorm.rdb.mapping;
 
 import org.hswebframework.ezorm.core.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.core.mapping.SyncRepository;

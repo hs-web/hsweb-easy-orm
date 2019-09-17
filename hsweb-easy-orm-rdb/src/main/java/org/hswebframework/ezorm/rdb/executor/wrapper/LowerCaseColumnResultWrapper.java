@@ -38,13 +38,13 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
             }
 
             @Override
-            public E getInstance() {
-                return context.getInstance();
+            public E getRowInstance() {
+                return context.getRowInstance();
             }
 
             @Override
-            public void setInstance(E instance) {
-                context.setInstance(instance);
+            public void setRowInstance(E instance) {
+                context.setRowInstance(instance);
             }
         });
     }

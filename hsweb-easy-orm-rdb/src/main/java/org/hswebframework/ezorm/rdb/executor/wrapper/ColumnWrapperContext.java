@@ -8,7 +8,7 @@ public interface ColumnWrapperContext<T> {
 
     Object getResult();
 
-    T getInstance();
+    T getRowInstance();
 
-    void setInstance(T instance);
+    void setRowInstance(T instance);
 }

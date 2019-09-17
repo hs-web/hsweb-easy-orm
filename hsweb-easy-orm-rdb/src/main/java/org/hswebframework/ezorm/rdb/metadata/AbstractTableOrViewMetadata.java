@@ -137,24 +137,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     @Override
     public ForeignKeyMetadata addForeignKey(ForeignKeyBuilder builder) {
-        DefaultForeignKeyMetadata foreignKeyMetadata = new DefaultForeignKeyMetadata();
-        foreignKeyMetadata.setName(builder.getName());
-        foreignKeyMetadata.setAlias(builder.getAlias());
-        foreignKeyMetadata.setLogical(true);
-        foreignKeyMetadata.setAutoJoin(builder.isAutoJoin());
-        foreignKeyMetadata.setToMany(builder.isToMany());
-        foreignKeyMetadata.setTarget(schema.getTableOrView(builder.getTarget())
-                .orElseThrow(() -> new IllegalArgumentException("target [" + builder.getTarget() + "] doesn't exist")));
+        ForeignKeyMetadata metadata = LazyForeignKeyMetadata.of(builder, this);
 
-        foreignKeyMetadata.setSourceColumn(getColumn(builder.getSourceColumn())
-                .orElseThrow(() -> new IllegalArgumentException("source column [" + builder.getSourceColumn() + "] doesn't exist")));
-        foreignKeyMetadata.setTargetColumn(foreignKeyMetadata.getTarget().getColumn(builder.getTargetColumn())
-                .orElseThrow(() -> new IllegalArgumentException("target column [" + builder.getTargetColumn() + "] doesn't exist")));
-        foreignKeyMetadata.setSource(this);
-
-        foreignKeyMetadata.setTerms(builder.getTerms());
-        addForeignKey(foreignKeyMetadata);
-        return foreignKeyMetadata;
+        addForeignKey(metadata);
+        return metadata;
     }
 
     private Optional<RDBColumnMetadata> findColumnFromSchema(RDBSchemaMetadata schema, String tableName, String column) {
@@ -191,6 +177,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     @SneakyThrows
     public ObjectMetadata clone() {
-        return (ObjectMetadata)super.clone();
+        return (ObjectMetadata) super.clone();
+    }
+
+    public RDBColumnMetadata newColumn(){
+        return new RDBColumnMetadata();
     }
 }

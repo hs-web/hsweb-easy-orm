@@ -17,6 +17,6 @@ public class DefaultColumnWrapperContext<T> implements ColumnWrapperContext<T> {
 
     private Object result;
 
-    private T instance;
+    private T rowInstance;
 
 }

@@ -86,7 +86,7 @@ public class SelectColumnFragmentBuilderTest {
     @Test
     public void testFunction() {
         SelectColumn column = new SelectColumn();
-        column.setColumn("id");
+//        column.setColumn("id");
         column.setAlias("total");
         column.setFunction("count");
         column.setOpts(Collections.singletonMap("arg","1"));

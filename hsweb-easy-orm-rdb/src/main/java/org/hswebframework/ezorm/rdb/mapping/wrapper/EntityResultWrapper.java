@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.orm.wrapper;
+package org.hswebframework.ezorm.rdb.mapping.wrapper;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,7 +40,8 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
                 .flatMap(m -> m.findColumn(column))
                 .map(columnMetadata -> columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
-        propertyOperator.setProperty(context.getInstance(), column, value);
+
+        propertyOperator.setProperty(context.getRowInstance(), column, value);
     }
 
     @Override
@@ -50,6 +51,6 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
     @Override
     public E getResult() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

@@ -54,7 +54,7 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
         @Override
         public void wrapColumn(ColumnWrapperContext<Map<String, String>> context) {
             if (context.getResult() != null) {
-                context.getInstance().put(context.getColumnLabel().toLowerCase(), String.valueOf(context.getResult()));
+                context.getRowInstance().put(context.getColumnLabel().toLowerCase(), String.valueOf(context.getResult()));
             }
         }
 

@@ -136,7 +136,9 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public RDBTableMetadata newTable(String name) {
-        return new RDBTableMetadata(name);
+        RDBTableMetadata tableMetadata = new RDBTableMetadata(name);
+        tableMetadata.setSchema(this);
+        return tableMetadata;
     }
 
     @Override

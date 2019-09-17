@@ -182,7 +182,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
         @Override
         public void wrapColumn(ColumnWrapperContext<RDBColumnMetadata> context) {
-            doWrap(context.getInstance(), context.getColumnLabel(), context.getResult());
+            doWrap(context.getRowInstance(), context.getColumnLabel(), context.getResult());
         }
 
         public void doWrap(RDBColumnMetadata instance, String attr, Object value) {

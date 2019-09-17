@@ -11,6 +11,7 @@ import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
+import java.util.Optional;
 
 /**
  * 数据库方言
@@ -39,6 +40,13 @@ public interface Dialect extends Feature {
 
     String clearQuote(String string);
 
+    boolean isColumnToUpperCase();
+
+    Optional<JDBCType> getJdbcType(Class<?> type);
+
+    JDBCType getJdbcType(String dataType);
+
+
     default String quote(String keyword, boolean changeCase) {
         if (keyword.startsWith(getQuoteStart()) && keyword.endsWith(getQuoteEnd())) {
             return keyword;
@@ -50,8 +58,6 @@ public interface Dialect extends Feature {
         return quote(keyword, true);
     }
 
-    boolean isColumnToUpperCase();
-
     default String buildColumnFullName(String tableName, String columnName) {
         if (columnName.contains(".")) {
             return columnName;
@@ -61,9 +67,6 @@ public interface Dialect extends Feature {
         }
         return StringUtils.concat(tableName, ".", getQuoteStart(), isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
     }
-
-
-    JDBCType getJdbcType(String dataType);
 
     Dialect MYSQL = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();

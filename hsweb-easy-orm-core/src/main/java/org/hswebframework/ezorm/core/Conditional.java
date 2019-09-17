@@ -32,11 +32,7 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
 
     NestConditional<T> nest();
 
-    NestConditional<T> nest(String column, Object value);
-
     NestConditional<T> orNest();
-
-    NestConditional<T> orNest(String column, Object value);
 
     /*
      * and or 切换

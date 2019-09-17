@@ -12,7 +12,7 @@ public interface SyncRepository<T, K> {
 
     SyncQuery<T> createQuery();
 
-    SyncUpdate createUpdate();
+    SyncUpdate<T> createUpdate();
 
     SyncDelete createDelete();
 

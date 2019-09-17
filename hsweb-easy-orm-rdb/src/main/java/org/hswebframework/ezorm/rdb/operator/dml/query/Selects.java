@@ -2,6 +2,8 @@ package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 
+import java.util.Collections;
+
 public interface Selects {
 
     static SelectColumnOperator column(String name) {
@@ -14,6 +16,10 @@ public interface Selects {
 
     static SelectColumnOperator count(String name) {
         return new SelectColumnOperator(name, RDBFeatures.count.getFunction());
+    }
+
+    static SelectColumnOperator count1() {
+        return new SelectColumnOperator(null, RDBFeatures.count.getFunction(), Collections.singletonMap("arg", "1"));
     }
 
     static SelectColumnOperator max(String name) {
