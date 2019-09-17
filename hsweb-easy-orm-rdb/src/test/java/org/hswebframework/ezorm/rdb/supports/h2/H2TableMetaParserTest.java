@@ -23,11 +23,13 @@ public class H2TableMetaParserTest {
     @SneakyThrows
     public void init() {
 
-        Class.forName("org.h2.Driver");
-        executor = new TestSyncSqlExecutor(new H2ConnectionProvider());
 
-        parser = new H2TableMetadataParser(executor);
-        parser.setSchemaName("PUBLIC");
+        executor = new TestSyncSqlExecutor(new H2ConnectionProvider());
+        H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
+        schema.addFeature(executor);
+
+        parser=new H2TableMetadataParser(schema);
+
     }
 
     @Test
@@ -38,7 +40,7 @@ public class H2TableMetaParserTest {
                 "age number(4)" +
                 ")"));
         try {
-            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {

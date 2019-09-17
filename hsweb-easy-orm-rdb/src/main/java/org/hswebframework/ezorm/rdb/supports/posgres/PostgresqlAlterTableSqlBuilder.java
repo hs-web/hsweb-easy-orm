@@ -9,7 +9,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonAlterTableSqlBuilder;
 
 @SuppressWarnings("all")
-public class PostgreSQLAlterTableSqlBuilder extends CommonAlterTableSqlBuilder {
+public class PostgresqlAlterTableSqlBuilder extends CommonAlterTableSqlBuilder {
 
 
     @Override

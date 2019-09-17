@@ -1,7 +1,6 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
-import org.hswebframework.ezorm.core.meta.DefaultObjectMetaDataParser;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -25,9 +24,8 @@ public class RDBSchemaMetadataTest {
         schema.setDatabase(database);
         executor = new TestSyncSqlExecutor(new H2ConnectionProvider());
 
-        DefaultObjectMetaDataParser parser = new DefaultObjectMetaDataParser();
-        parser.registerStrategy(new H2TableMetadataParser(executor));
-        schema.setParser(parser);
+        schema.addFeature(executor);
+        schema.addFeature(new H2TableMetadataParser(schema));
 
         database.addSchema(schema);
         database.setCurrentSchema(schema);

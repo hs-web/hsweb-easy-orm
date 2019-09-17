@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hswebframework.ezorm.TestSyncSqlExecutor;
-import org.hswebframework.ezorm.core.meta.DefaultObjectMetaDataParser;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -37,9 +36,9 @@ public class DefaultDatabaseOperatorTest {
 
         H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
 
-        DefaultObjectMetaDataParser parser = new DefaultObjectMetaDataParser();
-        parser.registerStrategy(new H2TableMetadataParser(sqlExecutor));
-        schema.setParser(parser);
+
+
+        schema.addFeature(new H2TableMetadataParser(schema));
         database.addSchema(schema);
         database.setCurrentSchema(schema);
 

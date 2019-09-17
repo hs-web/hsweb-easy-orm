@@ -1,8 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
-import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
-import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 public class MysqlTableMetadataParser extends RDBTableMetadataParser {
     private static final String TABLE_META_SQL = " select " +
@@ -13,50 +12,37 @@ public class MysqlTableMetadataParser extends RDBTableMetadataParser {
             "numeric_scale as `data_scale`, " +
             "column_comment as `comment`, " +
             "case when is_nullable='YES' then 0 else 1 end as 'not-null' " +
-            "from information_schema.columns where table_schema=%s and table_name=#{table}";
+            "from information_schema.columns where table_schema=#{schema} and table_name=#{table}";
 
     private static final String TABLE_COMMENT_SQL = " select " +
             "table_comment as `comment` " +
-            "from information_schema.tables where table_schema=%s and table_name=#{table}";
+            "from information_schema.tables where table_schema=#{schema} and table_name=#{table}";
 
-    private static final String ALL_TABLE_SQL = "select table_name as `name` from information_schema.`TABLES` where table_schema=%s";
+    private static final String ALL_TABLE_SQL = "select table_name as `name` from information_schema.`TABLES` where table_schema=#{schema}";
 
-    private static final String TABLE_EXISTS_SQL = "select count(1) as 'total' from information_schema.`TABLES` where table_schema=%s and table_name=#{table}";
+    private static final String TABLE_EXISTS_SQL = "select count(1) as 'total' from information_schema.`TABLES` where table_schema=#{schema} and table_name=#{table}";
 
-    public MysqlTableMetadataParser(SyncSqlExecutor sqlExecutor) {
-        super(sqlExecutor);
-    }
-
-    private String getRealDatabaseName() {
-        String db = getSchemaName();
-        if (db == null) {
-            return "database()";
-        }
-        return "'" + db + "'";
+    public MysqlTableMetadataParser(RDBSchemaMetadata schema) {
+        super(schema);
     }
 
     @Override
     protected String getTableMetaSql(String name) {
-        return String.format(TABLE_META_SQL, getRealDatabaseName());
-    }
-
-    @Override
-    protected Dialect getDialect() {
-        return Dialect.MYSQL;
+        return TABLE_META_SQL;
     }
 
     @Override
     protected String getTableCommentSql(String name) {
-        return String.format(TABLE_COMMENT_SQL, getRealDatabaseName());
+        return TABLE_COMMENT_SQL;
     }
 
     @Override
     protected String getAllTableSql() {
-        return String.format(ALL_TABLE_SQL, getRealDatabaseName());
+        return ALL_TABLE_SQL;
     }
 
     @Override
     public String getTableExistsSql() {
-        return String.format(TABLE_EXISTS_SQL, getRealDatabaseName());
+        return TABLE_EXISTS_SQL;
     }
 }

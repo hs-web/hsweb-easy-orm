@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.executor.wrapper;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class ConsumerResultWrapper<T> implements ResultWrapper<T, Integer> {
@@ -11,20 +12,20 @@ public class ConsumerResultWrapper<T> implements ResultWrapper<T, Integer> {
 
     private Runnable whenComplete;
 
-    public ConsumerResultWrapper(ResultWrapper<T, ?> wrapper, Consumer<T> consumer,Runnable whenComplete) {
+    public ConsumerResultWrapper(ResultWrapper<T, ?> wrapper, Consumer<T> consumer, Runnable whenComplete) {
         Objects.requireNonNull(wrapper);
         Objects.requireNonNull(consumer);
 
         this.wrapper = wrapper;
         this.consumer = consumer;
-        this.whenComplete=whenComplete;
+        this.whenComplete = whenComplete;
     }
 
-    public ConsumerResultWrapper(ResultWrapper<T, ?> wrapper, Consumer<T> consumer){
-        this(wrapper,consumer,null);
+    public ConsumerResultWrapper(ResultWrapper<T, ?> wrapper, Consumer<T> consumer) {
+        this(wrapper, consumer, null);
     }
 
-    private int counter;
+    private AtomicInteger counter = new AtomicInteger();
 
     @Override
     public T newRowInstance() {
@@ -42,22 +43,22 @@ public class ConsumerResultWrapper<T> implements ResultWrapper<T, Integer> {
     }
 
     @Override
-    public boolean completedWrapRow( T result) {
+    public boolean completedWrapRow(T result) {
 
-        counter++;
+        counter.incrementAndGet();
         consumer.accept(result);
-        return wrapper.completedWrapRow( result);
+        return wrapper.completedWrapRow(result);
     }
 
     @Override
     public void completedWrap() {
-        if(whenComplete!=null){
+        if (whenComplete != null) {
             whenComplete.run();
         }
     }
 
     @Override
     public Integer getResult() {
-        return counter;
+        return counter.get();
     }
 }

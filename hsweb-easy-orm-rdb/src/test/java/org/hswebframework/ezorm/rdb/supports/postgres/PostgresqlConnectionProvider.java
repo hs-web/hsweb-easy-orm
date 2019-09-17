@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class PostgreSQLConnectionProvider implements ConnectionProvider {
+public class PostgresqlConnectionProvider implements ConnectionProvider {
 
     static {
         Assert.assertTrue(Driver.isRegistered());

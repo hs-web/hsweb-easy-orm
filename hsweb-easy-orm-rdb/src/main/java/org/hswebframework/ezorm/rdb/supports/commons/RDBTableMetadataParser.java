@@ -1,18 +1,16 @@
 package org.hswebframework.ezorm.rdb.supports.commons;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.core.meta.ObjectMetaDataParserStrategy;
-import org.hswebframework.ezorm.core.meta.ObjectType;
-import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.wrapper.*;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBObjectType;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
+import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -21,10 +19,8 @@ import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.list;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
 
-public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStrategy<RDBTableMetadata> {
+public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
     private static final Map<JDBCType, Class> defaultJavaTypeMap = new HashMap<>();
 
@@ -46,15 +42,15 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
         defaultJavaTypeMap.put(JDBCType.DECIMAL, BigDecimal.class);
     }
 
-    @Getter
-    @Setter
-    private String schemaName;
+    protected RDBSchemaMetadata schema;
 
     protected SyncSqlExecutor sqlExecutor;
 
     protected Map<JDBCType, Class> javaTypeMap = new HashMap<>();
 
-    protected abstract Dialect getDialect();
+    protected Dialect getDialect() {
+        return schema.getDialect();
+    }
 
     protected abstract String getTableMetaSql(String name);
 
@@ -64,42 +60,51 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
 
     protected abstract String getTableExistsSql();
 
-    public RDBTableMetadataParser(SyncSqlExecutor executor) {
-        this.sqlExecutor = executor;
+    public RDBTableMetadataParser(RDBSchemaMetadata schema) {
+        this.schema = schema;
     }
 
-    @Override
-    public ObjectType getSupportType() {
-        return RDBObjectType.table;
+    protected SyncSqlExecutor getSqlExecutor() {
+        if (this.sqlExecutor == null) {
+            this.sqlExecutor = schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
+                    .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
+        }
+        return this.sqlExecutor;
     }
 
-    protected RDBTableMetadata createTable(){
-        return  new RDBTableMetadata();
+    protected RDBTableMetadata createTable(String name) {
+        return schema.newTable(name);
     }
 
     @SneakyThrows
     protected Optional<RDBTableMetadata> doParse(String name) {
-        RDBTableMetadata metaData = createTable();
+        RDBTableMetadata metaData = createTable(name);
         metaData.setName(name);
         metaData.setAlias(name);
         Map<String, Object> param = new HashMap<>();
         param.put("table", name);
+        param.put("schema", schema.getName());
 
         //列
-        List<RDBColumnMetadata> metaDataList = sqlExecutor.select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
+        List<RDBColumnMetadata> metaDataList = getSqlExecutor().select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
         metaDataList.forEach(metaData::addColumn);
         //说明
-        Map<String, Object> comment = sqlExecutor.select(template(getTableCommentSql(name), param), singleMap());
+        Map<String, Object> comment = getSqlExecutor().select(template(getTableCommentSql(name), param), singleMap());
         if (null != comment && comment.get("comment") != null) {
             metaData.setComment(String.valueOf(comment.get("comment")));
         }
+        //加载索引
+        schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+                .map(parser -> parser.parseTableIndex(name))
+                .ifPresent(indexes -> indexes.forEach(metaData::addIndex));
 
         return Optional.of(metaData);
     }
 
     @Override
-    public Optional<RDBTableMetadata> parse(String name) {
-        if (!objectExists(name)) {
+    @SuppressWarnings("all")
+    public Optional<RDBTableMetadata> parseByName(String name) {
+        if (!tableExists(name)) {
             return Optional.empty();
         }
         return doParse(name);
@@ -107,29 +112,28 @@ public abstract class RDBTableMetadataParser implements ObjectMetaDataParserStra
 
     @Override
     @SneakyThrows
-    public boolean objectExists(String name) {
+    public boolean tableExists(String name) {
         Map<String, Object> param = new HashMap<>();
         param.put("table", name);
-        Map<String, Object> res = sqlExecutor.select(template(getTableExistsSql(), param), lowerCase(singleMap()));
-        return res.get("total") != null && StringUtils.toInt(res.get("total")) > 0;
+        param.put("schema", schema.getName());
+        return getSqlExecutor()
+                .select(template(getTableExistsSql(), param),
+                        optional(column("total", res -> res != null && ((Number) res).intValue() > 0)))
+                .orElse(false);
+
     }
 
     @Override
     @SneakyThrows
-    public Set<String> getAllNames() {
-        return sqlExecutor
-                .select(SqlRequests.of(getAllTableSql()), list(lowerCase(singleMap())))
-                .stream()
-                .map(map -> map.get("name"))
-                .filter(Objects::nonNull)
-                .map(String::valueOf)
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
+    public List<String> parseAllTableName() {
+        return getSqlExecutor()
+                .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)));
     }
 
     @Override
+    @SuppressWarnings("all")
     public List<RDBTableMetadata> parseAll() {
-        return getAllNames()
+        return parseAllTableName()
                 .parallelStream()
                 .map(this::doParse)
                 .filter(Optional::isPresent)

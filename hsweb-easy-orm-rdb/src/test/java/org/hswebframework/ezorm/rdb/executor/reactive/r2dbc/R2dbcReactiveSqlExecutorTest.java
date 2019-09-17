@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.executor.reactive.r2dbc;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.h2.H2R2dbcConnectionProvider;
 import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLR2dbcConnectionProvider;
-import org.hswebframework.ezorm.rdb.supports.postgres.PostgreSQLR2dbcConnectionProvider;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlR2dbcConnectionProvider;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,7 +27,7 @@ public class R2dbcReactiveSqlExecutorTest {
     public void testPostgreSQL() {
 
 
-        executeTest(new TestReactiveSqlExecutor(new PostgreSQLR2dbcConnectionProvider()));
+        executeTest(new TestReactiveSqlExecutor(new PostgresqlR2dbcConnectionProvider()));
 
     }
 

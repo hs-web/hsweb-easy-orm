@@ -1,12 +1,13 @@
 package org.hswebframework.ezorm.rdb.executor.wrapper;
 
+
 public class SingleResultWrapper<T> implements ResultWrapper<T, T> {
 
-    private ResultWrapper<T, T> wrapper;
+    private ResultWrapper<T, ?> wrapper;
 
     private T result;
 
-    public SingleResultWrapper(ResultWrapper<T, T> wrapper) {
+    public SingleResultWrapper(ResultWrapper<T, ?> wrapper) {
         this.wrapper = wrapper;
     }
 

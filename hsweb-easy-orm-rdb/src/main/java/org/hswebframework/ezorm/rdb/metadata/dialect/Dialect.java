@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgreSQLDialect;
+import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
@@ -19,7 +19,7 @@ import java.sql.JDBCType;
  * @see MysqlDialect
  * @see OracleDialect
  * @see H2Dialect
- * @see PostgreSQLDialect
+ * @see PostgresqlDialect
  * @since 1.0
  */
 public interface Dialect extends Feature {
@@ -69,6 +69,6 @@ public interface Dialect extends Feature {
     Dialect ORACLE = new OracleDialect();
     Dialect H2 = new H2Dialect();
     Dialect MSSQL = new SqlServerDialect();
-    Dialect POSTGRES = new PostgreSQLDialect();
+    Dialect POSTGRES = new PostgresqlDialect();
 
 }

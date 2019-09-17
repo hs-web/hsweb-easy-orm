@@ -5,7 +5,8 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgreSQLTableMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlTableMetadataParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,16 +15,18 @@ import java.sql.JDBCType;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 
-public class PostgreSQLTableMetaParserTest {
+public class PostgresqlTableMetaParserTest {
 
     private SyncSqlExecutor executor;
 
-    private PostgreSQLTableMetadataParser parser;
+    private PostgresqlTableMetadataParser parser;
 
     @Before
     public void init() {
-        executor = new TestSyncSqlExecutor(new PostgreSQLConnectionProvider());
-        parser = new PostgreSQLTableMetadataParser(executor);
+        executor = new TestSyncSqlExecutor(new PostgresqlConnectionProvider());
+        PostgresqlSchemaMetadata schema =new PostgresqlSchemaMetadata("public");
+        schema.addFeature(executor);
+        parser = new PostgresqlTableMetadataParser(schema);
     }
 
     @Test
@@ -34,7 +37,7 @@ public class PostgreSQLTableMetaParserTest {
                 "age int" +
                 ")"));
         try {
-            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {

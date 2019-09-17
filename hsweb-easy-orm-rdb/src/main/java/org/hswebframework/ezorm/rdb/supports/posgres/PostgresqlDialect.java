@@ -9,10 +9,10 @@ import java.sql.JDBCType;
  * @author zhouhao
  * @since 3.0
  */
-public class PostgreSQLDialect extends DefaultDialect {
+public class PostgresqlDialect extends DefaultDialect {
 
 
-    public PostgreSQLDialect() {
+    public PostgresqlDialect() {
         defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
         addDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));

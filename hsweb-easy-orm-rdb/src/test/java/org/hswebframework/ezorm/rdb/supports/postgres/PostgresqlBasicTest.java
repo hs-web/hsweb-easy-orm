@@ -7,21 +7,19 @@ import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.BasicCommonTests;
-import org.hswebframework.ezorm.rdb.supports.mssql.MSSQLR2dbcConnectionProvider;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgreSQLSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
 
-public class PostgreSQLBasicTest extends BasicCommonTests {
+public class PostgresqlBasicTest extends BasicCommonTests {
     @Override
     protected RDBSchemaMetadata getSchema() {
-        return new PostgreSQLSchemaMetadata("public");
+        return new PostgresqlSchemaMetadata("public");
     }
 
     @Override
     protected RDBDatabaseMetadata getDatabase() {
         RDBDatabaseMetadata database= super.getDatabase();
 
-        database.addFeature(new TestReactiveSqlExecutor(new PostgreSQLR2dbcConnectionProvider()));
-
+        database.addFeature(new TestReactiveSqlExecutor(new PostgresqlR2dbcConnectionProvider()));
         return database;
     }
 
@@ -32,6 +30,6 @@ public class PostgreSQLBasicTest extends BasicCommonTests {
 
     @Override
     protected SyncSqlExecutor getSqlExecutor() {
-        return new TestSyncSqlExecutor(new PostgreSQLConnectionProvider());
+        return new TestSyncSqlExecutor(new PostgresqlConnectionProvider());
     }
 }

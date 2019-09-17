@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
@@ -14,7 +15,7 @@ import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import java.util.*;
 
 @Getter
-@AllArgsConstructor(staticName = "of")
+@AllArgsConstructor
 @Slf4j
 public class MysqlIndexMetadataParser implements IndexMetadataParser {
 
@@ -30,7 +31,16 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
                     log.warn("unsupported SyncSqlExecutor");
                     return Collections.emptyList();
                 });
+    }
 
+    @Override
+    public <T extends ObjectMetadata> Optional<T> parseByName(String name) {
+        return Optional.empty();
+    }
+
+    @Override
+    public <T extends ObjectMetadata> List<T> parseAll() {
+        return Collections.emptyList();
     }
 
     class MysqlIndexWrapper implements ResultWrapper<Map<String, String>, List<RDBIndexMetadata>> {

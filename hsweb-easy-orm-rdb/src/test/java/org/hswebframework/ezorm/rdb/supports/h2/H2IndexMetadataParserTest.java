@@ -33,7 +33,7 @@ public class H2IndexMetadataParserTest {
         H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
         schema.addFeature(sqlExecutor);
 
-        H2IndexMetadataParser parser = H2IndexMetadataParser.of(schema);
+        H2IndexMetadataParser parser = new H2IndexMetadataParser(schema);
 
         List<RDBIndexMetadata> index = parser.parseTableIndex("test_index_parser");
 

@@ -19,7 +19,7 @@ public class MysqlIndexMetadataParserTest {
 
             MysqlSchemaMetadata schema= new MysqlSchemaMetadata("ezorm");
 
-            MysqlIndexMetadataParser parser =MysqlIndexMetadataParser.of(schema);
+            MysqlIndexMetadataParser parser =new MysqlIndexMetadataParser(schema);
 
             parser.getSchema().addFeature(sqlExecutor);
 

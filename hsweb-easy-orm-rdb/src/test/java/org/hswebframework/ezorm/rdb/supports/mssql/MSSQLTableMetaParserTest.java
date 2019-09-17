@@ -22,7 +22,11 @@ public class MSSQLTableMetaParserTest {
     @Before
     public void init() {
         executor = new TestSyncSqlExecutor(new MSSQLConnectionProvider());
-        parser = new SqlServer2012TableMetadataParser(executor);
+
+        SqlServerSchemaMetadata sqlServerSchemaMetadata=new SqlServerSchemaMetadata("dbo");
+        sqlServerSchemaMetadata.addFeature(executor);
+
+        parser = new SqlServer2012TableMetadataParser(sqlServerSchemaMetadata);
     }
 
     @Test
@@ -33,7 +37,7 @@ public class MSSQLTableMetaParserTest {
                 "age int" +
                 ")"));
         try {
-            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {

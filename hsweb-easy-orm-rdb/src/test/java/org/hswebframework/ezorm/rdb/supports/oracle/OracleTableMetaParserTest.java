@@ -23,7 +23,10 @@ public class OracleTableMetaParserTest {
     @Before
     public void init() {
         executor = new TestSyncSqlExecutor(new OracleConnectionProvider());
-        parser = new OracleTableMetadataParser(executor);
+        OracleSchemaMetadata schema = new OracleSchemaMetadata("SYSTEM");
+        schema.addFeature(executor);
+
+        parser = new OracleTableMetadataParser(schema);
     }
 
     @Test
@@ -35,7 +38,7 @@ public class OracleTableMetaParserTest {
                     "name varchar2(128) not null," +
                     "age number(10)" +
                     ")"));
-            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {

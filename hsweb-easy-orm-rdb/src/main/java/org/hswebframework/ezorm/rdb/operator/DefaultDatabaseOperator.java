@@ -103,7 +103,7 @@ public class DefaultDatabaseOperator
                     }else {
                         schema = metadata.getCurrentSchema();
                     }
-                    RDBTableMetadata newTable = new RDBTableMetadata(tableName);
+                    RDBTableMetadata newTable = schema.newTable(tableName);
                     newTable.setSchema(schema);
                     return newTable;
                 });

@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,8 +22,11 @@ public class MysqlTableMetaParserTest {
 
     @Before
     public void init() {
+        RDBSchemaMetadata schema = new MysqlSchemaMetadata("ezorm");
+
         executor = new TestSyncSqlExecutor(new Mysql57ConnectionProvider());
-        parser = new MysqlTableMetadataParser(executor);
+        schema.addFeature(executor);
+        parser = new MysqlTableMetadataParser(schema);
     }
 
     @Test
@@ -33,7 +37,7 @@ public class MysqlTableMetaParserTest {
                 "age int" +
                 ")"));
         try {
-            RDBTableMetadata metaData = parser.parse("test_table").orElseThrow(NullPointerException::new);
+            RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id
             {

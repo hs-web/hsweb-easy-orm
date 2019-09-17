@@ -18,10 +18,6 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
     @Getter
     @Setter
-    private ObjectMetaDataParser parser;
-
-    @Getter
-    @Setter
     private DatabaseMetadata database;
 
     @Getter
@@ -49,7 +45,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         Map<String, ObjectMetadata> typeMapping = metaRepository.get(type.getId());
         if (typeMapping == null) {
 
-            List<T> all = parseMeta(type);
+            List<T> all = loadMetadata(type);
             Map<String, ObjectMetadata> group = all.stream()
                     .collect(toMap(ObjectMetadata::getName, Function.identity(), (_1, _2) -> _1, ConcurrentHashMap::new));
 
@@ -62,14 +58,26 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         return (List) new ArrayList<>(typeMapping.values());
     }
 
-    protected <T extends ObjectMetadata> List<T> parseMeta(ObjectType type) {
-        return parser.parseAll(type);
+    protected <T extends ObjectMetadata> List<T> loadMetadata(ObjectType type) {
+        return getParser(type)
+                .map(ObjectMetadataParser::parseAll)
+                .map(CastUtil::<List<T>>cast)
+                .orElseGet(Collections::emptyList);
     }
 
-    protected <T extends ObjectMetadata> T parseMeta(ObjectType type, String name) {
-        return ofNullable(parser)
-                .flatMap(_parser -> _parser.<T>parse(type, name))
+    protected <T extends ObjectMetadata> T loadMetadata(ObjectType type, String name) {
+        return getParser(type)
+                .flatMap(parser -> parser.<T>parseByName(name))
                 .orElse(null);
+    }
+
+    protected Optional<ObjectMetadataParser> getParser(ObjectType type) {
+        return getFeatures().values()
+                .stream()
+                .filter(ObjectMetadataParser.class::isInstance)
+                .map(ObjectMetadataParser.class::cast)
+                .filter(parser -> parser.getObjectType().getId().equals(type.getId()))
+                .findFirst();
     }
 
     public void addObject(ObjectMetadata metadata) {
@@ -85,7 +93,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     public <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name) {
         Objects.requireNonNull(name, "name");
         return of(metaRepository.computeIfAbsent(type.getId(), t -> new ConcurrentHashMap<>()))
-                .map(repo -> repo.computeIfAbsent(name, __ -> parseMeta(type, name)))
+                .map(repo -> repo.computeIfAbsent(name, __ -> loadMetadata(type, name)))
                 .map(CastUtil::cast);
     }
 
@@ -96,7 +104,9 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     public <T extends Feature> Optional<T> findFeature(String id) {
         return of(this.<T>getFeature(id))
                 .filter(Optional::isPresent)
-                .orElseGet(() -> getDatabase().getFeature(id));
+                .orElseGet(() -> Optional
+                        .ofNullable(getDatabase())
+                        .flatMap(database -> database.getFeature(id)));
     }
 
     @Override

@@ -2,14 +2,13 @@ package org.hswebframework.ezorm.rdb.metadata.parser;
 
 import org.hswebframework.ezorm.core.meta.ObjectMetadataParser;
 import org.hswebframework.ezorm.core.meta.ObjectType;
-import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBObjectType;
 
 import java.util.List;
 
-public interface IndexMetadataParser extends ObjectMetadataParser {
+public interface TableMetadataParser extends ObjectMetadataParser {
 
-    String id = "indexMetadataParser";
+    String id = "tableMetadataParser";
 
     @Override
     default String getId() {
@@ -18,13 +17,15 @@ public interface IndexMetadataParser extends ObjectMetadataParser {
 
     @Override
     default String getName() {
-        return "索引解析器";
+        return "表结构解析器";
     }
 
     @Override
     default ObjectType getObjectType() {
-        return RDBObjectType.index;
+        return RDBObjectType.table;
     }
 
-    List<RDBIndexMetadata> parseTableIndex(String tableName);
+    List<String> parseAllTableName();
+
+    boolean tableExists(String name);
 }

@@ -14,13 +14,13 @@ import java.util.function.Supplier;
 
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
-public class PostgreSQLR2dbcConnectionProvider implements R2dbcConnectionProvider {
+public class PostgresqlR2dbcConnectionProvider implements R2dbcConnectionProvider {
 
 
     Supplier<Mono<Connection>> connectionSupplier;
 
     @SneakyThrows
-    public PostgreSQLR2dbcConnectionProvider() {
+    public PostgresqlR2dbcConnectionProvider() {
 
         String username = System.getProperty("postgres.username", "postgres");
         String password = System.getProperty("postgres.password", "admin");

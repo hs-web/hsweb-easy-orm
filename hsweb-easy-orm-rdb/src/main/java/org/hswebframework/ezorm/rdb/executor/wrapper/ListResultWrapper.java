@@ -3,26 +3,18 @@ package org.hswebframework.ezorm.rdb.executor.wrapper;
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 @AllArgsConstructor
-public class ListResultWrapper<T> implements ResultWrapper<T, List<T>> {
+public class ListResultWrapper<T, C extends Collection<T>> implements ResultWrapper<T, C> {
 
     private ResultWrapper<T, ?> wrapper;
 
-    private List<T> list;
+    private C collection;
 
-
-    public static <T> ListResultWrapper<T> arrayList(ResultWrapper<T, ?> wrapper) {
-        return new ListResultWrapper<>(wrapper, new ArrayList<>());
-    }
-
-    public static <T> ListResultWrapper<T> linkedList(ResultWrapper<T, ?> wrapper) {
-        return new ListResultWrapper<>(wrapper, new LinkedList<>());
-    }
-
-    public static <T> ListResultWrapper<T> of(ResultWrapper<T, ?> wrapper, List<T> container) {
+    public static <T, C extends Collection<T>> ListResultWrapper<T, C> of(ResultWrapper<T, ?> wrapper, C container) {
         return new ListResultWrapper<>(wrapper, container);
     }
 
@@ -43,7 +35,7 @@ public class ListResultWrapper<T> implements ResultWrapper<T, List<T>> {
 
     @Override
     public boolean completedWrapRow(T result) {
-        list.add(result);
+        collection.add(result);
         return wrapper.completedWrapRow(result);
     }
 
@@ -53,8 +45,8 @@ public class ListResultWrapper<T> implements ResultWrapper<T, List<T>> {
     }
 
     @Override
-    public List<T> getResult() {
+    public C getResult() {
 
-        return list;
+        return collection;
     }
 }

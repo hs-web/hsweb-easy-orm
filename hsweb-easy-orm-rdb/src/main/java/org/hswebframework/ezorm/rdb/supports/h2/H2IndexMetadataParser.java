@@ -2,6 +2,8 @@ package org.hswebframework.ezorm.rdb.supports.h2;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
@@ -14,10 +16,10 @@ import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor(staticName = "of")
+@AllArgsConstructor
 @Slf4j
+@SuppressWarnings("all")
 public class H2IndexMetadataParser implements IndexMetadataParser {
-
 
     private RDBSchemaMetadata schema;
 
@@ -32,17 +34,52 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
             "from information_schema.indexes " +
             "where table_name=? and table_schema=?";
 
+    private static final String byName = "select " +
+            "index_name," +
+            "table_name," +
+            "column_name," +
+            "primary_key," +
+            "asc_or_desc," +
+            "ordinal_position," +
+            "non_unique " +
+            "from information_schema.indexes " +
+            "where index_name=? and table_schema=?";
+
+    private static final String all = "select " +
+            "index_name," +
+            "table_name," +
+            "column_name," +
+            "primary_key," +
+            "asc_or_desc," +
+            "ordinal_position," +
+            "non_unique " +
+            "from information_schema.indexes " +
+            "where table_schema=?";
+
     @Override
     public List<RDBIndexMetadata> parseTableIndex(String tableName) {
+        return doSelect(SqlRequests.of(sql, tableName.toUpperCase(), schema.getName().toUpperCase()));
+    }
+
+    @Override
+    public Optional<RDBIndexMetadata> parseByName(String name) {
+        return doSelect(SqlRequests.of(byName, name.toUpperCase(), schema.getName().toUpperCase()))
+                .stream()
+                .findFirst();
+    }
+
+    @Override
+    public List<RDBIndexMetadata> parseAll() {
+        return doSelect(SqlRequests.of(all, schema.getName().toUpperCase()));
+    }
+
+    protected List<RDBIndexMetadata> doSelect(SqlRequest sqlRequest) {
         return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
-                .map(sqlExecutor -> sqlExecutor.select(SqlRequests.of(sql, tableName.toUpperCase(), schema.getName().toUpperCase()),
-                        new H2IndexMetadataWrapper()))
+                .map(sqlExecutor -> sqlExecutor.select(sqlRequest, new H2IndexMetadataWrapper()))
                 .orElseGet(() -> {
                     log.warn("unsupported SyncSqlExecutor");
                     return Collections.emptyList();
                 });
-
-
     }
 
     class H2IndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
@@ -59,7 +96,7 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
         }
 
         @Override
-        public boolean completedWrapRow( Map<String, Object> result) {
+        public boolean completedWrapRow(Map<String, Object> result) {
             String name = (String) result.get("index_name");
             RDBIndexMetadata index = group.computeIfAbsent(name, __ -> new RDBIndexMetadata());
             index.setName(name.toLowerCase());

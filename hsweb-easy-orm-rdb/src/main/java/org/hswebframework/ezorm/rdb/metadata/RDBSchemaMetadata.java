@@ -70,6 +70,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         this.setName(name);
     }
 
+
     @Override
     @SuppressWarnings("all")
     public RDBDatabaseMetadata getDatabase() {
@@ -77,7 +78,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Optional<RDBTableMetadata> getTable(String name) {
-        if(name.contains(".")){
+        if (name.contains(".")) {
             return findTableOrView(name)
                     .map(RDBTableMetadata.class::cast);
         }
@@ -112,8 +113,8 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     @Override
-    protected <T extends ObjectMetadata> List<T> parseMeta(ObjectType type) {
-        return super.<T>parseMeta(type)
+    protected <T extends ObjectMetadata> List<T> loadMetadata(ObjectType type) {
+        return super.<T>loadMetadata(type)
                 .stream()
                 .map(this::metadataParsed)
                 .collect(Collectors.toList());
@@ -127,15 +128,14 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return metadata;
     }
 
-
     @Override
-    protected <T extends ObjectMetadata> T parseMeta(ObjectType type, String name) {
-        T metadata = super.parseMeta(type, name);
+    protected <T extends ObjectMetadata> T loadMetadata(ObjectType type, String name) {
+        T metadata = super.loadMetadata(type, name);
 
         return this.metadataParsed(metadata);
     }
 
-    public RDBTableMetadata newTable(String name){
+    public RDBTableMetadata newTable(String name) {
         return new RDBTableMetadata(name);
     }
 
@@ -145,11 +145,17 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Dialect getDialect() {
-        return getDatabase().getDialect();
+        return Optional.ofNullable(getDatabase())
+                .map(RDBDatabaseMetadata::getDialect)
+                .orElseGet(() -> this
+                        .<Dialect>getFeatures(RDBFeatureType.dialect)
+                        .stream()
+                        .findFirst()
+                        .orElse(null));
     }
 
     @Override
     public RDBSchemaMetadata clone() {
-        return (RDBSchemaMetadata)super.clone();
+        return (RDBSchemaMetadata) super.clone();
     }
 }

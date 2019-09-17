@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 public class MysqlSchemaMetadata extends RDBSchemaMetadata {
 
@@ -10,6 +11,9 @@ public class MysqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new MysqlCreateTableSqlBuilder());
         addFeature(new MysqlAlterTableSqlBuilder());
         addFeature(new MysqlPaginator());
-        addFeature(MysqlIndexMetadataParser.of(this));
+
+        addFeature(new MysqlIndexMetadataParser(this));
+        addFeature(new MysqlTableMetadataParser(this));
+        addFeature(Dialect.MYSQL);
     }
 }

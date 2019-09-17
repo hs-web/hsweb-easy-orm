@@ -1,10 +1,9 @@
 package org.hswebframework.ezorm.rdb.supports.posgres;
 
-import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
-import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
-public class PostgreSQLTableMetadataParser extends RDBTableMetadataParser {
+public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
     private static final String TABLE_META_SQL = "select column_name as \"name\"" +
             " , udt_name as \"data_type\"" +
             " , character_maximum_length as \"data_length\"" +
@@ -15,7 +14,7 @@ public class PostgreSQLTableMetadataParser extends RDBTableMetadataParser {
             " from information_schema.columns columns ," +
             "     pg_class as c,pg_attribute as a" +
             " where a.attrelid = c.oid and a.attnum>0 and a.attname = columns.column_name and c.relname=columns.table_name" +
-            " and table_schema = %s" +
+            " and table_schema = #{schema}" +
             " and table_name = #{table}";
 
     private static final String TABLE_COMMENT_SQL = "select cast(obj_description(relfilenode,'pg_class') as varchar)" +
@@ -23,30 +22,17 @@ public class PostgreSQLTableMetadataParser extends RDBTableMetadataParser {
             " where relname=#{table} and relkind = 'r' and relname not like 'pg_%'" +
             " and relname not like 'sql_%'";
 
-    private static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=%s";
+    private static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=#{schema}";
 
-    private static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=%s and table_name=#{table}";
+    private static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=#{schema} and table_name=#{table}";
 
-    public PostgreSQLTableMetadataParser(SyncSqlExecutor sqlExecutor) {
-        super(sqlExecutor);
-    }
-
-    private String getRealDatabaseName() {
-        String db = getSchemaName();
-        if (db == null) {
-            return "current_schema()";
-        }
-        return "'" + db + "'";
+    public PostgresqlTableMetadataParser(RDBSchemaMetadata schema) {
+        super(schema);
     }
 
     @Override
     protected String getTableMetaSql(String name) {
-        return String.format(TABLE_META_SQL, getRealDatabaseName());
-    }
-
-    @Override
-    protected Dialect getDialect() {
-        return Dialect.POSTGRES;
+        return TABLE_META_SQL;
     }
 
     @Override
@@ -56,11 +42,11 @@ public class PostgreSQLTableMetadataParser extends RDBTableMetadataParser {
 
     @Override
     protected String getAllTableSql() {
-        return String.format(ALL_TABLE_SQL, getRealDatabaseName());
+        return ALL_TABLE_SQL;
     }
 
     @Override
     public String getTableExistsSql() {
-        return String.format(TABLE_EXISTS_SQL, getRealDatabaseName());
+        return  TABLE_EXISTS_SQL;
     }
 }

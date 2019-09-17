@@ -4,8 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.hswebframework.ezorm.core.Decoder;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -29,16 +28,16 @@ public abstract class ResultWrappers {
         return stream(MapResultWrapper.defaultInstance());
     }
 
-    public static ResultWrapper<Map<String, Object>, Integer> mapConsumer(Consumer<Map<String, Object>> consumer) {
-        return consumer(MapResultWrapper.defaultInstance(), consumer);
+    public static <E> ResultWrapper<E, List<E>> list(ResultWrapper<E, ?> wrapper) {
+        return ListResultWrapper.of(wrapper, new ArrayList<>());
     }
 
-    public static <E> ResultWrapper<E, List<E>> list(ResultWrapper<E, ?> wrapper) {
-        return ListResultWrapper.arrayList(wrapper);
+    public static <E> ResultWrapper<E, Set<E>> set(ResultWrapper<E, ?> wrapper) {
+        return ListResultWrapper.of(wrapper, new LinkedHashSet<>());
     }
 
     public static <E> ResultWrapper<E, Stream<E>> stream(ResultWrapper<E, ?> wrapper) {
-        return convert(ListResultWrapper.arrayList(wrapper), List::stream);
+        return convert(ListResultWrapper.of(wrapper, new ArrayList<>()), List::stream);
     }
 
     public static <R> ResultWrapper<R, R> column(String column, Decoder<R> decoder) {
@@ -57,7 +56,15 @@ public abstract class ResultWrappers {
         return new ConvertResultWrapper<>(wrapper, converter);
     }
 
+    public static <E> ResultWrapper<E, Optional<E>> optional(ResultWrapper<E, ?> wrapper) {
+        return convert(single(wrapper), Optional::ofNullable);
+    }
+
+    public static <E> ResultWrapper<E, E> single(ResultWrapper<E, ?> wrapper) {
+        return new SingleResultWrapper<>(wrapper);
+    }
+
     public static ResultWrapper<Map<String, Object>, Map<String, Object>> singleMap() {
-        return new SingleResultWrapper<>(MapResultWrapper.defaultInstance());
+        return single(map());
     }
 }

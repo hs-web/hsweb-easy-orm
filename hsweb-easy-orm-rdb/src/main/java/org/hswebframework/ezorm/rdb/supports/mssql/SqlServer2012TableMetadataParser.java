@@ -1,35 +1,30 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
-import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
-import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 /**
  * @author zhouhao
  */
 public class SqlServer2012TableMetadataParser extends RDBTableMetadataParser {
 
-    public SqlServer2012TableMetadataParser(SyncSqlExecutor sqlExecutor) {
-        super(sqlExecutor);
+    public SqlServer2012TableMetadataParser(RDBSchemaMetadata schema) {
+        super(schema);
     }
 
-    private static String TABLE_META_SQL = "SELECT \n" +
-            "c.name as name,\n" +
-            "t.name as data_type,\n" +
-            "c.length as data_length,\n" +
-            "c.xscale as data_scale,\n" +
-            "c.xprec as data_precision,\n" +
-            "case when c.isnullable=1 then 0 else  1 end as [not-null],\n" +
-            "cast(p.value as varchar(500)) as comment\n" +
-            "FROM syscolumns c\n" +
-            "inner join  systypes t on c.xusertype = t.xusertype \n" +
-            "left join sys.extended_properties p on c.id=p.major_id and c.colid=p.minor_id\n" +
+    private static final String TABLE_META_SQL = "SELECT " +
+            "c.name as name," +
+            "t.name as data_type," +
+            "c.length as data_length," +
+            "c.xscale as data_scale," +
+            "c.xprec as data_precision," +
+            "case when c.isnullable=1 then 0 else  1 end as [not-null]," +
+            "cast(p.value as varchar(500)) as comment " +
+            "FROM syscolumns c " +
+            "inner join  systypes t on c.xusertype = t.xusertype " +
+            "left join sys.extended_properties p on c.id=p.major_id and c.colid=p.minor_id " +
             "WHERE c.id = object_id(#{table})";
 
-    @Override
-    protected Dialect getDialect() {
-        return SqlServerDialect.MSSQL;
-    }
 
     @Override
     protected String getTableMetaSql(String tname) {

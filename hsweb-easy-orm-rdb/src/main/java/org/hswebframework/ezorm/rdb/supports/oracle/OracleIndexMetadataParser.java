@@ -3,12 +3,10 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.CastUtil;
-import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.executor.SqlRequests;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
@@ -16,7 +14,7 @@ import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.hswebframework.ezorm.rdb.executor.SqlRequests.*;
+import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
 @Slf4j
@@ -62,6 +60,16 @@ public class OracleIndexMetadataParser implements IndexMetadataParser {
                     log.warn("unsupported SyncSqlExecutor");
                     return Collections.emptyList();
                 });
+    }
+
+    @Override
+    public <T extends ObjectMetadata> Optional<T> parseByName(String name) {
+        return Optional.empty();
+    }
+
+    @Override
+    public <T extends ObjectMetadata> List<T> parseAll() {
+        return Collections.emptyList();
     }
 
     class OracleIndexWrapper implements ResultWrapper<Map<String, String>, List<RDBIndexMetadata>> {
