@@ -66,6 +66,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
     protected SyncSqlExecutor getSqlExecutor() {
         if (this.sqlExecutor == null) {
+
             this.sqlExecutor = schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
                     .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
         }

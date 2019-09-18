@@ -112,4 +112,10 @@ public class DefaultDatabaseOperator
 
         return new DefaultTableBuilder(table);
     }
+
+    @Override
+    public TableBuilder createOrAlter(RDBTableMetadata newTable) {
+
+        return new DefaultTableBuilder(newTable);
+    }
 }

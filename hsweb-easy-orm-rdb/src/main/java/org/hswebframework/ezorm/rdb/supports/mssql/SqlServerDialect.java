@@ -16,7 +16,7 @@ public class SqlServerDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.NCHAR, (meta) -> StringUtils.concat("nchar(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar(", meta.getLength(), ")"));
-        addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime");
+        addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime2");
         addDataTypeMapper(JDBCType.TIME, (meta) -> "time");
         addDataTypeMapper(JDBCType.DATE, (meta) -> "date");
         addDataTypeMapper(JDBCType.CLOB, (meta) -> "text");

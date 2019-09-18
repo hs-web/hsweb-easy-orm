@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.ValueCodec;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -57,8 +58,9 @@ public class DateTimeCodec implements ValueCodec {
     public Object decode(Object data) {
         if (data instanceof Number) {
             data = new Date(((Number) data).longValue());
-        }
-        if (data instanceof LocalDateTime) {
+        } else if (data instanceof Instant) {
+            data = Date.from(((Instant) data));
+        } else if (data instanceof LocalDateTime) {
             LocalDateTime dateTime = ((LocalDateTime) data);
             data = Date.from(dateTime.toInstant(ZoneOffset.UTC));
         }

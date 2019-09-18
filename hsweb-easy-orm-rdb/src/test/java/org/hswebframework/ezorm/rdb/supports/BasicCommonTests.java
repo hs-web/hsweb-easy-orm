@@ -15,10 +15,10 @@ import org.junit.Test;
 import reactor.core.publisher.Mono;
 
 import java.sql.JDBCType;
+import java.util.Date;
 import java.util.stream.Collectors;
 
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.mapStream;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
 public abstract class BasicCommonTests {
@@ -154,6 +154,8 @@ public abstract class BasicCommonTests {
                     .comment("dmlTest")
                     .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
                     .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
+                    .addColumn().name("create_time").datetime().comment("创建日期").commit()
+                    .addColumn().name("state").number(4).comment("状态").commit()
                     .addColumn().name("comment").varchar(32).defaultValue("'1'").commit()
                     .commit().sync();
 
@@ -161,6 +163,8 @@ public abstract class BasicCommonTests {
                     .insert("test_dml_crud")
                     .value("id", "1234")
                     .value("name", "名称")
+                    .value("state", 1)
+                    .value("create_time",new Date())
                     .execute()
                     .sync();
 
@@ -175,8 +179,7 @@ public abstract class BasicCommonTests {
 
             int sum = operator.dml()
                     .query("test_dml_crud")
-                    .select("comment")
-                    .fetch(mapStream())
+                    .fetch(lowerCase(mapStream()))
                     .sync()
                     .map(map -> map.get("comment"))
                     .map(String::valueOf)
