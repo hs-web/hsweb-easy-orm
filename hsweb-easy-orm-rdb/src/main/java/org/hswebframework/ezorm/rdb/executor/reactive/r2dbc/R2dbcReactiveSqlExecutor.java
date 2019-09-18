@@ -60,7 +60,9 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .flatMap(connection ->
                         this.toFlux(request)
                                 .flatMap(sqlRequest -> this.execute(connection, sqlRequest))
-                                .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
+                                .flatMap(result -> Mono.from(result.getRowsUpdated())
+                                        .defaultIfEmpty(0)
+                                        .doOnNext(count -> logger.debug("==>    Updated: {}", count)))
                                 .doFinally(type -> releaseConnection(type, connection)))
                 .collect(Collectors.summingInt(Integer::intValue)));
     }
