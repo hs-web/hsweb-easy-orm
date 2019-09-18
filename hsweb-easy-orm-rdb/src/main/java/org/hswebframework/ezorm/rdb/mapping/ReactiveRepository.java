@@ -11,7 +11,7 @@ public interface ReactiveRepository<T, K> {
 
     Mono<Integer> insert(Publisher<T> data);
 
-    Mono<Integer> insertBatch(Publisher<Collection<T>> data);
+    Mono<Integer> insertBatch(Publisher<? extends Collection<T>> data);
 
     ReactiveQuery<T> createQuery();
 

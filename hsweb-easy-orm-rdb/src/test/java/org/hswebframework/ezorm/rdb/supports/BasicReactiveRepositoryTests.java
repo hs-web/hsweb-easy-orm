@@ -18,14 +18,19 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Date;
+import java.util.List;
+
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
 public abstract class BasicReactiveRepositoryTests {
 
@@ -44,7 +49,7 @@ public abstract class BasicReactiveRepositoryTests {
 
         metadata.setCurrentSchema(schema);
         metadata.addSchema(schema);
-        ReactiveSqlExecutor sqlExecutor=getSqlExecutor();
+        ReactiveSqlExecutor sqlExecutor = getSqlExecutor();
 
         metadata.addFeature(sqlExecutor);
         metadata.addFeature(ReactiveSyncSqlExecutor.of(sqlExecutor));
@@ -84,6 +89,37 @@ public abstract class BasicReactiveRepositoryTests {
     }
 
     @Test
+    public void testInsertBach() {
+
+        StepVerifier.create(repository.insert(Flux.range(0, 10)
+                .map(integer -> BasicTestEntity.builder()
+                        .id("test_id_2_" + integer)
+                        .balance(1000L)
+                        .name("test2:" + integer)
+                        .createTime(new Date())
+                        .state((byte) 1)
+                        .build())))
+                .expectNext(10)
+                .verifyComplete();
+
+        StepVerifier
+                .create(repository.insertBatch(Flux.range(0, 100)
+                        .map(integer -> BasicTestEntity.builder()
+                                .id("test_id_" + integer)
+                                .balance(1000L)
+                                .name("test:" + integer)
+                                .createTime(new Date())
+                                .state((byte) 1)
+                                .build())
+                        .collectList()))
+                .expectNext(100)
+                .verifyComplete();
+
+    }
+
+
+
+    @Test
     public void testCurd() {
         BasicTestEntity entity = BasicTestEntity.builder()
                 .id("test_id")
@@ -97,14 +133,33 @@ public abstract class BasicReactiveRepositoryTests {
                 .expectNext(1)
                 .verifyComplete();
 
-        BasicTestEntity testEntity=repository.findById(Mono.just(entity.getId())).block();
+        StepVerifier.create(repository.findById(Mono.just(entity.getId())))
+                .expectNext(entity)
+                .verifyComplete();
 
-        Assert.assertNotNull(testEntity);
+        StepVerifier.create(repository.createQuery().count())
+                .expectNext(1)
+                .verifyComplete();
 
-        Assert.assertEquals(testEntity.getBalance(),entity.getBalance());
+        StepVerifier.create(repository.createQuery()
+                .where(entity::getId)
+                .orderBy(desc(entity::getId))
+                .fetch())
+                .expectNext(entity)
+                .verifyComplete();
 
-        Assert.assertEquals(testEntity.getCreateTime().getTime(),entity.getCreateTime().getTime());
+        StepVerifier.create(repository.createUpdate()
+                .set(entity::getState)
+                .where(entity::getId)
+                .execute())
+                .expectNext(1)
+                .verifyComplete();
 
+        StepVerifier.create(repository.createDelete()
+                .where(entity::getId)
+                .execute())
+                .expectNext(1)
+                .verifyComplete();
 
     }
 

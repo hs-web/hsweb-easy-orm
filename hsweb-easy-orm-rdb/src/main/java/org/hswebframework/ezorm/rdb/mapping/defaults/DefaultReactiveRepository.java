@@ -32,7 +32,7 @@ public class DefaultReactiveRepository<E, PK> extends DefaultRepository<E> imple
     }
 
     @Override
-    public Mono<Integer> insertBatch(Publisher<Collection<E>> data) {
+    public Mono<Integer> insertBatch(Publisher<? extends Collection<E>> data) {
         return Flux.from(data)
                 .flatMap(e -> doInsert(e).reactive().flux())
                 .reduce(Math::addExact);

@@ -14,12 +14,15 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
 
 import java.util.Date;
+import java.util.List;
 
 public abstract class BasicRepositoryTests {
 
@@ -74,6 +77,20 @@ public abstract class BasicRepositoryTests {
     }
 
     @Test
+    public void testInsertBach() {
+        List<BasicTestEntity> entities = Flux.range(0, 100)
+                .map(integer -> BasicTestEntity.builder()
+                        .id("test_id_" + integer)
+                        .balance(1000L)
+                        .name("test:" + integer)
+                        .createTime(new Date())
+                        .state((byte) 1)
+                        .build())
+                .collectList().block();
+        Assert.assertEquals(100, repository.insertBatch(entities));
+    }
+
+    @Test
     public void testCurd() {
         BasicTestEntity entity = BasicTestEntity.builder()
                 .id("test_id")
@@ -87,6 +104,23 @@ public abstract class BasicRepositoryTests {
 
         Assert.assertEquals(repository.findById("test_id").orElseThrow(NullPointerException::new), entity);
 
+
+        List<BasicTestEntity> list = repository.createQuery()
+                .where(entity::getId)
+                .orderBy(SortOrder.desc("id"))
+                .paging(0, 10)
+                .fetch();
+
+        Assert.assertEquals(list.get(0), entity);
+
+        Assert.assertEquals(1, repository.createUpdate()
+                .set(entity::getState)
+                .where(entity::getId)
+                .execute());
+
+        Assert.assertEquals(1, repository.createDelete()
+                .where(entity::getId)
+                .execute());
 
     }
 
