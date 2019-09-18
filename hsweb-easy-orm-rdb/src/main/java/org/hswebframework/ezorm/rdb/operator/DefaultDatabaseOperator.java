@@ -52,8 +52,10 @@ public class DefaultDatabaseOperator
     }
 
     @Override
-    public QueryOperator query() {
-        return new ExecutableQueryOperator(metadata);
+    public QueryOperator query(String tableOrView) {
+        return new ExecutableQueryOperator(metadata
+                .getTableOrView(tableOrView)
+                .orElseThrow(() -> new UnsupportedOperationException("table or view [" + tableOrView + "] doesn't exist ")));
     }
 
     @Override

@@ -17,7 +17,7 @@ public class H2R2dbcConnectionProvider implements R2dbcConnectionProvider {
         H2ConnectionFactory connectionFactory = (H2ConnectionFactory) ConnectionFactories.get(ConnectionFactoryOptions.builder()
                 .option(DRIVER, "h2")
                 .option(PROTOCOL, "mem")  // file, mem
-                .option(DATABASE, "test")
+                .option(DATABASE, "test_"+Math.random())
                 .build());
         connection=connectionFactory.create().block();
     }

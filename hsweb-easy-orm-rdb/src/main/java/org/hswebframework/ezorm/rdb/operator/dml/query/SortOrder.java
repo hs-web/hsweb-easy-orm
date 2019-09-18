@@ -10,7 +10,6 @@ public class SortOrder extends FunctionColumn {
 
     private Order order = SortOrder.Order.asc;
 
-
     public static SortOrder desc(String column) {
         SortOrder order = new SortOrder();
         order.setColumn(column);

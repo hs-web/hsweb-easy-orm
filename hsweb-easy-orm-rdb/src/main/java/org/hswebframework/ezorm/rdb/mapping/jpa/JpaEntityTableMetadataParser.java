@@ -1,18 +1,15 @@
 package org.hswebframework.ezorm.rdb.mapping.jpa;
 
 
-import org.apache.commons.beanutils.BeanUtilsBean;
+import lombok.Setter;
 import org.hswebframework.ezorm.rdb.mapping.EntityTableMetadataParser;
-import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.utils.ClassUtils;
 
-import javax.persistence.*;
-import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.persistence.Table;
+import java.util.Optional;
 
 /**
  * @see javax.persistence.Column
@@ -21,9 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
 
+    @Setter
     private RDBDatabaseMetadata databaseMetadata;
-
-    private Map<Class<?>, RDBTableMetadata> cache = new ConcurrentHashMap<>();
 
     public Optional<RDBTableMetadata> parseTable(Class<?> entityType) {
 
@@ -38,91 +34,14 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
         RDBTableMetadata tableMetadata = schema.newTable(table.name());
         tableMetadata.setAlias(entityType.getSimpleName());
 
-        PropertyDescriptor[] descriptors = BeanUtilsBean.getInstance()
-                .getPropertyUtils()
-                .getPropertyDescriptors(entityType);
+        new JpaEntityTableMetadataParserProcessor(tableMetadata,entityType).process();
 
-        List<Runnable> lastRun = new ArrayList<>();
-
-        for (PropertyDescriptor descriptor : descriptors) {
-            Column column = getAnnotation(entityType, descriptor, Column.class);
-            if (column != null) {
-                handleColumnAnnotation(tableMetadata, descriptor, column);
-            }
-            JoinTable joinTable = getAnnotation(entityType, descriptor, JoinTable.class);
-            lastRun.add(() -> handleJoinTable(tableMetadata, descriptor, joinTable));
-
-        }
-
-        lastRun.forEach(Runnable::run);
 
         return Optional.of(tableMetadata);
 
     }
 
-    private void handleJoinTable(RDBTableMetadata tableMetadata, PropertyDescriptor descriptor, JoinTable joinTable) {
-        ForeignKeyBuilder.ForeignKeyBuilderBuilder builder = ForeignKeyBuilder.builder();
 
-
-        for (JoinColumn joinColumn : joinTable.joinColumns()) {
-
-        }
-        tableMetadata.addForeignKey(builder.build());
-
-    }
-
-    private void handleColumnAnnotation(RDBTableMetadata tableMetadata, PropertyDescriptor descriptor, Column column) {
-        //另外一个表
-        if (!column.table().isEmpty() && !column.table().equals(tableMetadata.getName())) {
-            return;
-        }
-        String columnName;
-
-        if (!column.name().isEmpty()) {
-            columnName = column.name();
-        } else {
-            columnName = descriptor.getName();
-        }
-        RDBColumnMetadata metadata = tableMetadata.getColumn(columnName).orElseGet(tableMetadata::newColumn);
-
-        metadata.setAlias(descriptor.getName());
-        metadata.setJavaType(descriptor.getPropertyType());
-        metadata.setLength(column.length());
-        metadata.setPrecision(column.precision());
-        metadata.setScale(column.scale());
-        metadata.setNotNull(!column.nullable());
-        metadata.setUpdatable(column.updatable());
-        if (!column.columnDefinition().isEmpty()) {
-            metadata.setColumnDefinition(column.columnDefinition());
-        }
-        metadata.getDialect()
-                .getJdbcType(metadata.getJavaType())
-                .ifPresent(metadata::setJdbcType);
-        metadata.setDataType(metadata.getDialect().buildDataType(metadata));
-
-        tableMetadata.addColumn(metadata);
-    }
-
-    private static <T extends Annotation> T getAnnotation(Class entityClass, PropertyDescriptor descriptor, Class<T> type) {
-        T ann = null;
-        try {
-            Field field = entityClass.getDeclaredField(descriptor.getName());
-            ann = field.getAnnotation(type);
-        } catch (@SuppressWarnings("all") NoSuchFieldException ignore) {
-            if (entityClass.getSuperclass() != Object.class) {
-                return getAnnotation(entityClass.getSuperclass(), descriptor, type);
-            }
-        }
-        Method read = descriptor.getReadMethod(),
-                write = descriptor.getWriteMethod();
-        if (null == ann && read != null) {
-            ann = ClassUtils.getAnnotation(read, type);
-        }
-        if (null == ann && write != null) {
-            ann = ClassUtils.getAnnotation(write, type);
-        }
-        return ann;
-    }
 
 
 }

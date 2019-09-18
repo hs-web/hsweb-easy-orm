@@ -1,8 +1,8 @@
-package org.hswebframework.ezorm.core.mapping;
+package org.hswebframework.ezorm.rdb.mapping;
 
 import org.hswebframework.ezorm.core.Conditional;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveDelete extends Conditional<ReactiveDelete> {
+public interface ReactiveDelete extends DSLDelete<ReactiveDelete> {
     Mono<Integer> execute();
 }

@@ -1,16 +1,17 @@
-package org.hswebframework.ezorm.core.mapping;
+package org.hswebframework.ezorm.rdb.mapping;
 
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
 public interface ReactiveRepository<T, K> {
 
-    Mono<T> findById(K primaryKey);
+    Mono<T> findById(Mono<K> key);
 
-    Mono<Void> insert(T data);
+    Mono<Integer> insert(Publisher<T> data);
 
-    Mono<Integer> insert(Collection<T> batch);
+    Mono<Integer> insertBatch(Publisher<Collection<T>> data);
 
     ReactiveQuery<T> createQuery();
 

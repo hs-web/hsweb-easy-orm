@@ -85,10 +85,9 @@ public class DefaultQuerySqlBuilderTest {
 
     @Test
     public void testAutoJoin() {
-        BuildParameterQueryOperator query = new BuildParameterQueryOperator();
+        BuildParameterQueryOperator query = new BuildParameterQueryOperator("test");
 
         query.select("id", "info.comment")
-                .from("test")
                 .where(dsl -> dsl.is("info.comment", "1234"));
 
         DefaultQuerySqlBuilder sqlBuilder = DefaultQuerySqlBuilder.of(schema);
@@ -103,10 +102,9 @@ public class DefaultQuerySqlBuilderTest {
 
     @Test
     public void test() {
-        BuildParameterQueryOperator query = new BuildParameterQueryOperator();
+        BuildParameterQueryOperator query = new BuildParameterQueryOperator("test");
 
         query.select("*")
-                .from("test")
 //                .leftJoin("detail", join -> join.as("info").on("test.id=info.id"))
 //                .where(dsl -> dsl.is("name", "1234").is("info.comment", "1234"))
                 .orderBy(Orders.count("name").asc(), desc("info.comment"))

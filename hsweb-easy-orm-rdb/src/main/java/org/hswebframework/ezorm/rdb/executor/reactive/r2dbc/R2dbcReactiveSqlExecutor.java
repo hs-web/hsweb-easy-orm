@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.CastUtil;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -16,7 +17,10 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,7 +87,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     wrapper.beforeWrap(() -> columns);
                                     E e = wrapper.newRowInstance();
                                     for (int i = 0, len = columns.size(); i < len; i++) {
-                                        DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>( i, columns.get(i), row.get(i), e);
+                                        DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, columns.get(i), row.get(i), e);
                                         wrapper.wrapColumn(context);
                                         e = context.getRowInstance();
                                     }
@@ -129,7 +133,11 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         for (Object parameter : request.getParameters()) {
             String symbol = getBindSymbol() + ++index;
             if (parameter == null) {
-                statement.bindNull(symbol, Object.class);
+                statement.bindNull(symbol, String.class);
+            } else if (parameter instanceof NullValue) {
+                statement.bindNull(symbol, ((NullValue) parameter).getType());
+            } else if (parameter instanceof Date) {
+                statement.bind(symbol, LocalDateTime.ofInstant(((Date) parameter).toInstant(), ZoneOffset.UTC));
             } else {
                 statement.bind(symbol, parameter);
             }

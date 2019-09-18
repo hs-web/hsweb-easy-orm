@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.operator.dml.TermSupplier;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -46,8 +47,7 @@ public abstract class UpdateOperator {
 
     public abstract UpdateOperator where(Term term);
 
-    @SafeVarargs
-    public final UpdateOperator where(Supplier<Term>... condition) {
+    public final UpdateOperator where(TermSupplier... condition) {
         for (Supplier<Term> operator : condition) {
             where(operator.get());
         }

@@ -23,6 +23,10 @@ public class BuildParameterQueryOperator extends QueryOperator {
     @Getter
     private QueryOperatorParameter parameter = new QueryOperatorParameter();
 
+    public BuildParameterQueryOperator(String from){
+        parameter.setFrom(from);
+    }
+
     @Override
     public QueryOperator select(String... columns) {
 
@@ -48,12 +52,6 @@ public class BuildParameterQueryOperator extends QueryOperator {
         for (SelectColumn selectColumn : column) {
             parameter.getSelect().add(selectColumn);
         }
-        return this;
-    }
-
-    @Override
-    public QueryOperator from(String name) {
-        parameter.setFrom(name);
         return this;
     }
 

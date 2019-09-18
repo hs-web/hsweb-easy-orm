@@ -67,9 +67,8 @@ public class DefaultDatabaseOperatorTest {
                 .sync();
 
         int sum = operator.dml()
-                .query()
+                .query("test_ddl_create")
                 .select("comment")
-                .from("test_ddl_create")
                 .fetch(mapStream())
                 .sync()
                 .map(map -> map.get("comment"))
@@ -122,9 +121,8 @@ public class DefaultDatabaseOperatorTest {
 
 
         Map<String, Object> data = operator.dml()
-                .query()
+                .query("test_dm_crud")
                 .select("id", "name")
-                .from("test_dm_crud")
                 .where(dsl -> dsl.is("id", "test"))
                 .fetch(singleMap())
                 .sync();

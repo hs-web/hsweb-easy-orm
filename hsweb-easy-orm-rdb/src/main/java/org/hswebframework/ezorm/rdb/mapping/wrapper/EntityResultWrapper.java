@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.rdb.config.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.Optional;
@@ -21,10 +22,14 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
     @Getter
     @Setter
-    private TableOrViewMetadata metadata;
+    private EntityColumnMapping mapping;
 
     public EntityResultWrapper(Supplier<E> supplier) {
         this.entityInstanceSupplier = supplier;
+    }
+    public EntityResultWrapper(Supplier<E> supplier,EntityColumnMapping mapping) {
+        this.entityInstanceSupplier=supplier;
+        this.mapping=mapping;
     }
 
     @Override
@@ -34,14 +39,17 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
     @Override
     public void wrapColumn(ColumnWrapperContext<E> context) {
-        String column = context.getColumnLabel();
+        String property = Optional.ofNullable(mapping)
+                .flatMap(mapping -> mapping.getPropertyByColumnName(context.getColumnLabel()))
+                .orElse(context.getColumnLabel());
 
-        Object value = Optional.ofNullable(metadata)
-                .flatMap(m -> m.findColumn(column))
+        Object value = Optional.ofNullable(mapping)
+                .flatMap(mapping -> mapping.getColumnByName(context.getColumnLabel()))
                 .map(columnMetadata -> columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
-
-        propertyOperator.setProperty(context.getRowInstance(), column, value);
+        if (value != null) {
+            propertyOperator.setProperty(context.getRowInstance(), property, value);
+        }
     }
 
     @Override

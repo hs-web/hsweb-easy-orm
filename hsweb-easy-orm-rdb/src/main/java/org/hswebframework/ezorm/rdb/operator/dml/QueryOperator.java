@@ -42,15 +42,12 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
 
     public abstract QueryOperator select(SelectColumn... column);
 
-    @SafeVarargs
-    public final QueryOperator select(Supplier<SelectColumn>... operators) {
-        for (Supplier<SelectColumn> operator : operators) {
+    public QueryOperator select(SelectColumnSupplier... operators) {
+        for (SelectColumnSupplier operator : operators) {
             select(operator.get());
         }
         return this;
     }
-
-    public abstract QueryOperator from(String name);
 
     public abstract QueryOperator where(Consumer<Conditional<?>> conditionalConsumer);
 
@@ -58,9 +55,8 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
 
     public abstract QueryOperator where(Collection<Term> term);
 
-    @SafeVarargs
-    public final QueryOperator where(Supplier<Term>... condition) {
-        for (Supplier<Term> operator : condition) {
+    public QueryOperator where(TermSupplier... condition) {
+        for (TermSupplier operator : condition) {
             where(operator.get());
         }
         return this;
@@ -100,8 +96,7 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
         return join(operator.get());
     }
 
-    @SafeVarargs
-    public final QueryOperator orderBy(Supplier<SortOrder>... operators) {
+    public final QueryOperator orderBy(SortOrderSupplier... operators) {
         for (Supplier<SortOrder> operator : operators) {
             orderBy(operator.get());
         }

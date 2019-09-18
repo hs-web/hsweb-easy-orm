@@ -72,9 +72,8 @@ public abstract class BasicCommonTests {
 
             for (int i = 0; i < 10; i++) {
                 long sum = operator.dml()
-                        .query()
+                        .query("test_reactive_pager")
                         .select("id")
-                        .from("test_reactive_pager")
                         .paging(i, 10)
                         .fetch(map())
                         .reactive()
@@ -122,9 +121,8 @@ public abstract class BasicCommonTests {
 
             for (int i = 0; i < 10; i++) {
                 long sum = operator.dml()
-                        .query()
+                        .query("test_pager")
                         .select("id")
-                        .from("test_pager")
 //                        .orderBy(desc("id"))
                         .paging(i, 10)
                         .fetch(mapStream())
@@ -176,9 +174,8 @@ public abstract class BasicCommonTests {
             Assert.assertEquals(updated, 1);
 
             int sum = operator.dml()
-                    .query()
+                    .query("test_dml_crud")
                     .select("comment")
-                    .from("test_dml_crud")
                     .fetch(mapStream())
                     .sync()
                     .map(map -> map.get("comment"))

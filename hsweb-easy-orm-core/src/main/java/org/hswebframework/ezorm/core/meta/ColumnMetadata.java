@@ -20,8 +20,6 @@ public interface ColumnMetadata extends FeatureSupportedMetadata, ObjectMetadata
 
     DefaultValue getDefaultValue();
 
-    Validator getValidator();
-
     PropertyWrapper getProperty(String property);
 
     PropertyWrapper getProperty(String property, Object defaultValue);

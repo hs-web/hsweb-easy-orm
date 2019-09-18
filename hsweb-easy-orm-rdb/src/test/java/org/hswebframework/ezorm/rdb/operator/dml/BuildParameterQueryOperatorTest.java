@@ -12,10 +12,9 @@ public class BuildParameterQueryOperatorTest {
 
     @Test
     public void test() {
-        BuildParameterQueryOperator query = new BuildParameterQueryOperator();
+        BuildParameterQueryOperator query = new BuildParameterQueryOperator("u_user");
 
         query.select(count("id").as("total"))
-                .from("u_user")
                 .join(Joins.left("detail").as("info"))
                 .where(dsl -> dsl.like("name", "1234"))
                 .paging(10, 0);

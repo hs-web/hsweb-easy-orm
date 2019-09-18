@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.codec;
 
 import org.hswebframework.ezorm.core.Encoder;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.utils.StringUtils;
 import org.hswebframework.utils.time.DateFormatter;
@@ -74,6 +75,9 @@ public class NumberValueCodec implements ValueCodec {
         }
         if (Boolean.FALSE.equals(value)) {
             return converter.apply(0);
+        }
+        if(value instanceof NullValue){
+            return value;
         }
         throw new UnsupportedOperationException("值" + value + "无法转换为数字");
     }

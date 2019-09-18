@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 public interface DMLOperator {
 
-    QueryOperator query();
+    QueryOperator query(String tableOrView);
 
     UpdateOperator update(String table);
 

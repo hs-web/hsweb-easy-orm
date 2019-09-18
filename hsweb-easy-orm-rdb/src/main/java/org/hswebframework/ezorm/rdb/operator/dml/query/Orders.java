@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.dml.query;
 import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.Functions;
 import org.hswebframework.ezorm.rdb.operator.dml.Operator;
+import org.hswebframework.ezorm.rdb.operator.dml.SortOrderSupplier;
 
 import java.util.function.Supplier;
 
@@ -16,11 +17,11 @@ public interface Orders {
         return function(Functions.count(name));
     }
 
-    static Supplier<SortOrder> asc(String column){
+    static SortOrderSupplier asc(String column){
         return new OrderOperator(column).asc();
     }
 
-    static Supplier<SortOrder> desc(String column){
+    static SortOrderSupplier desc(String column){
         return new OrderOperator(column).desc();
     }
 }

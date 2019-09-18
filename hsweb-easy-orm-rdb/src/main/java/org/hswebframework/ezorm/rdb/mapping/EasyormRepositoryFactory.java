@@ -1,8 +1,5 @@
 package org.hswebframework.ezorm.rdb.mapping;
 
-import org.hswebframework.ezorm.core.mapping.ReactiveRepository;
-import org.hswebframework.ezorm.core.mapping.SyncRepository;
-
 public interface EasyormRepositoryFactory {
 
     <T, K> SyncRepository<T, K> createSyncRepository(Class<T> type);

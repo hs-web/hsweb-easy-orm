@@ -35,11 +35,8 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     @Override
     @SneakyThrows
     public void setProperty(Object object, String name, Object value) {
-        try {
-            propertyUtils.setProperty(object, name, value);
-        } catch (NoSuchMethodException ignore) {
+        BeanUtilsBean.getInstance().setProperty(object, name, value);
 
-        }
     }
 
     @Override
