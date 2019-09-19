@@ -1,6 +1,9 @@
 package org.hswebframework.ezorm.core.param;
 
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.util.*;
@@ -12,30 +15,28 @@ import java.util.stream.Collectors;
  * @author zhouhao
  * @since 1.0
  */
+@SuppressWarnings("all")
+@Getter
+@Setter
 public class Param implements Cloneable {
 
     /**
      * 条件
      */
+    @NonNull
     protected List<Term> terms = new LinkedList<>();
 
     /**
      * 指定要处理的字段
      */
+    @NonNull
     protected Set<String> includes = new LinkedHashSet<>();
 
     /**
      * 指定不处理的字段
      */
+    @NonNull
     protected Set<String> excludes = new LinkedHashSet<>();
-
-    public <T extends Param> T or(String column, Object value) {
-        return or(column, TermType.eq, value);
-    }
-
-    public <T extends Param> T and(String column, Object value) {
-        return and(column, TermType.eq, value);
-    }
 
     public <T extends Param> T or(String column, String termType, Object value) {
         Term term = new Term();
@@ -56,7 +57,6 @@ public class Param implements Cloneable {
         terms.add(term);
         return (T) this;
     }
-
 
     public Term nest() {
         return nest(null, null);
@@ -95,36 +95,6 @@ public class Param implements Cloneable {
         return (T) this;
     }
 
-    public Set<String> getIncludes() {
-        if (includes == null) {
-            includes = new LinkedHashSet<>();
-        }
-        return includes;
-    }
-
-    public Set<String> getExcludes() {
-        if (excludes == null){
-            excludes = new LinkedHashSet<>();
-        }
-        return excludes;
-    }
-
-    public void setIncludes(Set<String> includes) {
-        this.includes = includes;
-    }
-
-    public void setExcludes(Set<String> excludes) {
-        this.excludes = excludes;
-    }
-
-    public List<Term> getTerms() {
-        return terms;
-    }
-
-    public void setTerms(List<Term> terms) {
-        this.terms = terms;
-    }
-
     public <T extends Param> T addTerm(Term term) {
         terms.add(term);
         return (T) this;
@@ -136,8 +106,7 @@ public class Param implements Cloneable {
         Param param = ((Param) super.clone());
         param.setExcludes(new LinkedHashSet<>(excludes));
         param.setIncludes(new LinkedHashSet<>(includes));
-        List<Term> terms = this.terms.stream().map(Term::clone).collect(Collectors.toList());
-        param.setTerms(terms);
+        param.setTerms(this.terms.stream().map(Term::clone).collect(Collectors.toList()));
         return param;
     }
 }

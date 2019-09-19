@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
+@SuppressWarnings("all")
 public class QueryParam extends Param implements Serializable, Cloneable {
     private static final long serialVersionUID = 7941767360194797891L;
 
@@ -65,15 +66,15 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     }
 
     public <Q extends QueryParam> Q doPaging(int pageIndex) {
-        this.pageIndex = pageIndex;
-        this.paging = true;
+        setPageIndex(pageIndex);
+        setPaging(true);
         return (Q) this;
     }
 
     public <Q extends QueryParam> Q doPaging(int pageIndex, int pageSize) {
-        this.pageIndex = pageIndex;
-        this.pageSize = pageSize;
-        this.paging = true;
+        setPageIndex(pageIndex);
+        setPageSize(pageSize);
+        setPaging(true);
         return (Q) this;
     }
 
@@ -86,7 +87,6 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         }
         return (Q) this;
     }
-
 
     public void setPageIndex(int pageIndex) {
         this.pageIndexTmp = this.pageIndex;
