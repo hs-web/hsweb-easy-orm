@@ -136,6 +136,13 @@ public class Term implements Cloneable {
     }
 
     public void setTermType(String termType) {
+        if (termType.contains("$")) {
+            String tmp[] = termType.split("[$]");
+            termType = tmp[0];
+            if (tmp.length > 1) {
+                options.addAll(Arrays.asList(tmp).subList(1, tmp.length));
+            }
+        }
         this.termType = termType;
     }
 
