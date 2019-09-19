@@ -18,13 +18,13 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.TINYINT, (meta) -> "number(2)");
         addDataTypeMapper(JDBCType.SMALLINT, (meta) -> "number(5)");
         addDataTypeMapper(JDBCType.INTEGER, (meta) -> "integer");
-        addDataTypeMapper(JDBCType.DOUBLE, (meta) -> "double");
+        addDataTypeMapper(JDBCType.DOUBLE, (meta) -> "binary_double");
         addDataTypeMapper(JDBCType.CLOB, (meta) -> "clob");
         addDataTypeMapper(JDBCType.BLOB, (meta) -> "blob");
         addDataTypeMapper(JDBCType.BINARY, (meta) -> "blob");
         addDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
         addDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "number(38)");
+        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
         addJdbcTypeMapping("varchar2", JDBCType.VARCHAR);

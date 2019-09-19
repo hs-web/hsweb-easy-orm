@@ -1,11 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.*;
-
-import java.util.HashSet;
 
 public interface RDBFeatures {
 
@@ -16,15 +12,6 @@ public interface RDBFeatures {
 
     String selectJoin = "selectJoin";
     String orderBy = "orderBy";
-
-
-    static QueryTermsFragmentBuilder where(TableOrViewMetadata metadata) {
-        return QueryTermsFragmentBuilder.of(metadata, new HashSet<>());
-    }
-
-    static SelectColumnFragmentBuilder select(TableOrViewMetadata metadata) {
-        return SelectColumnFragmentBuilder.of(metadata);
-    }
 
 
     /*查询条件*/

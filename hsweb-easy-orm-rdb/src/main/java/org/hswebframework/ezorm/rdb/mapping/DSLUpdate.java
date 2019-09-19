@@ -14,6 +14,8 @@ public interface DSLUpdate<E, ME extends DSLUpdate> extends Conditional<ME> {
 
     ME set(String column, Object value);
 
+    ME setNull(String column);
+
     default <R> ME set(MethodReferenceColumn<R> columnAndValue) {
         return set(columnAndValue.getColumn(), columnAndValue.get());
     }

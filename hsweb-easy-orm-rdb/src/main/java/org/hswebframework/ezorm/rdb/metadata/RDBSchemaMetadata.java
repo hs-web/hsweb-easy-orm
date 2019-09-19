@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateI
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.DefaultForeignKeyTermFragmentBuilder;
+import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -159,5 +160,15 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     @Override
     public RDBSchemaMetadata clone() {
         return (RDBSchemaMetadata) super.clone();
+    }
+
+    @Override
+    public String toString() {
+        return "schema " +
+                getName() +
+                " (" + getClass().getSimpleName() + ")" +
+                "\n" +
+                FeatureUtils.featureToString(getFeatureList());
+
     }
 }

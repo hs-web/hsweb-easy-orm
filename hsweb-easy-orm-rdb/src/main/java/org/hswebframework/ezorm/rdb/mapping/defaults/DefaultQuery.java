@@ -157,14 +157,6 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
     }
 
     @Override
-    public ME sql(String sql, Object... params) {
-        SqlTerm sqlTerm = new SqlTerm(sql, params);
-        sqlTerm.setType(currentTermType);
-        accept(sqlTerm);
-        return (ME) this;
-    }
-
-    @Override
     public TermTypeConditionalSupport.Accepter<ME, Object> getAccepter() {
         return accepter;
     }

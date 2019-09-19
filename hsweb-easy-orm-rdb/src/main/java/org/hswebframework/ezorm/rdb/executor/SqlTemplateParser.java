@@ -4,9 +4,7 @@ package org.hswebframework.ezorm.rdb.executor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.rdb.config.GlobalConfig;
-import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
+import org.hswebframework.ezorm.core.GlobalConfig;
 
 import java.util.ArrayList;
 import java.util.List;

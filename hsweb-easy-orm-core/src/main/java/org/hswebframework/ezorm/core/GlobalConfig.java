@@ -1,8 +1,5 @@
-package org.hswebframework.ezorm.rdb.config;
+package org.hswebframework.ezorm.core;
 
-import org.hswebframework.ezorm.core.ObjectConverter;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.rdb.utils.ApacheCommonPropertyOperator;
 
 public class GlobalConfig {
 

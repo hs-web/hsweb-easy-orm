@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
-import org.hswebframework.ezorm.rdb.mapping.DSLDelete;
 import org.hswebframework.ezorm.rdb.mapping.SyncDelete;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 

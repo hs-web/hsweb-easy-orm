@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports;
 
+import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
+@Slf4j
 public abstract class BasicCommonTests {
 
     protected SyncRepository<BasicTestEntity, String> repository;
@@ -46,6 +48,7 @@ public abstract class BasicCommonTests {
         RDBDatabaseMetadata metadata = new RDBDatabaseMetadata(getDialect());
 
         RDBSchemaMetadata schema = getSchema();
+        log.debug(schema.toString());
 
         metadata.setCurrentSchema(schema);
         metadata.addSchema(schema);

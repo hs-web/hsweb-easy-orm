@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports;
 
+import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
+@Slf4j
 public abstract class BasicReactiveTests {
 
     protected ReactiveRepository<BasicTestEntity, String> repository;
@@ -49,6 +51,7 @@ public abstract class BasicReactiveTests {
         RDBDatabaseMetadata metadata = new RDBDatabaseMetadata(getDialect());
 
         RDBSchemaMetadata schema = getSchema();
+        log.debug(schema.toString());
 
         metadata.setCurrentSchema(schema);
         metadata.addSchema(schema);
@@ -143,7 +146,7 @@ public abstract class BasicReactiveTests {
 
     @Test
     public void testRepositoryInsertBach() {
-
+        //10次insert
         StepVerifier.create(repository.insert(Flux.range(0, 10)
                 .map(integer -> BasicTestEntity.builder()
                         .id("test_id_2_" + integer)
@@ -155,6 +158,7 @@ public abstract class BasicReactiveTests {
                 .expectNext(10)
                 .verifyComplete();
 
+        //每30条数据批量insert
         StepVerifier
                 .create(repository.insertBatch(Flux.range(0, 100)
                         .map(integer -> BasicTestEntity.builder()
@@ -164,7 +168,7 @@ public abstract class BasicReactiveTests {
                                 .createTime(new Date())
                                 .state((byte) 1)
                                 .build())
-                        .collectList()))
+                        .buffer(30)))
                 .expectNext(100)
                 .verifyComplete();
 

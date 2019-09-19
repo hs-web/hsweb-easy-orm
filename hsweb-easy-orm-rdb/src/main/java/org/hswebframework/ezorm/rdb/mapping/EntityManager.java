@@ -10,7 +10,7 @@ public interface EntityManager extends Feature {
     }
 
     @Override
-   default String getId(){
+    default String getId() {
         return MappingFeatureType.entityManager.getId();
     }
 
@@ -20,4 +20,5 @@ public interface EntityManager extends Feature {
     }
 
     <E> E newInstance(Class<E> type);
+
 }

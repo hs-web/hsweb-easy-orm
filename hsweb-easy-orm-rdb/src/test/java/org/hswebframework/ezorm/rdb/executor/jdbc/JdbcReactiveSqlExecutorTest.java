@@ -1,8 +1,10 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
+import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -22,20 +24,7 @@ public class JdbcReactiveSqlExecutorTest {
     @Before
     @SneakyThrows
     public void init() {
-        Class.forName("org.h2.Driver");
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:hsweb", "sa", "");
-
-        sqlExecutor = new JdbcReactiveSqlExecutor() {
-            @Override
-            public Mono<Connection> getConnection(SqlRequest sqlRequest) {
-                return Mono.just(connection);
-            }
-
-            @Override
-            public void releaseConnection(Connection connection, SqlRequest sqlRequest) {
-
-            }
-        };
+        sqlExecutor = new TestJdbcReactiveSqlExecutor(new H2ConnectionProvider());
     }
 
     @Test
@@ -66,9 +55,9 @@ public class JdbcReactiveSqlExecutorTest {
                 .expectNext(10L)
                 .verifyComplete();
 
-        Mono<Long> count = sqlExecutor.select(Flux.range(0,10)
+        Mono<Long> count = sqlExecutor.select(Flux.range(0, 10)
                 .map(String::valueOf)
-                .map(num->of("select * from test where id = ?",num)), map())
+                .map(num -> of("select * from test where id = ?", num)), map())
                 .doOnError(Throwable::printStackTrace)
                 .map(map -> map.get("ID"))
                 .count();

@@ -3,11 +3,10 @@ package org.hswebframework.ezorm.rdb.mapping.wrapper;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.rdb.config.GlobalConfig;
+import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.Optional;
 import java.util.function.Supplier;

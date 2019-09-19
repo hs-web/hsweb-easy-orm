@@ -24,7 +24,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
+@SuppressWarnings("all")
 public interface Conditional<T extends Conditional> extends LogicalOperation<T>, TermTypeConditionalSupport {
     /*
      * 嵌套条件，如: where name = ? or (age > 18 and age <90)
@@ -89,6 +91,20 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
 
     default T where(Consumer<Conditional<T>> consumer) {
         consumer.accept(this);
+        return (T) this;
+    }
+
+    default T and(Supplier<Term> termSupplier) {
+        Term term = termSupplier.get();
+        term.setType(Term.Type.and);
+        accept(term);
+        return (T) this;
+    }
+
+    default T or(Supplier<Term> termSupplier) {
+        Term term = termSupplier.get();
+        term.setType(Term.Type.or);
+        accept(term);
         return (T) this;
     }
 
@@ -397,22 +413,6 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
     default <B> T accept(MethodReferenceColumn<B> column, String termType) {
         return getAccepter().accept(column.getColumn(), termType, column.get());
     }
-
-
-    /**
-     * 直接拼接sql,参数支持预编译
-     * 例如
-     * <ul>
-     * <li>query.sql("name=?","admin")</li>
-     * <li>query.sql("name=#{name}",{name:"admin"})</li>
-     * <li>query.sql("name=#{[0]}",["admin"])</li>
-     * </ul>
-     *
-     * @param sql    sql字符串
-     * @param params 参数
-     * @return {@link T}
-     */
-    T sql(String sql, Object... params);
 
     Accepter<T, Object> getAccepter();
 

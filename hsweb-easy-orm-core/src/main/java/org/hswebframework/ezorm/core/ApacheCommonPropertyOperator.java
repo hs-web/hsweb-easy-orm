@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.utils;
+package org.hswebframework.ezorm.core;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -6,8 +6,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.hswebframework.ezorm.core.ObjectConverter;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -35,15 +33,22 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     @Override
     @SneakyThrows
     public void setProperty(Object object, String name, Object value) {
-        BeanUtilsBean.getInstance().setProperty(object, name, value);
-
+        try {
+            BeanUtilsBean.getInstance().setProperty(object, name, value);
+        } catch (Exception err) {
+            log.warn(err.getMessage(), err);
+        }
     }
 
     @Override
     @SneakyThrows
     public <T> T convert(Object from, Class<T> to) {
         T newInstance = to.newInstance();
-        BeanUtilsBean.getInstance().copyProperties(newInstance, from);
+        try {
+            BeanUtilsBean.getInstance().copyProperties(newInstance, from);
+        } catch (Exception err) {
+            log.warn(err.getMessage(), err);
+        }
         return newInstance;
     }
 
@@ -51,7 +56,11 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     @SneakyThrows
     public <T> T convert(Object from, Supplier<T> to) {
         T instance = to.get();
-        BeanUtilsBean.getInstance().copyProperties(instance, from);
+        try {
+            BeanUtilsBean.getInstance().copyProperties(instance, from);
+        } catch (Exception err) {
+            log.warn(err.getMessage(), err);
+        }
         return instance;
     }
 }

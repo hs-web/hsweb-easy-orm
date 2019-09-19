@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.rdb.config.GlobalConfig;
+import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
@@ -14,8 +14,6 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
 
-import java.sql.JDBCType;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

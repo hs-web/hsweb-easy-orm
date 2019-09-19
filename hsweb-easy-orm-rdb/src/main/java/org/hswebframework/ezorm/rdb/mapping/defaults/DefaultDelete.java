@@ -84,11 +84,6 @@ public class DefaultDelete<ME extends DSLDelete> implements DSLDelete<ME> {
     }
 
     @Override
-    public ME sql(String sql, Object... params) {
-        return (ME) this;
-    }
-
-    @Override
     public Accepter<ME, Object> getAccepter() {
         return accepter;
     }

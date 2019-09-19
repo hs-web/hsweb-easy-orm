@@ -15,21 +15,14 @@ import java.util.function.Supplier;
  *
  * @author zhouhao
  * @see Conditional
- * @see SqlConditionSupport
  * @since 1.1
  */
-public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Query<T, Q>> implements Conditional<Query<T, Q>> {
+public final class Query<T, Q extends QueryParam> implements Conditional<Query<T, Q>> {
     private Q param;
     private Accepter<Query<T, Q>, Object> accepter = this::and;
 
     public Query(Q param) {
         this.param = param;
-    }
-
-    @Override
-    protected Query<T, Q> addSqlTerm(SqlTerm term) {
-        param.addTerm(term);
-        return this;
     }
 
     public Q getParam() {
@@ -127,14 +120,12 @@ public final class Query<T, Q extends QueryParam> extends SqlConditionSupport<Qu
 
     @Override
     public Query<T, Q> and() {
-        setAnd();
         this.accepter = this::and;
         return this;
     }
 
     @Override
     public Query<T, Q> or() {
-        setOr();
         this.accepter = this::or;
         return this;
     }

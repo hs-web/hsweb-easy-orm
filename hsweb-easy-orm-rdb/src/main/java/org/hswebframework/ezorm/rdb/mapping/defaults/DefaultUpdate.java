@@ -4,7 +4,8 @@ import org.hswebframework.ezorm.core.NestConditional;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.core.SimpleNestConditional;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.config.GlobalConfig;
+import org.hswebframework.ezorm.core.GlobalConfig;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.mapping.DSLUpdate;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
@@ -12,6 +13,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
 
+import java.sql.JDBCType;
 import java.util.*;
 
 @SuppressWarnings("all")
@@ -70,10 +72,20 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
 
     @Override
     public ME set(String column, Object value) {
-        operator.set(column, value);
+        if (value != null) {
+            operator.set(column, value);
+        }
         return (ME) this;
     }
 
+    @Override
+    public ME setNull(String column) {
+        NullValue nullValue = table.getColumn(column)
+                .map(columnMetadata -> NullValue.of(columnMetadata.getJavaType(), columnMetadata.getJdbcType()))
+                .orElseGet(() -> NullValue.of(String.class, JDBCType.VARCHAR));
+        set(column, nullValue);
+        return (ME) this;
+    }
 
     @Override
     public NestConditional<ME> nest() {
@@ -104,7 +116,6 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     }
 
 
-
     @Override
     public ME and(String column, String termType, Object value) {
         if (value != null) {
@@ -128,11 +139,6 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
             term.setType(Term.Type.or);
             terms.add(term);
         }
-        return (ME) this;
-    }
-
-    @Override
-    public ME sql(String sql, Object... params) {
         return (ME) this;
     }
 

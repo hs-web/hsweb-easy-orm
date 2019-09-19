@@ -23,4 +23,5 @@ public class H2SchemaMetadata extends RDBSchemaMetadata {
         metadata.addFeature(BatchInsertSqlBuilder.of(metadata));
         return metadata;
     }
+
 }
