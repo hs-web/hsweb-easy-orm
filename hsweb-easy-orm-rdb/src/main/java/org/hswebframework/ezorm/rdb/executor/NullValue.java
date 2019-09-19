@@ -11,4 +11,9 @@ public class NullValue {
     private Class type;
 
     private JDBCType jdbcType;
+
+    @Override
+    public String toString() {
+        return "null" + (type != null ? "(" + type.getSimpleName() + ")" : "");
+    }
 }

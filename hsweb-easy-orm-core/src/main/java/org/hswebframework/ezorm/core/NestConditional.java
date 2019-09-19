@@ -12,14 +12,6 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
 
     T end();
 
-    default NestConditional<T> is(String column, Object value) {
-        return accept(column, TermType.eq, value);
-    }
-
-    default <B> NestConditional<T> is(StaticMethodReferenceColumn<B> column, Object value) {
-        return accept(column, TermType.eq, value);
-    }
-
     NestConditional<NestConditional<T>> nest();
 
     NestConditional<NestConditional<T>> nest(String column, Object value);
@@ -91,6 +83,10 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
      */
     NestConditional<T> sql(String sql, Object... params);
 
+    default NestConditional<T> is(String column, Object value) {
+        return accept(column, TermType.eq, value);
+    }
+
     default NestConditional<T> notLike(String column, Object value) {
         return accept(column, TermType.nlike, value);
     }
@@ -157,6 +153,14 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
 
     /*------lambda-------*/
 
+    default <B> NestConditional<T> is(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.eq, value);
+    }
+
+    default <B> NestConditional<T> is(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.eq);
+    }
+    
     default <B> NestConditional<T> like(StaticMethodReferenceColumn<B> column, Object value) {
         return accept(column, TermType.like, value);
     }

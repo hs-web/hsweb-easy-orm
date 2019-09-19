@@ -3,25 +3,38 @@ package org.hswebframework.ezorm.rdb.supports;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
+import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
+import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
+import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.JDBCType;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
 public abstract class BasicCommonTests {
+
+    protected SyncRepository<BasicTestEntity, String> repository;
 
     protected abstract RDBSchemaMetadata getSchema();
 
@@ -42,59 +55,89 @@ public abstract class BasicCommonTests {
     }
 
 
-    @Test
-    public void testReactive() {
-        RDBDatabaseMetadata database = getDatabase();
-        if (!database.supportFeature(ReactiveSqlExecutor.id)) {
-            return;
-        }
-        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+    @Before
+    public void init() {
+        RDBDatabaseMetadata metadata = getDatabase();
+        DatabaseOperator operator = DefaultDatabaseOperator.of(metadata);
 
+        JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
+        parser.setDatabaseMetadata(metadata);
+
+        RDBTableMetadata table = parser.parseTable(BasicTestEntity.class).orElseThrow(NullPointerException::new);
+
+        operator.ddl()
+                .createOrAlter(table)
+                .commit()
+                .sync();
+        EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
+        wrapper.setMapping(table.<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class)).orElseThrow(NullPointerException::new));
+
+
+        repository = new DefaultSyncRepository<>(operator, table, BasicTestEntity.class, wrapper);
+    }
+
+    @After
+    public void after() {
         try {
-            operator.ddl()
-                    .createOrAlter("test_reactive_pager")
-                    .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
-                    .commit()
-                    .reactive()
-                    .block();
+            getSqlExecutor().execute(SqlRequests.of("drop table entity_test_table"));
+        } catch (Exception e) {
 
-            InsertOperator insert = operator.dml()
-                    .insert("test_reactive_pager")
-                    .columns("id");
-
-            for (int i = 0; i < 100; i++) {
-                insert.values(i + 1);
-            }
-
-            insert.execute()
-                    .reactive()
-                    .block();
-
-            for (int i = 0; i < 10; i++) {
-                long sum = operator.dml()
-                        .query("test_reactive_pager")
-                        .select("id")
-                        .paging(i, 10)
-                        .fetch(map())
-                        .reactive()
-                        .log(getClass().getName())
-                        .map(map -> map.get("id"))
-                        .map(Number.class::cast)
-                        .collect(Collectors.summingInt(Number::intValue))
-                        .blockOptional()
-                        .orElse(0);
-
-                Assert.assertEquals(sum, (((i * 10) + 1) + ((i + 1) * 10)) * 10 / 2);
-            }
-        } finally {
-            try {
-                operator.sql().reactive()
-                        .execute(Mono.just(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_reactive_pager")))
-                        .block();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
+    }
+
+    @Test
+    public void testRepositoryInsertBach() {
+        List<BasicTestEntity> entities = Flux.range(0, 100)
+                .map(integer -> BasicTestEntity.builder()
+                        .id("test_id_" + integer)
+                        .balance(1000L)
+                        .name("test:" + integer)
+                        .createTime(new Date())
+                        .state((byte) 1)
+                        .build())
+                .collectList().block();
+        Assert.assertEquals(100, repository.insertBatch(entities));
+    }
+
+    @Test
+    public void testRepositoryCurd() {
+        BasicTestEntity entity = BasicTestEntity.builder()
+                .id("test_id")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .state((byte) 1)
+                .build();
+
+        repository.insert(entity);
+
+        Assert.assertEquals(repository.findById("test_id").orElseThrow(NullPointerException::new), entity);
+
+        List<BasicTestEntity> list = repository.createQuery()
+                .where(entity::getId)
+                .nest()
+                    .is(entity::getId).or().is(entity::getId)
+                .end()
+                .orderBy(SortOrder.desc("id"))
+                .paging(0, 10)
+                .fetch();
+
+        Assert.assertEquals(list.get(0), entity);
+
+        Assert.assertEquals(1, repository.createUpdate()
+                .set(entity::getState)
+                .nest()
+                    .is(entity::getId).or().is(entity::getId)
+                .end()
+                .where(entity::getId)
+                .execute());
+
+        Assert.assertEquals(1, repository.createDelete()
+                .where(entity::getId)
+                .nest()
+                 .is(entity::getId).or().is(entity::getId)
+                .end()
+                .execute());
 
     }
 

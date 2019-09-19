@@ -18,6 +18,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
 import org.junit.Assert;
@@ -29,10 +30,12 @@ import reactor.test.StepVerifier;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 
-public abstract class BasicReactiveRepositoryTests {
+public abstract class BasicReactiveTests {
 
     protected ReactiveRepository<BasicTestEntity, String> repository;
 
@@ -89,7 +92,57 @@ public abstract class BasicReactiveRepositoryTests {
     }
 
     @Test
-    public void testInsertBach() {
+    public void testReactivePager() {
+        RDBDatabaseMetadata database = getDatabase();
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+        try {
+            operator.ddl()
+                    .createOrAlter("test_reactive_pager")
+                    .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
+                    .commit()
+                    .reactive()
+                    .block();
+
+            InsertOperator insert = operator.dml()
+                    .insert("test_reactive_pager")
+                    .columns("id");
+
+            for (int i = 0; i < 100; i++) {
+                insert.values(i + 1);
+            }
+
+            StepVerifier.create(insert.execute().reactive())
+                    .expectNext(100)
+                    .verifyComplete();
+
+            for (int i = 0; i < 10; i++) {
+                StepVerifier.create(operator.dml()
+                        .query("test_reactive_pager")
+                        .select("id")
+                        .paging(i, 10)
+                        .fetch(map())
+                        .reactive()
+                        .log(getClass().getName())
+                        .map(map -> map.get("id"))
+                        .map(Number.class::cast)
+                        .collect(Collectors.summingInt(Number::intValue)))
+                        .expectNext((((i * 10) + 1) + ((i + 1) * 10)) * 10 / 2)
+                        .verifyComplete();
+            }
+        } finally {
+            try {
+                operator.sql().reactive()
+                        .execute(Mono.just(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_reactive_pager")))
+                        .block();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    @Test
+    public void testRepositoryInsertBach() {
 
         StepVerifier.create(repository.insert(Flux.range(0, 10)
                 .map(integer -> BasicTestEntity.builder()
@@ -118,9 +171,8 @@ public abstract class BasicReactiveRepositoryTests {
     }
 
 
-
     @Test
-    public void testCurd() {
+    public void testRepositoryCurd() {
         BasicTestEntity entity = BasicTestEntity.builder()
                 .id("test_id")
                 .balance(1000L)

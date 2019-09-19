@@ -5,15 +5,16 @@ import org.hswebframework.ezorm.rdb.codec.DateTimeCodec;
 import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.utils.ClassUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
+import javax.persistence.*;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
@@ -39,14 +40,54 @@ public class JpaEntityTableMetadataParserProcessor {
 
         //List<Runnable> lastRun = new ArrayList<>();
 
+        Table table = ClassUtils.getAnnotation(entityType, Table.class);
+        int idx = 0;
+
+        for (Index index : table.indexes()) {
+            String name = index.name();
+            if (name.isEmpty()) {
+                name = tableMetadata.getName().concat("_idx_").concat(String.valueOf(idx++));
+            }
+            RDBIndexMetadata indexMetadata = new RDBIndexMetadata();
+            indexMetadata.setUnique(index.unique());
+            indexMetadata.setName(name);
+
+            //id asc,
+            String[] columnList = index.columnList().split("[,]");
+            for (String str : columnList) {
+                String[] columnAndSort = str.split("[ ]+");
+                RDBIndexMetadata.IndexColumn column = new RDBIndexMetadata.IndexColumn();
+                column.setColumn(columnAndSort[0].trim());
+                if (columnAndSort.length > 1) {
+                    column.setSort(columnAndSort[1].equalsIgnoreCase("desc") ? RDBIndexMetadata.IndexSort.desc : RDBIndexMetadata.IndexSort.asc);
+                }
+                indexMetadata.getColumns().add(column);
+            }
+            tableMetadata.addIndex(indexMetadata);
+        }
+
         for (PropertyDescriptor descriptor : descriptors) {
             Column column = getAnnotation(entityType, descriptor, Column.class);
             if (column != null) {
                 handleColumnAnnotation(descriptor, column);
             }
+            JoinColumns joinColumns = getAnnotation(entityType, descriptor, JoinColumns.class);
+            if (null != joinColumns) {
+                for (JoinColumn joinColumn : joinColumns.value()) {
+                    handleJoinColumnAnnotation(joinColumn);
+                }
+            }
+            JoinColumn joinColumn = getAnnotation(entityType, descriptor, JoinColumn.class);
+            if (null != joinColumn) {
+                handleJoinColumnAnnotation(joinColumn);
+            }
         }
 
-      //  lastRun.forEach(Runnable::run);
+        //  lastRun.forEach(Runnable::run);
+    }
+
+    private void handleJoinColumnAnnotation(JoinColumn column) {
+
     }
 
     private void handleColumnAnnotation(PropertyDescriptor descriptor, Column column) {
@@ -83,9 +124,9 @@ public class JpaEntityTableMetadataParserProcessor {
 
         Optional.ofNullable(getAnnotation(entityType, descriptor, Id.class))
                 .ifPresent(id -> metadata.setPrimaryKey(true));
-        if(Date.class.isAssignableFrom(metadata.getJavaType())){
-            metadata.setValueCodec(new DateTimeCodec("yyyy-MM-dd HH:mm:ss",metadata.getJavaType()));
-        }else if(Number.class.isAssignableFrom(metadata.getJavaType())){
+        if (Date.class.isAssignableFrom(metadata.getJavaType())) {
+            metadata.setValueCodec(new DateTimeCodec("yyyy-MM-dd HH:mm:ss", metadata.getJavaType()));
+        } else if (Number.class.isAssignableFrom(metadata.getJavaType())) {
             metadata.setValueCodec(new NumberValueCodec(metadata.getJavaType()));
         }
         tableMetadata.addColumn(metadata);

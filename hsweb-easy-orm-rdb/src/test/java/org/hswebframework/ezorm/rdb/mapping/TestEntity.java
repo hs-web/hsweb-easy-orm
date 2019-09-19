@@ -11,7 +11,11 @@ import java.util.Date;
 
 @Getter
 @Setter
-@Table(name = "entity_test")
+@Table(name = "entity_test",
+indexes = @Index(
+        name = "test_index",
+        columnList = "name asc,state desc"
+))
 @ToString
 @EqualsAndHashCode
 public class TestEntity implements Serializable {

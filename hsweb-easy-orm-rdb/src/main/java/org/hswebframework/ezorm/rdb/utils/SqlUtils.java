@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.utils;
 
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.utils.time.DateFormatter;
@@ -16,12 +17,15 @@ public class SqlUtils {
         StringBuilder builder = new StringBuilder();
         int i = 0;
         for (Object param : parameters) {
-            if (i++ != 0)
+            if (i++ != 0) {
                 builder.append(",");
+            }
             builder.append(param);
-            builder.append("(");
-            builder.append(param == null ? "null" : param.getClass().getSimpleName());
-            builder.append(")");
+            if (!(param instanceof NullValue)) {
+                builder.append("(");
+                builder.append(param == null ? "null" : param.getClass().getSimpleName());
+                builder.append(")");
+            }
         }
         return builder.toString();
     }
@@ -44,7 +48,7 @@ public class SqlUtils {
     }
 
 
-    public static String toNativeSql(String sql,Object... parameters){
+    public static String toNativeSql(String sql, Object... parameters) {
 
         String[] stringParameter = new String[parameters.length];
         int len = 0;
@@ -54,6 +58,8 @@ public class SqlUtils {
                 stringParameter[i] = parameter.toString();
             } else if (parameter instanceof Date) {
                 stringParameter[i] = "'" + DateFormatter.toString(((Date) parameter), "yyyy-MM-dd HH:mm:ss") + "'";
+            } else if (parameter instanceof NullValue) {
+                stringParameter[i] = "null";
             } else if (parameter == null) {
                 stringParameter[i] = "null";
             } else {

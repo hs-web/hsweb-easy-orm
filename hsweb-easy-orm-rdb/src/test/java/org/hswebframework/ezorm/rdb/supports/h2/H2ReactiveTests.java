@@ -1,12 +1,12 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.supports.BasicRepositoryTests;
+import org.hswebframework.ezorm.rdb.supports.BasicReactiveTests;
 
-public class H2BasicRepositoryTests  extends BasicRepositoryTests {
+public class H2ReactiveTests extends BasicReactiveTests {
     @Override
     protected RDBSchemaMetadata getSchema() {
         return new H2SchemaMetadata("PUBLIC");
@@ -18,8 +18,8 @@ public class H2BasicRepositoryTests  extends BasicRepositoryTests {
     }
 
     @Override
-    protected SyncSqlExecutor getSqlExecutor() {
+    protected ReactiveSqlExecutor getSqlExecutor() {
 
-        return new TestSyncSqlExecutor(new H2ConnectionProvider());
+        return new TestReactiveSqlExecutor(new H2R2dbcConnectionProvider());
     }
 }

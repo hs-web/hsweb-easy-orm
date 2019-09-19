@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
-@Table(name = "entity_test_table")
+@Table(name = "entity_test_table",indexes = @Index(name = "test_index",columnList = "name,state desc"))
 @Data
 @Builder
 @AllArgsConstructor
@@ -22,13 +20,13 @@ public class BasicTestEntity implements Serializable {
     @Id
     private String id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "create_time")
+    @Column(name = "create_time",updatable = false)
     private Date createTime;
 
-    @Column
+    @Column(nullable = false)
     private Byte state;
 
     @Column

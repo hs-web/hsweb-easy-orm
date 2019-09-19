@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DefaultRepository<E> {
 
@@ -74,14 +75,12 @@ public class DefaultRepository<E> {
     protected InsertResultOperator doInsert(Collection<E> batch) {
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
-        List<String> properties = new ArrayList<>();
-
-        for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
-            String column = entry.getKey();
-
-            insert.columns(column);
-            properties.add(entry.getValue());
-        }
+        List<String> properties =  mapping.getColumnPropertyMapping().entrySet()
+                .stream()
+                .filter(kv->table.getColumn(kv.getKey()).isPresent())
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+        insert.columns(properties.toArray(new String[0]));
 
         for (E e : batch) {
             insert.values(properties.stream()

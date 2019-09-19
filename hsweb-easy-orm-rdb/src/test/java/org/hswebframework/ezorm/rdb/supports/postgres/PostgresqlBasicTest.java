@@ -16,14 +16,6 @@ public class PostgresqlBasicTest extends BasicCommonTests {
     }
 
     @Override
-    protected RDBDatabaseMetadata getDatabase() {
-        RDBDatabaseMetadata database= super.getDatabase();
-
-        database.addFeature(new TestReactiveSqlExecutor(new PostgresqlR2dbcConnectionProvider()));
-        return database;
-    }
-
-    @Override
     protected Dialect getDialect() {
         return Dialect.POSTGRES;
     }

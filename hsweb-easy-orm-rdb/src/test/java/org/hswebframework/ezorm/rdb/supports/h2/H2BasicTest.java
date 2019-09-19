@@ -22,15 +22,6 @@ public class H2BasicTest extends BasicCommonTests {
     }
 
     @Override
-    protected RDBDatabaseMetadata getDatabase() {
-        RDBDatabaseMetadata database= super.getDatabase();
-
-        database.addFeature(new TestReactiveSqlExecutor(new H2R2dbcConnectionProvider()));
-
-        return database;
-    }
-
-    @Override
     protected SyncSqlExecutor getSqlExecutor() {
         return new TestSyncSqlExecutor(new H2ConnectionProvider());
     }

@@ -36,7 +36,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             if (oldColumn.isChanged(newColumn)) {
                 appendAlterColumnSql(batch, oldColumn, newColumn);
             }
-            if (oldColumn.getComment() != null && !oldColumn.getComment().equals(newColumn.getComment())) {
+            if (newColumn.getComment() != null && !oldColumn.getComment().equals(newColumn.getComment())) {
                 appendAddColumnCommentSql(batch, newColumn);
             }
         }

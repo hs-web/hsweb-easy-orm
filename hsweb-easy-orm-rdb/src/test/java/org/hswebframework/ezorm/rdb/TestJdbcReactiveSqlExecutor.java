@@ -17,7 +17,7 @@ public class TestJdbcReactiveSqlExecutor extends JdbcReactiveSqlExecutor {
 
     @Override
     public Mono<Connection> getConnection(SqlRequest sqlRequest) {
-        return Mono.just(provider.getConnection());
+        return Mono.fromSupplier(provider::getConnection);
     }
 
     @Override

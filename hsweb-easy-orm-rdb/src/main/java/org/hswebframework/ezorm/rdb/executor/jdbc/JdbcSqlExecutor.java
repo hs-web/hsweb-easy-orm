@@ -8,10 +8,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.slf4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 
 import static org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSqlExecutorHelper.*;
@@ -100,6 +97,24 @@ public abstract class JdbcSqlExecutor {
         }
     }
 
+    @SneakyThrows
+    protected Object getResultValue(ResultSetMetaData metaData, ResultSet set, int columnIndex) {
+
+        switch (metaData.getColumnType(columnIndex)) {
+            case Types.TIMESTAMP:
+                return set.getTimestamp(columnIndex);
+            case Types.TIME:
+                return set.getTime(columnIndex);
+            case Types.DATE:
+                return set.getDate(columnIndex);
+            case Types.CLOB:
+                return set.getClob(columnIndex);
+            case Types.BLOB:
+                return set.getBlob(columnIndex);
+            default:
+               return set.getObject(columnIndex);
+        }
+    }
 
     @SneakyThrows
     public <T, R> R doSelect(Connection connection, SqlRequest request, ResultWrapper<T, R> wrapper) {
@@ -108,7 +123,8 @@ public abstract class JdbcSqlExecutor {
             printSql(logger, request);
             preparedStatementParameter(statement, request.getParameters());
             ResultSet resultSet = statement.executeQuery();
-            List<String> columns = getResultColumns(resultSet);
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            List<String> columns = getResultColumns(metaData);
 
             wrapper.beforeWrap(() -> columns);
 
@@ -117,8 +133,9 @@ public abstract class JdbcSqlExecutor {
                 //调用包装器,将查询结果包装为对象
                 T data = wrapper.newRowInstance();
                 for (int i = 0; i < columns.size(); i++) {
-                    Object value = resultSet.getObject(i + 1);
-                    DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(i, columns.get(i), value, data);
+                    String column=columns.get(i);
+                    Object value = getResultValue(metaData, resultSet, i + 1);
+                    DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(i,column , value, data);
                     wrapper.wrapColumn(context);
                     data = context.getRowInstance();
                 }

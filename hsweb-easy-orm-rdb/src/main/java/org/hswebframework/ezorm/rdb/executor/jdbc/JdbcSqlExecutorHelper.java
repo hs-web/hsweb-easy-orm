@@ -17,8 +17,8 @@ public class JdbcSqlExecutorHelper {
 
 
     @SneakyThrows
-    public static List<String> getResultColumns(ResultSet resultSet) {
-        ResultSetMetaData metaData = resultSet.getMetaData();
+    public static List<String> getResultColumns(ResultSetMetaData metaData) {
+
         int count = metaData.getColumnCount();
         //获取到执行sql后返回的列信息
         List<String> columns = new ArrayList<>();
