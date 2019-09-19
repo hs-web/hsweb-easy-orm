@@ -65,7 +65,7 @@ public class DateTimeCodec implements ValueCodec {
             data = Date.from(((Instant) data));
         } else if (data instanceof LocalDateTime) {
             LocalDateTime dateTime = ((LocalDateTime) data);
-            data = Date.from(dateTime.atZone(ZoneOffset.systemDefault()).toInstant());
+            data = Date.from(dateTime.atZone(ZoneOffset.UTC).toInstant());
         }
         if (data instanceof Date) {
             if (toType == Date.class) {
