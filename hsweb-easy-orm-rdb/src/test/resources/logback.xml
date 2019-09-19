@@ -3,6 +3,7 @@
     <logger name="io.netty" level="warn"/>
     <logger name="io.r2dbc" level="warn"/>
     <logger name="reactor" level="warn"/>
+    <logger name="com.github" level="warn"/>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             　　　　　　　　　

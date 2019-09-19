@@ -32,7 +32,7 @@ public class R2dbcSqlRequest extends PrepareSqlRequest {
         return SqlUtils.toNativeSql(nativeSql.getSql(), parameters);
     }
 
-    public static R2dbcSqlRequest of(String symbol, SqlRequest request) {
+    public static R2dbcSqlRequest of(int firstIndex, String symbol, SqlRequest request) {
         R2dbcSqlRequest sqlRequest = new R2dbcSqlRequest();
         sqlRequest.nativeSql = request;
         String sql = request.getSql();
@@ -41,11 +41,11 @@ public class R2dbcSqlRequest extends PrepareSqlRequest {
 
         StringBuilder builder = new StringBuilder(sql.length() + len + 16);
 
-        int parameterIndex = 0;
+        int parameterIndex = firstIndex;
         for (int i = 0, sqlLen = sql.length(); i < sqlLen; i++) {
             char c = sql.charAt(i);
             if (c == '?') {
-                builder.append(symbol.concat(String.valueOf(++parameterIndex)));
+                builder.append(symbol.concat(String.valueOf(parameterIndex++)));
             } else {
                 builder.append(c);
             }

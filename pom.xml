@@ -6,11 +6,12 @@
     <groupId>org.hswebframework</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.6-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
         <module>hsweb-easy-orm-elasticsearch</module>
+        <module>hsweb-easy-orm-spring</module>
     </modules>
 
     <name>${artifactId}</name>

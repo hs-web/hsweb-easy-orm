@@ -45,7 +45,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         }
     }
 
-    protected Flux<Result> execute(Connection connection,
+    protected Flux<Result> doExecute(Connection connection,
                                    SqlRequest request) {
 
         return Flux.just(prepareStatement(connection.createStatement(request.getSql()), request))
@@ -54,58 +54,51 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .doOnSubscribe(subscription -> printSql(logger, request));
     }
 
+    protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
+        return this.getConnection()
+                .flux()
+                .flatMap(connection -> sqlRequestFlux.flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
+                                .doFinally(type -> releaseConnection(type, connection)));
+    }
+
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-        return Mono.defer(() -> getConnection().flux()
-                .flatMap(connection ->
-                        this.toFlux(request)
-                                .flatMap(sqlRequest -> this.execute(connection, sqlRequest))
-                                .flatMap(result -> Mono.from(result.getRowsUpdated())
-                                        .defaultIfEmpty(0)
-                                        .doOnNext(count -> logger.debug("==>    Updated: {}", count)))
-                                .doFinally(type -> releaseConnection(type, connection)))
-                .collect(Collectors.summingInt(Integer::intValue)));
+        return doExecute(toFlux(request))
+                .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
+                .collect(Collectors.summingInt(Integer::intValue))
+                .doOnNext(count -> logger.debug("==>    Updated: {}", count));
     }
 
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
-        return Mono.defer(() -> Mono.from(getConnection().flux()
-                .flatMap(connection ->
-                        this.toFlux(request)
-                                .flatMap(sqlRequest -> this.execute(connection, sqlRequest))
-                                .flatMap(__ -> Mono.<Void>empty())
-                                .doFinally(type -> releaseConnection(type, connection))
-                )));
+        return Mono.from(this.doExecute(toFlux(request)))
+                .flatMap(__ -> Mono.empty());
     }
+
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
-        return Flux.defer(() -> getConnection().flux()
-                .flatMap(connection ->
-                        this.toFlux(request)
-                                .flatMap(sqlRequest -> this.execute(connection, sqlRequest))
-                                .flatMap(result -> result.map((row, meta) -> {
-                                    List<String> columns = new ArrayList<>(meta.getColumnNames());
-                                    wrapper.beforeWrap(() -> columns);
-                                    E e = wrapper.newRowInstance();
-                                    for (int i = 0, len = columns.size(); i < len; i++) {
-                                        String column=columns.get(i);
+        return Flux.defer(() -> this.doExecute(toFlux(request))
+                .flatMap(result -> result.map((row, meta) -> {
+                    List<String> columns = new ArrayList<>(meta.getColumnNames());
+                    wrapper.beforeWrap(() -> columns);
+                    E e = wrapper.newRowInstance();
+                    for (int i = 0, len = columns.size(); i < len; i++) {
+                        String column = columns.get(i);
 
-                                        DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i,column, row.get(column), e);
-                                        wrapper.wrapColumn(context);
-                                        e = context.getRowInstance();
-                                    }
-                                    if (!wrapper.completedWrapRow(e)) {
-                                        return Interrupted.instance;
-                                    }
-                                    return e;
-                                }))
-                                .takeWhile(Interrupted::nonInterrupted)
-                                .map(CastUtil::<E>cast)
-                                .doOnCancel(wrapper::completedWrap)
-                                .doOnComplete(wrapper::completedWrap)
-                                .doFinally(type -> releaseConnection(type, connection))
-                ));
+                        DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, row.get(column), e);
+                        wrapper.wrapColumn(context);
+                        e = context.getRowInstance();
+                    }
+                    if (!wrapper.completedWrapRow(e)) {
+                        return Interrupted.instance;
+                    }
+                    return e;
+                }))
+                .takeWhile(Interrupted::nonInterrupted)
+                .map(CastUtil::<E>cast)
+                .doOnCancel(wrapper::completedWrap)
+                .doOnComplete(wrapper::completedWrap));
     }
 
     @SuppressWarnings("all")
@@ -122,29 +115,44 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     protected SqlRequest convertRequest(SqlRequest sqlRequest) {
-        return R2dbcSqlRequest.of(getBindSymbol(), sqlRequest);
+        return R2dbcSqlRequest.of(getBindFirstIndex(), getBindSymbol(), sqlRequest);
     }
 
     protected String getBindSymbol() {
         return "$";
     }
 
+    protected int getBindFirstIndex() {
+        return 1;
+    }
+
+    protected void bindNull(Statement statement, int index, Class type) {
+        statement.bindNull(getBindSymbol() + (index + getBindFirstIndex()), type);
+    }
+
+    protected void bind(Statement statement, int index, Object value) {
+        statement.bind(getBindSymbol() + (index + getBindFirstIndex()), value);
+    }
+
     protected Statement prepareStatement(Statement statement, SqlRequest request) {
-        int index = 0;
         if (request.isEmpty() || request.getParameters() == null) {
             return statement;
         }
+        int index = 0;
         for (Object parameter : request.getParameters()) {
-            String symbol = getBindSymbol() + ++index;
             if (parameter == null) {
-                statement.bindNull(symbol, String.class);
+                bindNull(statement, index, String.class);
             } else if (parameter instanceof NullValue) {
-                statement.bindNull(symbol, ((NullValue) parameter).getType());
+                bindNull(statement, index, ((NullValue) parameter).getType());
             } else if (parameter instanceof Date) {
-                statement.bind(symbol, LocalDateTime.ofInstant(((Date) parameter).toInstant(), ZoneOffset.UTC));
+                bind(statement, index,((Date) parameter)
+                        .toInstant()
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDateTime());
             } else {
-                statement.bind(symbol, parameter);
+                bind(statement, index, parameter);
             }
+            index++;
         }
         return statement;
     }

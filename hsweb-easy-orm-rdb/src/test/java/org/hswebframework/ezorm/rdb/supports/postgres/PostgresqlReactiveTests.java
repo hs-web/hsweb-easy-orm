@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.BasicReactiveTests;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
 
-public class PostgresqlReactiveReactiveTests extends BasicReactiveTests {
+public class PostgresqlReactiveTests extends BasicReactiveTests {
     @Override
     protected RDBSchemaMetadata getSchema() {
         return new PostgresqlSchemaMetadata("public");

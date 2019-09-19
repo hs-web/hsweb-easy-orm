@@ -185,35 +185,41 @@ public abstract class BasicReactiveTests {
                 .state((byte) 1)
                 .build();
 
-        StepVerifier.create(repository.insert(Mono.just(entity)))
+        repository.insert(Mono.just(entity)).as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
-        StepVerifier.create(repository.findById(Mono.just(entity.getId())))
+        repository.findById(Mono.just(entity.getId()))
+                .as(StepVerifier::create)
                 .expectNext(entity)
                 .verifyComplete();
 
-        StepVerifier.create(repository.createQuery().count())
+        repository.createQuery()
+                .count()
+                .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
-        StepVerifier.create(repository.createQuery()
+        repository.createQuery()
                 .where(entity::getId)
                 .orderBy(desc(entity::getId))
-                .fetch())
+                .fetch()
+                .as(StepVerifier::create)
                 .expectNext(entity)
                 .verifyComplete();
 
-        StepVerifier.create(repository.createUpdate()
-                .set(entity::getState)
+        repository.createUpdate()
+                .set(entity::getBalance)
                 .where(entity::getId)
-                .execute())
+                .execute()
+                .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
-        StepVerifier.create(repository.createDelete()
+        repository.createDelete()
                 .where(entity::getId)
-                .execute())
+                .execute()
+                .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
