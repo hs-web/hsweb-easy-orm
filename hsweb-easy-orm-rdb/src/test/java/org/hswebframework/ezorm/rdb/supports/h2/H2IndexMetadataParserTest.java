@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
@@ -8,8 +8,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class H2IndexMetadataParserTest {
 

@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.core.meta;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.CastUtil;
 
 import java.util.*;
@@ -12,6 +13,7 @@ import java.util.function.Function;
 import static java.util.Optional.*;
 import static java.util.stream.Collectors.*;
 
+@Slf4j
 public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
     private Map<String, Map<String, ObjectMetadata>> metaRepository = new ConcurrentHashMap<>();
@@ -67,7 +69,10 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
     protected <T extends ObjectMetadata> T loadMetadata(ObjectType type, String name) {
         return getParser(type)
-                .flatMap(parser -> parser.<T>parseByName(name))
+                .flatMap(parser -> {
+                    log.debug("load {} metadata ,use parser:{}", type, parser.getClass().getSimpleName());
+                    return parser.<T>parseByName(name);
+                })
                 .orElse(null);
     }
 

@@ -15,7 +15,7 @@ public interface ForeignKeyMetadata extends ObjectMetadata {
 
     @Override
     default ObjectType getObjectType() {
-        return RDBObjectType.foreign_key;
+        return RDBObjectType.foreignKey;
     }
 
     /**

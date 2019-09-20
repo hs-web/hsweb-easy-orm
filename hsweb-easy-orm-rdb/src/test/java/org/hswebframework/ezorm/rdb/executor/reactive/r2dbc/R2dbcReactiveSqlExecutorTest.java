@@ -49,12 +49,10 @@ public class R2dbcReactiveSqlExecutorTest {
             StepVerifier.create(mono).verifyComplete();
 
             //插入100条数据
-            Mono<Integer> update = sqlExecutor
-                    .update(Flux.range(1, 100)
-                    .map(i -> of("insert into test_r2dbc(id)values(?)", "" + i)))
-                    .log(this.getClass().getName());
-
-            StepVerifier.create(update)
+            Flux.range(1, 100)
+                    .map(i -> of("insert into test_r2dbc(id)values(?)", "" + i))
+                    .as(sqlExecutor::update)
+                    .as(StepVerifier::create)
                     .expectNext(100)
                     .verifyComplete();
 

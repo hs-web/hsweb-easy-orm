@@ -46,7 +46,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     protected Flux<Result> doExecute(Connection connection,
-                                   SqlRequest request) {
+                                     SqlRequest request) {
 
         return Flux.just(prepareStatement(connection.createStatement(request.getSql()), request))
                 .flatMap(Statement::execute)
@@ -55,10 +55,21 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
+
+//        return sqlRequestFlux.concatMap(sqlRequest ->
+//                this.getConnection().flux()
+//                        .flatMap(connection ->
+//                                this.doExecute(connection, sqlRequest)
+//                                        .doFinally(si -> releaseConnection(si, connection))));
+
+//        return sqlRequestFlux
+//                .zipWith(this.getConnection())
+//                .flatMap((tuple2) -> doExecute(tuple2.getT2(), tuple2.getT1())
+//                        .doFinally(si -> releaseConnection(si, tuple2.getT2())));
         return this.getConnection()
                 .flux()
                 .flatMap(connection -> sqlRequestFlux.flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
-                                .doFinally(type -> releaseConnection(type, connection)));
+                        .doFinally(type -> releaseConnection(type, connection)));
     }
 
     @Override
@@ -131,6 +142,12 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     protected void bind(Statement statement, int index, Object value) {
+        if (value instanceof Date) {
+            value = ((Date) value)
+                    .toInstant()
+                    .atZone(ZoneOffset.systemDefault())
+                    .toLocalDateTime();
+        }
         statement.bind(getBindSymbol() + (index + getBindFirstIndex()), value);
     }
 
@@ -144,11 +161,6 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 bindNull(statement, index, String.class);
             } else if (parameter instanceof NullValue) {
                 bindNull(statement, index, ((NullValue) parameter).getType());
-            } else if (parameter instanceof Date) {
-                bind(statement, index,((Date) parameter)
-                        .toInstant()
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDateTime());
             } else {
                 bind(statement, index, parameter);
             }

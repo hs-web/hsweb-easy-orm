@@ -2,8 +2,8 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import com.mysql.jdbc.Driver;
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.ConnectionProvider;
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.ConnectionProvider;
+import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 

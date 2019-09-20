@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;

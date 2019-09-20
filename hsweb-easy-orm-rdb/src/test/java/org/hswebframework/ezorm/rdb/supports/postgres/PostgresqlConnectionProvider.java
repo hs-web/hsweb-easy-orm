@@ -1,13 +1,12 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.ConnectionProvider;
+import org.hswebframework.ezorm.rdb.ConnectionProvider;
 import org.junit.Assert;
 import org.postgresql.Driver;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class PostgresqlConnectionProvider implements ConnectionProvider {
 

@@ -1,23 +1,18 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
-import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.hswebframework.ezorm.rdb.executor.SqlRequest.*;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;

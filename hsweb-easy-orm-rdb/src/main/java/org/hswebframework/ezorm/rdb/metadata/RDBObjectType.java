@@ -10,7 +10,8 @@ import org.hswebframework.ezorm.core.meta.ObjectType;
 public enum RDBObjectType implements ObjectType {
     table("表"),
     column("列"),
-    foreign_key("外键"),
+    foreignKey("外键"),
+    constraint("约束"),
     key("键"),
     dataType("数据类型"),
     index("索引"),

@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm;
+package org.hswebframework.ezorm.rdb;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSyncSqlExecutor;

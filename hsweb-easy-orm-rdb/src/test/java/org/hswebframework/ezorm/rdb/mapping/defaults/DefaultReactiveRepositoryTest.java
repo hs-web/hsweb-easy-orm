@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.*;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
@@ -24,8 +24,6 @@ import reactor.test.StepVerifier;
 
 import java.util.Date;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class DefaultReactiveRepositoryTest {
 

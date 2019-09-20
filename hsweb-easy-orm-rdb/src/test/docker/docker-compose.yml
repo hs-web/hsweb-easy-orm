@@ -40,5 +40,6 @@ services:
         SA_PASSWORD: ezorm!PasswOrd
         ACCEPT_EULA: Y
         MSSQL_PID: Enterprise
+        TZ: Asia/Shanghai
      ports:
         - "11433:1433"

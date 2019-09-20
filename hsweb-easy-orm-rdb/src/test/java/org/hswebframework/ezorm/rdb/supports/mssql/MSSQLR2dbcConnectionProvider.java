@@ -28,7 +28,7 @@ public class MSSQLR2dbcConnectionProvider implements R2dbcConnectionProvider {
         URL hostUrl = new URL("file://" + url);
 
         MssqlConnectionFactory connectionFactory = (MssqlConnectionFactory) ConnectionFactories.get(ConnectionFactoryOptions.builder()
-                .option(DRIVER, "sqlserver")
+                .option(DRIVER, "mssql")
                 .option(HOST, hostUrl.getHost())
                 .option(PORT, hostUrl.getPort())
                 .option(USER, username)

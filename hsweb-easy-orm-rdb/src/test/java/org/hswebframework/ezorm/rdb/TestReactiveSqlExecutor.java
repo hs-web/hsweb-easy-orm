@@ -2,9 +2,7 @@ package org.hswebframework.ezorm.rdb;
 
 import io.r2dbc.spi.Connection;
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.r2dbc.R2dbcReactiveSqlExecutor;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 
@@ -34,12 +32,15 @@ public class TestReactiveSqlExecutor extends R2dbcReactiveSqlExecutor {
 
     @Override
     protected Mono<Connection> getConnection() {
-        return provider.getConnection();
+        return provider.getConnection()
+                .doOnNext(connection -> {
+                     log.debug("get connection {}", connection);
+                });
     }
 
     @Override
     protected void releaseConnection(SignalType type, Connection connection) {
-        log.debug("release connection {}", connection);
+         log.debug("release connection {}", connection);
         provider.releaseConnection(connection);
     }
 

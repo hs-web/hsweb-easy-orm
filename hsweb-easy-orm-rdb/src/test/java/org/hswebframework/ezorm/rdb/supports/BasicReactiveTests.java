@@ -185,11 +185,14 @@ public abstract class BasicReactiveTests {
                 .state((byte) 1)
                 .build();
 
-        repository.insert(Mono.just(entity)).as(StepVerifier::create)
+        Mono.just(entity)
+                .as(repository::insert)
+                .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
-        repository.findById(Mono.just(entity.getId()))
+        Mono.just(entity.getId())
+                .as(repository::findById)
                 .as(StepVerifier::create)
                 .expectNext(entity)
                 .verifyComplete();
@@ -208,6 +211,7 @@ public abstract class BasicReactiveTests {
                 .expectNext(entity)
                 .verifyComplete();
 
+        entity.setBalance(100000L);
         repository.createUpdate()
                 .set(entity::getBalance)
                 .where(entity::getId)

@@ -38,24 +38,25 @@ public class SqlServerPaginator implements Paginator {
             List<SqlFragments> newOrderBy = block.getBlock(orderBy)
                     .stream()
                     .map(frg -> {
-                        List<String> sqls = frg.getSql()
-                                .stream()
-                                .map(sql -> {
-                                    if (sql.contains(".")) {
-                                        String arr[] = sql.split("[.]");
-                                        arr[0] = "_row";
-                                        return String.join(".", arr);
-                                    }
-                                    return sql;
-                                }).collect(Collectors.toList());
-                        return PrepareSqlFragments.of(sqls, frg.getParameters());
+                        // TODO: 2019-09-20 不太严谨的做法，将排序指定的表名替换为_row
+                        return PrepareSqlFragments.of(frg.getSql()
+                                        .stream()
+                                        .map(sql -> {
+                                            if (sql.contains(".")) {
+                                                String[] arr = sql.split("[.]");
+                                                arr[0] = "_row";
+                                                return String.join(".", arr);
+                                            }
+                                            return sql;
+                                        }).collect(Collectors.toList()),
+                                frg.getParameters());
                     }).collect(Collectors.toList());
             block.getBlock(orderBy).clear();
             newBlock.addBlock(other, block);
 
-
             newBlock.addBlock(after, PrepareSqlFragments.of().addSql(") _row where _row.rownumber > ?")
                     .addParameter(pageIndex * pageSize));
+
             newBlock.getBlock(after).addAll(newOrderBy);
 
             return newBlock;

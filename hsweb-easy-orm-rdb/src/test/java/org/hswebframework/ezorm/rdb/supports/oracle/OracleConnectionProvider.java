@@ -1,8 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
-import com.mysql.jdbc.Driver;
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.ConnectionProvider;
+import org.hswebframework.ezorm.rdb.ConnectionProvider;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

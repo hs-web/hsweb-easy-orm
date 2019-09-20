@@ -12,9 +12,6 @@
     <artifactId>hsweb-easy-orm-rdb</artifactId>
     <description>easyorm关系型数据库实现,支持h2,Oracle,Mysql,PostgreSQL</description>
 
-    <properties>
-        <r2dbc.version>0.8.0.M8</r2dbc.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.hswebframework</groupId>
@@ -29,7 +26,6 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-<!--            <version>3.2.8.RELEASE</version>-->
             <optional>true</optional>
         </dependency>
 
@@ -51,7 +47,6 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-h2</artifactId>
-            <version>${r2dbc.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -66,14 +61,12 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
-            <version>${r2dbc.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-mssql</artifactId>
-            <version>${r2dbc.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -84,11 +77,9 @@
             <scope>test</scope>
         </dependency>
 
-
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-spi</artifactId>
-            <version>${r2dbc.version}</version>
             <optional>true</optional>
         </dependency>
 

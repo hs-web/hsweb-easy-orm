@@ -49,13 +49,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.locales>zh_CN</project.build.locales>
         <project.build.jdk>1.8</project.build.jdk>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.12</junit.version>
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>1.2.12</log4j.version>
         <logback.version>1.1.7</logback.version>
         <fastjson.version>1.2.28</fastjson.version>
         <hsweb.expands.version>3.0.2</hsweb.expands.version>
         <reactor.version>Dysprosium-RC1</reactor.version>
+        <r2dbc.version>Arabba-BUILD-SNAPSHOT</r2dbc.version>
     </properties>
 
 
@@ -231,6 +232,20 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.r2dbc</groupId>
+                <artifactId>r2dbc-bom</artifactId>
+                <version>${r2dbc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.4.199</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>

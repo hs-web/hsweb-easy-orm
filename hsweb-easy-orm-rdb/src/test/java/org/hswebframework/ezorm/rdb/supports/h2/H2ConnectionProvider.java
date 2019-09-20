@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.h2;
 
 import lombok.SneakyThrows;
 import org.h2.Driver;
-import org.hswebframework.ezorm.ConnectionProvider;
+import org.hswebframework.ezorm.rdb.ConnectionProvider;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
