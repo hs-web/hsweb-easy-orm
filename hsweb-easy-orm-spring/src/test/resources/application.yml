@@ -1,0 +1,12 @@
+
+logging:
+  level:
+    org.hswebframework: debug
+    org.springframework.transaction: debug
+    org.springframework.data.r2dbc.connectionfactory: debug
+spring:
+  r2dbc:
+    username: postgres
+    password: admin
+    url: r2dbc:postgresql://127.0.0.1:15432
+    name: ezorm
