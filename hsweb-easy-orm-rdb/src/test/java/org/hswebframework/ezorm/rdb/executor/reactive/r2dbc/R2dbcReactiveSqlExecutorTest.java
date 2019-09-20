@@ -35,8 +35,7 @@ public class R2dbcReactiveSqlExecutorTest {
     public void testMSSQL() {
 
 
-
-        executeTest(new TestReactiveSqlExecutor("@arg",new MSSQLR2dbcConnectionProvider()));
+        executeTest(new TestReactiveSqlExecutor("@arg", new MSSQLR2dbcConnectionProvider()));
 
     }
 
@@ -48,24 +47,24 @@ public class R2dbcReactiveSqlExecutorTest {
 
             StepVerifier.create(mono).verifyComplete();
 
-            //插入100条数据
-            Flux.range(1, 100)
+            //插入10条数据
+            Flux.range(1, 10)
                     .map(i -> of("insert into test_r2dbc(id)values(?)", "" + i))
                     .as(sqlExecutor::update)
                     .as(StepVerifier::create)
-                    .expectNext(100)
+                    .expectNext(10)
                     .verifyComplete();
 
             //查询id并合计
-            Mono<Integer> sum = sqlExecutor.select(Mono.just(of("select id from test_r2dbc")), lowerCase(map()))
+            sqlExecutor.select(Mono.just(of("select id from test_r2dbc")), lowerCase(map()))
                     .map(map -> map.get("id"))
                     .map(String::valueOf)
                     .map(Integer::valueOf)
-                    .collect(Collectors.summingInt(Integer::intValue));
-
-            StepVerifier.create(sum)
-                    .expectNext(5050)
-                    .verifyComplete();
+                    .collect(Collectors.summingInt(Integer::intValue))
+                    .as(StepVerifier::create)
+                    .expectNext(55)
+                    .verifyComplete()
+            ;
         } finally {
             sqlExecutor.execute(Mono.just(of("drop table test_r2dbc"))).block();
         }
