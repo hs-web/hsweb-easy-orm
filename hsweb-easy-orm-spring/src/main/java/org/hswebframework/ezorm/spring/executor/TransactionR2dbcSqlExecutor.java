@@ -8,11 +8,8 @@ import org.hswebframework.ezorm.rdb.executor.reactive.r2dbc.R2dbcReactiveSqlExec
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.connectionfactory.ConnectionFactoryUtils;
-import org.springframework.data.r2dbc.connectionfactory.ConnectionHolder;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.reactive.TransactionSynchronizationManager;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;

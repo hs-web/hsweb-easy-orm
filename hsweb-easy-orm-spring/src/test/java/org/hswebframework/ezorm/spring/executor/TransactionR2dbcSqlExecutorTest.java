@@ -3,32 +3,18 @@ package org.hswebframework.ezorm.spring.executor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.transaction.reactive.ReactiveTransactionAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Component;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.ReactiveTransaction;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.reactive.TransactionCallback;
-import org.springframework.transaction.reactive.TransactionalOperator;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
 
-
-@SpringBootTest(classes = TestApplication.class)
+@SpringBootTest(classes = ReactiveTestApplication.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class TransactionR2dbcSqlExecutorTest {
 
