@@ -47,25 +47,28 @@ public class MysqlReactiveTests extends BasicReactiveTests {
                 super.releaseConnection(type, connection);
             }
 
-            @Override
-            protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
-                return sqlRequestFlux.concatMap(sqlRequest ->
-                        this.getConnection().flux()
-                                .flatMap(connection ->
-                                        this.doExecute(connection, sqlRequest)
-                                                .doFinally(si -> releaseConnection(si, connection))));
-
-            }
+//            @Override
+//            protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
+//                return sqlRequestFlux.concatMap(sqlRequest ->
+//                        this.getConnection().flux()
+//                                .flatMap(connection ->
+//                                        this.doExecute(connection, sqlRequest)
+//                                                .doFinally(si -> releaseConnection(si, connection))));
+//
+//            }
 
             @Override
             protected void bindNull(Statement statement, int index, Class type) {
                 statement.bindNull(index, type);
             }
-
+//
             @Override
             protected void bind(Statement statement, int index, Object value) {
-                if (value instanceof LocalDateTime) {
-                    value = Date.from(((LocalDateTime) value).atZone(ZoneOffset.UTC).toInstant());
+                if (value instanceof Date) {
+                    value = ((Date) value)
+                            .toInstant()
+                            .atZone(ZoneOffset.systemDefault())
+                            .toLocalDateTime();
                 }
                 statement.bind(index, value);
             }

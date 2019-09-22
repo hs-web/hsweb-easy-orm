@@ -55,26 +55,16 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
-
-//        return sqlRequestFlux.concatMap(sqlRequest ->
-//                this.getConnection().flux()
-//                        .flatMap(connection ->
-//                                this.doExecute(connection, sqlRequest)
-//                                        .doFinally(si -> releaseConnection(si, connection))));
-
-//        return sqlRequestFlux
-//                .zipWith(this.getConnection())
-//                .flatMap((tuple2) -> doExecute(tuple2.getT2(), tuple2.getT1())
-//                        .doFinally(si -> releaseConnection(si, tuple2.getT2())));
         return this.getConnection()
                 .flux()
-                .flatMap(connection -> sqlRequestFlux.flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
+                .flatMap(connection -> sqlRequestFlux
+                        .flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
                         .doFinally(type -> releaseConnection(type, connection)));
     }
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-        return doExecute(toFlux(request))
+        return this.doExecute(toFlux(request))
                 .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
                 .collect(Collectors.summingInt(Integer::intValue))
                 .doOnNext(count -> logger.debug("==>    Updated: {}", count));
@@ -89,7 +79,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
-        return Flux.defer(() -> this.doExecute(toFlux(request))
+        return this.doExecute(toFlux(request))
                 .flatMap(result -> result.map((row, meta) -> {
                     List<String> columns = new ArrayList<>(meta.getColumnNames());
                     wrapper.beforeWrap(() -> columns);
@@ -109,7 +99,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .takeWhile(Interrupted::nonInterrupted)
                 .map(CastUtil::<E>cast)
                 .doOnCancel(wrapper::completedWrap)
-                .doOnComplete(wrapper::completedWrap));
+                .doOnComplete(wrapper::completedWrap);
     }
 
     @SuppressWarnings("all")

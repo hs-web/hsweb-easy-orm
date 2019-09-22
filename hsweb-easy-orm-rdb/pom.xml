@@ -51,11 +51,18 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.github.jasync-sql/jasync-r2dbc-mysql -->
+        <!--<dependency>-->
+            <!--<groupId>com.github.jasync-sql</groupId>-->
+            <!--<artifactId>jasync-r2dbc-mysql</artifactId>-->
+            <!--<version>1.0.7</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+
         <dependency>
-            <groupId>com.github.jasync-sql</groupId>
-            <artifactId>jasync-r2dbc-mysql</artifactId>
-            <version>1.0.7</version>
-            <scope>test</scope>
+            <groupId>dev.miku</groupId>
+            <artifactId>r2dbc-mysql</artifactId>
+            <version>0.3.0.BUILD-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -104,5 +111,22 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+        <repository>
+            <id>sonatype-snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>
