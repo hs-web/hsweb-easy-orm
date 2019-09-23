@@ -7,6 +7,8 @@ import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
+import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -26,6 +28,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
     public EntityResultWrapper(Supplier<E> supplier) {
         this.entityInstanceSupplier = supplier;
     }
+
     public EntityResultWrapper(Supplier<E> supplier,EntityColumnMapping mapping) {
         this.entityInstanceSupplier=supplier;
         this.mapping=mapping;

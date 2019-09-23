@@ -21,4 +21,5 @@ public interface EntityManager extends Feature {
 
     <E> E newInstance(Class<E> type);
 
+    EntityColumnMapping getMapping(Class entity);
 }

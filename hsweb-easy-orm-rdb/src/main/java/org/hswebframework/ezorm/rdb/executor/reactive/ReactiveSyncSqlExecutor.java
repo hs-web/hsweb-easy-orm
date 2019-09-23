@@ -11,7 +11,6 @@ public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
 
     private ReactiveSqlExecutor sqlExecutor;
 
-
     @Override
     public int update(SqlRequest request) {
         return sqlExecutor

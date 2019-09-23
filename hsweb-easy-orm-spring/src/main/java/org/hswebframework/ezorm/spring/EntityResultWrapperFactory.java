@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.spring.mapping;
+package org.hswebframework.ezorm.spring;
 
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 
