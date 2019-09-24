@@ -13,11 +13,11 @@ public class JdbcDataType implements DataType {
 
     @Override
     public String getName() {
-        return jdbcType.name();
+        return jdbcType.name().toLowerCase();
     }
 
     @Override
     public String getId() {
-        return jdbcType.name();
+        return jdbcType.name().toLowerCase();
     }
 }
