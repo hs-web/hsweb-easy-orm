@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -14,9 +13,6 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexParameter;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings("all")
 @Getter
@@ -42,7 +38,7 @@ public class SqlServerCreateTableSqlBuilder implements CreateTableSqlBuilder {
             if (column.getColumnDefinition() != null) {
                 createTable.addSql(column.getColumnDefinition());
             } else {
-                createTable.addSql(column.getDialect().buildDataType(column));
+                createTable.addSql(column.getDialect().createColumnDataType(column));
                 if (column.isNotNull() || column.isPrimaryKey()) {
                     createTable.addSql("not null");
                 }

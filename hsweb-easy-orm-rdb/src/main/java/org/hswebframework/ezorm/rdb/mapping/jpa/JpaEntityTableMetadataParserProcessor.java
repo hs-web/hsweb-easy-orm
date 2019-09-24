@@ -14,7 +14,6 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
@@ -120,7 +119,7 @@ public class JpaEntityTableMetadataParserProcessor {
                 .getJdbcType(metadata.getJavaType())
                 .ifPresent(metadata::setJdbcType);
 
-        metadata.setDataType(tableMetadata.getDialect().buildDataType(metadata));
+        metadata.setDataType(tableMetadata.getDialect().createColumnDataType(metadata));
 
         Optional.ofNullable(getAnnotation(entityType, descriptor, Id.class))
                 .ifPresent(id -> metadata.setPrimaryKey(true));

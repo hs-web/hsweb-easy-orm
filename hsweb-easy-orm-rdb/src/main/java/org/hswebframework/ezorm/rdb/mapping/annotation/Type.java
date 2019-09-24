@@ -1,9 +1,8 @@
-package org.hswebframework.ezorm.rdb.annotation;
+package org.hswebframework.ezorm.rdb.mapping.annotation;
 
 
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.types.DataType;
-import org.hswebframework.ezorm.rdb.types.DataTypes;
 
 import java.lang.annotation.*;
 
@@ -12,7 +11,10 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 public @interface Type {
-    DataTypes value();
+
+    String typeName() default "";
+
+    Class<? extends DataType> type() default DataType.class;
 
     Class<?> elementType() default Void.class;
 

@@ -11,6 +11,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
+import org.hswebframework.ezorm.rdb.types.JdbcDataType;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -176,9 +177,9 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
             Class javaType = Optional.ofNullable(javaTypeMap.get(jdbcType))
                     .orElseGet(() -> defaultJavaTypeMap.getOrDefault(jdbcType, String.class));
 
-            instance.setJdbcType(jdbcType);
+            instance.setType(JdbcDataType.of(jdbcType));
             instance.setJavaType(javaType);
-            instance.setDataType(getDialect().buildDataType(instance));
+            instance.setDataType(getDialect().createColumnDataType(instance));
             return true;
         }
 

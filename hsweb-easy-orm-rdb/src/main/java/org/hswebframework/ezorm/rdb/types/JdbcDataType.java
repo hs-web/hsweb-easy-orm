@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import java.sql.JDBCType;
 
 @AllArgsConstructor(staticName = "of")
-public class JDBCDataType implements DataType {
+public class JdbcDataType implements DataType {
 
-    private final JDBCType jdbcType;
+    private JDBCType jdbcType;
 
     @Override
     public String getName() {

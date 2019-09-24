@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.types.DataType;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -70,9 +71,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     private boolean updatable = true;
 
     /**
-     * JDBC Type
+     * Type
      */
-    private JDBCType jdbcType;
+    private DataType type;
 
     /**
      * 排序序号
@@ -99,7 +100,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     public String getDataType() {
         if (dataType == null) {
-            return getDialect().buildDataType(this);
+            return getDialect().createColumnDataType(this);
         }
         return dataType;
     }
@@ -129,14 +130,14 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     @Override
     public String toString() {
-        StringBuilder builder=new StringBuilder(name);
+        StringBuilder builder = new StringBuilder(name);
         builder.append(" ").append(dataType);
 
-        if(javaType!=null){
+        if (javaType != null) {
             builder.append(" ").append(javaType.getSimpleName());
         }
 
-        if(comment!=null&&!comment.isEmpty()){
+        if (comment != null && !comment.isEmpty()) {
             builder.append(" /*").append(comment).append("*/");
         }
 
@@ -176,7 +177,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public boolean isChanged(RDBColumnMetadata after) {
 
         return !this.getName().equals(this.getPreviousName())
-                || this.getJdbcType() != after.getJdbcType()
+                || !this.getType().getId().equals(after.getType().getId())
                 || (this.getDataType() != null && !this.getDataType().equals(after.getDataType()))
                 || this.getLength() != after.getLength()
                 || this.getScale() != after.getScale()

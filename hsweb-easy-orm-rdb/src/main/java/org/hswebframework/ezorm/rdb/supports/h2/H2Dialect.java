@@ -7,7 +7,7 @@ import java.sql.JDBCType;
 
 public class H2Dialect extends DefaultDialect {
     public H2Dialect() {
-        defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
+        super();
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         addDataTypeMapper(JDBCType.SMALLINT, (meta) -> "smallint");

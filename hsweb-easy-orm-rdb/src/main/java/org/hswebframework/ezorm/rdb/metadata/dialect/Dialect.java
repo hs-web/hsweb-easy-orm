@@ -32,7 +32,7 @@ public interface Dialect extends Feature {
 
     void addDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
 
-    String buildDataType(RDBColumnMetadata columnMetaData);
+    String createColumnDataType(RDBColumnMetadata columnMetaData);
 
     String getQuoteStart();
 

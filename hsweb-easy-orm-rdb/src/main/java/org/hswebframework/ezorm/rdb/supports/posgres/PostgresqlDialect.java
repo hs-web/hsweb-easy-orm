@@ -13,7 +13,7 @@ public class PostgresqlDialect extends DefaultDialect {
 
 
     public PostgresqlDialect() {
-        defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
+
         addDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
@@ -32,6 +32,9 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
 
+        dataTypeMappers.put("json",meta->"json");
+        dataTypeMappers.put("jsonb",meta->"jsonb");
+
         addJdbcTypeMapping("int", JDBCType.INTEGER);
         addJdbcTypeMapping("int2", JDBCType.INTEGER);
         addJdbcTypeMapping("int4", JDBCType.INTEGER);
@@ -46,6 +49,7 @@ public class PostgresqlDialect extends DefaultDialect {
         addJdbcTypeMapping("year", JDBCType.TIME);
         addJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
         addJdbcTypeMapping("text", JDBCType.CLOB);
+
 
     }
 

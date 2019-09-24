@@ -7,7 +7,7 @@ import java.sql.JDBCType;
 
 public class MysqlDialect extends DefaultDialect {
     public MysqlDialect() {
-        defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
+        super();
         addDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "datetime(6)");
@@ -26,6 +26,8 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
         addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+
+        dataTypeMappers.put("json",meta->"json");
 
         addJdbcTypeMapping("int", JDBCType.INTEGER);
         addJdbcTypeMapping("year", JDBCType.TIME);

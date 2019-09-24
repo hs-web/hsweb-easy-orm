@@ -12,13 +12,15 @@ import java.util.*;
 public abstract class DefaultDialect implements Dialect {
     protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
 
-    protected DataTypeMapper defaultDataTypeMapper = null;
+    protected DataTypeMapper defaultDataTypeMapper;
 
     protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
 
     protected Map<Class, JDBCType> classJDBCTypeMapping = new HashMap<>();
 
-    public DefaultDialect(){
+    public DefaultDialect() {
+        defaultDataTypeMapper = (meta) -> meta.getType().getName().toLowerCase();
+
         classJDBCTypeMapping.put(String.class, JDBCType.VARCHAR);
 
         classJDBCTypeMapping.put(Byte.class, JDBCType.TINYINT);
@@ -60,7 +62,7 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public void addDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
-        dataTypeMappers.put(jdbcType.getName(), mapper);
+        dataTypeMappers.put(jdbcType.getName().toLowerCase(), mapper);
     }
 
     @Override
@@ -73,15 +75,15 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public String buildDataType(RDBColumnMetadata columnMetaData) {
-        if (columnMetaData.getJdbcType() == null) {
+    public String createColumnDataType(RDBColumnMetadata columnMetaData) {
+        if (columnMetaData.getType() == null) {
             return null;
         }
-        DataTypeMapper mapper = dataTypeMappers.get(columnMetaData.getJdbcType().getName());
+        DataTypeMapper mapper = dataTypeMappers.get(columnMetaData.getType().getId());
         if (null == mapper) {
             mapper = defaultDataTypeMapper;
         }
-        return mapper.getDataType(columnMetaData);
+        return mapper.createColumnDataType(columnMetaData);
     }
 
     @Override

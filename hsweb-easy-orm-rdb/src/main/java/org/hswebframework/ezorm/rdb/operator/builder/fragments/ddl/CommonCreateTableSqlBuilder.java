@@ -32,7 +32,7 @@ public class CommonCreateTableSqlBuilder implements CreateTableSqlBuilder {
             if (column.getColumnDefinition() != null) {
                 createTable.addSql(column.getColumnDefinition());
             } else {
-                createTable.addSql(column.getDialect().buildDataType(column));
+                createTable.addSql(column.getDialect().createColumnDataType(column));
                 DefaultValue defaultValue = column.getDefaultValue();
                 if (defaultValue instanceof NativeSql) {
                     createTable.addSql("default", ((NativeSql) defaultValue).getSql());

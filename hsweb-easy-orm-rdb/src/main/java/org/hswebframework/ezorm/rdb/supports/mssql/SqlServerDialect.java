@@ -11,7 +11,7 @@ import java.sql.JDBCType;
 public class SqlServerDialect extends DefaultDialect {
 
     public SqlServerDialect() {
-        defaultDataTypeMapper = (meta) -> meta.getJdbcType().getName().toLowerCase();
+        super();
         addDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.NCHAR, (meta) -> StringUtils.concat("nchar(", meta.getLength(), ")"));
         addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
