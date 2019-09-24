@@ -14,10 +14,12 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DefaultRepository<E> {
 
@@ -32,6 +34,8 @@ public class DefaultRepository<E> {
     protected String idColumn;
 
     protected EntityColumnMapping mapping;
+
+    private String[] properties;
 
     @Getter
     @Setter
@@ -53,6 +57,14 @@ public class DefaultRepository<E> {
                 .orElse(null);
         this.mapping = table.<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature"));
+
+        this.properties = mapping.getColumnPropertyMapping()
+                .entrySet()
+                .stream()
+                .filter(kv -> table.getColumn(kv.getKey()).isPresent())
+                .map(Map.Entry::getValue)
+                .toArray(String[]::new);
+
     }
 
     protected InsertResultOperator doInsert(E data) {
@@ -73,15 +85,10 @@ public class DefaultRepository<E> {
     protected InsertResultOperator doInsert(Collection<E> batch) {
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
-        List<String> properties =  mapping.getColumnPropertyMapping().entrySet()
-                .stream()
-                .filter(kv->table.getColumn(kv.getKey()).isPresent())
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
-        insert.columns(properties.toArray(new String[0]));
+        insert.columns(properties);
 
         for (E e : batch) {
-            insert.values(properties.stream()
+            insert.values(Stream.of(properties)
                     .map(property -> propertyOperator
                             .getProperty(e, property)
                             .orElseGet(() -> mapping.getColumnByProperty(property)

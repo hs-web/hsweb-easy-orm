@@ -132,10 +132,14 @@ public class DefaultReactiveRepositoryTest {
                 .expectNext(1)
                 .verifyComplete();
 
+        entity.setName("test3");
+        StepVerifier.create(reactiveRepository.save(Mono.just(entity))
+                .map(SaveResult::getTotal))
+                .expectNext(1)
+                .verifyComplete();
 
-        StepVerifier.create(reactiveRepository.createDelete()
-                .where(entity::getId)
-                .execute())
+
+        StepVerifier.create(reactiveRepository.deleteById(Mono.just(entity.getId())))
                 .expectNext(1)
                 .verifyComplete();
 

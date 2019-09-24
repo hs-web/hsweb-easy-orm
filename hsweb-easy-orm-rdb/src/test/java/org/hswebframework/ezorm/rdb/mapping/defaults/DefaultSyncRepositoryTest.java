@@ -91,16 +91,13 @@ public class DefaultSyncRepositoryTest {
         entity.setState((byte) 1);
         entity.setCreateTime(new Date());
 
-        repository.insert(entity);
+        Assert.assertEquals(1, repository.save(entity).getAdded());
 
         TestEntity inDB = repository.findById("test").orElseThrow(NullPointerException::new);
 
         Assert.assertEquals(entity, inDB);
         entity.setName("test2");
-        Assert.assertEquals(1, repository.createUpdate()
-                .set(entity)
-                .where(entity::getId)
-                .execute());
+        Assert.assertEquals(1, repository.save(entity).getUpdated());
 
         Assert.assertEquals(1, repository.createDelete()
                 .where(entity::getId)
