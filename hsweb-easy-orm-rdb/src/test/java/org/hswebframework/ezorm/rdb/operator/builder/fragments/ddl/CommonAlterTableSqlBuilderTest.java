@@ -3,10 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -57,7 +54,7 @@ public class CommonAlterTableSqlBuilderTest {
         {
             RDBColumnMetadata test = new RDBColumnMetadata();
             test.setName("test");
-            test.setJdbcType(JDBCType.VARCHAR);
+            test.setType(JdbcDataType.of(JDBCType.VARCHAR));
             test.setLength(32);
             test.setComment("test");
             copy.addColumn(test);

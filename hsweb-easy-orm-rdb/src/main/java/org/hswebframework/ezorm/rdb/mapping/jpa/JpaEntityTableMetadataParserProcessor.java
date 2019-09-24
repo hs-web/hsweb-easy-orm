@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.hswebframework.ezorm.rdb.codec.DateTimeCodec;
 import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -116,8 +117,9 @@ public class JpaEntityTableMetadataParserProcessor {
             metadata.setColumnDefinition(column.columnDefinition());
         }
         tableMetadata.getDialect()
-                .getJdbcType(metadata.getJavaType())
-                .ifPresent(metadata::setJdbcType);
+                .convertJdbcType(metadata.getJavaType())
+                .map(JdbcDataType::of)
+                .ifPresent(metadata::setType);
 
         metadata.setDataType(tableMetadata.getDialect().createColumnDataType(metadata));
 

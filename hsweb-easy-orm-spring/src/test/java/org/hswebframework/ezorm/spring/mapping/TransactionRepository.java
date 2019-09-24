@@ -18,18 +18,13 @@ public class TransactionRepository {
     @Autowired
     ReactiveRepository<TestEntity, String> reactiveRepository;
 
-    @Autowired
-    SyncRepository<TestEntity, String> syncRepository;
-
     @Transactional
     public Mono<Integer> test() {
 
         return Flux.concat(
                 reactiveRepository.insert(Mono.just(TestEntity.of("test", "name"))),
                 reactiveRepository.createQuery().count(),
-                reactiveRepository.createDelete()
-                        .where(TestEntity::getId, "test")
-                        .execute())
+                reactiveRepository.createDelete().where(TestEntity::getId, "test").execute())
                 .collect(Collectors.summingInt(Integer::intValue));
     }
 }

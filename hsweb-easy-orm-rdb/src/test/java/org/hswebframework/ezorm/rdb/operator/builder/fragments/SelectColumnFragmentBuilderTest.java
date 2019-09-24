@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
@@ -39,12 +36,12 @@ public class SelectColumnFragmentBuilderTest {
 
         RDBColumnMetadata id = new RDBColumnMetadata();
         id.setName("id");
-        id.setJdbcType(JDBCType.VARCHAR);
+        id.setType(JdbcDataType.of(JDBCType.VARCHAR));
         id.setLength(32);
 
         RDBColumnMetadata name = new RDBColumnMetadata();
         name.setName("name");
-        name.setJdbcType(JDBCType.VARCHAR);
+        name.setType(JdbcDataType.of(JDBCType.VARCHAR));
         name.setLength(64);
 
         table.addColumn(id);
@@ -52,7 +49,7 @@ public class SelectColumnFragmentBuilderTest {
 
         RDBColumnMetadata detailInfo = new RDBColumnMetadata();
         detailInfo.setName("comment");
-        detailInfo.setJdbcType(JDBCType.VARCHAR);
+        detailInfo.setType(JdbcDataType.of(JDBCType.VARCHAR));
         detailInfo.setLength(64);
 
         detail.addColumn(detailInfo);

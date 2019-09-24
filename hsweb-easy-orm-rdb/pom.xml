@@ -114,11 +114,6 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-
-        <repository>
             <id>sonatype-snapshots</id>
             <name>Nexus Snapshot Repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>

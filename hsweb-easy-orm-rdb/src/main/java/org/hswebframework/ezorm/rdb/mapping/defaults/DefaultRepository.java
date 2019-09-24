@@ -92,7 +92,7 @@ public class DefaultRepository<E> {
                     .map(property -> propertyOperator
                             .getProperty(e, property)
                             .orElseGet(() -> mapping.getColumnByProperty(property)
-                                    .map(column -> NullValue.of(column.getJavaType(), column.getJdbcType()))
+                                    .map(column -> NullValue.of(column.getJavaType(), column.getType()))
                                     .orElse(null)))
                     .toArray());
         }

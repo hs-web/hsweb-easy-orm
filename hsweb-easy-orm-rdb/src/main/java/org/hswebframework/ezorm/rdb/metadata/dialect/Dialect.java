@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata.dialect;
 
 import org.hswebframework.ezorm.core.meta.Feature;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
@@ -42,10 +43,11 @@ public interface Dialect extends Feature {
 
     boolean isColumnToUpperCase();
 
-    Optional<JDBCType> getJdbcType(Class<?> type);
+    Optional<JDBCType> convertJdbcType(Class<?> type);
 
-    JDBCType getJdbcType(String dataType);
+    Optional<JDBCType> convertJdbcType(String dataType);
 
+    DataType convertDataType(String dataType);
 
     default String quote(String keyword, boolean changeCase) {
         if (keyword.startsWith(getQuoteStart()) && keyword.endsWith(getQuoteEnd())) {

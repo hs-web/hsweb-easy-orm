@@ -6,7 +6,6 @@ import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.types.DataType;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -98,11 +97,21 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return getDialect().quote(getName());
     }
 
+    public void setJdbcType(JDBCType jdbcType) {
+        setType(JdbcDataType.of(jdbcType));
+    }
+
     public String getDataType() {
         if (dataType == null) {
             return getDialect().createColumnDataType(this);
         }
         return dataType;
+    }
+
+    public JDBCType getJdbcType() {
+        return Optional.ofNullable(type)
+                .map(DataType::getJdbcType)
+                .orElse(null);
     }
 
     public String getPreviousName() {

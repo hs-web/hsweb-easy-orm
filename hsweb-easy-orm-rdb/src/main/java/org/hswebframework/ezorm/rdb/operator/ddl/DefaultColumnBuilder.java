@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.core.OriginalValueCodec;
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.codec.BooleanValueCodec;
@@ -50,7 +51,7 @@ public class DefaultColumnBuilder implements ColumnBuilder {
 
     @Override
     public ColumnBuilder jdbcType(JDBCType jdbcType) {
-        columnMetaData.setJdbcType(jdbcType);
+        columnMetaData.setType(JdbcDataType.of(jdbcType));
         return this;
     }
 
@@ -117,7 +118,7 @@ public class DefaultColumnBuilder implements ColumnBuilder {
                 columnMetaData.setValueCodec(new NumberValueCodec(columnMetaData.getJavaType()));
             }
             if (columnMetaData.getJavaType() == Boolean.class || columnMetaData.getJavaType() == boolean.class) {
-                columnMetaData.setValueCodec(new BooleanValueCodec(columnMetaData.getJdbcType()));
+                columnMetaData.setValueCodec(new BooleanValueCodec(columnMetaData.getType().getJdbcType()));
             }
         }
         tableMetaData.addColumn(columnMetaData);

@@ -2,7 +2,7 @@ package org.hswebframework.ezorm.rdb.mapping.annotation;
 
 
 import org.hswebframework.ezorm.core.ValueCodec;
-import org.hswebframework.ezorm.rdb.types.DataType;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 
 import java.lang.annotation.*;
 

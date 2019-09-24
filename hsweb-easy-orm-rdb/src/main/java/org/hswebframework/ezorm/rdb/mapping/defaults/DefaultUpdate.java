@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.mapping.DSLUpdate;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
@@ -81,8 +82,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     @Override
     public ME setNull(String column) {
         NullValue nullValue = table.getColumn(column)
-                .map(columnMetadata -> NullValue.of(columnMetadata.getJavaType(), columnMetadata.getJdbcType()))
-                .orElseGet(() -> NullValue.of(String.class, JDBCType.VARCHAR));
+                .map(columnMetadata -> NullValue.of(columnMetadata.getJavaType(), columnMetadata.getType()))
+                .orElseGet(() -> NullValue.of(String.class, JdbcDataType.of(JDBCType.VARCHAR)));
         set(column, nullValue);
         return (ME) this;
     }

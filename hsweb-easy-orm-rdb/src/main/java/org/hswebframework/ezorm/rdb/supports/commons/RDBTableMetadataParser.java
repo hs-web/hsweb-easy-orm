@@ -5,13 +5,10 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
-import org.hswebframework.ezorm.rdb.types.JdbcDataType;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -173,11 +170,12 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
             instance.setPrecision(data_precision);
             instance.setScale(data_scale);
 
-            JDBCType jdbcType = getDialect().getJdbcType(data_type);
-            Class javaType = Optional.ofNullable(javaTypeMap.get(jdbcType))
-                    .orElseGet(() -> defaultJavaTypeMap.getOrDefault(jdbcType, String.class));
+            DataType dataType = getDialect().convertDataType(data_type);
 
-            instance.setType(JdbcDataType.of(jdbcType));
+            Class javaType = Optional.ofNullable(javaTypeMap.get(dataType.getJdbcType()))
+                    .orElseGet(() -> defaultJavaTypeMap.getOrDefault(dataType.getJdbcType(), String.class));
+
+            instance.setType(dataType);
             instance.setJavaType(javaType);
             instance.setDataType(getDialect().createColumnDataType(instance));
             return true;

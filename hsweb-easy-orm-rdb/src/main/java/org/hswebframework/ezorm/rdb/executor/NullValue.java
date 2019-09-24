@@ -2,18 +2,17 @@ package org.hswebframework.ezorm.rdb.executor;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.sql.JDBCType;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 
 @Getter
 @AllArgsConstructor(staticName = "of")
 public class NullValue {
     private Class type;
 
-    private JDBCType jdbcType;
+    private DataType dataType;
 
     @Override
     public String toString() {
-        return "null" + (type != null ? "(" + type.getSimpleName() + ")" : "");
+        return "null" + (type != null ? "(" + dataType.getId() + ")" : "");
     }
 }

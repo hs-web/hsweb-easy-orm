@@ -1,7 +1,11 @@
 package org.hswebframework.ezorm.rdb.metadata.dialect;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.CastUtil;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.UnknownDataType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -66,7 +70,7 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public Optional<JDBCType> getJdbcType(Class<?> type) {
+    public Optional<JDBCType> convertJdbcType(Class<?> type) {
         return Optional.ofNullable(classJDBCTypeMapping.get(type));
     }
 
@@ -87,7 +91,20 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public JDBCType getJdbcType(String dataType) {
+    public DataType convertDataType(String dataType) {
+
+        return convertJdbcType(dataType)
+                .map(JdbcDataType::of)
+                .map(CastUtil::<DataType>cast)
+                .orElseGet(() -> convertUnknownDataType(dataType));
+    }
+
+    protected DataType convertUnknownDataType(String dataType) {
+        return UnknownDataType.of(dataType, dataType, JDBCType.OTHER);
+    }
+
+    @Override
+    public Optional<JDBCType> convertJdbcType(String dataType) {
         JDBCType jdbcType;
         try {
             jdbcType = JDBCType.valueOf(dataType.toUpperCase());
@@ -98,10 +115,11 @@ public abstract class DefaultDialect implements Dialect {
             if (jdbcType == null) {
                 //出现此警告可以通过 setJdbcTypeMapping注册一些奇怪的类型
                 log.warn("can not parse jdbcType:{}", dataType);
-                jdbcType = JDBCType.OTHER;
+                return Optional.empty();
+//                jdbcType = JDBCType.OTHER;
             }
         }
-        return jdbcType;
+        return Optional.of(jdbcType);
     }
 
 

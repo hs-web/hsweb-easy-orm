@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 
 import java.sql.JDBCType;
 
@@ -30,12 +27,12 @@ public class MetadataHelper {
         {
             RDBColumnMetadata id = new RDBColumnMetadata();
             id.setName("id");
-            id.setJdbcType(JDBCType.VARCHAR);
+            id.setType(JdbcDataType.of(JDBCType.VARCHAR));
             id.setLength(32);
 
             RDBColumnMetadata name = new RDBColumnMetadata();
             name.setName("name");
-            name.setJdbcType(JDBCType.VARCHAR);
+            name.setType(JdbcDataType.of(JDBCType.VARCHAR));
             name.setLength(64);
 
             table.addColumn(id);
@@ -47,7 +44,7 @@ public class MetadataHelper {
 
             RDBColumnMetadata comment = new RDBColumnMetadata();
             comment.setName("comment");
-            comment.setJdbcType(JDBCType.VARCHAR);
+            comment.setType(JdbcDataType.of(JDBCType.VARCHAR));
             comment.setLength(64);
 
             detail.addColumn(comment);
