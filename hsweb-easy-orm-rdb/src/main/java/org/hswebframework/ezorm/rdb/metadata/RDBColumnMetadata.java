@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.*;
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.AbstractColumnMetadata;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.meta.Feature;
@@ -157,6 +158,10 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     @Override
     public ObjectType getObjectType() {
         return RDBObjectType.column;
+    }
+
+    public <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
+        return findFeature(id.getId());
     }
 
     public <T extends Feature> Optional<T> findFeature(String id) {

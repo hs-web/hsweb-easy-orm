@@ -20,25 +20,25 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
     protected RDBSchemaMetadata schema;
 
     protected Optional<SqlFragments> select(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
-        return metadata.<QuerySqlFragmentBuilder>getFeature(select)
+        return metadata.getFeature(select)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> where(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
-        return metadata.<QuerySqlFragmentBuilder>getFeature(where)
+        return metadata.getFeature(where)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> join(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
-        return metadata.<QuerySqlFragmentBuilder>getFeature(selectJoin)
+        return metadata.getFeature(selectJoin)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> orderBy(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
-        return metadata.<QuerySqlFragmentBuilder>getFeature(orderBy)
+        return metadata.getFeature(orderBy)
                 .map(builder -> builder.createFragments(parameter))
                 .filter(SqlFragments::isNotEmpty);
     }

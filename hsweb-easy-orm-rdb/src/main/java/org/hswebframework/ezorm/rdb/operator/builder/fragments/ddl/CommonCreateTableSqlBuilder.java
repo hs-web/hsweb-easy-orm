@@ -55,7 +55,7 @@ public class CommonCreateTableSqlBuilder implements CreateTableSqlBuilder {
             sql.addBatch(of(String.format("comment on table %s is '%s'", table.getFullName(), table.getComment())));
         }
 
-        table.<CreateIndexSqlBuilder>findFeature(CreateIndexSqlBuilder.id)
+        table.findFeature(CreateIndexSqlBuilder.ID)
                 .ifPresent(builder -> {
                     for (RDBIndexMetadata tableIndex : table.getIndexes()) {
                         sql.addBatch(builder.build(CreateIndexParameter.of(table, tableIndex)));

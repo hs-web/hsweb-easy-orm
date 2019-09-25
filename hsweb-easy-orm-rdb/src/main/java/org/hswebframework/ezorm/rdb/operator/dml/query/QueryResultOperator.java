@@ -35,14 +35,14 @@ public class QueryResultOperator<E, R> implements ResultOperator<E, R> {
 
     @Override
     public R sync() {
-        return metadata.<SyncSqlExecutor>getFeature(SyncSqlExecutor.id)
+        return metadata.getFeature(SyncSqlExecutor.ID)
                 .map(executor -> executor.select(sqlRequest, getWrapper()))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
     }
 
     @Override
     public CompletionStage<R> async() {
-        return metadata.<AsyncSqlExecutor>getFeature(AsyncSqlExecutor.id)
+        return metadata.getFeature(AsyncSqlExecutor.ID)
                 .map(executor -> executor.select(sqlRequest, getWrapper()))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
     }
@@ -50,7 +50,7 @@ public class QueryResultOperator<E, R> implements ResultOperator<E, R> {
     @Override
     @SuppressWarnings("all")
     public Flux<E> reactive() {
-        return metadata.<ReactiveSqlExecutor>getFeature(ReactiveSqlExecutor.id)
+        return metadata.getFeature(ReactiveSqlExecutor.ID)
                 .map(executor -> executor.select(Mono.just(sqlRequest),  getWrapper()))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
     }

@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
@@ -12,7 +11,6 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 
 import static java.util.Optional.*;
-import static org.hswebframework.ezorm.rdb.metadata.RDBFeatures.orderBy;
 
 @AllArgsConstructor(staticName = "of")
 public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {
@@ -41,7 +39,7 @@ public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {
 
 
         SqlFragments fragments = ofNullable(order.getFunction())
-                .<FunctionFragmentBuilder>flatMap(function -> column.findFeature(RDBFeatureType.function.getFeatureId(function)))
+                .flatMap(function -> column.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
                 .map(builder -> builder.create(fullName, column, order.getOpts()))
                 .orElseGet(() -> PrepareSqlFragments.of().addSql(fullName));
 
@@ -78,7 +76,7 @@ public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {
 
     @Override
     public String getId() {
-        return orderBy;
+        return sortOrder;
     }
 
     @Override

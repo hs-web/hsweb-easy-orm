@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.FeatureSupportedMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
@@ -80,6 +81,10 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
 
     default String getFullName() {
         return getSchema().getName().concat(".").concat(getName());
+    }
+
+    default  <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
+        return findFeature(id.getId());
     }
 
     default <T extends Feature> Optional<T> findFeature(String id) {

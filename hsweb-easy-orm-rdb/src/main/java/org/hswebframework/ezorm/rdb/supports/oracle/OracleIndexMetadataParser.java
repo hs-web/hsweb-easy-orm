@@ -43,7 +43,7 @@ public class OracleIndexMetadataParser implements IndexMetadataParser {
         String schemaName = schema.getName().toUpperCase();
         String tableUpperName = tableName.toUpperCase();
 
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
+        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
                 .map(sqlExecutor -> sqlExecutor.select(prepare(sql, schemaName, tableUpperName),
                         new OracleIndexWrapper(
                                 sqlExecutor

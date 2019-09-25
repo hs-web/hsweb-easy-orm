@@ -17,7 +17,7 @@ public class DefaultForeignKeyTermFragmentBuilder implements ForeignKeyTermFragm
     public SqlFragments createFragments(String tableName, ForeignKeyMetadata key, List<Term> terms) {
 
         PrepareSqlFragments prepareSqlFragments = PrepareSqlFragments.of()
-                .addSql("exists(column 1 from")
+                .addSql("exists(select 1 from")
                 .addSql(key.getTarget().getName())
                 .addSql("where")
                 .addSql(key.getTargetColumn().getFullName())
@@ -25,7 +25,7 @@ public class DefaultForeignKeyTermFragmentBuilder implements ForeignKeyTermFragm
                 .addSql(key.getSourceColumn().getFullName(tableName));
 
         key.getTarget()
-                .<QuerySqlFragmentBuilder>getFeature(RDBFeatures.where)
+                .getFeature(RDBFeatures.where)
                 .ifPresent(builder -> {
                     QueryOperatorParameter parameter = new QueryOperatorParameter();
                     parameter.setFrom(key.getTarget().getName());

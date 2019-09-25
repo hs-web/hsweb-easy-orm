@@ -7,7 +7,6 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CompletionStage;
@@ -23,7 +22,7 @@ public class TableDDLResultOperator implements ResultOperator<Boolean, Boolean> 
 
     @Override
     public Boolean sync() {
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
+        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
                 .map(sqlExecutor -> {
                     sqlExecutor.execute(sqlRequest);
                     whenCompleted.run();
@@ -35,7 +34,7 @@ public class TableDDLResultOperator implements ResultOperator<Boolean, Boolean> 
 
     @Override
     public CompletionStage<Boolean> async() {
-        return schema.<AsyncSqlExecutor>findFeature(AsyncSqlExecutor.id)
+        return schema.<AsyncSqlExecutor>findFeature(AsyncSqlExecutor.ID)
                 .map(sqlExecutor -> sqlExecutor.execute(sqlRequest)
                         .thenApply(__ -> {
                             whenCompleted.run();
@@ -46,7 +45,7 @@ public class TableDDLResultOperator implements ResultOperator<Boolean, Boolean> 
 
     @Override
     public Mono<Boolean> reactive() {
-        return schema.<ReactiveSqlExecutor>findFeature(ReactiveSqlExecutor.id)
+        return schema.findFeature(ReactiveSqlExecutor.ID)
                 .map(sqlExecutor -> sqlExecutor
                         .execute(Mono.just(sqlRequest))
                         .doOnSuccess(__->whenCompleted.run())

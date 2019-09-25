@@ -1,16 +1,19 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.operator.builder.SqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 public interface QuerySqlBuilder extends SqlBuilder<QueryOperatorParameter> {
 
-    String id = "querySqlBuilder";
+    String ID_VALUE = "querySqlBuilder";
+
+    FeatureId<QuerySqlBuilder> ID = FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

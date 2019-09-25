@@ -60,7 +60,7 @@ public class SqlServerCreateTableSqlBuilder implements CreateTableSqlBuilder {
         if (createComment && table.getComment() != null) {
             sql.addBatch(SqlServerCommentUtils.createDropAndCreateTableCommentSql(table).toRequest());
         }
-        table.<CreateIndexSqlBuilder>findFeature(CreateIndexSqlBuilder.id)
+        table.<CreateIndexSqlBuilder>findFeature(CreateIndexSqlBuilder.ID)
                 .ifPresent(builder -> {
                     for (RDBIndexMetadata tableIndex : table.getIndexes()) {
                         sql.addBatch(builder.build(CreateIndexParameter.of(table, tableIndex)));

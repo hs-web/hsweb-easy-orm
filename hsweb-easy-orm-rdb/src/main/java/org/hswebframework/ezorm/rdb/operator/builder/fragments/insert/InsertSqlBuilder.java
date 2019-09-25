@@ -1,15 +1,18 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.rdb.operator.builder.SqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
 
 public interface InsertSqlBuilder extends SqlBuilder<InsertOperatorParameter> {
 
-    String id = "insertSqlBuilder";
+    String ID_VALUE = "insertSqlBuilder";
+
+    FeatureId<InsertSqlBuilder> ID = FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

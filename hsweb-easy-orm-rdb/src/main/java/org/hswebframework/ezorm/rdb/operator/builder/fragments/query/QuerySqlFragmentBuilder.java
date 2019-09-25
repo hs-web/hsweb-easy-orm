@@ -8,6 +8,13 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 
 public interface QuerySqlFragmentBuilder extends Feature {
 
+    //feature id
+    String where = "queryTermsFragmentBuilder";
+    String selectColumns = "selectColumnFragmentBuilder";
+    String join = "joinSqlFragmentBuilder";
+    String sortOrder = "sortOrderFragmentBuilder";
+
+
     @Override
     default FeatureType getType() {
         return RDBFeatureType.fragment;

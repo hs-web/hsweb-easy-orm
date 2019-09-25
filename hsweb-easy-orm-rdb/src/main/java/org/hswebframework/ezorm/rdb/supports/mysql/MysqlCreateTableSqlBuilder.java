@@ -64,7 +64,7 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
             createTable.addSql("COMMENT=", "'".concat(table.getComment()).concat("'"));
         }
 
-        table.<CreateIndexSqlBuilder>findFeature(CreateIndexSqlBuilder.id)
+        table.findFeature(CreateIndexSqlBuilder.ID)
                 .ifPresent(builder -> {
                     for (RDBIndexMetadata tableIndex : table.getIndexes()) {
                         sql.addBatch(builder.build(CreateIndexParameter.of(table, tableIndex)));

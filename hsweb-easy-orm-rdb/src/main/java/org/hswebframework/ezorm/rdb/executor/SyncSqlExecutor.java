@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.executor;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
@@ -9,11 +10,13 @@ import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
  */
 public interface SyncSqlExecutor extends Feature {
 
-    String id = "syncSqlExecutor";
+    String ID_VALUE = "syncSqlExecutor";
+
+    FeatureId<SyncSqlExecutor> ID = FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.executor.reactive;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -10,11 +11,12 @@ import reactor.core.publisher.Mono;
 
 public interface ReactiveSqlExecutor  extends Feature {
 
-    String id = "reactiveSqlExecutor";
+    String ID_VALUE = "reactiveSqlExecutor";
+    FeatureId<ReactiveSqlExecutor> ID = FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

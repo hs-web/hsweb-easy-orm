@@ -20,21 +20,21 @@ public class InsertResultOperator implements ResultOperator<Integer, Integer> {
 
     @Override
     public Integer sync() {
-        return table.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
+        return table.findFeature(SyncSqlExecutor.ID)
                 .map(executor -> executor.update(sql))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
     }
 
     @Override
     public CompletionStage<Integer> async() {
-        return table.<AsyncSqlExecutor>findFeature(AsyncSqlExecutor.id)
+        return table.findFeature(AsyncSqlExecutor.ID)
                 .map(executor -> executor.update(sql))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
     }
 
     @Override
     public Mono<Integer> reactive() {
-        return table.<ReactiveSqlExecutor>findFeature(ReactiveSqlExecutor.id)
+        return table.findFeature(ReactiveSqlExecutor.ID)
                 .map(executor -> executor.update(Mono.just(sql)))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
     }

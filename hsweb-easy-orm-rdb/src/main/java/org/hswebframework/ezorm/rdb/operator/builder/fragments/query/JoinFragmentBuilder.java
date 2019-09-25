@@ -61,7 +61,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
 
     @Override
     public String getId() {
-        return RDBFeatures.selectJoin;
+        return join;
     }
 
     @Override

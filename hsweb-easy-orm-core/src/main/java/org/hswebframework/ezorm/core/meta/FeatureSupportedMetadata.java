@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.core.meta;
 
 import org.hswebframework.ezorm.core.CastUtil;
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.FeatureType;
 
 import java.util.*;
@@ -31,6 +32,21 @@ public interface FeatureSupportedMetadata {
                         .collect(Collectors.toList()))
                 .orElseGet(Collections::emptyList);
 
+    }
+
+//    default <T extends Feature> Optional<T> getFeature(Class<T> type) {
+//        return this.<T>getFeature(type.getName())
+//                .map(Optional::of)
+//                .orElseGet(() -> getFeatures()
+//                        .values()
+//                        .stream()
+//                        .filter(type::isInstance)
+//                        .map(CastUtil::<T>cast)
+//                        .findFirst());
+//    }
+
+    default <T extends Feature> Optional<T> getFeature(FeatureId<T> id) {
+        return getFeature(id.getId());
     }
 
     default <T extends Feature> Optional<T> getFeature(String id) {

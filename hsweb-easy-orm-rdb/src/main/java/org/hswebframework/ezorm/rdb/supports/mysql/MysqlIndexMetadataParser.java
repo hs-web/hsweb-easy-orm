@@ -24,7 +24,7 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
 
     @Override
     public List<RDBIndexMetadata> parseTableIndex(String tableName) {
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
+        return schema.findFeature(SyncSqlExecutor.ID)
                 .map(sqlExecutor -> sqlExecutor.select(SqlRequests.of("show index from ".concat(schema.getName()).concat(".").concat(tableName)),
                         new MysqlIndexWrapper()))
                 .orElseGet(() -> {

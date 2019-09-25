@@ -100,7 +100,7 @@ public class DefaultTableBuilder implements TableBuilder {
         SqlRequest sqlRequest;
         //alter
         if (oldTable != null) {
-            sqlRequest = schema.<AlterTableSqlBuilder>findFeature(AlterTableSqlBuilder.id)
+            sqlRequest = schema.findFeature(AlterTableSqlBuilder.ID)
                     .map(builder -> builder.build(AlterRequest.builder()
                             .allowDrop(dropColumn)
                             .newTable(table)
@@ -110,7 +110,7 @@ public class DefaultTableBuilder implements TableBuilder {
 
         } else {
             //create
-            sqlRequest = schema.<CreateTableSqlBuilder>findFeature(CreateTableSqlBuilder.id)
+            sqlRequest = schema.findFeature(CreateTableSqlBuilder.ID)
                     .map(builder -> builder.build(table))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported CreateTableSqlBuilder"));
         }

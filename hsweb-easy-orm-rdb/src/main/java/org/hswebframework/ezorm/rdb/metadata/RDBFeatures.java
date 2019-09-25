@@ -1,27 +1,28 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.*;
 
 public interface RDBFeatures {
 
 
-    String where = "where";
+    FeatureId<QuerySqlFragmentBuilder> where = FeatureId.of(QuerySqlFragmentBuilder.where);
 
-    String select = "selectColumns";
+    FeatureId<QuerySqlFragmentBuilder> select = FeatureId.of(QuerySqlFragmentBuilder.selectColumns);
+    FeatureId<QuerySqlFragmentBuilder> selectJoin = FeatureId.of(QuerySqlFragmentBuilder.join);
+    FeatureId<QuerySqlFragmentBuilder> orderBy = FeatureId.of(QuerySqlFragmentBuilder.sortOrder);
 
-    String selectJoin = "selectJoin";
-    String orderBy = "orderBy";
-
-
-    /*查询条件*/
+    /*通用查询条件*/
     SymbolTermFragmentBuilder eq = new SymbolTermFragmentBuilder("eq", "等于", "=");
 
     SymbolTermFragmentBuilder not = new SymbolTermFragmentBuilder("not", "不等于", "!=");
 
     SymbolTermFragmentBuilder like = new SymbolTermFragmentBuilder("like", "模糊匹配", "like");
     SymbolTermFragmentBuilder nlike = new SymbolTermFragmentBuilder("nlike", "不模糊匹配", "not like");
-
 
     SymbolTermFragmentBuilder gt = new SymbolTermFragmentBuilder("gt", "大于", ">");
     SymbolTermFragmentBuilder lt = new SymbolTermFragmentBuilder("lt", "小于", "<");

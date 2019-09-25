@@ -1,14 +1,16 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.rdb.operator.builder.SqlBuilder;
 
 public interface DropIndexSqlBuilder extends SqlBuilder<CreateIndexParameter> {
 
-    String id = "dropIndexSqlBuilder";
+    String ID_VALUE = "dropIndexSqlBuilder";
+    FeatureId<DropIndexSqlBuilder> ID = FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.executor;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
@@ -7,11 +8,13 @@ import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import java.util.concurrent.CompletionStage;
 
 public interface AsyncSqlExecutor extends Feature {
-    String id = "asyncSqlExecutor";
+    String ID_VALUE = "asyncSqlExecutor";
+
+    FeatureId<AsyncSqlExecutor> ID = FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

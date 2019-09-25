@@ -8,8 +8,15 @@ import org.hswebframework.ezorm.core.FeatureType;
 @AllArgsConstructor
 public enum RDBFeatureType implements FeatureType {
 
+    /**
+     * @see org.hswebframework.ezorm.rdb.metadata.dialect.Dialect
+     */
     dialect("数据库方言"),
+    /**
+     * @see org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder
+     */
     termType("SQL条件"),
+
     termsType("SQL条件组合"),
 
     query("查询"),
@@ -22,7 +29,11 @@ public enum RDBFeatureType implements FeatureType {
 
     metadataParser("元数据解析器"),
 
+    /**
+     * @see org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder
+     */
     function("函数"),
+
 
     fragment("SQL片段"),
 

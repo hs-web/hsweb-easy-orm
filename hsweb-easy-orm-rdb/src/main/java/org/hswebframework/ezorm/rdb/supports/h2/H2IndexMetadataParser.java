@@ -71,7 +71,7 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
     }
 
     protected List<RDBIndexMetadata> doSelect(SqlRequest sqlRequest) {
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.id)
+        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
                 .map(sqlExecutor -> sqlExecutor.select(sqlRequest, new H2IndexMetadataWrapper()))
                 .orElseGet(() -> {
                     log.warn("unsupported SyncSqlExecutor");

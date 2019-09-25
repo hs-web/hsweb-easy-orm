@@ -7,14 +7,13 @@ import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.*;
 
-import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.*;
+import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.*;
 
 @AllArgsConstructor(staticName = "of")
 public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<QueryOperatorParameter> implements QuerySqlFragmentBuilder {
@@ -29,12 +28,12 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
     @Override
     public String getId() {
-        return RDBFeatures.where;
+        return where;
     }
 
     @Override
     public String getName() {
-        return "条件";
+        return "查询条件";
     }
 
     protected SqlFragments createTermFragments(QueryOperatorParameter parameter, Term term) {
@@ -53,12 +52,12 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                                 .getTableOrView(join.getTarget())
                                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
                                 .flatMap(column -> column
-                                        .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
+                                        .findFeature(createFeatureId((term.getTermType())))
                                         .map(termFragment -> termFragment.createFragments(column.getFullName(join.getAlias()), column, term))))
                         .orElseGet(() -> {//外键关联查询
                             return metaData.getForeignKey(arr[0])
                                     .flatMap(key -> key.getSourceColumn()
-                                            .<ForeignKeyTermFragmentBuilder>getFeature(foreignKeyTerm.getId())
+                                            .getFeature(ForeignKeyTermFragmentBuilder.ID)
                                             .map(builder -> builder.createFragments(key.getName(), key, createForeignKeyTerm(key, term))))
                                     .orElse(EmptySqlFragments.INSTANCE);
                         });
@@ -68,7 +67,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
         return metaData
                 .getColumn(columnName)
                 .flatMap(column -> column
-                        .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
+                        .findFeature(createFeatureId(term.getTermType()))
                         .map(termFragment -> termFragment.createFragments(column.getFullName(parameter.getFromAlias()), column, term)))
                 .orElse(EmptySqlFragments.INSTANCE);
 

@@ -75,19 +75,19 @@ public class DefaultDatabaseOperator
 
     @Override
     public SyncSqlExecutor sync() {
-        return metadata.<SyncSqlExecutor>getFeature(SyncSqlExecutor.id)
+        return metadata.getFeature(SyncSqlExecutor.ID)
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
     }
 
     @Override
     public AsyncSqlExecutor async() {
-        return metadata.<AsyncSqlExecutor>getFeature(AsyncSqlExecutor.id)
+        return metadata.getFeature(AsyncSqlExecutor.ID)
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
     }
 
     @Override
     public ReactiveSqlExecutor reactive() {
-        return metadata.<ReactiveSqlExecutor>getFeature(ReactiveSqlExecutor.id)
+        return metadata.getFeature(ReactiveSqlExecutor.ID)
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
     }
 

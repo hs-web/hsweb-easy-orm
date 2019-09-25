@@ -39,8 +39,6 @@ public class DefaultForeignKeyTermFragmentBuilderTest {
                                 .targetColumn("id")
                                 .terms(Collections.singletonList(new Term().and("id", "1234").or("id", "12345")))
                                 .build()));
-
-
     }
 
     @Test
@@ -52,7 +50,7 @@ public class DefaultForeignKeyTermFragmentBuilderTest {
 
         SqlRequest request = fragments.toRequest();
         System.out.println(fragments.toRequest().getSql());
-        Assert.assertEquals(request.getSql(), "exists(column 1 from detail where detail.\"ID\" = test.\"ID\" and ( ( detail.\"ID\" = ? or detail.\"ID\" = ? ) and ( detail.\"COMMENT\" = ? ) ) )");
+        Assert.assertEquals(request.getSql(), "exists(select 1 from detail where detail.\"ID\" = test.\"ID\" and ( ( detail.\"ID\" = ? or detail.\"ID\" = ? ) and ( detail.\"COMMENT\" = ? ) ) )");
 
     }
 

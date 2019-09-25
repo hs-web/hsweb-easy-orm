@@ -7,10 +7,8 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperatorParameter;
@@ -20,8 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Optional.*;
-import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.foreignKeyTerm;
-import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.termType;
+import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.*;
 
 @AllArgsConstructor(staticName = "of")
 @SuppressWarnings("all")
@@ -57,7 +54,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                                     .addParameter(((NativeSql) column).getParameters());
                         }
                         sqlFragments.addFragments(ofNullable(column.getFunction())
-                                .flatMap(function -> columnMetadata.<FunctionFragmentBuilder>findFeature(RDBFeatureType.function.getFeatureId(function)))
+                                .flatMap(function -> columnMetadata.findFeature(createFeatureId(function)))
                                 .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, column.getOpts()))
                                 .orElseGet(() -> PrepareSqlFragments.of()
                                         .addSql("?")
@@ -106,7 +103,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
             } else {
                 return table.getForeignKey(arr[0])
                         .flatMap(key -> key.getSourceColumn()
-                                .<ForeignKeyTermFragmentBuilder>getFeature(foreignKeyTerm.getId())
+                                .getFeature(ForeignKeyTermFragmentBuilder.ID)
                                 .map(builder -> builder.createFragments(key.getName(), key, createForeignKeyTerm(key, term))))
                         .orElse(EmptySqlFragments.INSTANCE);
             }
@@ -115,7 +112,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
         return table
                 .getColumn(columnName)
                 .flatMap(column -> column
-                        .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
+                        .findFeature(TermFragmentBuilder.createFeatureId(term.getTermType()))
                         .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
                 .orElse(EmptySqlFragments.INSTANCE);
     }

@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.CastUtil;
+import org.hswebframework.ezorm.core.FeatureId;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,6 +105,10 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
     public void addFeature(Feature feature) {
         features.put(feature.getId(), feature);
+    }
+
+    public <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
+        return findFeature(id.getId());
     }
 
     public <T extends Feature> Optional<T> findFeature(String id) {

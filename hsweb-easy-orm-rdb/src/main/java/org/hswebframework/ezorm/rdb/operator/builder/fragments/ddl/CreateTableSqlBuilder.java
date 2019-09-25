@@ -1,15 +1,17 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.SqlBuilder;
 
 public interface CreateTableSqlBuilder extends SqlBuilder<RDBTableMetadata> {
 
-    String id = "createTableSqlBuilder";
+    String ID_VALUE = "createTableSqlBuilder";
+    FeatureId<CreateTableSqlBuilder> ID =FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

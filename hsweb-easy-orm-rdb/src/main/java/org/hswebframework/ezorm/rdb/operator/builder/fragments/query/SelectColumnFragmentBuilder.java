@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.*;
+
 @AllArgsConstructor(staticName = "of")
 public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
@@ -23,7 +25,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
     @Override
     public String getId() {
-        return RDBFeatures.select;
+        return selectColumns;
     }
 
     @Override
@@ -147,7 +149,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         String function = column.getFunction();
         if (function != null) {
             return metadata
-                    .<FunctionFragmentBuilder>findFeature(RDBFeatureType.function.getFeatureId(function))
+                    .findFeature(createFeatureId(function))
                     .map(fragment -> fragment.create(columnFullName, columnMetadata, column.getOpts()));
         } else {
             return Optional

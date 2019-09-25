@@ -12,7 +12,7 @@ public class ExecutableDeleteOperator extends BuildParameterDeleteOperator {
 
     @Override
     public SqlRequest getSql() {
-        return table.<DeleteSqlBuilder>findFeature(DeleteSqlBuilder.id)
+        return table.findFeature(DeleteSqlBuilder.ID)
                 .map(builder -> builder.build(getParameter()))
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported DeleteSqlBuilder"));
     }

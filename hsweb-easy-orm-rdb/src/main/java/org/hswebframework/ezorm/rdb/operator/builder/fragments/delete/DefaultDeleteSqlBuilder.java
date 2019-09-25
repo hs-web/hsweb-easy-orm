@@ -14,9 +14,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.foreignKeyTerm;
-import static org.hswebframework.ezorm.rdb.metadata.RDBFeatureType.termType;
-
 @SuppressWarnings("all")
 @AllArgsConstructor(staticName = "of")
 public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<DeleteOperatorParameter> implements DeleteSqlBuilder {
@@ -55,7 +52,7 @@ public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<Delete
             } else {
                 return table.getForeignKey(arr[0])
                         .flatMap(key -> key.getSourceColumn()
-                                .<ForeignKeyTermFragmentBuilder>getFeature(foreignKeyTerm.getId())
+                                .getFeature(ForeignKeyTermFragmentBuilder.ID)
                                 .map(builder -> builder.createFragments(key.getName(), key, createForeignKeyTerm(key, term))))
                         .orElse(EmptySqlFragments.INSTANCE);
             }
@@ -64,7 +61,7 @@ public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<Delete
         return table
                 .getColumn(columnName)
                 .flatMap(column -> column
-                        .<TermFragmentBuilder>findFeature(termType.getFeatureId(term.getTermType()))
+                        .findFeature(TermFragmentBuilder.createFeatureId(term.getTermType()))
                         .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
                 .orElse(EmptySqlFragments.INSTANCE);
     }

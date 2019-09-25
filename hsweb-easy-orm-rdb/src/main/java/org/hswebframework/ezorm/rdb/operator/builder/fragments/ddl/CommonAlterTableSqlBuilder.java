@@ -71,13 +71,13 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
     }
 
     protected void appendDropIndexSql(DefaultBatchSqlRequest batch, RDBTableMetadata table, RDBIndexMetadata index) {
-        table.<DropIndexSqlBuilder>findFeature(DropIndexSqlBuilder.id)
+        table.findFeature(DropIndexSqlBuilder.ID)
                 .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
                 .ifPresent(batch::addBatch);
     }
 
     protected void appendAddIndexSql(DefaultBatchSqlRequest batch, RDBTableMetadata table, RDBIndexMetadata index) {
-        table.<CreateIndexSqlBuilder>findFeature(CreateIndexSqlBuilder.id)
+        table.findFeature(CreateIndexSqlBuilder.ID)
                 .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
                 .ifPresent(batch::addBatch);
     }

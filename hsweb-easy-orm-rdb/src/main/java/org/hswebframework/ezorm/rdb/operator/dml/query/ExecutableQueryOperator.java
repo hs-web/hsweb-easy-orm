@@ -16,7 +16,7 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
     @Override
     public SqlRequest getSql() {
-        return metadata.<QuerySqlBuilder>findFeature(QuerySqlBuilder.id)
+        return metadata.findFeature(QuerySqlBuilder.ID)
                 .map(builder -> builder.build(this.getParameter()))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported query operator"));
     }

@@ -1,14 +1,17 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.rdb.operator.builder.SqlBuilder;
 
 public interface CreateIndexSqlBuilder extends SqlBuilder<CreateIndexParameter> {
 
-    String id = "createIndexSqlBuilder";
+    String ID_VALUE = "createIndexSqlBuilder";
+
+    FeatureId<CreateIndexSqlBuilder> ID =FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override
