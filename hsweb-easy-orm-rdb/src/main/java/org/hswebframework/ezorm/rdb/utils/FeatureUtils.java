@@ -8,6 +8,22 @@ import java.util.stream.Collectors;
 
 public class FeatureUtils {
 
+    private static boolean r2dbcIsAlive;
+
+    static {
+        try {
+            Class.forName("io.r2dbc.spi.Connection");
+            r2dbcIsAlive = true;
+        } catch (ClassNotFoundException e) {
+            r2dbcIsAlive = false;
+        }
+
+    }
+
+    public static boolean r2dbcIsAlive() {
+        return r2dbcIsAlive;
+    }
+
 
     public static String featureToString(List<Feature> features) {
         StringBuilder builder = new StringBuilder();

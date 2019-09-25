@@ -4,12 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
+import org.hswebframework.ezorm.rdb.mapping.annotation.JsonCodec;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.sql.JDBCType;
 import java.util.Date;
+import java.util.List;
 
-@Table(name = "entity_test_table",indexes = @Index(name = "test_index",columnList = "name,state desc"))
+@Table(name = "entity_test_table", indexes = @Index(name = "test_index", columnList = "name,state desc"))
 @Data
 @Builder
 @AllArgsConstructor
@@ -23,7 +27,7 @@ public class BasicTestEntity implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "create_time",updatable = false)
+    @Column(name = "create_time", updatable = false)
     private Date createTime;
 
     @Column(nullable = false)
@@ -35,5 +39,9 @@ public class BasicTestEntity implements Serializable {
     @Column(table = "entity_test_table_detail")
     private String detail;
 
+    @Column(name = "tags")
+    @ColumnType(jdbcType = JDBCType.CLOB)
+    @JsonCodec
+    private List<String> tags;
 
 }

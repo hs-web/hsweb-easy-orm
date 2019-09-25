@@ -105,6 +105,11 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         setType(JdbcDataType.of(jdbcType, javaType));
     }
 
+    public void setType(DataType dataType) {
+        this.javaType = dataType.getJavaType();
+        this.type = dataType;
+    }
+
     @Override
     public Class getJavaType() {
         if (javaType == null && type != null) {

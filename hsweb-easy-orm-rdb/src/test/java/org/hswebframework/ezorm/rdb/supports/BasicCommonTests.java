@@ -26,6 +26,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.JDBCType;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -96,6 +97,7 @@ public abstract class BasicCommonTests {
                         .balance(1000L)
                         .name("test:" + integer)
                         .createTime(new Date())
+                        .tags(Arrays.asList("a", "b", "c", "d"))
                         .state((byte) 1)
                         .build())
                 .collectList().block();
@@ -109,6 +111,7 @@ public abstract class BasicCommonTests {
                 .balance(1000L)
                 .name("test")
                 .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
                 .state((byte) 1)
                 .build();
 
@@ -119,7 +122,7 @@ public abstract class BasicCommonTests {
         List<BasicTestEntity> list = repository.createQuery()
                 .where(entity::getId)
                 .nest()
-                    .is(entity::getId).or().is(entity::getId)
+                .is(entity::getId).or().is(entity::getId)
                 .end()
                 .orderBy(SortOrder.desc("id"))
                 .paging(0, 10)
@@ -130,7 +133,7 @@ public abstract class BasicCommonTests {
         Assert.assertEquals(1, repository.createUpdate()
                 .set(entity::getState)
                 .nest()
-                    .is(entity::getId).or().is(entity::getId)
+                .is(entity::getId).or().is(entity::getId)
                 .end()
                 .where(entity::getId)
                 .execute());
@@ -138,7 +141,7 @@ public abstract class BasicCommonTests {
         Assert.assertEquals(1, repository.createDelete()
                 .where(entity::getId)
                 .nest()
-                 .is(entity::getId).or().is(entity::getId)
+                .is(entity::getId).or().is(entity::getId)
                 .end()
                 .execute());
 
@@ -210,7 +213,7 @@ public abstract class BasicCommonTests {
                     .value("id", "1234")
                     .value("name", "名称")
                     .value("state", 1)
-                    .value("create_time",new Date())
+                    .value("create_time", new Date())
                     .execute()
                     .sync();
 

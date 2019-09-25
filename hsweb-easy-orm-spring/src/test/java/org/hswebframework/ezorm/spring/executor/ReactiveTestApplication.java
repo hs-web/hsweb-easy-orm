@@ -9,9 +9,15 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.EntityManager;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
+import org.hswebframework.ezorm.rdb.mapping.parser.DataTypeResolver;
+import org.hswebframework.ezorm.rdb.mapping.parser.DefaultDataTypeResolver;
+import org.hswebframework.ezorm.rdb.mapping.parser.EntityTableMetadataParser;
+import org.hswebframework.ezorm.rdb.mapping.parser.ValueCodecResolver;
 import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
@@ -23,12 +29,13 @@ import org.hswebframework.ezorm.spring.mapping.JpaEntityTableMetadataResolver;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-@SpringBootApplication(exclude = TransactionAutoConfiguration.class,scanBasePackages ="org.hswebframework.ezorm.spring" )
+@SpringBootApplication(exclude = TransactionAutoConfiguration.class, scanBasePackages = "org.hswebframework.ezorm.spring")
 @EnableTransactionManagement
 @EnableEasyormRepository(value = "org.hswebframework.ezorm.spring.mapping", enableReactive = true)
 public class ReactiveTestApplication {
@@ -46,7 +53,7 @@ public class ReactiveTestApplication {
     }
 
     @Bean
-    public ReactiveSyncSqlExecutor syncSqlExecutor(ReactiveSqlExecutor sqlExecutor){
+    public ReactiveSyncSqlExecutor syncSqlExecutor(ReactiveSqlExecutor sqlExecutor) {
         return ReactiveSyncSqlExecutor.of(sqlExecutor);
     }
 
@@ -65,10 +72,23 @@ public class ReactiveTestApplication {
     }
 
     @Bean
-    public EntityTableMetadataResolver entityTableMappingResolver(DatabaseOperator databaseOperator) {
-        CompositeEntityTableMetadataResolver resolver = new CompositeEntityTableMetadataResolver();
-        resolver.addResolver(new JpaEntityTableMetadataResolver(databaseOperator));
+    public EntityTableMetadataParser jpaEntityTableMetadataParser(DatabaseOperator operator,
+                                                                  Optional<DataTypeResolver> resolver,
+                                                                  Optional<ValueCodecResolver> codecResolver
+                                                                  ) {
+        JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
+        parser.setDatabaseMetadata(operator.getMetadata());
 
+        resolver.ifPresent(parser::setDataTypeResolver);
+        codecResolver.ifPresent(parser::setValueCodecResolver);
+
+        return parser;
+    }
+
+    @Bean
+    public EntityTableMetadataResolver entityTableMappingResolver(List<EntityTableMetadataParser> parsers) {
+        CompositeEntityTableMetadataResolver resolver = new CompositeEntityTableMetadataResolver();
+        parsers.forEach(resolver::addParser);
         return resolver;
     }
 

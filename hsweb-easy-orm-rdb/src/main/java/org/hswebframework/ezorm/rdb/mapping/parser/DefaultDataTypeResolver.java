@@ -23,12 +23,14 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
 
         ColumnType type = AnnotationUtils.getAnnotation(entityType, descriptor, ColumnType.class);
         if (type != null) {
+            Class javaType = type.javaType() != Void.class ? descriptor.getPropertyType() : type.javaType();
+
             if (!type.typeId().isEmpty()) {
-                return CustomDataType.of(type.typeId(), type.typeId(), type.jdbcType(), descriptor.getPropertyType());
+                return CustomDataType.of(type.typeId(), type.typeId(), type.jdbcType(), javaType);
             } else if (type.type() != DataType.class) {
                 return getDataTypeInstance(type.type());
             } else {
-                return JdbcDataType.of(type.jdbcType(), descriptor.getPropertyType());
+                return JdbcDataType.of(type.jdbcType(), javaType);
             }
         }
 

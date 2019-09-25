@@ -39,8 +39,5 @@ public class TestEntity implements Serializable {
 //    @JoinColumn(table = "entity_detail", name = "id", referencedColumnName = "id")
     private String infoName;
 
-    @Column(name = "options")
-    @ColumnType(typeId = "jsonb")
-    private List<String> options;
 
 }

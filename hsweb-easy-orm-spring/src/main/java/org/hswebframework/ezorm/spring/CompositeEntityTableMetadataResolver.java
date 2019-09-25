@@ -1,22 +1,20 @@
 package org.hswebframework.ezorm.spring;
 
+import org.hswebframework.ezorm.rdb.mapping.parser.EntityTableMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CompositeEntityTableMetadataResolver implements EntityTableMetadataResolver {
 
-    private List<EntityTableMetadataResolver> resolvers = new ArrayList<>();
+    private List<EntityTableMetadataParser> resolvers = new ArrayList<>();
 
     private Map<Class, AtomicReference<RDBTableMetadata>> cache = new ConcurrentHashMap<>();
 
-    public void addResolver(EntityTableMetadataResolver resolver) {
+    public void addParser(EntityTableMetadataParser resolver) {
         resolvers.add(resolver);
     }
 
@@ -28,8 +26,9 @@ public class CompositeEntityTableMetadataResolver implements EntityTableMetadata
 
     private RDBTableMetadata doResolve(Class<?> entityClass) {
         return resolvers.stream()
-                .map(resolver -> resolver.resolve(entityClass))
-                .filter(Objects::nonNull)
+                .map(resolver -> resolver.parseTable(entityClass))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .reduce((t1, t2) -> {
                     for (RDBColumnMetadata column : t1.getColumns()) {
                         t2.addColumn(column.clone());

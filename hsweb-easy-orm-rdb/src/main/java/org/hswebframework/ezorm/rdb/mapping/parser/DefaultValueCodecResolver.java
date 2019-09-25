@@ -2,9 +2,11 @@ package org.hswebframework.ezorm.rdb.mapping.parser;
 
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.rdb.codec.JsonValueCodec;
 import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.annotation.Codec;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DateTimeCodec;
+import org.hswebframework.ezorm.rdb.mapping.annotation.JsonCodec;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 
 import java.beans.PropertyDescriptor;
@@ -35,10 +37,12 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
     static {
         COMMONS.register(DateTimeCodec.class,
                 (field, ann) -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec(ann.format(), field.getType()));
+
+        COMMONS.register(JsonCodec.class, (field, jsonCodec) -> JsonValueCodec.ofField(field));
+
         COMMONS.register(Date.class::isAssignableFrom, field -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec("yyyy-MM-dd HH", field.getType()));
 
-        COMMONS.register(Number.class::isAssignableFrom, field ->new NumberValueCodec(field.getType()));
-
+        COMMONS.register(Number.class::isAssignableFrom, field -> new NumberValueCodec(field.getType()));
 
     }
 

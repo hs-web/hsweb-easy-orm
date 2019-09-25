@@ -29,6 +29,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -153,6 +154,7 @@ public abstract class BasicReactiveTests {
                         .balance(1000L)
                         .name("test2:" + integer)
                         .createTime(new Date())
+                        .tags(Arrays.asList("a", "b", "c", "d"))
                         .state((byte) 1)
                         .build())))
                 .expectNext(10)
@@ -181,6 +183,7 @@ public abstract class BasicReactiveTests {
                 .id("test_id")
                 .balance(1000L)
                 .name("test")
+                .tags(Arrays.asList("a", "b", "c", "d"))
                 .createTime(new Date())
                 .state((byte) 1)
                 .build();
