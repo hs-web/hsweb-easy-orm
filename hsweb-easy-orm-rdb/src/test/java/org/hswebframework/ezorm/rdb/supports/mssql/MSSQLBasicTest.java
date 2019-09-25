@@ -16,15 +16,6 @@ public class MSSQLBasicTest extends BasicCommonTests {
     }
 
     @Override
-    protected RDBDatabaseMetadata getDatabase() {
-        RDBDatabaseMetadata database= super.getDatabase();
-
-        database.addFeature(new TestReactiveSqlExecutor("@arg",new MSSQLR2dbcConnectionProvider()));
-
-        return database;
-    }
-
-    @Override
     protected Dialect getDialect() {
         return Dialect.MSSQL;
     }

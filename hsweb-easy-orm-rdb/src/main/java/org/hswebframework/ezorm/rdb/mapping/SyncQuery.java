@@ -11,5 +11,4 @@ public interface SyncQuery<T> extends DSLQuery<SyncQuery<T>> {
 
     int count();
 
-
 }

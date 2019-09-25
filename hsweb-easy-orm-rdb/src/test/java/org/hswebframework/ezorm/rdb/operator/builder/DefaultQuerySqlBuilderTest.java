@@ -41,12 +41,12 @@ public class DefaultQuerySqlBuilderTest {
         {
             RDBColumnMetadata id = new RDBColumnMetadata();
             id.setName("id");
-            id.setJdbcType(JDBCType.VARCHAR);
+            id.setJdbcType(JDBCType.VARCHAR,String.class);
             id.setLength(32);
 
             RDBColumnMetadata name = new RDBColumnMetadata();
             name.setName("name");
-            name.setJdbcType(JDBCType.VARCHAR);
+            name.setJdbcType(JDBCType.VARCHAR,String.class);
             name.setLength(64);
 
             table.addColumn(id);
@@ -56,11 +56,11 @@ public class DefaultQuerySqlBuilderTest {
         {
             RDBColumnMetadata id = new RDBColumnMetadata();
             id.setName("id");
-            id.setJdbcType(JDBCType.VARCHAR);
+            id.setJdbcType(JDBCType.VARCHAR,String.class);
             id.setLength(32);
             RDBColumnMetadata detailInfo = new RDBColumnMetadata();
             detailInfo.setName("comment");
-            detailInfo.setJdbcType(JDBCType.VARCHAR);
+            detailInfo.setJdbcType(JDBCType.VARCHAR,String.class);
             detailInfo.setLength(64);
             detail.addColumn(id);
             detail.addColumn(detailInfo);

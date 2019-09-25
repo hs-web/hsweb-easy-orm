@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
@@ -26,6 +27,8 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
         addDataTypeMapper(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+
+        registerDataType("varchar2", JdbcDataType.of(JDBCType.VARCHAR,String.class));
 
         addJdbcTypeMapping("varchar2", JDBCType.VARCHAR);
         addJdbcTypeMapping("number", JDBCType.NUMERIC);

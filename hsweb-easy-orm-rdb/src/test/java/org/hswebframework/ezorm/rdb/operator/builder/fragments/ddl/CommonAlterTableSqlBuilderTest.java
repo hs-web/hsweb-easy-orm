@@ -54,7 +54,7 @@ public class CommonAlterTableSqlBuilderTest {
         {
             RDBColumnMetadata test = new RDBColumnMetadata();
             test.setName("test");
-            test.setType(JdbcDataType.of(JDBCType.VARCHAR));
+            test.setJdbcType(JDBCType.VARCHAR,String.class);
             test.setLength(32);
             test.setComment("test");
             copy.addColumn(test);

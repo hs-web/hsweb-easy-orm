@@ -7,7 +7,7 @@ import java.sql.JDBCType;
 
 @Getter
 @AllArgsConstructor(staticName = "of")
-public class UnknownDataType implements DataType {
+public class CustomDataType implements DataType {
 
     private String id;
 
@@ -15,4 +15,8 @@ public class UnknownDataType implements DataType {
 
     private JDBCType jdbcType;
 
+    @Override
+    public Class getJavaType() {
+        return Object.class;
+    }
 }

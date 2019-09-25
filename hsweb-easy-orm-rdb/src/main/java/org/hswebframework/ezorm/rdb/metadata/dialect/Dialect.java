@@ -31,7 +31,11 @@ public interface Dialect extends Feature {
         return RDBFeatureType.dialect;
     }
 
-    void addDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper);
+    default void addDataTypeMapper(JDBCType jdbcType, DataTypeBuilder mapper) {
+        addDataTypeMapper(jdbcType.getName().toLowerCase(), mapper);
+    }
+
+    void addDataTypeMapper(String typeId, DataTypeBuilder mapper);
 
     String createColumnDataType(RDBColumnMetadata columnMetaData);
 

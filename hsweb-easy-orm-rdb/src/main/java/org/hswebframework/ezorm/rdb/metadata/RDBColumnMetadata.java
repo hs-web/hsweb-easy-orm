@@ -71,7 +71,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     private boolean updatable = true;
 
     /**
-     * Type
+     * DataType
+     *
+     * @since 4.0
      */
     private DataType type;
 
@@ -98,8 +100,17 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return getDialect().quote(getName());
     }
 
-    public void setJdbcType(JDBCType jdbcType) {
-        setType(JdbcDataType.of(jdbcType));
+    public void setJdbcType(JDBCType jdbcType, Class javaType) {
+        this.javaType = javaType;
+        setType(JdbcDataType.of(jdbcType, javaType));
+    }
+
+    @Override
+    public Class getJavaType() {
+        if (javaType == null && type != null) {
+            return javaType = type.getJavaType();
+        }
+        return super.getJavaType();
     }
 
     public String getDataType() {
@@ -154,7 +165,6 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return builder.toString();
     }
 
-
     @Override
     public ObjectType getObjectType() {
         return RDBObjectType.column;
@@ -174,7 +184,6 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return Stream.concat(owner.findFeatures().stream(), getFeatureList().stream())
                 .filter(predicate)
                 .collect(Collectors.toList());
-
     }
 
     public String getFullName(String ownerName) {

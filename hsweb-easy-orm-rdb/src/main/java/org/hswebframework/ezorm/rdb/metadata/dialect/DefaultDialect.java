@@ -1,37 +1,60 @@
 package org.hswebframework.ezorm.rdb.metadata.dialect;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.core.CastUtil;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.UnknownDataType;
+import org.hswebframework.ezorm.rdb.metadata.CustomDataType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Slf4j
 public abstract class DefaultDialect implements Dialect {
-    protected Map<String, DataTypeMapper> dataTypeMappers = new HashMap<>();
+    protected Map<String, DataTypeBuilder> dataTypeMappers = new HashMap<>();
 
-    protected DataTypeMapper defaultDataTypeMapper;
+    protected DataTypeBuilder defaultDataTypeBuilder;
 
     protected Map<String, JDBCType> jdbcTypeMap = new HashMap<>();
 
+    protected Map<String, DataType> dataTypeMapping = new HashMap<>();
+
     protected Map<Class, JDBCType> classJDBCTypeMapping = new HashMap<>();
 
+    protected void registerDataType(String symbol, DataType dataType) {
+        dataTypeMapping.put(symbol, dataType);
+    }
+
     public DefaultDialect() {
-        defaultDataTypeMapper = (meta) -> meta.getType().getName().toLowerCase();
+        defaultDataTypeBuilder = (meta) -> meta.getType().getName().toLowerCase();
+
+        registerDataType("varchar", JdbcDataType.of(JDBCType.VARCHAR, String.class));
+        registerDataType("bigint", JdbcDataType.of(JDBCType.BIGINT, Long.class));
+        registerDataType("tinyint", JdbcDataType.of(JDBCType.TINYINT, Byte.class));
+        registerDataType("timestamp", JdbcDataType.of(JDBCType.TIMESTAMP, Timestamp.class));
+        registerDataType("date", JdbcDataType.of(JDBCType.DATE, LocalDate.class));
+        registerDataType("time", JdbcDataType.of(JDBCType.TIME, LocalTime.class));
+        registerDataType("clob", JdbcDataType.of(JDBCType.CLOB, String.class));
+        registerDataType("blob", JdbcDataType.of(JDBCType.BLOB, byte[].class));
+        registerDataType("numeric", JdbcDataType.of(JDBCType.NUMERIC, BigDecimal.class));
+        registerDataType("number", JdbcDataType.of(JDBCType.NUMERIC, BigDecimal.class));
+        registerDataType("long", JdbcDataType.of(JDBCType.BIGINT, Long.class));
+        registerDataType("double", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
+        registerDataType("decimal", JdbcDataType.of(JDBCType.DECIMAL, BigDecimal.class));
 
         classJDBCTypeMapping.put(String.class, JDBCType.VARCHAR);
 
         classJDBCTypeMapping.put(Byte.class, JDBCType.TINYINT);
         classJDBCTypeMapping.put(byte.class, JDBCType.TINYINT);
 
-        classJDBCTypeMapping.put(Short.class, JDBCType.INTEGER);
-        classJDBCTypeMapping.put(short.class, JDBCType.INTEGER);
+        classJDBCTypeMapping.put(Short.class, JDBCType.SMALLINT);
+        classJDBCTypeMapping.put(short.class, JDBCType.SMALLINT);
 
         classJDBCTypeMapping.put(Integer.class, JDBCType.INTEGER);
         classJDBCTypeMapping.put(int.class, JDBCType.INTEGER);
@@ -42,14 +65,14 @@ public abstract class DefaultDialect implements Dialect {
         classJDBCTypeMapping.put(Long.class, JDBCType.BIGINT);
         classJDBCTypeMapping.put(long.class, JDBCType.BIGINT);
 
-        classJDBCTypeMapping.put(Double.class, JDBCType.DECIMAL);
-        classJDBCTypeMapping.put(double.class, JDBCType.DECIMAL);
+        classJDBCTypeMapping.put(Double.class, JDBCType.DOUBLE);
+        classJDBCTypeMapping.put(double.class, JDBCType.DOUBLE);
 
-        classJDBCTypeMapping.put(Float.class, JDBCType.DECIMAL);
-        classJDBCTypeMapping.put(float.class, JDBCType.DECIMAL);
+        classJDBCTypeMapping.put(Float.class, JDBCType.FLOAT);
+        classJDBCTypeMapping.put(float.class, JDBCType.FLOAT);
 
-        classJDBCTypeMapping.put(Boolean.class, JDBCType.BIT);
-        classJDBCTypeMapping.put(boolean.class, JDBCType.BIT);
+        classJDBCTypeMapping.put(Boolean.class, JDBCType.BOOLEAN);
+        classJDBCTypeMapping.put(boolean.class, JDBCType.BOOLEAN);
 
         classJDBCTypeMapping.put(byte[].class, JDBCType.BLOB);
 
@@ -59,19 +82,24 @@ public abstract class DefaultDialect implements Dialect {
         classJDBCTypeMapping.put(Date.class, JDBCType.TIMESTAMP);
         classJDBCTypeMapping.put(java.sql.Date.class, JDBCType.TIMESTAMP);
         classJDBCTypeMapping.put(java.sql.Timestamp.class, JDBCType.TIMESTAMP);
+        classJDBCTypeMapping.put(LocalTime.class, JDBCType.TIME);
+        classJDBCTypeMapping.put(LocalDateTime.class, JDBCType.TIMESTAMP);
+        classJDBCTypeMapping.put(LocalDate.class, JDBCType.DATE);
 
-        classJDBCTypeMapping.put(Object.class, JDBCType.VARCHAR);
+        classJDBCTypeMapping.put(Object.class, JDBCType.OTHER);
 
     }
 
     @Override
-    public void addDataTypeMapper(JDBCType jdbcType, DataTypeMapper mapper) {
-        dataTypeMappers.put(jdbcType.getName().toLowerCase(), mapper);
+    public void addDataTypeMapper(String typeId, DataTypeBuilder mapper) {
+        dataTypeMappers.put(typeId, mapper);
     }
 
     @Override
     public Optional<JDBCType> convertJdbcType(Class<?> type) {
-        return Optional.ofNullable(classJDBCTypeMapping.get(type));
+        return Optional
+                .ofNullable(classJDBCTypeMapping.get(type))
+                .map(JDBCType.class::cast);
     }
 
     public void addJdbcTypeMapping(String dataType, JDBCType jdbcType) {
@@ -83,9 +111,13 @@ public abstract class DefaultDialect implements Dialect {
         if (columnMetaData.getType() == null) {
             return null;
         }
-        DataTypeMapper mapper = dataTypeMappers.get(columnMetaData.getType().getId());
+        DataType dataType = columnMetaData.getType();
+        if (dataType instanceof DataTypeBuilder) {
+            return ((DataTypeBuilder) dataType).createColumnDataType(columnMetaData);
+        }
+        DataTypeBuilder mapper = dataTypeMappers.get(columnMetaData.getType().getId());
         if (null == mapper) {
-            mapper = defaultDataTypeMapper;
+            mapper = defaultDataTypeBuilder;
         }
         return mapper.createColumnDataType(columnMetaData);
     }
@@ -93,14 +125,11 @@ public abstract class DefaultDialect implements Dialect {
     @Override
     public DataType convertDataType(String dataType) {
 
-        return convertJdbcType(dataType)
-                .map(JdbcDataType::of)
-                .map(CastUtil::<DataType>cast)
-                .orElseGet(() -> convertUnknownDataType(dataType));
+        return dataTypeMapping.getOrDefault(dataType, convertUnknownDataType(dataType));
     }
 
     protected DataType convertUnknownDataType(String dataType) {
-        return UnknownDataType.of(dataType, dataType, JDBCType.OTHER);
+        return CustomDataType.of(dataType, dataType, JDBCType.OTHER);
     }
 
     @Override
@@ -109,14 +138,14 @@ public abstract class DefaultDialect implements Dialect {
         try {
             jdbcType = JDBCType.valueOf(dataType.toUpperCase());
         } catch (Exception e) {
-            if (dataType.contains("("))
+            if (dataType.contains("(")) {
                 dataType = dataType.substring(0, dataType.indexOf("("));
+            }
             jdbcType = jdbcTypeMap.get(dataType.toLowerCase());
             if (jdbcType == null) {
                 //出现此警告可以通过 setJdbcTypeMapping注册一些奇怪的类型
                 log.warn("can not parse jdbcType:{}", dataType);
                 return Optional.empty();
-//                jdbcType = JDBCType.OTHER;
             }
         }
         return Optional.of(jdbcType);

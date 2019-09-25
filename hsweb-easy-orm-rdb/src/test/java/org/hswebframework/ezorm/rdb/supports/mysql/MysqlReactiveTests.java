@@ -26,7 +26,6 @@ import java.util.Date;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
-@Ignore
 public class MysqlReactiveTests extends BasicReactiveTests {
     @Override
     protected RDBSchemaMetadata getSchema() {

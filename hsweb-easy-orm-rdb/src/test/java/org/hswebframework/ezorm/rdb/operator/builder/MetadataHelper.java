@@ -27,12 +27,12 @@ public class MetadataHelper {
         {
             RDBColumnMetadata id = new RDBColumnMetadata();
             id.setName("id");
-            id.setType(JdbcDataType.of(JDBCType.VARCHAR));
+            id.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
             id.setLength(32);
 
             RDBColumnMetadata name = new RDBColumnMetadata();
             name.setName("name");
-            name.setType(JdbcDataType.of(JDBCType.VARCHAR));
+            name.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
             name.setLength(64);
 
             table.addColumn(id);
@@ -44,7 +44,7 @@ public class MetadataHelper {
 
             RDBColumnMetadata comment = new RDBColumnMetadata();
             comment.setName("comment");
-            comment.setType(JdbcDataType.of(JDBCType.VARCHAR));
+            comment.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
             comment.setLength(64);
 
             detail.addColumn(comment);

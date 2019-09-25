@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
@@ -26,6 +27,12 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
         addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+
+        registerDataType("int", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
+        registerDataType("text", JdbcDataType.of(JDBCType.CLOB,String.class));
+        registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR,String.class));
+
+        addDataTypeMapper("int", (meta) -> "int");
 
         dataTypeMappers.put("json",meta->"json");
 

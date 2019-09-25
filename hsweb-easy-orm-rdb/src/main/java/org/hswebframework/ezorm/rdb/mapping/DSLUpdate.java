@@ -4,6 +4,9 @@ import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 
+import java.util.Arrays;
+
+@SuppressWarnings("all")
 public interface DSLUpdate<E, ME extends DSLUpdate> extends Conditional<ME> {
 
     ME includes(String... properties);
@@ -15,6 +18,34 @@ public interface DSLUpdate<E, ME extends DSLUpdate> extends Conditional<ME> {
     ME set(String column, Object value);
 
     ME setNull(String column);
+
+    default ME includes(StaticMethodReferenceColumn<E>... columns) {
+        return includes(Arrays
+                .stream(columns)
+                .map(StaticMethodReferenceColumn::getColumn)
+                .toArray(String[]::new));
+    }
+
+    default ME excludes(StaticMethodReferenceColumn<E>... columns) {
+        return excludes(Arrays
+                .stream(columns)
+                .map(StaticMethodReferenceColumn::getColumn)
+                .toArray(String[]::new));
+    }
+
+    default ME includes(MethodReferenceColumn<E>... columns) {
+        return includes(Arrays
+                .stream(columns)
+                .map(MethodReferenceColumn::getColumn
+                ).toArray(String[]::new));
+    }
+
+    default ME excludes(MethodReferenceColumn<E>... columns) {
+        return excludes(Arrays
+                .stream(columns)
+                .map(MethodReferenceColumn::getColumn)
+                .toArray(String[]::new));
+    }
 
     default <R> ME set(MethodReferenceColumn<R> columnAndValue) {
         return set(columnAndValue.getColumn(), columnAndValue.get());

@@ -1,8 +1,10 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
+import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
+import java.sql.Date;
 import java.sql.JDBCType;
 
 /**
@@ -33,12 +35,21 @@ public class SqlServerDialect extends DefaultDialect {
         addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
         addDataTypeMapper(JDBCType.REAL, (meta) -> "real");
 
+        addDataTypeMapper("datetime2", (meta) -> "datetime2");
+        addDataTypeMapper("datetime", (meta) -> "datetime");
+
+        registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
+
+        registerDataType("datetime2", JdbcDataType.of(JDBCType.TIMESTAMP, java.util.Date.class));
+        registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, java.util.Date.class));
+        registerDataType("nvarchar", JdbcDataType.of(JDBCType.NVARCHAR, String.class));
 
         addJdbcTypeMapping("bigint", JDBCType.BIGINT);
         addJdbcTypeMapping("binary", JDBCType.BINARY);
         addJdbcTypeMapping("bit", JDBCType.BIT);
         addJdbcTypeMapping("char", JDBCType.CHAR);
         addJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
+        addJdbcTypeMapping("datetime2", JDBCType.TIMESTAMP);
         addJdbcTypeMapping("decimal", JDBCType.DECIMAL);
         addJdbcTypeMapping("float", JDBCType.FLOAT);
         addJdbcTypeMapping("image", JDBCType.LONGVARBINARY);
@@ -60,6 +71,7 @@ public class SqlServerDialect extends DefaultDialect {
         addJdbcTypeMapping("uniqueidentifier", JDBCType.CHAR);
         addJdbcTypeMapping("varbinary", JDBCType.VARBINARY);
         addJdbcTypeMapping("varchar", JDBCType.VARCHAR);
+        addJdbcTypeMapping("nvarchar", JDBCType.NVARCHAR);
 
     }
 

@@ -79,6 +79,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     public List<RDBColumnMetadata> getColumns() {
         return new ArrayList<>(allColumns.values()
                 .stream()
+                .sorted()
                 .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1))
                 .values());
     }
@@ -93,6 +94,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                         .map(ForeignKeyMetadata::getTarget)
                         .map(TableOrViewMetadata::getColumns)
                         .flatMap(Collection::stream))
+                .sorted()
                 .collect(Collectors.toList());
     }
 

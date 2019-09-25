@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.Date;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 
@@ -34,7 +35,8 @@ public class MSSQLTableMetaParserTest {
         executor.execute(SqlRequests.of("CREATE TABLE dbo.test_table(" +
                 "id varchar(32) primary key," +
                 "name varchar(128) not null," +
-                "age int" +
+                "age int," +
+                "create_time datetime2" +
                 ")"));
         try {
             RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
@@ -76,6 +78,16 @@ public class MSSQLTableMetaParserTest {
                 Assert.assertEquals(column.getDataType(), "int");
                 Assert.assertEquals(column.getJdbcType(), JDBCType.INTEGER);
                 Assert.assertEquals(column.getJavaType(), Integer.class);
+            }
+
+            //create_time
+            {
+                RDBColumnMetadata column = metaData.getColumn("create_time").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "datetime2");
+                Assert.assertEquals(column.getJdbcType(), JDBCType.TIMESTAMP);
+                Assert.assertEquals(column.getJavaType(), Date.class);
             }
         } finally {
             executor.execute(prepare("drop table test_table;"));

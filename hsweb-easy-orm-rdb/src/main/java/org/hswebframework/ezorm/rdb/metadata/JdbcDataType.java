@@ -11,6 +11,9 @@ public class JdbcDataType implements DataType {
     @Getter
     private JDBCType jdbcType;
 
+    @Getter
+    private Class javaType;
+
     @Override
     public String getName() {
         return jdbcType.name().toLowerCase();
@@ -20,4 +23,6 @@ public class JdbcDataType implements DataType {
     public String getId() {
         return jdbcType.name().toLowerCase();
     }
+
+
 }

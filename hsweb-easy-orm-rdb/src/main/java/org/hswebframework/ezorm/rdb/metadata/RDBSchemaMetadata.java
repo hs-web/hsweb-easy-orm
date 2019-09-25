@@ -71,7 +71,6 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         this.setName(name);
     }
 
-
     @Override
     @SuppressWarnings("all")
     public RDBDatabaseMetadata getDatabase() {
@@ -155,6 +154,12 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
                         .stream()
                         .findFirst()
                         .orElse(null));
+    }
+
+    public Optional<TableOrViewMetadata> removeTableOrView(String name) {
+        return this.<TableOrViewMetadata>removeObject(RDBObjectType.table, name)
+                .map(Optional::of)
+                .orElseGet(() -> removeObject(RDBObjectType.view, name));
     }
 
     @Override

@@ -13,6 +13,6 @@ public class NullValue {
 
     @Override
     public String toString() {
-        return "null" + (type != null ? "(" + dataType.getId() + ")" : "");
+        return "null" + (dataType==null?"": (type != null ? "(" + dataType.getId() + ")" : ""));
     }
 }

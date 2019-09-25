@@ -20,31 +20,9 @@ import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
 public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
-    private static final Map<JDBCType, Class> defaultJavaTypeMap = new HashMap<>();
-
-    static {
-        defaultJavaTypeMap.put(JDBCType.VARCHAR, String.class);
-        defaultJavaTypeMap.put(JDBCType.CLOB, String.class);
-        defaultJavaTypeMap.put(JDBCType.BLOB, byte[].class);
-        defaultJavaTypeMap.put(JDBCType.DATE, Date.class);
-        defaultJavaTypeMap.put(JDBCType.TIME, Date.class);
-        defaultJavaTypeMap.put(JDBCType.TIMESTAMP, Date.class);
-        defaultJavaTypeMap.put(JDBCType.BIT, Byte.class);
-        defaultJavaTypeMap.put(JDBCType.BIGINT, Long.class);
-        defaultJavaTypeMap.put(JDBCType.INTEGER, Integer.class);
-        defaultJavaTypeMap.put(JDBCType.DOUBLE, Double.class);
-        defaultJavaTypeMap.put(JDBCType.FLOAT, Float.class);
-        defaultJavaTypeMap.put(JDBCType.CHAR, String.class);
-        defaultJavaTypeMap.put(JDBCType.TINYINT, Byte.class);
-        defaultJavaTypeMap.put(JDBCType.NUMERIC, BigDecimal.class);
-        defaultJavaTypeMap.put(JDBCType.DECIMAL, BigDecimal.class);
-    }
-
     protected RDBSchemaMetadata schema;
 
     protected SyncSqlExecutor sqlExecutor;
-
-    protected Map<JDBCType, Class> javaTypeMap = new HashMap<>();
 
     protected Dialect getDialect() {
         return schema.getDialect();
@@ -172,11 +150,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
             DataType dataType = getDialect().convertDataType(data_type);
 
-            Class javaType = Optional.ofNullable(javaTypeMap.get(dataType.getJdbcType()))
-                    .orElseGet(() -> defaultJavaTypeMap.getOrDefault(dataType.getJdbcType(), String.class));
-
             instance.setType(dataType);
-            instance.setJavaType(javaType);
             instance.setDataType(getDialect().createColumnDataType(instance));
             return true;
         }

@@ -1,13 +1,13 @@
 package org.hswebframework.ezorm.rdb.mapping.jpa;
 
+import lombok.SneakyThrows;
 import org.apache.commons.beanutils.BeanUtilsBean;
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.codec.DateTimeCodec;
 import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
-import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.mapping.annotation.Type;
+import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.utils.ClassUtils;
 
 import javax.persistence.*;
@@ -15,6 +15,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.sql.JDBCType;
 import java.util.Date;
 import java.util.Optional;
 
@@ -90,6 +91,12 @@ public class JpaEntityTableMetadataParserProcessor {
 
     }
 
+    @SneakyThrows
+    public <T> T resolveType(Class<T> type) {
+        // TODO: 2019-09-25
+        return type.newInstance();
+    }
+
     private void handleColumnAnnotation(PropertyDescriptor descriptor, Column column) {
         //另外一个表
         if (!column.table().isEmpty() && !column.table().equals(tableMetadata.getName())) {
@@ -116,11 +123,25 @@ public class JpaEntityTableMetadataParserProcessor {
         if (!column.columnDefinition().isEmpty()) {
             metadata.setColumnDefinition(column.columnDefinition());
         }
-        tableMetadata.getDialect()
-                .convertJdbcType(metadata.getJavaType())
-                .map(JdbcDataType::of)
-                .ifPresent(metadata::setType);
 
+        Type type = getAnnotation(entityType, descriptor, Type.class);
+        if (type != null) {
+            if (type.codec() != ValueCodec.class) {
+                metadata.setValueCodec(resolveType(type.codec()));
+            }
+            if (type.type() != DataType.class) {
+                metadata.setType(resolveType(type.type()));
+            } else if (!type.typeId().isEmpty()) {
+                metadata.setType(CustomDataType.of(type.typeId(), type.typeId(), type.jdbcType()));
+            } else {
+                metadata.setType(JdbcDataType.of(type.jdbcType(), metadata.getJavaType()));
+            }
+        }
+        if (metadata.getType() == null) {
+            tableMetadata.getDialect()
+                    .convertJdbcType(metadata.getJavaType())
+                    .ifPresent(jdbcType -> metadata.setJdbcType(jdbcType, metadata.getJavaType()));
+        }
         metadata.setDataType(tableMetadata.getDialect().createColumnDataType(metadata));
 
         Optional.ofNullable(getAnnotation(entityType, descriptor, Id.class))
@@ -136,6 +157,15 @@ public class JpaEntityTableMetadataParserProcessor {
 
     private static <T extends Annotation> T getAnnotation(Class entityClass, PropertyDescriptor descriptor, Class<T> type) {
         T ann = null;
+
+        Method read = descriptor.getReadMethod(),
+                write = descriptor.getWriteMethod();
+        if (read != null) {
+            ann = getAnnotation(read, type);
+        }
+        if (null == ann && write != null) {
+            ann = getAnnotation(write, type);
+        }
         try {
             Field field = entityClass.getDeclaredField(descriptor.getName());
             ann = field.getAnnotation(type);
@@ -143,14 +173,6 @@ public class JpaEntityTableMetadataParserProcessor {
             if (entityClass.getSuperclass() != Object.class) {
                 return getAnnotation(entityClass.getSuperclass(), descriptor, type);
             }
-        }
-        Method read = descriptor.getReadMethod(),
-                write = descriptor.getWriteMethod();
-        if (null == ann && read != null) {
-            ann = getAnnotation(read, type);
-        }
-        if (null == ann && write != null) {
-            ann = getAnnotation(write, type);
         }
         return ann;
     }

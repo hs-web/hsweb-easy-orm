@@ -18,7 +18,14 @@
             <artifactId>hsweb-easy-orm-core</artifactId>
         </dependency>
 
-<!--        <dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
+
+
+        <!--        <dependency>-->
 <!--            <groupId>org.hswebframework</groupId>-->
 <!--            <artifactId>hsweb-expands-script</artifactId>-->
 <!--        </dependency>-->

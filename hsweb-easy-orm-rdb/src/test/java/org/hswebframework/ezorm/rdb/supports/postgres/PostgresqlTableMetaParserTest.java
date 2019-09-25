@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.supports.posgres.JsonbType;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlTableMetadataParser;
 import org.junit.Assert;
@@ -34,7 +35,9 @@ public class PostgresqlTableMetaParserTest {
         executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table(" +
                 "id varchar(32) primary key," +
                 "name varchar(128) not null," +
-                "age int" +
+                "age integer," +
+                "json1 json," +
+                "json2 jsonb" +
                 ")"));
         try {
             RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
@@ -76,6 +79,25 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertEquals(column.getDataType(), "integer");
                 Assert.assertEquals(column.getJdbcType(), JDBCType.INTEGER);
                 Assert.assertEquals(column.getJavaType(), Integer.class);
+            }
+            //json
+            {
+                RDBColumnMetadata column = metaData.getColumn("json1").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "json");
+                Assert.assertEquals(column.getJdbcType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getJavaType(), String.class);
+            }
+            //jsonb
+            {
+                RDBColumnMetadata column = metaData.getColumn("json2").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "jsonb");
+                Assert.assertEquals(column.getType(), JsonbType.INSTANCE);
+                Assert.assertEquals(column.getJdbcType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getJavaType(), String.class);
             }
         } finally {
             executor.execute(prepare("drop table test_table"));

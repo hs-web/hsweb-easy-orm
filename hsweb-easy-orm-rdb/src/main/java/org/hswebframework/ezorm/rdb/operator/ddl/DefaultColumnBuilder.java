@@ -51,7 +51,8 @@ public class DefaultColumnBuilder implements ColumnBuilder {
 
     @Override
     public ColumnBuilder jdbcType(JDBCType jdbcType) {
-        columnMetaData.setType(JdbcDataType.of(jdbcType));
+        // TODO: 2019-09-25
+        columnMetaData.setJdbcType(jdbcType,null);
         return this;
     }
 
