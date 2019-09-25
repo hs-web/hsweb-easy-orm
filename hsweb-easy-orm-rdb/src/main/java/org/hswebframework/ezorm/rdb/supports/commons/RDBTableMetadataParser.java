@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.commons;
 
+import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -10,8 +11,6 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
 
-import java.math.BigDecimal;
-import java.sql.JDBCType;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,7 +62,8 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         param.put("schema", schema.getName());
 
         //列
-        List<RDBColumnMetadata> metaDataList = getSqlExecutor().select(template(getTableMetaSql(name), param), list(columnMetaDataWrapper));
+        List<RDBColumnMetadata> metaDataList = getSqlExecutor().select(template(getTableMetaSql(name), param),
+                list(new RDBColumnMetaDataWrapper(metaData)));
         metaDataList.forEach(metaData::addColumn);
         //说明
         Map<String, Object> comment = getSqlExecutor().select(template(getTableCommentSql(name), param), singleMap());
@@ -119,10 +119,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 .collect(Collectors.toList());
     }
 
-    protected RDBColumnMetaDataWrapper columnMetaDataWrapper = new RDBColumnMetaDataWrapper();
-
     @SuppressWarnings("all")
+    @AllArgsConstructor
     class RDBColumnMetaDataWrapper implements ResultWrapper<RDBColumnMetadata, RDBColumnMetadata> {
+        private RDBTableMetadata tableMetadata;
 
         public Class<RDBColumnMetadata> getType() {
             return RDBColumnMetadata.class;
@@ -130,7 +130,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
         @Override
         public RDBColumnMetadata newRowInstance() {
-            return new RDBColumnMetadata();
+            return tableMetadata.newColumn();
         }
 
         @Override
