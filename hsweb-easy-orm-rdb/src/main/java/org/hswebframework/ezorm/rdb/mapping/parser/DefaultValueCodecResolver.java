@@ -24,8 +24,7 @@ import java.util.stream.Collectors;
 
 public class DefaultValueCodecResolver implements ValueCodecResolver {
 
-    private Map<Class<? extends Annotation>, BiFunction<Field, Annotation, ValueCodec>>
-            annotationStrategies = new ConcurrentHashMap<>();
+    private Map<Class<? extends Annotation>, BiFunction<Field, Annotation, ValueCodec>> annotationStrategies = new ConcurrentHashMap<>();
 
     private Map<Class, Function<Field, ValueCodec>> typeStrategies = new ConcurrentHashMap<>();
 
@@ -35,8 +34,7 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
     public static final DefaultValueCodecResolver COMMONS = new DefaultValueCodecResolver();
 
     static {
-        COMMONS.register(DateTimeCodec.class,
-                (field, ann) -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec(ann.format(), field.getType()));
+        COMMONS.register(DateTimeCodec.class, (field, ann) -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec(ann.format(), field.getType()));
 
         COMMONS.register(JsonCodec.class, (field, jsonCodec) -> JsonValueCodec.ofField(field));
 
@@ -52,11 +50,11 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
     }
 
     public void register(Class ann, Function<Field, ValueCodec> codecFunction) {
-        typeStrategies.put(ann, (Function) codecFunction);
+        typeStrategies.put(ann, codecFunction);
     }
 
     public void register(Predicate<Class> ann, Function<Field, ValueCodec> codecFunction) {
-        predicateStrategies.put(ann, (Function) codecFunction);
+        predicateStrategies.put(ann, codecFunction);
     }
 
 

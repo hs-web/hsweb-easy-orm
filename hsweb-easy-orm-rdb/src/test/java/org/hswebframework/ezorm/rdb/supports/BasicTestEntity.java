@@ -39,7 +39,7 @@ public class BasicTestEntity implements Serializable {
     @Column(table = "entity_test_table_detail")
     private String detail;
 
-    @Column(name = "tags")
+    @Column
     @ColumnType(jdbcType = JDBCType.CLOB)
     @JsonCodec
     private List<String> tags;

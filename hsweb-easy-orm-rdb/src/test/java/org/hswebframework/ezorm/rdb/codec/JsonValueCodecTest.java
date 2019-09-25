@@ -1,11 +1,18 @@
 package org.hswebframework.ezorm.rdb.codec;
 
+import io.r2dbc.spi.Blob;
+import io.r2dbc.spi.Clob;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialClob;
+import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +98,6 @@ public class JsonValueCodecTest {
     public void testField2() {
         JsonValueCodec codec = JsonValueCodec.ofField(JsonCodecEntity.class.getDeclaredField("nest2"));
 
-
         Object val = codec.decode("[{\"name\":\"test\"}]");
 
         Assert.assertTrue(val instanceof List);
@@ -99,6 +105,96 @@ public class JsonValueCodecTest {
         JsonCodecEntity entity = (JsonCodecEntity)((List) val).get(0);
 
         Assert.assertEquals(entity.name, "test");
+    }
+
+    @Test
+    @SneakyThrows
+    public void testMono() {
+        JsonValueCodec codec = JsonValueCodec.ofField(JsonCodecEntity.class.getDeclaredField("mono"));
+
+        {
+            Object val = codec.decode("{\"name\":\"test\"}");
+
+            Assert.assertTrue(val instanceof Mono);
+
+            JsonCodecEntity entity = ((Mono<JsonCodecEntity>)val).block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+        {
+            Object val = codec.decode(Clob.from(Flux.just("{\"name\"",":\"test\"}")));
+
+            Assert.assertTrue(val instanceof Mono);
+
+            JsonCodecEntity entity = ((Mono<JsonCodecEntity>)val).block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+
+        {
+            Object val = codec.decode(Blob.from(Mono.just(ByteBuffer.wrap("{\"name\":\"test\"}".getBytes()))));
+
+            Assert.assertTrue(val instanceof Mono);
+
+            JsonCodecEntity entity = ((Mono<JsonCodecEntity>)val).block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+    }
+
+
+    @Test
+    @SneakyThrows
+    public void testFlux() {
+        JsonValueCodec codec = JsonValueCodec.ofField(JsonCodecEntity.class.getDeclaredField("flux"));
+        {
+            Object val = codec.decode("{\"name\":\"test\"}");
+
+            Assert.assertTrue(val instanceof Flux);
+
+            JsonCodecEntity entity = ((Flux<JsonCodecEntity>) val).last().block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+
+        {
+            Object val = codec.decode(new SerialClob("{\"name\":\"test\"}".toCharArray()));
+
+            Assert.assertTrue(val instanceof Flux);
+
+            JsonCodecEntity entity = ((Flux<JsonCodecEntity>) val).last().block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+
+        {
+            Object val = codec.decode(new SerialBlob("{\"name\":\"test\"}".getBytes()));
+
+            Assert.assertTrue(val instanceof Flux);
+
+            JsonCodecEntity entity = ((Flux<JsonCodecEntity>) val).last().block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+        {
+            Object val = codec.decode(Clob.from(Mono.just("{\"name\":\"test\"}")));
+
+            Assert.assertTrue(val instanceof Flux);
+
+            JsonCodecEntity entity = ((Flux<JsonCodecEntity>) val).last().block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
+
+        {
+            Object val = codec.decode(Blob.from(Mono.just(ByteBuffer.wrap("{\"name\":\"test\"}".getBytes()))));
+
+            Assert.assertTrue(val instanceof Flux);
+
+            JsonCodecEntity entity = ((Flux<JsonCodecEntity>) val).last().block();
+
+            Assert.assertEquals(entity.name, "test");
+        }
     }
 
 
@@ -112,6 +208,10 @@ public class JsonValueCodecTest {
         private Map<String,JsonCodecEntity> nest;
 
         private List<JsonCodecEntity> nest2;
+
+        private Mono<JsonCodecEntity> mono;
+
+        private Flux<JsonCodecEntity> flux;
 
     }
 

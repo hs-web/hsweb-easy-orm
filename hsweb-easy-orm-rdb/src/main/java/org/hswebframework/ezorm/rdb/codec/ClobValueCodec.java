@@ -19,6 +19,9 @@ public class ClobValueCodec implements ValueCodec {
         if (value instanceof Clob) {
             return (value);
         }
+        if (value instanceof String) {
+            return value;
+        }
 
         return new SerialClob(value.toString().toCharArray());
     }
