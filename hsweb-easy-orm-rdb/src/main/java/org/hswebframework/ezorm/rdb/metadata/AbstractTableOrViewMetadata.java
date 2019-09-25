@@ -182,7 +182,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         return (ObjectMetadata) super.clone();
     }
 
-    public RDBColumnMetadata newColumn(){
-        return new RDBColumnMetadata();
+    public RDBColumnMetadata newColumn() {
+        RDBColumnMetadata column = new RDBColumnMetadata();
+        column.setSortIndex(getColumns().size() + 1);
+        column.setOwner(this);
+        return column;
     }
 }

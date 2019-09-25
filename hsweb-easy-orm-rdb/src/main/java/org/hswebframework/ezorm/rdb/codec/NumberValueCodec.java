@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.codec;
 
-import org.hswebframework.ezorm.core.Encoder;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.utils.ClassUtils;

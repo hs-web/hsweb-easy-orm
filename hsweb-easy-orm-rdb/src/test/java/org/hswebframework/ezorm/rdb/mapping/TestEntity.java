@@ -4,10 +4,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -36,5 +38,9 @@ public class TestEntity implements Serializable {
     @Column(table = "entity_detail", name = "name")
 //    @JoinColumn(table = "entity_detail", name = "id", referencedColumnName = "id")
     private String infoName;
+
+    @Column(name = "options")
+    @ColumnType(typeId = "jsonb")
+    private List<String> options;
 
 }

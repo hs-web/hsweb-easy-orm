@@ -66,6 +66,9 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(CommonAlterTableSqlBuilder.INSTANCE);
             addFeature(CommonCreateIndexSqlBuilder.INSTANCE);
             addFeature(CommonDropIndexSqlBuilder.INSTANCE);
+            
+            /* 编解码器工厂 */
+            addFeature(DefaultValueCodecFactory.COMMONS);
         }
 
         this.setName(name);

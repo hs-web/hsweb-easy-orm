@@ -129,7 +129,7 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     protected DataType convertUnknownDataType(String dataType) {
-        return CustomDataType.of(dataType, dataType, JDBCType.OTHER);
+        return CustomDataType.of(dataType, dataType, JDBCType.OTHER, String.class);
     }
 
     @Override

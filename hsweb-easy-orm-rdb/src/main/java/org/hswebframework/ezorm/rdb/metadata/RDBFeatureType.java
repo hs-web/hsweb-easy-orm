@@ -37,7 +37,15 @@ public enum RDBFeatureType implements FeatureType {
 
     fragment("SQL片段"),
 
-    foreignKeyTerm("外键关联条件");
+    foreignKeyTerm("外键关联条件"),
+
+    /**
+     * @see org.hswebframework.ezorm.core.ValueCodec
+     * @see ValueCodecFactory
+     */
+    codec("编解码器"),
+    ;
+
 
     @Override
     public String getId() {

@@ -1,23 +1,21 @@
 package org.hswebframework.ezorm.rdb.mapping.jpa;
 
-import lombok.SneakyThrows;
+import lombok.Setter;
 import org.apache.commons.beanutils.BeanUtilsBean;
-import org.hswebframework.ezorm.core.ValueCodec;
-import org.hswebframework.ezorm.rdb.codec.DateTimeCodec;
-import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
+import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
+import org.hswebframework.ezorm.rdb.mapping.parser.DataTypeResolver;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
-import org.hswebframework.ezorm.rdb.mapping.annotation.Type;
+import org.hswebframework.ezorm.rdb.mapping.parser.ValueCodecResolver;
 import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.utils.ClassUtils;
 
 import javax.persistence.*;
 import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.sql.JDBCType;
-import java.util.Date;
 import java.util.Optional;
+
+import static java.util.Optional.*;
+import static org.hswebframework.ezorm.rdb.utils.AnnotationUtils.getAnnotation;
 
 public class JpaEntityTableMetadataParserProcessor {
 
@@ -26,6 +24,12 @@ public class JpaEntityTableMetadataParserProcessor {
     private Class<?> entityType;
 
     private RDBTableMetadata tableMetadata;
+
+    @Setter
+    private DataTypeResolver dataTypeResolver;
+
+    @Setter
+    private ValueCodecResolver valueCodecResolver;
 
     public JpaEntityTableMetadataParserProcessor(RDBTableMetadata tableMetadata, Class<?> entityType) {
         this.tableMetadata = tableMetadata;
@@ -91,12 +95,6 @@ public class JpaEntityTableMetadataParserProcessor {
 
     }
 
-    @SneakyThrows
-    public <T> T resolveType(Class<T> type) {
-        // TODO: 2019-09-25
-        return type.newInstance();
-    }
-
     private void handleColumnAnnotation(PropertyDescriptor descriptor, Column column) {
         //另外一个表
         if (!column.table().isEmpty() && !column.table().equals(tableMetadata.getName())) {
@@ -123,78 +121,35 @@ public class JpaEntityTableMetadataParserProcessor {
         if (!column.columnDefinition().isEmpty()) {
             metadata.setColumnDefinition(column.columnDefinition());
         }
+        Optional.ofNullable(AnnotationUtils.getAnnotation(entityType,descriptor, Comment.class))
+                .map(Comment::value)
+                .ifPresent(tableMetadata::setComment);
 
-        Type type = getAnnotation(entityType, descriptor, Type.class);
-        if (type != null) {
-            if (type.codec() != ValueCodec.class) {
-                metadata.setValueCodec(resolveType(type.codec()));
-            }
-            if (type.type() != DataType.class) {
-                metadata.setType(resolveType(type.type()));
-            } else if (!type.typeId().isEmpty()) {
-                metadata.setType(CustomDataType.of(type.typeId(), type.typeId(), type.jdbcType()));
-            } else {
-                metadata.setType(JdbcDataType.of(type.jdbcType(), metadata.getJavaType()));
-            }
-        }
+        ofNullable(getAnnotation(entityType, descriptor, Id.class))
+                .ifPresent(id -> metadata.setPrimaryKey(true));
+
+        ofNullable(dataTypeResolver)
+                .map(resolver -> resolver.resolve(entityType, descriptor))
+                .ifPresent(metadata::setType);
+
         if (metadata.getType() == null) {
-            tableMetadata.getDialect()
+            tableMetadata
+                    .getDialect()
                     .convertJdbcType(metadata.getJavaType())
                     .ifPresent(jdbcType -> metadata.setJdbcType(jdbcType, metadata.getJavaType()));
         }
+
+        ofNullable(valueCodecResolver)
+                .map(resolver -> resolver.resolve(entityType, descriptor)
+                        .orElseGet(() -> metadata.findFeature(ValueCodecFactory.ID)
+                                .map(factory -> factory.createValueCodec(metadata))
+                                .orElse(null)))
+                .ifPresent(metadata::setValueCodec);
+
         metadata.setDataType(tableMetadata.getDialect().createColumnDataType(metadata));
 
-        Optional.ofNullable(getAnnotation(entityType, descriptor, Id.class))
-                .ifPresent(id -> metadata.setPrimaryKey(true));
-        if (Date.class.isAssignableFrom(metadata.getJavaType())) {
-            metadata.setValueCodec(new DateTimeCodec("yyyy-MM-dd HH:mm:ss", metadata.getJavaType()));
-        } else if (Number.class.isAssignableFrom(metadata.getJavaType())) {
-            metadata.setValueCodec(new NumberValueCodec(metadata.getJavaType()));
-        }
         tableMetadata.addColumn(metadata);
     }
 
-
-    private static <T extends Annotation> T getAnnotation(Class entityClass, PropertyDescriptor descriptor, Class<T> type) {
-        T ann = null;
-
-        Method read = descriptor.getReadMethod(),
-                write = descriptor.getWriteMethod();
-        if (read != null) {
-            ann = getAnnotation(read, type);
-        }
-        if (null == ann && write != null) {
-            ann = getAnnotation(write, type);
-        }
-        try {
-            Field field = entityClass.getDeclaredField(descriptor.getName());
-            ann = field.getAnnotation(type);
-        } catch (@SuppressWarnings("all") NoSuchFieldException ignore) {
-            if (entityClass.getSuperclass() != Object.class) {
-                return getAnnotation(entityClass.getSuperclass(), descriptor, type);
-            }
-        }
-        return ann;
-    }
-
-    private static <T extends Annotation> T getAnnotation(Method method, Class<T> annotation) {
-        T ann = method.getAnnotation(annotation);
-        if (ann != null) {
-            return ann;
-        } else {
-            Class clazz = method.getDeclaringClass();
-            Class superClass = clazz.getSuperclass();
-            if (superClass != null && superClass != Object.class) {
-                try {
-                    //父类方法
-                    Method suMethod = superClass.getMethod(method.getName(), method.getParameterTypes());
-                    return getAnnotation(suMethod, annotation);
-                } catch (NoSuchMethodException e) {
-                    return null;
-                }
-            }
-        }
-        return ann;
-    }
 
 }

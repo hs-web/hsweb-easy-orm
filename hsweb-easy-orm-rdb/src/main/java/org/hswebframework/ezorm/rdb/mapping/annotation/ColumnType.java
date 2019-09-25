@@ -1,7 +1,5 @@
 package org.hswebframework.ezorm.rdb.mapping.annotation;
 
-
-import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 
 import java.lang.annotation.*;
@@ -11,15 +9,25 @@ import java.sql.JDBCType;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface Type {
+public @interface ColumnType {
 
+    /**
+     * @return 类型标识
+     * @see DataType#getId()
+     */
     String typeId() default "";
 
+    /**
+     * @return JDBCType
+     * @see DataType#getJdbcType()
+     */
     JDBCType jdbcType() default JDBCType.OTHER;
 
+    /**
+     * @return DataType class
+     * @see DataType
+     * @see org.hswebframework.ezorm.rdb.metadata.JdbcDataType
+     */
     Class<? extends DataType> type() default DataType.class;
 
-    Class<?> elementType() default Void.class;
-
-    Class<ValueCodec> codec() default ValueCodec.class;
 }

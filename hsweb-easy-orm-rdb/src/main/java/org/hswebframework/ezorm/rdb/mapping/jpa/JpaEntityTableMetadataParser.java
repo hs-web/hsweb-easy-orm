@@ -2,10 +2,12 @@ package org.hswebframework.ezorm.rdb.mapping.jpa;
 
 
 import lombok.Setter;
-import org.hswebframework.ezorm.rdb.mapping.EntityTableMetadataParser;
+import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
+import org.hswebframework.ezorm.rdb.mapping.parser.*;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.utils.ClassUtils;
 
 import javax.persistence.Table;
@@ -21,9 +23,16 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
     @Setter
     private RDBDatabaseMetadata databaseMetadata;
 
+    @Setter
+    private DataTypeResolver dataTypeResolver = DefaultDataTypeResolver.INSTANCE;
+
+    @Setter
+    private ValueCodecResolver valueCodecResolver = DefaultValueCodecResolver.COMMONS;
+
+
     public Optional<RDBTableMetadata> parseTable(Class<?> entityType) {
 
-        Table table = ClassUtils.getAnnotation(entityType, Table.class);
+        Table table = AnnotationUtils.getAnnotation(entityType, Table.class);
         if (table == null) {
             return Optional.empty();
         }
@@ -32,16 +41,21 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
 
 
         RDBTableMetadata tableMetadata = schema.newTable(table.name());
-        tableMetadata.setAlias(entityType.getSimpleName());
+        //tableMetadata.setAlias(entityType.getSimpleName());
 
-        new JpaEntityTableMetadataParserProcessor(tableMetadata,entityType).process();
+        Optional.ofNullable(ClassUtils.getAnnotation(entityType, Comment.class))
+                .map(Comment::value)
+                .ifPresent(tableMetadata::setComment);
+
+        JpaEntityTableMetadataParserProcessor parserProcessor = new JpaEntityTableMetadataParserProcessor(tableMetadata, entityType);
+        parserProcessor.setDataTypeResolver(dataTypeResolver);
+        parserProcessor.setValueCodecResolver(valueCodecResolver);
+        parserProcessor.process();
 
 
         return Optional.of(tableMetadata);
 
     }
-
-
 
 
 }

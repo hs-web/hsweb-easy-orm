@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.codec;
 
+import lombok.NoArgsConstructor;
 import org.hswebframework.utils.DateTimeUtils;
 import org.hswebframework.utils.time.DateFormatter;
 import org.hswebframework.ezorm.core.ValueCodec;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 /**
  * 日期转换器
  */
+@NoArgsConstructor
 public class DateTimeCodec implements ValueCodec {
 
     private String format;
@@ -57,11 +59,17 @@ public class DateTimeCodec implements ValueCodec {
     @Override
     @SuppressWarnings("all")
     public Object decode(Object data) {
+        if (null == data) {
+            return null;
+        }
+        if (toType.isAssignableFrom(data.getClass())) {
+            return data;
+        }
         if (data instanceof Number) {
             data = new Date(((Number) data).longValue());
         } else if (data instanceof Timestamp) {
             data = Date.from(((Timestamp) data).toInstant());
-        }  else if (data instanceof Instant) {
+        } else if (data instanceof Instant) {
             data = Date.from(((Instant) data));
         } else if (data instanceof LocalDateTime) {
             LocalDateTime dateTime = ((LocalDateTime) data);

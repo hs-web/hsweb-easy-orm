@@ -15,8 +15,6 @@ public class CustomDataType implements DataType {
 
     private JDBCType jdbcType;
 
-    @Override
-    public Class getJavaType() {
-        return Object.class;
-    }
+    private Class javaType;
+
 }

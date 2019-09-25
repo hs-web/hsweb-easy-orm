@@ -152,6 +152,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
             instance.setType(dataType);
             instance.setDataType(getDialect().createColumnDataType(instance));
+
+            instance.findFeature(ValueCodecFactory.ID)
+                    .map(factory -> factory.createValueCodec(instance))
+                    .ifPresent(instance::setValueCodec);
             return true;
         }
 
