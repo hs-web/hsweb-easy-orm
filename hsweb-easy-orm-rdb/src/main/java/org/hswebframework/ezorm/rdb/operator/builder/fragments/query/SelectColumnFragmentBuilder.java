@@ -31,7 +31,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         return "查询列";
     }
 
-    private List<SelectColumn> getAllSelectColumn(String ownerAlias, Set<String> excludes, TableOrViewMetadata metadata) {
+    private Set<SelectColumn> getAllSelectColumn(String ownerAlias, Set<String> excludes, TableOrViewMetadata metadata) {
         return metadata
                 .getColumns()
                 .stream()
@@ -40,16 +40,16 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                                 .map(alias -> SelectColumn.of(alias.concat(".").concat(columnMetadata.getName()), alias.concat(".").concat(columnMetadata.getAlias())))
                                 .orElseGet(() -> SelectColumn.of(columnMetadata.getName(), columnMetadata.getAlias())))
                 .filter(column -> !excludes.contains(column.getColumn()) && !excludes.contains(column.getAlias()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
-    private List<SelectColumn> createSelectColumns(QueryOperatorParameter parameter) {
-        List<SelectColumn> columns = parameter.getSelect();
+    private Set<SelectColumn> createSelectColumns(QueryOperatorParameter parameter) {
+        Set<SelectColumn> columns = new LinkedHashSet<>(parameter.getSelect());
         Set<String> excludes = parameter.getSelectExcludes();
         if (columns.isEmpty()) {
             return getAllSelectColumn(null, excludes, metadata);
         } else {
-            List<SelectColumn> realColumns = new ArrayList<>();
+            Set<SelectColumn> realColumns = new LinkedHashSet<>();
             for (SelectColumn column : parameter.getSelect()) {
                 String columnName = column.getColumn();
                 if (column.getFunction() != null || columnName == null || excludes.contains(columnName)) {
@@ -58,20 +58,27 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                 }
                 if (columnName.contains("*")) {
                     String[] arr = columnName.split("[.]");
-                    if (arr.length == 1) {
+                    if (arr.length == 1 || metadata.equalsNameOrAlias(arr[0])) {
                         //当前表全部字段
                         realColumns.addAll(getAllSelectColumn(null, excludes, metadata));
                     } else if (arr.length == 2) {
-                        //逻辑外键表全部字段
-                        metadata.getForeignKey(arr[0])
-                                .filter(ForeignKeyMetadata::isAutoJoin)
-                                .map(ForeignKeyMetadata::getTarget)
+                        //join的表
+                        parameter.findJoin(arr[0])
+                                .flatMap(join -> metadata.getSchema().findTableOrView(join.getTarget()))
                                 .map(tar -> getAllSelectColumn(arr[0], excludes, tar))
-                                .ifPresent(realColumns::addAll);
+                                .map(Optional::of)
+                                .orElseGet(() -> {
+                                    //逻辑外键表全部字段
+                                    return metadata.getForeignKey(arr[0])
+                                            .filter(ForeignKeyMetadata::isAutoJoin)
+                                            .map(ForeignKeyMetadata::getTarget)
+                                            .map(tar -> getAllSelectColumn(arr[0], excludes, tar));
+                                }).ifPresent(realColumns::addAll);
                     }
 
                     continue;
                 }
+
                 realColumns.add(column);
             }
             return realColumns;
@@ -81,7 +88,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     @Override
     public SqlFragments createFragments(QueryOperatorParameter parameter) {
 
-        List<SelectColumn> columns = createSelectColumns(parameter);
+        Set<SelectColumn> columns = createSelectColumns(parameter);
 
         PrepareSqlFragments fragments = columns.stream()
                 .map(column -> this.createFragments(parameter, column))
@@ -108,7 +115,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
             return alias;
         }
         if (owner != null) {
-            return owner.concat(".").concat(metadata.getDialect().quote(alias, false));
+            alias = owner.concat(".").concat(alias);
         }
         return metadata.getDialect().quote(alias, false);
 

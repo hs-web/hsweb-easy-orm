@@ -28,42 +28,55 @@ public class SelectColumnFragmentBuilderTest {
         database.setCurrentSchema(schema);
         database.addSchema(schema);
 
-        RDBTableMetadata table = new RDBTableMetadata();
-        table.setName("test");
-        RDBTableMetadata detail = new RDBTableMetadata();
-        detail.setName("detail");
+        RDBTableMetadata test =schema.newTable("test");
+        RDBTableMetadata detail = schema.newTable("detail");
+        RDBTableMetadata detail2 = schema.newTable("detail2");
 
-        schema.addTable(table);
+        schema.addTable(test);
         schema.addTable(detail);
+        schema.addTable(detail2);
 
-        RDBColumnMetadata id = new RDBColumnMetadata();
-        id.setName("id");
-        id.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
-        id.setLength(32);
+        {
+            RDBColumnMetadata id = new RDBColumnMetadata();
+            id.setName("id");
+            id.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
+            id.setLength(32);
 
-        RDBColumnMetadata name = new RDBColumnMetadata();
-        name.setName("name");
-        name.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
-        name.setLength(64);
+            RDBColumnMetadata name = new RDBColumnMetadata();
+            name.setName("name");
+            name.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
+            name.setLength(64);
 
-        table.addColumn(id);
-        table.addColumn(name);
+            test.addColumn(id);
+            test.addColumn(name);
+        }
+        {
 
-        RDBColumnMetadata detailInfo = new RDBColumnMetadata();
-        detailInfo.setName("comment");
-        detailInfo.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
-        detailInfo.setLength(64);
+            RDBColumnMetadata detailInfo = new RDBColumnMetadata();
+            detailInfo.setName("comment");
+            detailInfo.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
+            detailInfo.setLength(64);
 
-        detail.addColumn(detailInfo);
+            detail2.addColumn(detailInfo);
+        }
+        {
 
-        table.addForeignKey(ForeignKeyBuilder.builder()
+            RDBColumnMetadata detailInfo = new RDBColumnMetadata();
+            detailInfo.setName("comment");
+            detailInfo.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
+            detailInfo.setLength(64);
+
+            detail.addColumn(detailInfo);
+        }
+        //逻辑主键
+        test.addForeignKey(ForeignKeyBuilder.builder()
                 .target("detail")
                 .targetColumn("comment")
                 .sourceColumn("id")
                 .autoJoin(true)
                 .build());
 
-        builder = SelectColumnFragmentBuilder.of(table);
+        builder = SelectColumnFragmentBuilder.of(test);
     }
 
     @Test
@@ -128,11 +141,14 @@ public class SelectColumnFragmentBuilderTest {
 
     @Test
     public void testAll() {
-
+        Join join=new Join();
+        join.setTarget("detail2");
+        join.setAlias("info");
 
         QueryOperatorParameter parameter = new QueryOperatorParameter();
-        parameter.setSelect(Arrays.asList(of("*"), of("detail.*")));
+        parameter.setSelect(Arrays.asList(of("*"), of("detail.*"),of("info.comment")));
         parameter.getSelectExcludes().add("id");
+        parameter.getJoins().add(join);
 
         SqlFragments fragments = builder.createFragments(parameter);
         System.out.println(fragments.toRequest().getSql());
@@ -141,6 +157,7 @@ public class SelectColumnFragmentBuilderTest {
         Assert.assertFalse(sql.contains("id"));
         Assert.assertTrue(sql.contains("name"));
         Assert.assertTrue(sql.contains("detail.comment"));
+        Assert.assertTrue(sql.contains("info.comment"));
 
     }
 }

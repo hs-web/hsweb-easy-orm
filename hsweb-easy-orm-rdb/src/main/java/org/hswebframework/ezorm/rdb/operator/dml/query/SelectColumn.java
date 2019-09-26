@@ -1,11 +1,13 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public class SelectColumn extends FunctionColumn {
 
     private String alias;
