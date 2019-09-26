@@ -9,6 +9,8 @@ import java.util.Collection;
 
 public interface ReactiveRepository<T, K> {
 
+    Mono<T> newInstance();
+
     Mono<T> findById(Mono<K> key);
 
     Mono<Integer> deleteById(Publisher<K> key);

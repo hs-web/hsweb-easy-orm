@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.mapping;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
+import org.hswebframework.ezorm.core.param.QueryParam;
 
 import java.util.Arrays;
 
@@ -18,6 +19,8 @@ public interface DSLUpdate<E, ME extends DSLUpdate> extends Conditional<ME> {
     ME set(String column, Object value);
 
     ME setNull(String column);
+
+    public QueryParam toQueryParam();
 
     default ME includes(StaticMethodReferenceColumn<E>... columns) {
         return includes(Arrays

@@ -4,10 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.core.GlobalConfig;
+import org.hswebframework.ezorm.rdb.events.ContextKey;
+import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys;
+import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
@@ -21,13 +25,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
+
 public class DefaultRepository<E> {
 
     protected RDBTableMetadata table;
 
     protected DatabaseOperator operator;
-
-    protected Class<E> entityType;
 
     protected ResultWrapper<E, ?> wrapper;
 
@@ -35,26 +39,25 @@ public class DefaultRepository<E> {
 
     protected EntityColumnMapping mapping;
 
-    private String[] properties;
+    protected String[] properties;
 
     @Getter
     @Setter
     private ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
 
-    public DefaultRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
+    public DefaultRepository(DatabaseOperator operator, RDBTableMetadata table, ResultWrapper<E, ?> wrapper) {
         this.operator = operator;
         this.table = table;
-        this.entityType = type;
         this.wrapper = wrapper;
-        init();
     }
 
-    protected void init() {
+    protected void initMapping(Class<E> entityType) {
         this.idColumn = table.getColumns().stream()
                 .filter(RDBColumnMetadata::isPrimaryKey)
                 .findFirst()
                 .map(RDBColumnMetadata::getName)
                 .orElse(null);
+
         this.mapping = table.<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature"));
 
@@ -68,7 +71,11 @@ public class DefaultRepository<E> {
     }
 
     protected InsertResultOperator doInsert(E data) {
+
         InsertOperator insert = operator.dml().insert(table.getFullName());
+
+        table.fireEvent(MappingEventTypes.insert_before,
+                ctx -> ctx.set(instance(data), type("single"), insert(insert)));
 
         for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
             String column = entry.getKey();
@@ -84,6 +91,9 @@ public class DefaultRepository<E> {
 
     protected InsertResultOperator doInsert(Collection<E> batch) {
         InsertOperator insert = operator.dml().insert(table.getFullName());
+
+        table.fireEvent(MappingEventTypes.insert_before,
+                ctx -> ctx.set(instance(batch), type("batch"), insert(insert)));
 
         insert.columns(properties);
 

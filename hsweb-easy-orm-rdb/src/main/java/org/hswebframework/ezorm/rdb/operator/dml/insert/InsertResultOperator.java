@@ -36,6 +36,6 @@ public class InsertResultOperator implements ResultOperator<Integer, Integer> {
     public Mono<Integer> reactive() {
         return table.findFeature(ReactiveSqlExecutor.ID)
                 .map(executor -> executor.update(Mono.just(sql)))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
     }
 }

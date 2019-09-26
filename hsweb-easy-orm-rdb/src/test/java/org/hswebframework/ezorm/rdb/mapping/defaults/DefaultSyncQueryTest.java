@@ -65,7 +65,7 @@ public class DefaultSyncQueryTest {
 
         wrapper.setMapping(mapping);
 
-        DefaultSyncQuery<TestEntity> query = new DefaultSyncQuery<>(metadata, TestEntity.class,operator.dml(), wrapper);
+        DefaultSyncQuery<TestEntity> query = new DefaultSyncQuery<>(metadata, mapping,operator.dml(), wrapper);
 
         Assert.assertEquals(1,  query.count());
 

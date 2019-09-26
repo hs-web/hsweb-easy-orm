@@ -7,7 +7,8 @@ import org.hswebframework.ezorm.core.FeatureType;
 @AllArgsConstructor
 @Getter
 public enum DefaultFeatureType implements FeatureType {
-    metadataParser("元数据解析器")
+    metadataParser("元数据解析器"),
+    eventListener("事件监听器")
     ;
 
     private String name;

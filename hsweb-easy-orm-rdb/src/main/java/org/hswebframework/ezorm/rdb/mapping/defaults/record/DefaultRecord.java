@@ -1,12 +1,13 @@
-package org.hswebframework.ezorm.rdb.executor;
+package org.hswebframework.ezorm.rdb.mapping.defaults.record;
 
 import java.util.*;
 
-public class DefaultRecord extends HashMap<String, Object> implements Record {
+public class DefaultRecord extends LinkedHashMap<String, Object> implements Record {
 
     public DefaultRecord() {
 
     }
+
     public DefaultRecord(Map<String, Object> map) {
         super(map);
     }
@@ -54,6 +55,16 @@ public class DefaultRecord extends HashMap<String, Object> implements Record {
                     throw new UnsupportedOperationException("value [" + val + "] is not nest property");
                 });
     }
+
+    @Override
+    public Record putValue(String key, Object value) {
+        if (value == null) {
+            return this;
+        }
+        put(key, value);
+        return this;
+    }
+
 
     @Override
     @SuppressWarnings("all")

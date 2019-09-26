@@ -55,7 +55,7 @@ public class DefaultTableBuilder implements TableBuilder {
     public ColumnBuilder addColumn(String name) {
         RDBColumnMetadata rdbColumnMetaData = table.getColumn(name)
                 .orElseGet(() -> {
-                    RDBColumnMetadata columnMetaData = new RDBColumnMetadata();
+                    RDBColumnMetadata columnMetaData = table.newColumn();
                     columnMetaData.setName(name);
                     return columnMetaData;
                 });

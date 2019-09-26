@@ -1,9 +1,15 @@
 package org.hswebframework.ezorm.rdb.operator;
 
 import lombok.AllArgsConstructor;
+import org.hswebframework.ezorm.core.CastUtil;
 import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
+import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
+import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordReactiveRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordSyncRepository;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -102,7 +108,7 @@ public class DefaultDatabaseOperator
                         String[] arr = name.split("[.]");
                         tableName = arr[1];
                         schema = metadata.getSchema(arr[0]).orElseThrow(() -> new UnsupportedOperationException("schema [" + arr[0] + "] doesn't exist "));
-                    }else {
+                    } else {
                         schema = metadata.getCurrentSchema();
                     }
                     RDBTableMetadata newTable = schema.newTable(tableName);
@@ -117,5 +123,21 @@ public class DefaultDatabaseOperator
     public TableBuilder createOrAlter(RDBTableMetadata newTable) {
 
         return new DefaultTableBuilder(newTable);
+    }
+
+    @Override
+    public <K> ReactiveRepository<Record, K> createReactiveRepository(String tableName) {
+        return getMetadata()
+                .getTable(tableName)
+                .<ReactiveRepository<Record, K>>map(table -> new RecordReactiveRepository<>(this, table))
+                .orElseThrow(() -> new UnsupportedOperationException("table [" + tableName + "] doesn't exist "));
+    }
+
+    @Override
+    public <K> SyncRepository<Record, K> createRepository(String tableName) {
+        return getMetadata()
+                .getTable(tableName)
+                .<SyncRepository<Record, K>>map(table -> new RecordSyncRepository<>(this, table))
+                .orElseThrow(() -> new UnsupportedOperationException("table [" + tableName + "] doesn't exist "));
     }
 }

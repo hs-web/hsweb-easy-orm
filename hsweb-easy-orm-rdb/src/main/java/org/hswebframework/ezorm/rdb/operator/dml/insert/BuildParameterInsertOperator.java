@@ -15,7 +15,6 @@ public class BuildParameterInsertOperator extends InsertOperator {
 
     private boolean columnValueModel = false;
 
-
     @Override
     public InsertOperator columns(String... columns) {
         for (String column : columns) {
@@ -44,11 +43,6 @@ public class BuildParameterInsertOperator extends InsertOperator {
         }
         values.get(0).add(value);
 
-        return this;
-    }
-
-    @Override
-    public InsertOperator value(Object value) {
         return this;
     }
 

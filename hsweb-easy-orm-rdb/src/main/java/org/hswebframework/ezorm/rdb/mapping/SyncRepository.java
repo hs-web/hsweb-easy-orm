@@ -6,6 +6,8 @@ import java.util.*;
 
 public interface SyncRepository<T, K> {
 
+    T newInstance();
+
     Optional<T> findById(K primaryKey);
 
     List<T> findById(Collection<K> primaryKey);

@@ -11,13 +11,18 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.util.Collection;
 
 public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implements ReactiveRepository<E, K> {
     public DefaultReactiveRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
-        super(operator, table, type, wrapper);
+        super(operator, table, wrapper);
+        initMapping(type);
+    }
+
+    @Override
+    public Mono<E> newInstance() {
+        return Mono.just(wrapper.newRowInstance());
     }
 
     @Override
@@ -75,16 +80,16 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public ReactiveQuery<E> createQuery() {
-        return new DefaultReactiveQuery<>(table, entityType, operator.dml(), wrapper);
+        return new DefaultReactiveQuery<>(table, mapping, operator.dml(), wrapper);
     }
 
     @Override
     public ReactiveUpdate<E> createUpdate() {
-        return new DefaultReactiveUpdate<>(table, operator.dml().update(table.getFullName()), entityType);
+        return new DefaultReactiveUpdate<>(table, operator.dml().update(table.getFullName()), mapping);
     }
 
     @Override
     public ReactiveDelete createDelete() {
-        return new DefaultReactiveDelete(operator.dml().delete(table.getFullName()));
+        return new DefaultReactiveDelete(table, operator.dml().delete(table.getFullName()));
     }
 }

@@ -18,8 +18,6 @@ public abstract class InsertOperator {
 
     public abstract InsertOperator value(String column, Object value);
 
-    public abstract InsertOperator value(Object value);
-
     @SafeVarargs
     public final <T> InsertOperator columns(StaticMethodReferenceColumn<T>... columns) {
         return columns(Arrays.stream(columns)
@@ -42,16 +40,6 @@ public abstract class InsertOperator {
 
     public InsertOperator value(Map<String, Object> values) {
         values.forEach(this::value);
-        return this;
-    }
-
-    public InsertOperator values(Collection<Object> values) {
-        values.forEach(this::value);
-        return this;
-    }
-
-    public InsertOperator values(List<List<Object>> values){
-        values.forEach(this::values);
         return this;
     }
 

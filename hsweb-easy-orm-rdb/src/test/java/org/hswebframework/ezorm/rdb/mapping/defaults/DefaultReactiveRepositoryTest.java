@@ -53,7 +53,9 @@ public class DefaultReactiveRepositoryTest {
                 .createOrAlter("entity_detail")
                 .addColumn("id").primaryKey().varchar(32).commit()
                 .addColumn("name").varchar(32).commit()
-                .commit().reactive().block();
+                .commit()
+                .reactive()
+                .block();
 
         resultOperator.reactive().block();
 

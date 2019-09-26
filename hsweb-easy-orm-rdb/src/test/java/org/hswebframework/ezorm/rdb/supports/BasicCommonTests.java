@@ -1,9 +1,12 @@
 package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.FeatureType;
+import org.hswebframework.ezorm.rdb.events.EventContext;
+import org.hswebframework.ezorm.rdb.events.EventListener;
+import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
@@ -23,16 +26,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.sql.JDBCType;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
-import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.lowerCase;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.mapStream;
 
 @Slf4j
 public abstract class BasicCommonTests {
@@ -68,6 +69,8 @@ public abstract class BasicCommonTests {
         parser.setDatabaseMetadata(metadata);
 
         RDBTableMetadata table = parser.parseTable(BasicTestEntity.class).orElseThrow(NullPointerException::new);
+
+        table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}",type,context));
 
         operator.ddl()
                 .createOrAlter(table)

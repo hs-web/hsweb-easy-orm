@@ -3,12 +3,16 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 import org.hswebframework.ezorm.core.NestConditional;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.core.SimpleNestConditional;
+import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.GlobalConfig;
+import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.mapping.DSLUpdate;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys;
+import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
@@ -17,11 +21,14 @@ import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
 import java.sql.JDBCType;
 import java.util.*;
 
+import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
+import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
+import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.type;
+
 @SuppressWarnings("all")
 public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> {
 
     protected List<Term> terms = new ArrayList<>();
-
     protected Set<String> includes = new HashSet<>();
     protected Set<String> excludes = new HashSet<>();
     protected Accepter<ME, Object> accepter = this::and;
@@ -32,17 +39,33 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
 
     protected ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
 
-    protected Class<E> entityType;
+    protected EntityColumnMapping mapping;
 
-    public DefaultUpdate(RDBTableMetadata table, UpdateOperator operator, Class<E> entityType) {
+    protected List<ContextKeyValue<?>> contextKeyValues = new ArrayList<>();
+
+    protected Map<String, Object> tempInstance = new HashMap<>();
+
+    public DefaultUpdate(RDBTableMetadata table, UpdateOperator operator, EntityColumnMapping mapping) {
         this.table = table;
         this.operator = operator;
-        this.entityType = entityType;
+        this.mapping = mapping;
+    }
+
+    public QueryParam toQueryParam() {
+        QueryParam param = new QueryParam();
+        param.setTerms(terms);
+        return param;
     }
 
     protected UpdateResultOperator doExecute() {
         return operator
                 .where(dsl -> terms.forEach(dsl::accept))
+                .accept(operator ->
+                        table.fireEvent(MappingEventTypes.update_before, eventContext ->
+                                eventContext.set(
+                                        source(DefaultUpdate.this),
+                                        update(operator)
+                                ).set(contextKeyValues.toArray(new ContextKeyValue[0]))))
                 .execute();
     }
 
@@ -60,14 +83,15 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
 
     @Override
     public ME set(E entity) {
-        table.<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
-                .ifPresent(mapping -> mapping.getColumnPropertyMapping()
-                        .entrySet()
-                        .stream()
-                        .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
-                        .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-                        .forEach(e -> propertyOperator.getProperty(entity, e.getValue())
-                                .ifPresent(val -> this.set(e.getKey(), val))));
+        contextKeyValues.add(MappingContextKeys.instance(entity));
+
+        mapping.getColumnPropertyMapping()
+                .entrySet()
+                .stream()
+                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
+                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
+                .forEach(e -> propertyOperator.getProperty(entity, e.getValue())
+                        .ifPresent(val -> this.set(e.getKey(), val)));
         return (ME) this;
     }
 
@@ -83,7 +107,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     public ME setNull(String column) {
         NullValue nullValue = table.getColumn(column)
                 .map(columnMetadata -> NullValue.of(columnMetadata.getJavaType(), columnMetadata.getType()))
-                .orElseGet(() -> NullValue.of(String.class, JdbcDataType.of(JDBCType.VARCHAR,String.class)));
+                .orElseGet(() -> NullValue.of(String.class, JdbcDataType.of(JDBCType.VARCHAR, String.class)));
         set(column, nullValue);
         return (ME) this;
     }
@@ -115,7 +139,6 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
         this.accepter = this::or;
         return (ME) this;
     }
-
 
     @Override
     public ME and(String column, String termType, Object value) {

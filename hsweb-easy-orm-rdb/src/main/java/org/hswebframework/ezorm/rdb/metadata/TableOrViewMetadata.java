@@ -5,10 +5,12 @@ import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.FeatureSupportedMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.events.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,11 +81,25 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
 
     Dialect getDialect();
 
+    default void fireEvent(EventType eventType, ContextKeyValue<?>... keyValues) {
+        fireEvent(eventType,ctx-> ctx.set(keyValues));
+    }
+
+    default void fireEvent(EventType eventType, Consumer<EventContext> contextConsumer) {
+        this.findFeature(EventListener.ID)
+                .ifPresent(eventListener -> {
+                    EventContext context = EventContext.create();
+                    context.set(ContextKeys.table, this);
+                    contextConsumer.accept(context);
+                    eventListener.fire(eventType, context);
+                });
+    }
+
     default String getFullName() {
         return getSchema().getName().concat(".").concat(getName());
     }
 
-    default  <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
+    default <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
         return findFeature(id.getId());
     }
 

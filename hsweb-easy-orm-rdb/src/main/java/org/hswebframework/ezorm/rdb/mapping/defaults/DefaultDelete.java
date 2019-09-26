@@ -2,13 +2,20 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import org.hswebframework.ezorm.core.NestConditional;
 import org.hswebframework.ezorm.core.SimpleNestConditional;
+import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.mapping.DSLDelete;
+import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteResultOperator;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
+import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
+import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.type;
 
 @SuppressWarnings("all")
 public class DefaultDelete<ME extends DSLDelete> implements DSLDelete<ME> {
@@ -19,14 +26,29 @@ public class DefaultDelete<ME extends DSLDelete> implements DSLDelete<ME> {
 
     protected DeleteOperator operator;
 
-    public DefaultDelete(DeleteOperator operator) {
+    private RDBTableMetadata metadata;
+
+    public DefaultDelete(RDBTableMetadata tableMetadata, DeleteOperator operator) {
         this.operator = operator;
+        this.metadata=tableMetadata;
     }
 
     protected DeleteResultOperator doExecute() {
         return operator
+                .accept(operator ->
+                        metadata.fireEvent(MappingEventTypes.delete_before, eventContext ->
+                                eventContext.set(
+                                        source(DefaultDelete.this),
+                                        delete(operator)
+                                )))
                 .where(dsl -> terms.forEach(dsl::accept))
                 .execute();
+    }
+
+    public QueryParam toQueryParam() {
+        QueryParam param = new QueryParam();
+        param.setTerms(terms);
+        return param;
     }
 
     @Override

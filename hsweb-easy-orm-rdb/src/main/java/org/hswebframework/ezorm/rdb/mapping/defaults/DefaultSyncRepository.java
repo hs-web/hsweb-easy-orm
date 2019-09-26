@@ -8,13 +8,19 @@ import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.SyncUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
-import org.reactivestreams.Publisher;
 
 import java.util.*;
 
 public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements SyncRepository<E, K> {
+
     public DefaultSyncRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
-        super(operator, table, type, wrapper);
+        super(operator, table, wrapper);
+        initMapping(type);
+    }
+
+    @Override
+    public E newInstance() {
+        return wrapper.newRowInstance();
     }
 
     @Override
@@ -63,7 +69,7 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     @Override
     public List<E> findById(Collection<K> primaryKey) {
-        if(primaryKey.isEmpty()){
+        if (primaryKey.isEmpty()) {
             return new ArrayList<>();
         }
         return createQuery().where().in(idColumn, primaryKey).fetch();
@@ -84,16 +90,16 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     @Override
     public SyncQuery<E> createQuery() {
-        return new DefaultSyncQuery<>(table, entityType, operator.dml(), wrapper);
+        return new DefaultSyncQuery<>(table, mapping, operator.dml(), wrapper);
     }
 
     @Override
     public SyncUpdate<E> createUpdate() {
-        return new DefaultSyncUpdate<>(table, operator.dml().update(table.getFullName()), entityType);
+        return new DefaultSyncUpdate<>(table, operator.dml().update(table.getFullName()), mapping);
     }
 
     @Override
     public SyncDelete createDelete() {
-        return new DefaultSyncDelete(operator.dml().delete(table.getFullName()));
+        return new DefaultSyncDelete(table, operator.dml().delete(table.getFullName()));
     }
 }

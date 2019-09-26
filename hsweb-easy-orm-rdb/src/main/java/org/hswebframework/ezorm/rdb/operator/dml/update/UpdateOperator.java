@@ -54,6 +54,11 @@ public abstract class UpdateOperator {
         return this;
     }
 
+    public UpdateOperator accept(Consumer<UpdateOperator> consumer){
+        consumer.accept(this);
+        return this;
+    }
+
     public abstract SqlRequest getSql();
 
     public abstract UpdateResultOperator execute();

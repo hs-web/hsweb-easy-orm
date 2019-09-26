@@ -22,5 +22,10 @@ public abstract class DeleteOperator {
 
     public abstract SqlRequest getSql();
 
+    public DeleteOperator accept(Consumer<DeleteOperator> consumer){
+        consumer.accept(this);
+        return this;
+    }
+
     public abstract DeleteResultOperator execute();
 }

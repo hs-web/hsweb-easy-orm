@@ -31,10 +31,10 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
     public SqlRequest build(UpdateOperatorParameter parameter) {
 
         if (CollectionUtils.isEmpty(parameter.getColumns())) {
-            throw new UnsupportedOperationException("No columns are updated");
+            throw new UnsupportedOperationException("no columns are updated");
         }
         if (CollectionUtils.isEmpty(parameter.getWhere())) {
-            throw new UnsupportedOperationException("Unsupported No Conditions update");
+            throw new UnsupportedOperationException("unsupported no conditions update");
         }
 
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
