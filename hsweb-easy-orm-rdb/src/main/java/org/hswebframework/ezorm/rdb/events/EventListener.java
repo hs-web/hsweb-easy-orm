@@ -26,6 +26,6 @@ public interface EventListener extends Feature {
 
     FeatureId<EventListener> ID = FeatureId.of(ID_VALUE);
 
-    void fire(EventType type, EventContext context);
+    void onEvent(EventType type, EventContext context);
 
 }

@@ -91,7 +91,7 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
                     EventContext context = EventContext.create();
                     context.set(ContextKeys.table, this);
                     contextConsumer.accept(context);
-                    eventListener.fire(eventType, context);
+                    eventListener.onEvent(eventType, context);
                 });
     }
 
