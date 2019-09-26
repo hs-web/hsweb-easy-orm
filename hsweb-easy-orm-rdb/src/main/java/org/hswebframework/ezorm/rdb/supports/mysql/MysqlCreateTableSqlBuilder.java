@@ -41,7 +41,7 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
             if (column.getColumnDefinition() != null) {
                 createTable.addSql(column.getColumnDefinition());
             } else {
-                createTable.addSql(column.getDialect().createColumnDataType(column));
+                createTable.addSql(column.getDialect().buildColumnDataType(column));
                 if (column.isNotNull() || column.isPrimaryKey()) {
                     createTable.addSql("not null");
                 }

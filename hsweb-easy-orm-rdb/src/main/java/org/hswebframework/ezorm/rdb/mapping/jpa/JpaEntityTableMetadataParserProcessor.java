@@ -146,7 +146,7 @@ public class JpaEntityTableMetadataParserProcessor {
                                 .orElse(null)))
                 .ifPresent(metadata::setValueCodec);
 
-        metadata.setDataType(tableMetadata.getDialect().createColumnDataType(metadata));
+        metadata.setDataType(tableMetadata.getDialect().buildColumnDataType(metadata));
 
         tableMetadata.addColumn(metadata);
     }

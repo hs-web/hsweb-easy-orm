@@ -2,6 +2,9 @@ package org.hswebframework.ezorm.rdb.utils;
 
 import org.hswebframework.ezorm.core.FeatureType;
 import org.hswebframework.ezorm.core.meta.Feature;
+import org.hswebframework.ezorm.core.meta.FeatureSupportedMetadata;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,6 +54,24 @@ public class FeatureUtils {
         }
 
         return builder.toString();
+    }
+
+    public static String metadataToString(ObjectMetadata metadata) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(metadata.getObjectType().getId())
+                .append("(")
+                .append(metadata.getObjectType().getName())
+                .append(")");
+
+        if (metadata instanceof FeatureSupportedMetadata) {
+            builder.append("\n")
+                    .append(featureToString(((FeatureSupportedMetadata) metadata).getFeatureList()));
+        }
+
+
+        return builder.toString();
+
     }
 
 }

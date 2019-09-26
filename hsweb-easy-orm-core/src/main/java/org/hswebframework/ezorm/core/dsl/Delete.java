@@ -3,9 +3,7 @@ package org.hswebframework.ezorm.core.dsl;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.NestConditional;
 import org.hswebframework.ezorm.core.SimpleNestConditional;
-import org.hswebframework.ezorm.core.SqlConditionSupport;
 import org.hswebframework.ezorm.core.param.Param;
-import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.function.Function;

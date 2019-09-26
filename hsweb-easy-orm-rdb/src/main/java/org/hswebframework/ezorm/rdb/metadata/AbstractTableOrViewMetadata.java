@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SortOrderFragmentBuilder;
+import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -187,5 +188,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         column.setSortIndex(getColumns().size() + 1);
         column.setOwner(this);
         return column;
+    }
+
+    @Override
+    public String toString() {
+        return FeatureUtils.metadataToString(this);
     }
 }

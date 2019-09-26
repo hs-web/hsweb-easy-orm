@@ -26,11 +26,11 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
             Class javaType = type.javaType() != Void.class ? descriptor.getPropertyType() : type.javaType();
 
             if (!type.typeId().isEmpty()) {
-                return CustomDataType.of(type.typeId(), type.typeId(), type.jdbcType(), javaType);
+                return DataType.custom(type.typeId(), type.typeId(), type.jdbcType(), javaType);
             } else if (type.type() != DataType.class) {
                 return getDataTypeInstance(type.type());
             } else {
-                return JdbcDataType.of(type.jdbcType(), javaType);
+                return DataType.jdbc(type.jdbcType(), javaType);
             }
         }
 

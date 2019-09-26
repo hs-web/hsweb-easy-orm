@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.events;
 
-import lombok.NoArgsConstructor;
 import org.hswebframework.ezorm.core.CastUtil;
 
 import java.util.HashMap;

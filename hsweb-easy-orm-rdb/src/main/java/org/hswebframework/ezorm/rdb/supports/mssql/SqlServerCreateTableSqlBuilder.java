@@ -38,7 +38,7 @@ public class SqlServerCreateTableSqlBuilder implements CreateTableSqlBuilder {
             if (column.getColumnDefinition() != null) {
                 createTable.addSql(column.getColumnDefinition());
             } else {
-                createTable.addSql(column.getDialect().createColumnDataType(column));
+                createTable.addSql(column.getDialect().buildColumnDataType(column));
                 if (column.isNotNull() || column.isPrimaryKey()) {
                     createTable.addSql("not null");
                 }
@@ -60,7 +60,7 @@ public class SqlServerCreateTableSqlBuilder implements CreateTableSqlBuilder {
         if (createComment && table.getComment() != null) {
             sql.addBatch(SqlServerCommentUtils.createDropAndCreateTableCommentSql(table).toRequest());
         }
-        table.<CreateIndexSqlBuilder>findFeature(CreateIndexSqlBuilder.ID)
+        table.findFeature(CreateIndexSqlBuilder.ID)
                 .ifPresent(builder -> {
                     for (RDBIndexMetadata tableIndex : table.getIndexes()) {
                         sql.addBatch(builder.build(CreateIndexParameter.of(table, tableIndex)));

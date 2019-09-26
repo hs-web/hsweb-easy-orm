@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 
 import java.util.*;
 
+@SuppressWarnings("all")
 public interface SyncRepository<T, K> {
 
     T newInstance();

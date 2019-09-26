@@ -34,17 +34,6 @@ public interface FeatureSupportedMetadata {
 
     }
 
-//    default <T extends Feature> Optional<T> getFeature(Class<T> type) {
-//        return this.<T>getFeature(type.getName())
-//                .map(Optional::of)
-//                .orElseGet(() -> getFeatures()
-//                        .values()
-//                        .stream()
-//                        .filter(type::isInstance)
-//                        .map(CastUtil::<T>cast)
-//                        .findFirst());
-//    }
-
     default <T extends Feature> Optional<T> getFeature(FeatureId<T> id) {
         return getFeature(id.getId());
     }

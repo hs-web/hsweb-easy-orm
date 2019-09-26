@@ -8,19 +8,19 @@ import java.sql.JDBCType;
 public class H2Dialect extends DefaultDialect {
     public H2Dialect() {
         super();
-        addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
-        addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
-        addDataTypeMapper(JDBCType.SMALLINT, (meta) -> "smallint");
-        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
-        addDataTypeMapper(JDBCType.TIME, (meta) -> "timestamp");
-        addDataTypeMapper(JDBCType.DATE, (meta) -> "date");
-        addDataTypeMapper(JDBCType.CLOB, (meta) -> "clob");
-        addDataTypeMapper(JDBCType.BLOB, (meta) -> "blob");
-        addDataTypeMapper(JDBCType.INTEGER, (meta) -> "int");
-        addDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
-        addDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
+        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "timestamp");
+        addDataTypeBuilder(JDBCType.SMALLINT, (meta) -> "smallint");
+        addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeBuilder(JDBCType.TIME, (meta) -> "timestamp");
+        addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
+        addDataTypeBuilder(JDBCType.CLOB, (meta) -> "clob");
+        addDataTypeBuilder(JDBCType.BLOB, (meta) -> "blob");
+        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int");
+        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
+        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
     }
 
     @Override

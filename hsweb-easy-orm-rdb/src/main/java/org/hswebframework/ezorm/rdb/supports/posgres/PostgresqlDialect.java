@@ -16,25 +16,25 @@ public class PostgresqlDialect extends DefaultDialect {
 
     public PostgresqlDialect() {
 
-        addDataTypeMapper(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
-        addDataTypeMapper(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
-        addDataTypeMapper(JDBCType.TIMESTAMP, (meta) -> "timestamp");
-        addDataTypeMapper(JDBCType.TIME, (meta) -> "time");
-        addDataTypeMapper(JDBCType.DATE, (meta) -> "date");
-        addDataTypeMapper(JDBCType.CLOB, (meta) -> "text");
-        addDataTypeMapper(JDBCType.LONGVARBINARY, (meta) -> "bytea");
-        addDataTypeMapper(JDBCType.LONGVARCHAR, (meta) -> "text");
-        addDataTypeMapper(JDBCType.BLOB, (meta) -> "bytea");
-        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
-        addDataTypeMapper(JDBCType.DOUBLE, (meta) -> "double");
-        addDataTypeMapper(JDBCType.INTEGER, (meta) -> "integer");
-        addDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeMapper(JDBCType.TINYINT, (meta) -> "smallint");
-        addDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
-        addDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
-        addDataTypeMapper("json", meta -> "json");
-        addDataTypeMapper("jsonb", meta -> "jsonb");
+        addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "timestamp");
+        addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");
+        addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
+        addDataTypeBuilder(JDBCType.CLOB, (meta) -> "text");
+        addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "bytea");
+        addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
+        addDataTypeBuilder(JDBCType.BLOB, (meta) -> "bytea");
+        addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
+        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "integer");
+        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "smallint");
+        addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
+        addDataTypeBuilder("json", meta -> "json");
+        addDataTypeBuilder("jsonb", meta -> "jsonb");
 
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
@@ -48,26 +48,9 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("character", JdbcDataType.of(JDBCType.VARCHAR, String.class));
         registerDataType("xml", JdbcDataType.of(JDBCType.VARCHAR, String.class));
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
-
-
-        addJdbcTypeMapping("json", JDBCType.CLOB);
-        addJdbcTypeMapping("jsonb", JDBCType.CLOB);
-
-        addJdbcTypeMapping("int", JDBCType.INTEGER);
-        addJdbcTypeMapping("int2", JDBCType.INTEGER);
-        addJdbcTypeMapping("int4", JDBCType.INTEGER);
-
-        addJdbcTypeMapping("float8", JDBCType.DOUBLE);
-        addJdbcTypeMapping("money", JDBCType.DECIMAL);
-        addJdbcTypeMapping("bool", JDBCType.BOOLEAN);
-
-        addJdbcTypeMapping("character", JDBCType.VARCHAR);
-        addJdbcTypeMapping("xml", JDBCType.VARCHAR);
-
-        addJdbcTypeMapping("year", JDBCType.TIME);
-        addJdbcTypeMapping("datetime", JDBCType.TIMESTAMP);
-        addJdbcTypeMapping("text", JDBCType.CLOB);
-
+        registerDataType("year", JdbcDataType.of(JDBCType.TIME, String.class));
+        registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, String.class));
+        registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
 
     }
 

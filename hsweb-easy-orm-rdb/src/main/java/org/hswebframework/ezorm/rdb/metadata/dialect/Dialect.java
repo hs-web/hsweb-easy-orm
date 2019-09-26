@@ -31,13 +31,9 @@ public interface Dialect extends Feature {
         return RDBFeatureType.dialect;
     }
 
-    default void addDataTypeMapper(JDBCType jdbcType, DataTypeBuilder mapper) {
-        addDataTypeMapper(jdbcType.getName().toLowerCase(), mapper);
-    }
+    void addDataTypeBuilder(String typeId, DataTypeBuilder mapper);
 
-    void addDataTypeMapper(String typeId, DataTypeBuilder mapper);
-
-    String createColumnDataType(RDBColumnMetadata columnMetaData);
+    String buildColumnDataType(RDBColumnMetadata columnMetaData);
 
     String getQuoteStart();
 
@@ -48,8 +44,6 @@ public interface Dialect extends Feature {
     boolean isColumnToUpperCase();
 
     Optional<JDBCType> convertJdbcType(Class<?> type);
-
-    Optional<JDBCType> convertJdbcType(String dataType);
 
     DataType convertDataType(String dataType);
 

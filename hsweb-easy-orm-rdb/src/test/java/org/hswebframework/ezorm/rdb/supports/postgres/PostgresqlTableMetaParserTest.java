@@ -35,7 +35,7 @@ public class PostgresqlTableMetaParserTest {
         executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table(" +
                 "id varchar(32) primary key," +
                 "name varchar(128) not null," +
-                "age integer," +
+                "age int4," +
                 "json1 json," +
                 "json2 jsonb" +
                 ")"));
@@ -76,7 +76,7 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getPrecision(), 32);
                 Assert.assertEquals(column.getScale(), 0);
-                Assert.assertEquals(column.getDataType(), "integer");
+                Assert.assertEquals(column.getDataType(), "int4");
                 Assert.assertEquals(column.getJdbcType(), JDBCType.INTEGER);
                 Assert.assertEquals(column.getJavaType(), Integer.class);
             }
@@ -95,7 +95,7 @@ public class PostgresqlTableMetaParserTest {
 
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "jsonb");
-                Assert.assertEquals(column.getType(), JsonbType.INSTANCE);
+                Assert.assertEquals(column.getType().getId(), "jsonb");
                 Assert.assertEquals(column.getJdbcType(), JDBCType.CLOB);
                 Assert.assertEquals(column.getJavaType(), String.class);
             }

@@ -23,6 +23,17 @@ import static java.util.Optional.of;
  * @since 4.0
  */
 public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMetadata {
+
+    @Override
+    ObjectType getObjectType();
+
+    /**
+     * 当前数据库方言
+     *
+     * @return 方言
+     */
+    Dialect getDialect();
+
     /**
      * @return 元数据所在schema
      */
@@ -71,20 +82,40 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
      */
     Optional<ForeignKeyMetadata> getForeignKey(String targetName);
 
+    /**
+     * 添加外键元数据
+     *
+     * @param metadata ForeignKeyMetadata
+     * @see ForeignKeyBuilder
+     * @see this#addForeignKey(ForeignKeyBuilder)
+     */
     void addForeignKey(ForeignKeyMetadata metadata);
 
+    /**
+     * 使用builder添加外键元数据
+     *
+     * @param builder Builder
+     * @return 添加后的元数据
+     * @see LazyForeignKeyMetadata
+     */
     ForeignKeyMetadata addForeignKey(ForeignKeyBuilder builder);
 
-
-    @Override
-    ObjectType getObjectType();
-
-    Dialect getDialect();
-
+    /**
+     * 触发事件
+     *
+     * @param eventType 事件类型
+     * @param keyValues 事件上下文键值内容
+     */
     default void fireEvent(EventType eventType, ContextKeyValue<?>... keyValues) {
-        fireEvent(eventType,ctx-> ctx.set(keyValues));
+        fireEvent(eventType, ctx -> ctx.set(keyValues));
     }
 
+    /**
+     * 触发事件,如果存在触发器
+     *
+     * @param eventType       事件类型
+     * @param contextConsumer 上下文消费者
+     */
     default void fireEvent(EventType eventType, Consumer<EventContext> contextConsumer) {
         this.findFeature(EventListener.ID)
                 .ifPresent(eventListener -> {

@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.MethodReferenceConverter;
 import org.junit.Assert;
 import org.junit.Test;
 

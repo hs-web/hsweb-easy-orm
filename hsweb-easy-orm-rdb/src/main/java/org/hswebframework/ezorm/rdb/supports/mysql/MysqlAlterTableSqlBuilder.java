@@ -7,9 +7,6 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonAlterTa
 
 public class MysqlAlterTableSqlBuilder extends CommonAlterTableSqlBuilder {
 
-
-
-
     @Override
     protected PrepareSqlFragments createAlterColumnFragments(RDBColumnMetadata oldColumn, RDBColumnMetadata newColumn) {
         return super.createAlterColumnFragments(oldColumn, newColumn)

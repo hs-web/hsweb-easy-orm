@@ -1,18 +1,13 @@
 package org.hswebframework.ezorm.rdb.operator.ddl;
 
-import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
-import org.hswebframework.ezorm.rdb.metadata.*;
-import org.hswebframework.ezorm.rdb.operator.ResultOperator;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterRequest;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
-import org.reactivestreams.Publisher;
-import reactor.core.publisher.Mono;
 
-import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 /**

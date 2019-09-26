@@ -120,7 +120,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     public String getDataType() {
         if (dataType == null) {
-            return getDialect().createColumnDataType(this);
+            return getDialect().buildColumnDataType(this);
         }
         return dataType;
     }
