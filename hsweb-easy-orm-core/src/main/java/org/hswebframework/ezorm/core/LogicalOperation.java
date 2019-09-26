@@ -294,10 +294,20 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
         return when(condition.apply(value), column, termType, value, accepter);
     }
 
-    default <V> T accept(MethodReferenceColumn<V> column, BiConsumer<V, T> consumer) {
+    default T accept(Consumer<T> consumer) {
+        consumer.accept((T) this);
+        return (T) this;
+    }
+
+    default <V> T accept(V v, BiConsumer<T, V> consumer) {
+        consumer.accept((T) this, v);
+        return (T) this;
+    }
+
+    default <V> T accept(MethodReferenceColumn<V> column, BiConsumer<T, V> consumer) {
         V v = column.get();
         if (v != null) {
-            consumer.accept(v, (T) this);
+            consumer.accept((T) this, v);
         }
         return (T) this;
     }

@@ -18,33 +18,29 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Consumer;
 
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
+
 public class BuildParameterQueryOperator extends QueryOperator {
 
     @Getter
     private QueryOperatorParameter parameter = new QueryOperatorParameter();
 
-    public BuildParameterQueryOperator(String from){
+    public BuildParameterQueryOperator(String from) {
         parameter.setFrom(from);
     }
 
     @Override
-    public QueryOperator select(String... columns) {
+    public QueryOperator select(Collection<String> columns) {
 
-        if (columns.length == 0) {
-
-            return select("*");
-        }
-        for (String column : columns) {
-            parameter.getSelect().add(SelectColumn.of(column));
-        }
+        columns.stream()
+                .map(SelectColumn::of)
+                .forEach(parameter.getSelect()::add);
         return this;
     }
 
     @Override
-    public QueryOperator select(MethodReferenceColumn... columns) {
-        return select(Arrays.stream(columns)
-                .map(MethodReferenceColumn::getColumn)
-                .toArray(String[]::new));
+    public QueryOperator select(String... columns) {
+        return select(Arrays.asList(columns));
     }
 
     @Override
@@ -52,6 +48,12 @@ public class BuildParameterQueryOperator extends QueryOperator {
         for (SelectColumn selectColumn : column) {
             parameter.getSelect().add(selectColumn);
         }
+        return this;
+    }
+
+    @Override
+    public QueryOperator selectExcludes(Collection<String> columns) {
+        parameter.getSelectExcludes().addAll(columns);
         return this;
     }
 
@@ -66,6 +68,22 @@ public class BuildParameterQueryOperator extends QueryOperator {
     @Override
     public QueryOperator where(Term term) {
         parameter.getWhere().add(term);
+        return this;
+    }
+
+    @Override
+    public QueryOperator setParam(QueryParam param) {
+        if (param.isPaging()) {
+            paging(param.getPageIndex(), param.getPageSize());
+        }
+        where(param.getTerms());
+        select(param.getIncludes().toArray(new String[0]));
+        selectExcludes(param.getExcludes().toArray(new String[0]));
+        orderBy(param.getSorts().stream()
+                .map(sort -> "asc".equals(sort.getOrder()) ?
+                        asc(sort.getName()) :
+                        desc(sort.getName()))
+                .toArray(SortOrder[]::new));
         return this;
     }
 

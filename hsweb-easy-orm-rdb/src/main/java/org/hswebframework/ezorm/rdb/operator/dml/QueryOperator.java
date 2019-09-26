@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.LogicalOperation;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
+import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * database
@@ -31,14 +33,7 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
 
     public abstract QueryOperator select(String... columns);
 
-    @SafeVarargs
-    public final <T> QueryOperator select(StaticMethodReferenceColumn<T>... columns) {
-        return select(Arrays.stream(columns)
-                .map(StaticMethodReferenceColumn::getColumn)
-                .toArray(String[]::new));
-    }
-
-    public abstract QueryOperator select(MethodReferenceColumn<?>... columns);
+    public abstract QueryOperator select(Collection<String> columns);
 
     public abstract QueryOperator select(SelectColumn... column);
 
@@ -49,9 +44,38 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
         return this;
     }
 
+    @SafeVarargs
+    public final <T> QueryOperator select(MethodReferenceColumn<T>... columns) {
+        return select(Arrays.stream(columns)
+                .map(MethodReferenceColumn::getColumn)
+                .toArray(String[]::new));
+    }
+
+    @SafeVarargs
+    public final <T> QueryOperator select(StaticMethodReferenceColumn<T>... columns) {
+        return select(Arrays.stream(columns)
+                .map(StaticMethodReferenceColumn::getColumn)
+                .toArray(String[]::new));
+    }
+
+    public abstract QueryOperator selectExcludes(Collection<String> columns);
+
+    public QueryOperator selectExcludes(String... columns) {
+        return selectExcludes(Arrays.asList(columns));
+    }
+
+    @SafeVarargs
+    public final <T> QueryOperator selectExcludes(StaticMethodReferenceColumn<T>... columns) {
+        return selectExcludes(Arrays.stream(columns)
+                .map(StaticMethodReferenceColumn::getColumn)
+                .collect(Collectors.toSet()));
+    }
+
     public abstract QueryOperator where(Consumer<Conditional<?>> conditionalConsumer);
 
     public abstract QueryOperator where(Term term);
+
+    public abstract QueryOperator setParam(QueryParam param);
 
     public abstract QueryOperator where(Collection<Term> term);
 

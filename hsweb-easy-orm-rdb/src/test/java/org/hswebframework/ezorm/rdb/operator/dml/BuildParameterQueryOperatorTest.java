@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.dml;
 
+import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Joins;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
@@ -25,8 +26,29 @@ public class BuildParameterQueryOperatorTest {
         Assert.assertFalse(parameter.getSelect().isEmpty());
         Assert.assertFalse(parameter.getJoins().isEmpty());
         Assert.assertFalse(parameter.getWhere().isEmpty());
-        Assert.assertEquals(parameter.getPageIndex(),Integer.valueOf(10));
-        Assert.assertEquals(parameter.getPageSize(),Integer.valueOf(0));
+        Assert.assertEquals(parameter.getPageIndex(), Integer.valueOf(10));
+        Assert.assertEquals(parameter.getPageSize(), Integer.valueOf(0));
     }
+
+    @Test
+    public void testFromParameter() {
+        BuildParameterQueryOperator query = new BuildParameterQueryOperator("u_user");
+
+        query.setParam(Query.of()
+                .select("id", "total")
+                .where("name", "1234")
+                .doPaging(10,0)
+                .getParam());
+
+
+        QueryOperatorParameter parameter = query.getParameter();
+
+        Assert.assertEquals(parameter.getFrom(), "u_user");
+        Assert.assertFalse(parameter.getSelect().isEmpty());
+        Assert.assertFalse(parameter.getWhere().isEmpty());
+        Assert.assertEquals(parameter.getPageIndex(), Integer.valueOf(10));
+        Assert.assertEquals(parameter.getPageSize(), Integer.valueOf(0));
+    }
+
 
 }

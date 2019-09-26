@@ -14,6 +14,8 @@ import java.sql.JDBCType;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn.*;
+
 public class SelectColumnFragmentBuilderTest {
 
     SelectColumnFragmentBuilder builder;
@@ -53,6 +55,13 @@ public class SelectColumnFragmentBuilderTest {
         detailInfo.setLength(64);
 
         detail.addColumn(detailInfo);
+
+        table.addForeignKey(ForeignKeyBuilder.builder()
+                .target("detail")
+                .targetColumn("comment")
+                .sourceColumn("id")
+                .autoJoin(true)
+                .build());
 
         builder = SelectColumnFragmentBuilder.of(table);
     }
@@ -113,6 +122,25 @@ public class SelectColumnFragmentBuilderTest {
         SqlFragments fragments = builder.createFragments(parameter);
         Assert.assertNotNull(fragments);
         System.out.println(fragments.toRequest().getSql());
+
+    }
+
+
+    @Test
+    public void testAll() {
+
+
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setSelect(Arrays.asList(of("*"), of("detail.*")));
+        parameter.getSelectExcludes().add("id");
+
+        SqlFragments fragments = builder.createFragments(parameter);
+        System.out.println(fragments.toRequest().getSql());
+        Assert.assertNotNull(fragments);
+        String sql = fragments.toRequest().getSql();
+        Assert.assertFalse(sql.contains("id"));
+        Assert.assertTrue(sql.contains("name"));
+        Assert.assertTrue(sql.contains("detail.comment"));
 
     }
 }

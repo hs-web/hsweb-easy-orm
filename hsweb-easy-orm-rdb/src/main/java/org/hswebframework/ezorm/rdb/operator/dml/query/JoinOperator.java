@@ -26,11 +26,11 @@ public class JoinOperator implements Supplier<Join> {
         return this;
     }
 
-    public final Supplier<Join> on(String sql) {
+    public final JoinOperator on(String sql) {
         return on(Wheres.sql(sql));
     }
 
-    public final Supplier<Join> on(Consumer<Conditional<?>> consumer) {
+    public final JoinOperator on(Consumer<Conditional<?>> consumer) {
         Query<?, QueryParam> query = Query.of();
         consumer.accept(query);
         join.getTerms().addAll(query.getParam().getTerms());
@@ -38,7 +38,7 @@ public class JoinOperator implements Supplier<Join> {
     }
 
     @SafeVarargs
-    public final Supplier<Join> on(Supplier<Term>... conditions) {
+    public final JoinOperator on(Supplier<Term>... conditions) {
         for (Supplier<Term> condition : conditions) {
             join.getTerms().add(condition.get());
         }

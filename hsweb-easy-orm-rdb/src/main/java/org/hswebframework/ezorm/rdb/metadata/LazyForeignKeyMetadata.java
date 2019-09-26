@@ -40,14 +40,14 @@ public class LazyForeignKeyMetadata implements ForeignKeyMetadata {
     @Override
     public RDBColumnMetadata getSourceColumn() {
         return getSource().getColumn(builder.getSourceColumn())
-                .orElseThrow(() -> new IllegalArgumentException("column [" + builder.getSourceColumn() + "] doesn't exist on table [" + mainTable.getName() + "]"));
+                .orElseThrow(() -> new IllegalArgumentException("column [" + builder.getSourceColumn() + "] doesn't exist on table [" +mainTable.getName() + "]"));
     }
 
     @Override
     public RDBColumnMetadata getTargetColumn() {
         return getTarget()
-                .getColumn(builder.getSourceColumn())
-                .orElseThrow(() -> new IllegalArgumentException("column [" + builder.getSourceColumn() + "] doesn't exist on table [" + mainTable.getName() + "]"));
+                .getColumn(builder.getTargetColumn())
+                .orElseThrow(() -> new IllegalArgumentException("column [" + builder.getTargetColumn() + "] doesn't exist on table [" + builder.getTarget() + "]"));
 
     }
 

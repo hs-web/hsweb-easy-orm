@@ -5,15 +5,15 @@ import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Getter
 @Setter
 public class QueryOperatorParameter {
 
     private List<SelectColumn> select = new ArrayList<>();
+
+    private Set<String> selectExcludes = new HashSet<>();
 
     private String from;
 
