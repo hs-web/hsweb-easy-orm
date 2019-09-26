@@ -6,16 +6,14 @@ import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.Optional.*;
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.*;
 
 @AllArgsConstructor(staticName = "of")
@@ -33,14 +31,57 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         return "查询列";
     }
 
+    private List<SelectColumn> getAllSelectColumn(String ownerAlias, Set<String> excludes, TableOrViewMetadata metadata) {
+        return metadata
+                .getColumns()
+                .stream()
+                .map(columnMetadata ->
+                        ofNullable(ownerAlias)
+                                .map(alias -> SelectColumn.of(alias.concat(".").concat(columnMetadata.getName()), alias.concat(".").concat(columnMetadata.getAlias())))
+                                .orElseGet(() -> SelectColumn.of(columnMetadata.getName(), columnMetadata.getAlias())))
+                .filter(column -> !excludes.contains(column.getColumn()) && !excludes.contains(column.getAlias()))
+                .collect(Collectors.toList());
+    }
+
+    private List<SelectColumn> createSelectColumns(QueryOperatorParameter parameter) {
+        List<SelectColumn> columns = parameter.getSelect();
+        Set<String> excludes = parameter.getSelectExcludes();
+        if (columns.isEmpty()) {
+            return getAllSelectColumn(null, excludes, metadata);
+        } else {
+            List<SelectColumn> realColumns = new ArrayList<>();
+            for (SelectColumn column : parameter.getSelect()) {
+                String columnName = column.getColumn();
+                if (column.getFunction() != null || columnName == null || excludes.contains(columnName)) {
+                    realColumns.add(column);
+                    continue;
+                }
+                if (columnName.contains("*")) {
+                    String[] arr = columnName.split("[.]");
+                    if (arr.length == 1) {
+                        //当前表全部字段
+                        realColumns.addAll(getAllSelectColumn(null, excludes, metadata));
+                    } else if (arr.length == 2) {
+                        //逻辑外键表全部字段
+                        metadata.getForeignKey(arr[0])
+                                .filter(ForeignKeyMetadata::isAutoJoin)
+                                .map(ForeignKeyMetadata::getTarget)
+                                .map(tar -> getAllSelectColumn(arr[0], excludes, tar))
+                                .ifPresent(realColumns::addAll);
+                    }
+
+                    continue;
+                }
+                realColumns.add(column);
+            }
+            return realColumns;
+        }
+    }
+
     @Override
     public SqlFragments createFragments(QueryOperatorParameter parameter) {
 
-        List<SelectColumn> columns = parameter.getSelect();
-
-        if (columns == null || columns.isEmpty()) {
-            return PrepareSqlFragments.of().addSql("*");
-        }
+        List<SelectColumn> columns = createSelectColumns(parameter);
 
         PrepareSqlFragments fragments = columns.stream()
                 .map(column -> this.createFragments(parameter, column))
@@ -135,7 +176,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         }
 
         RDBColumnMetadata finalColumnMetadata = columnMetadata;
-        String columnFullName = Optional.ofNullable(finalColumnMetadata).map(RDBColumnMetadata::getFullName).orElse(null);
+        String columnFullName = ofNullable(finalColumnMetadata).map(RDBColumnMetadata::getFullName).orElse(null);
 
         return this.createFragments(columnFullName, columnMetadata, selectColumn)
                 .map(fragments -> {
@@ -152,8 +193,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                     .findFeature(createFeatureId(function))
                     .map(fragment -> fragment.create(columnFullName, columnMetadata, column.getOpts()));
         } else {
-            return Optional
-                    .ofNullable(columnFullName)
+            return ofNullable(columnFullName)
                     .map(PrepareSqlFragments::of);
         }
     }
