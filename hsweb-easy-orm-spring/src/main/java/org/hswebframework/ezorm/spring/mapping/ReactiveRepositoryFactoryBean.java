@@ -17,11 +17,9 @@ public class ReactiveRepositoryFactoryBean<E, PK>
 
     private DatabaseOperator operator;
 
-    private EntityTableMetadataResolver mappingResolver;
+    private EntityTableMetadataResolver resolver;
 
     private Class<E> entityType;
-
-    private EntityManager entityManager;
 
     private EntityResultWrapperFactory wrapperFactory;
 
@@ -29,7 +27,7 @@ public class ReactiveRepositoryFactoryBean<E, PK>
     public ReactiveRepository<E, PK> getObject() {
 
         return new DefaultReactiveRepository<>(operator,
-                mappingResolver.resolve(entityType),
+                resolver.resolve(entityType),
                 entityType,
                 wrapperFactory.getWrapper(entityType));
     }

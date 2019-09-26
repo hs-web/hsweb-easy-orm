@@ -1,4 +1,3 @@
-
 logging:
   level:
     org.hswebframework: debug
@@ -10,3 +9,6 @@ spring:
     password: admin
     url: r2dbc:postgresql://127.0.0.1:15432
     name: ezorm
+easyorm:
+  default-schema: public
+  dialect: postgres

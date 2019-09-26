@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.mapping.EntityManager;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
+import org.hswebframework.ezorm.spring.EasyormProperties;
 import org.hswebframework.ezorm.spring.EntityResultWrapperFactory;
 import org.hswebframework.ezorm.spring.EntityTableMetadataResolver;
 import org.hswebframework.ezorm.spring.annotation.EnableEasyormRepository;
@@ -25,7 +26,9 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -56,6 +59,8 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
         boolean enableSync = attr.containsKey("enableSync");
         boolean enableReactive = attr.containsKey("enableReactive");
 
+        List<Class> allEntities = new ArrayList<>();
+
         for (Resource resource : resourcePatternResolver.getResources(path)) {
             MetadataReader reader = metadataReaderFactory.getMetadataReader(resource);
             String className = reader.getClassMetadata().getClassName();
@@ -64,7 +69,7 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
                     .noneMatch(ann -> AnnotationUtils.findAnnotation(entityType, ann) != null)) {
                 continue;
             }
-
+            allEntities.add(entityType);
             if (enableReactive) {
                 ResolvableType repositoryType = ResolvableType.forClassWithGenerics(DefaultReactiveRepository.class, entityType, String.class);
 
@@ -75,9 +80,8 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
                 definition.setBeanClass(ReactiveRepositoryFactoryBean.class);
                 definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
                 definition.getPropertyValues().add("operator", new RuntimeBeanReference(DatabaseOperator.class));
-                definition.getPropertyValues().add("mappingResolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
+                definition.getPropertyValues().add("resolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
                 definition.getPropertyValues().add("entityType", entityType);
-                definition.getPropertyValues().add("entityManager", new RuntimeBeanReference(EntityManager.class));
                 definition.getPropertyValues().add("wrapperFactory", new RuntimeBeanReference(EntityResultWrapperFactory.class));
                 registry.registerBeanDefinition(entityType.getSimpleName().concat("ReactiveRepository"), definition);
             }
@@ -92,15 +96,27 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
                 definition.setBeanClass(SyncRepositoryFactoryBean.class);
                 definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
                 definition.getPropertyValues().add("operator", new RuntimeBeanReference(DatabaseOperator.class));
-                definition.getPropertyValues().add("mappingResolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
+                definition.getPropertyValues().add("resolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
                 definition.getPropertyValues().add("entityType", entityType);
-                definition.getPropertyValues().add("entityManager", new RuntimeBeanReference(EntityManager.class));
                 definition.getPropertyValues().add("wrapperFactory", new RuntimeBeanReference(EntityResultWrapperFactory.class));
                 registry.registerBeanDefinition(entityType.getSimpleName().concat("SyncRepository"), definition);
             }
 
 
         }
+
+        RootBeanDefinition definition = new RootBeanDefinition();
+        definition.setTargetType(AutoDDLProcessor.class);
+        definition.setBeanClass(AutoDDLProcessor.class);
+        definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+        definition.getPropertyValues().add("operator", new RuntimeBeanReference(DatabaseOperator.class));
+        definition.getPropertyValues().add("entities", allEntities);
+        definition.getPropertyValues().add("resolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
+        definition.getPropertyValues().add("reactive", enableReactive);
+
+        definition.getPropertyValues().add("properties", new RuntimeBeanReference(EasyormProperties.class));
+        definition.setInitMethodName("init");
+        registry.registerBeanDefinition(AutoDDLProcessor.class.getName(), definition);
 
     }
 

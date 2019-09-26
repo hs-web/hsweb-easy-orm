@@ -17,11 +17,9 @@ public class SyncRepositoryFactoryBean<E, PK>
 
     private DatabaseOperator operator;
 
-    private EntityTableMetadataResolver mappingResolver;
+    private EntityTableMetadataResolver resolver;
 
     private Class<E> entityType;
-
-    private EntityManager entityManager;
 
     private EntityResultWrapperFactory wrapperFactory;
 
@@ -29,7 +27,7 @@ public class SyncRepositoryFactoryBean<E, PK>
     public SyncRepository<E, PK> getObject() {
 
         return new DefaultSyncRepository<>(operator,
-                mappingResolver.resolve(entityType),
+                resolver.resolve(entityType),
                 entityType,
                 wrapperFactory.getWrapper(entityType));
     }

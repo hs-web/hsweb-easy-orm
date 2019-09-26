@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.spring.annotation;
 
+import org.hswebframework.ezorm.spring.configuration.EasyOrmConfiguration;
 import org.hswebframework.ezorm.spring.mapping.EasyormRepositoryRegistrar;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 import javax.persistence.Table;
@@ -14,7 +16,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EasyormRepositoryRegistrar.class)
+@Import({EasyormRepositoryRegistrar.class,EasyOrmConfiguration.class})
 public @interface EnableEasyormRepository {
 
     /**
