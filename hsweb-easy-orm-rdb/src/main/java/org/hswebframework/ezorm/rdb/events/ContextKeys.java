@@ -13,4 +13,8 @@ public interface ContextKeys {
         return ContextKeyValue.of("source", source);
     }
 
+    static <T> ContextKeyValue<TableOrViewMetadata> tableMetadata(TableOrViewMetadata metadata) {
+        return ContextKeyValue.of(table, metadata);
+    }
+
 }

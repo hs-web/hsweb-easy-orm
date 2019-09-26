@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
+import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 import static org.hswebframework.ezorm.rdb.mapping.events.EventSupportWrapper.*;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
@@ -36,6 +37,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                 eventContext.set(
                                         source(DefaultReactiveQuery.this),
                                         query(queryOperator),
+                                        tableMetadata(tableMetadata),
                                         dml(operator),
                                         executorType("reactive"),
                                         type("fetch")
@@ -58,6 +60,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                         source(DefaultReactiveQuery.this),
                                         query(queryOperator),
                                         dml(operator),
+                                        tableMetadata(tableMetadata),
                                         executorType("reactive"),
                                         type("fetchOne")
                                 )))
@@ -78,6 +81,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                         source(DefaultReactiveQuery.this),
                                         query(queryOperator),
                                         dml(operator),
+                                        tableMetadata(tableMetadata),
                                         executorType("reactive"),
                                         type("count")
                                 )))

@@ -2,15 +2,12 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.core.GlobalConfig;
-import org.hswebframework.ezorm.rdb.events.ContextKey;
-import org.hswebframework.ezorm.rdb.events.EventType;
+import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
-import org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -18,13 +15,11 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
 
 public class DefaultRepository<E> {
@@ -75,7 +70,7 @@ public class DefaultRepository<E> {
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
         table.fireEvent(MappingEventTypes.insert_before,
-                ctx -> ctx.set(instance(data), type("single"), insert(insert)));
+                ctx -> ctx.set(instance(data), type("single"), tableMetadata(table), insert(insert)));
 
         for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
             String column = entry.getKey();
@@ -93,7 +88,7 @@ public class DefaultRepository<E> {
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
         table.fireEvent(MappingEventTypes.insert_before,
-                ctx -> ctx.set(instance(batch), type("batch"), insert(insert)));
+                ctx -> ctx.set(instance(batch), type("batch"), tableMetadata(table), insert(insert)));
 
         insert.columns(properties);
 

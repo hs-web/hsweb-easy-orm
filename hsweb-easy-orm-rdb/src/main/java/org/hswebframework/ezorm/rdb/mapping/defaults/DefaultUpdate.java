@@ -22,8 +22,8 @@ import java.sql.JDBCType;
 import java.util.*;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
+import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
-import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.type;
 
 @SuppressWarnings("all")
 public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> {
@@ -64,7 +64,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
                         table.fireEvent(MappingEventTypes.update_before, eventContext ->
                                 eventContext.set(
                                         source(DefaultUpdate.this),
-                                        update(operator)
+                                        update(operator),
+                                        tableMetadata(table)
                                 ).set(contextKeyValues.toArray(new ContextKeyValue[0]))))
                 .execute();
     }
@@ -90,8 +91,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
                 .stream()
                 .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
                 .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-                .forEach(e -> propertyOperator.getProperty(entity, e.getValue())
-                        .ifPresent(val -> this.set(e.getKey(), val)));
+                .forEach(e -> propertyOperator.getProperty(entity, e.getValue()).ifPresent(val -> this.set(e.getKey(), val)));
         return (ME) this;
     }
 
