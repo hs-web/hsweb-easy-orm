@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.metadata.CustomDataType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -112,7 +113,7 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     @Override
-    public Optional<JDBCType> convertJdbcType(Class<?> type) {
+    public Optional<SQLType> convertSqlType(Class<?> type) {
         return Optional
                 .ofNullable(classJDBCTypeMapping.get(type))
                 .map(JDBCType.class::cast);

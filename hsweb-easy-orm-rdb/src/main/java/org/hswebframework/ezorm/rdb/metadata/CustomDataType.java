@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 
 @Getter
 @AllArgsConstructor(staticName = "of")
@@ -13,7 +14,7 @@ public class CustomDataType implements DataType {
 
     private String name;
 
-    private JDBCType jdbcType;
+    private SQLType sqlType;
 
     private Class javaType;
 

@@ -16,30 +16,36 @@
 
 package org.hswebframework.ezorm.rdb.codec;
 
+import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.sql.rowset.serial.SerialBlob;
 import java.io.*;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
-public class BlobValueCodec implements ValueCodec<Blob, Object> {
+public class BlobValueCodec implements ValueCodec<Object, Object> {
 
     public static final BlobValueCodec INSTANCE = new BlobValueCodec();
 
     @Override
     @SneakyThrows
-    public Blob encode(Object value) {
+    public Object encode(Object value) {
         if (value == null) {
             return null;
         }
         if (value instanceof Blob) {
-            return ((Blob) value);
+            return (value);
         }
         if (!(value instanceof byte[])) {
 
@@ -56,10 +62,11 @@ public class BlobValueCodec implements ValueCodec<Blob, Object> {
             }
 
         }
-        return new SerialBlob(((byte[]) value));
+        return ( value);
     }
 
     @Override
+    @SneakyThrows
     public Object decode(Object data) {
         if (data == null) {
             return null;
@@ -80,6 +87,28 @@ public class BlobValueCodec implements ValueCodec<Blob, Object> {
                 return blobValue.getBytes(1, (int) blobValue.length());
             } catch (Exception e) {
                 log.warn("blob data error", e);
+            }
+        } else if (FeatureUtils.r2dbcIsAlive()) {
+            Mono mono = null;
+            if (data instanceof io.r2dbc.spi.Blob) {
+                mono = Mono.from(((io.r2dbc.spi.Blob) data).stream())
+                        .map(ByteBufferBackedInputStream::new)
+                        .map(input -> {
+                            //尝试转为对象
+                            try {
+                                ObjectInputStream inputStream1 = new ObjectInputStream(input);
+                                return inputStream1.readObject();
+                            } catch (IOException e) {
+                                //可能不是对象
+                            } catch (ClassNotFoundException e) {
+                                log.warn(e.getMessage(), e);
+                            }
+                            return input;
+                        });
+            }
+            if (mono != null) {
+                // TODO: 2019-09-25 更好的方式？
+                return mono.toFuture().get(10, TimeUnit.SECONDS);
             }
         }
         return data;

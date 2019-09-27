@@ -11,18 +11,11 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 @AllArgsConstructor(staticName = "of")
 public class NativeSqlDefaultValue implements DefaultValue, NativeSql {
     private String sql;
-    @Override
-    public Object get() {
-        return null;
-    }
 
     @Override
     public String getSql() {
         return sql;
     }
 
-    @Override
-    public Object[] getParameters() {
-        return new Object[0];
-    }
+
 }

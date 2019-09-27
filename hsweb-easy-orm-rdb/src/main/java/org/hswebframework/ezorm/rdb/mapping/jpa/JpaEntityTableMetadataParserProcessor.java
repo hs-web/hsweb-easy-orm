@@ -135,7 +135,7 @@ public class JpaEntityTableMetadataParserProcessor {
         if (metadata.getType() == null) {
             tableMetadata
                     .getDialect()
-                    .convertJdbcType(metadata.getJavaType())
+                    .convertSqlType(metadata.getJavaType())
                     .ifPresent(jdbcType -> metadata.setJdbcType(jdbcType, metadata.getJavaType()));
         }
 

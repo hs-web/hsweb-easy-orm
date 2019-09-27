@@ -24,7 +24,7 @@ public @interface ColumnType {
 
     /**
      * @return JDBCType
-     * @see DataType#getJdbcType()
+     * @see DataType#getSqlType()
      */
     JDBCType jdbcType() default JDBCType.OTHER;
 

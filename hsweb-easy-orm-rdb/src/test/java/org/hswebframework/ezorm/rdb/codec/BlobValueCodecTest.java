@@ -1,11 +1,14 @@
 package org.hswebframework.ezorm.rdb.codec;
 
-import org.junit.Assert;
+import lombok.SneakyThrows;
 import org.junit.Test;
+import reactor.core.publisher.Mono;
 
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialClob;
 import java.io.NotSerializableException;
+import java.nio.ByteBuffer;
 import java.sql.Blob;
-import java.sql.Date;
 
 import static org.junit.Assert.*;
 
@@ -13,6 +16,7 @@ public class BlobValueCodecTest {
 
 
     @Test
+    @SneakyThrows
     public void testSimple() {
         BlobValueCodec codec = new BlobValueCodec();
 
@@ -25,9 +29,15 @@ public class BlobValueCodecTest {
         for (Object value : values) {
             Object encode = codec.encode(value);
             assertNotNull(encode);
-            assertTrue(encode instanceof Blob);
+            assertTrue(encode instanceof byte[]);
 
-            Object decode = codec.decode(encode);
+            Object decode = codec.decode(new SerialBlob(((byte[]) encode)));
+
+            assertEquals(decode, value);
+        }
+
+        for (Object value : values) {
+            Object decode = codec.decode(io.r2dbc.spi.Blob.from(Mono.just(ByteBuffer.wrap((byte[])codec.encode(value)))));
 
             assertEquals(decode, value);
         }

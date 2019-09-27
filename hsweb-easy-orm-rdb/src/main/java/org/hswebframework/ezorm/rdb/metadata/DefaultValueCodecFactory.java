@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.codec.BlobValueCodec;
 import org.hswebframework.ezorm.rdb.codec.ClobValueCodec;
 import org.hswebframework.ezorm.rdb.codec.DateTimeCodec;
 import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
+import org.hswebframework.ezorm.rdb.utils.DataTypeUtils;
 
 import java.sql.JDBCType;
 import java.util.Date;
@@ -24,14 +25,14 @@ public class DefaultValueCodecFactory implements ValueCodecFactory {
     public static DefaultValueCodecFactory COMMONS = new DefaultValueCodecFactory();
 
     static {
-        COMMONS.register(column -> Number.class.isAssignableFrom(column.getJavaType()),
+        COMMONS.register(column -> DataTypeUtils.typeIsNumber(column.getType()),
                 column -> new NumberValueCodec(column.getJavaType()));
 
-        COMMONS.register(column -> Date.class.isAssignableFrom(column.getJavaType()),
+        COMMONS.register(column -> DataTypeUtils.typeIsDate(column.getType()),
                 column -> new DateTimeCodec("yyyy-MM-dd HH:mm:ss", column.getJavaType()));
 
-        COMMONS.register(column -> column.getJdbcType() == JDBCType.CLOB, column -> ClobValueCodec.INSTANCE);
-        COMMONS.register(column -> column.getJdbcType() == JDBCType.BLOB, column -> BlobValueCodec.INSTANCE);
+        COMMONS.register(column -> column.getSqlType() == JDBCType.CLOB, column -> ClobValueCodec.INSTANCE);
+        COMMONS.register(column -> column.getSqlType() == JDBCType.BLOB, column -> BlobValueCodec.INSTANCE);
 
         // TODO: 2019-09-25 更多编解码器
 

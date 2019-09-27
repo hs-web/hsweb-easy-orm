@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.core.FeatureType;
-import org.hswebframework.ezorm.rdb.events.EventContext;
 import org.hswebframework.ezorm.rdb.events.EventListener;
-import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
@@ -28,6 +25,8 @@ import org.junit.Test;
 import reactor.core.publisher.Flux;
 
 import java.sql.JDBCType;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -70,7 +69,7 @@ public abstract class BasicCommonTests {
 
         RDBTableMetadata table = parser.parseTable(BasicTestEntity.class).orElseThrow(NullPointerException::new);
 
-        table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}",type,context));
+        table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}", type, context));
 
         operator.ddl()
                 .createOrAlter(table)
@@ -208,7 +207,7 @@ public abstract class BasicCommonTests {
                     .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
                     .addColumn().name("create_time").datetime().comment("创建日期").commit()
                     .addColumn().name("state").number(4).comment("状态").commit()
-                    .addColumn().name("comment").varchar(32).defaultValue("'1'").commit()
+                    .addColumn().name("comment").varchar(32).defaultValueNative("'1'").commit()
                     .commit().sync();
 
             operator.dml()
@@ -267,17 +266,18 @@ public abstract class BasicCommonTests {
                     .comment("测试")
                     .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
                     .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
-                    .addColumn().name("comment").varchar(32).defaultValue("'1'").commit()
+                    .addColumn().name("comment").varchar(32).defaultValueNative("'1'").commit()
 
                     .addColumn().name("number_test").number(4).commit()
                     .addColumn().name("date_test").datetime().commit()
-                    .addColumn().name("int_test").jdbcType(JDBCType.INTEGER).commit()
-                    .addColumn().name("bigint_test").jdbcType(JDBCType.BIGINT).commit()
+                    .addColumn().name("int_test").integer().commit()
+                    .addColumn().name("bigint_test").bigint().commit()
                     .addColumn().name("clob_test").clob().commit()
-                    .addColumn().name("blob_test").jdbcType(JDBCType.BLOB).commit()
-                    .addColumn().name("char_test").jdbcType(JDBCType.CHAR).length(32).commit()
-                    .addColumn().name("time_test").jdbcType(JDBCType.TIME).commit()
-                    .addColumn().name("date_test").jdbcType(JDBCType.DATE).commit()
+                    .addColumn().name("tinyint_test").tinyint().commit()
+                    .addColumn().name("blob_test").type(JDBCType.BLOB, byte[].class).commit()
+                    .addColumn().name("char_test").type(JDBCType.CHAR, String.class).length(32).commit()
+                    .addColumn().name("time_test").type(JDBCType.TIME, LocalTime.class).commit()
+                    .addColumn().name("date_test").type(JDBCType.DATE, LocalDate.class).commit()
 
                     .index().name("index_").column("name").commit()
                     .commit().sync();
@@ -287,7 +287,7 @@ public abstract class BasicCommonTests {
                     .createOrAlter("test_ddl_create")
                     .addColumn().name("name").varchar(128).comment("名称").commit()
                     .addColumn().name("test").varchar(32).comment("test").commit()
-                    .addColumn().name("age").number(4).defaultValue("0").comment("年龄").commit()
+                    .addColumn().name("age").number(4).defaultValueNative("0").comment("年龄").commit()
                     .commit().sync();
 
             //drop column

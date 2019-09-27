@@ -1,11 +1,7 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
-import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
-import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.sql.*;
@@ -40,7 +36,7 @@ public class JdbcSqlExecutorHelper {
             if (object == null) {
                 statement.setNull(index++, Types.NULL);
             } else if (object instanceof NullValue) {
-                statement.setNull(index++, ((NullValue) object).getDataType().getJdbcType().getVendorTypeNumber());
+                statement.setNull(index++, ((NullValue) object).getDataType().getSqlType().getVendorTypeNumber());
             } else if (object instanceof Date) {
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
             } else if (object instanceof byte[]) {

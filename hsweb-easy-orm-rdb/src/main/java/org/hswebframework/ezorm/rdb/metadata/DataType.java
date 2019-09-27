@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.util.function.Function;
 
 /**
@@ -14,12 +15,12 @@ public interface DataType {
 
     String getName();
 
-    JDBCType getJdbcType();
+    SQLType getSqlType();
 
     Class getJavaType();
 
-    static DataType custom(String id,String name,JDBCType jdbcType,Class javaType){
-     return CustomDataType.of(id, name, jdbcType, javaType) ;
+    static DataType custom(String id,String name,SQLType sqlType,Class javaType){
+     return CustomDataType.of(id, name, sqlType, javaType) ;
     }
 
     static DataType jdbc(JDBCType jdbcType, Class javaType) {

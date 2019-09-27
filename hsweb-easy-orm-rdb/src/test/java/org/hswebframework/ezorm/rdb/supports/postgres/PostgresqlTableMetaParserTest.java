@@ -5,7 +5,6 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.supports.posgres.JsonbType;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlTableMetadataParser;
 import org.junit.Assert;
@@ -49,7 +48,7 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertNotNull(column);
 
                 Assert.assertEquals(column.getDataType(), "varchar(32)");
-                Assert.assertEquals(column.getJdbcType(), JDBCType.VARCHAR);
+                Assert.assertEquals(column.getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
                 // 这里只解析表结构，而不会解析键信息.
@@ -64,7 +63,7 @@ public class PostgresqlTableMetaParserTest {
 
                 Assert.assertEquals(column.getDataType(), "varchar(128)");
                 Assert.assertEquals(column.getLength(), 128);
-                Assert.assertEquals(column.getJdbcType(), JDBCType.VARCHAR);
+                Assert.assertEquals(column.getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
             }
@@ -77,7 +76,7 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertEquals(column.getPrecision(), 32);
                 Assert.assertEquals(column.getScale(), 0);
                 Assert.assertEquals(column.getDataType(), "int4");
-                Assert.assertEquals(column.getJdbcType(), JDBCType.INTEGER);
+                Assert.assertEquals(column.getSqlType(), JDBCType.INTEGER);
                 Assert.assertEquals(column.getJavaType(), Integer.class);
             }
             //json
@@ -86,7 +85,7 @@ public class PostgresqlTableMetaParserTest {
 
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "json");
-                Assert.assertEquals(column.getJdbcType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getSqlType(), JDBCType.CLOB);
                 Assert.assertEquals(column.getJavaType(), String.class);
             }
             //jsonb
@@ -96,7 +95,7 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "jsonb");
                 Assert.assertEquals(column.getType().getId(), "jsonb");
-                Assert.assertEquals(column.getJdbcType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getSqlType(), JDBCType.CLOB);
                 Assert.assertEquals(column.getJavaType(), String.class);
             }
         } finally {

@@ -3,10 +3,13 @@ package org.hswebframework.ezorm.rdb.codec;
 
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import javax.sql.rowset.serial.SerialClob;
-import java.io.Reader;
 import java.sql.Clob;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class ClobValueCodec implements ValueCodec {
 
@@ -23,7 +26,7 @@ public class ClobValueCodec implements ValueCodec {
             return value;
         }
 
-        return new SerialClob(value.toString().toCharArray());
+        return value.toString();
     }
 
     @Override
@@ -32,7 +35,18 @@ public class ClobValueCodec implements ValueCodec {
         if (data instanceof Clob) {
             Clob clobData = ((Clob) data);
             data = clobData.getSubString(1, (int) clobData.length());
+        } else if (FeatureUtils.r2dbcIsAlive()) {
+            Mono mono = null;
+            if (data instanceof io.r2dbc.spi.Clob) {
+                mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
+                        .collect(Collectors.joining());
+            }
+            if (mono != null) {
+                // TODO: 2019-09-25 更好的方式？
+                return mono.toFuture().get(10, TimeUnit.SECONDS);
+            }
         }
+
         return data;
     }
 }

@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
@@ -15,11 +16,31 @@ public class BatchInsertSqlBuilderTest {
 
     private BatchInsertSqlBuilder builder;
 
+    private RDBSchemaMetadata schema;
+
     @Before
     public void init() {
-        RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        schema = MetadataHelper.createMockSchema();
 
         builder = BatchInsertSqlBuilder.of(schema.getTable("test").orElseThrow(NullPointerException::new));
+    }
+
+
+    @Test
+    public void testDefaultValue() {
+        schema.getTable("test")
+                .flatMap(table->table.getColumn("id"))
+        .ifPresent(id->id.setDefaultValue((RuntimeDefaultValue) () -> "runtime_id"));
+
+        InsertOperatorParameter insert = new InsertOperatorParameter();
+        {
+            insert.getColumns().add(InsertColumn.of("id"));
+        }
+        insert.getValues().add(Arrays.asList(new Object[]{null}));
+
+        SqlRequest request = builder.build(insert);
+        System.out.println(request);
+        Assert.assertArrayEquals(request.getParameters(), new Object[]{"runtime_id"});
     }
 
     @Test

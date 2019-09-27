@@ -12,6 +12,7 @@ import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlDialect;
 import org.hswebframework.utils.StringUtils;
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.util.Optional;
 
 /**
@@ -43,7 +44,7 @@ public interface Dialect extends Feature {
 
     boolean isColumnToUpperCase();
 
-    Optional<JDBCType> convertJdbcType(Class<?> type);
+    Optional<SQLType> convertSqlType(Class<?> type);
 
     DataType convertDataType(String dataType);
 

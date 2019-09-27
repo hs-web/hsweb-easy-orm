@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 
 @AllArgsConstructor
 public class BooleanValueCodec implements ValueCodec<Object, Boolean> {
 
-    private JDBCType jdbcType;
+    private SQLType sqlType;
 
     @Override
     public Object encode(Object value) {
@@ -20,10 +21,10 @@ public class BooleanValueCodec implements ValueCodec<Object, Boolean> {
         }
 
         if (Boolean.TRUE.equals(value)) {
-            return jdbcType == JDBCType.BOOLEAN ? true : 1;
+            return sqlType == JDBCType.BOOLEAN ? true : 1;
         }
         if (Boolean.FALSE.equals(value)) {
-            return jdbcType == JDBCType.BOOLEAN ? false : 0;
+            return sqlType == JDBCType.BOOLEAN ? false : 0;
         }
         return value;
     }

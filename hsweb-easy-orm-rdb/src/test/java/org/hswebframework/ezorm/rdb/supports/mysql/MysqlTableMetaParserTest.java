@@ -46,7 +46,7 @@ public class MysqlTableMetaParserTest {
                 Assert.assertNotNull(column);
 
                 Assert.assertEquals(column.getDataType(), "varchar(32)");
-                Assert.assertEquals(column.getJdbcType(), JDBCType.VARCHAR);
+                Assert.assertEquals(column.getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
                 // 这里只解析表结构，而不会解析键信息.
@@ -61,7 +61,7 @@ public class MysqlTableMetaParserTest {
 
                 Assert.assertEquals(column.getDataType(), "varchar(128)");
                 Assert.assertEquals(column.getLength(), 128);
-                Assert.assertEquals(column.getJdbcType(), JDBCType.VARCHAR);
+                Assert.assertEquals(column.getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
             }
@@ -74,7 +74,7 @@ public class MysqlTableMetaParserTest {
                 Assert.assertEquals(column.getPrecision(), 10);
                 Assert.assertEquals(column.getScale(), 0);
                 Assert.assertEquals(column.getDataType(), "int");
-                Assert.assertEquals(column.getJdbcType(), JDBCType.INTEGER);
+                Assert.assertEquals(column.getSqlType(), JDBCType.INTEGER);
                 Assert.assertEquals(column.getJavaType(), Integer.class);
             }
         } finally {

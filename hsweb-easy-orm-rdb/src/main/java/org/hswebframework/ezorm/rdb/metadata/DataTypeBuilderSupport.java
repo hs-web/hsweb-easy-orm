@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 
-import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.util.function.Function;
 
 @AllArgsConstructor(staticName = "of")
@@ -24,8 +24,8 @@ public class DataTypeBuilderSupport implements DataType, DataTypeBuilder {
     }
 
     @Override
-    public JDBCType getJdbcType() {
-        return parent.getJdbcType();
+    public SQLType getSqlType() {
+        return parent.getSqlType();
     }
 
     @Override

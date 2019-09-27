@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
 import lombok.AllArgsConstructor;
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
@@ -73,9 +74,13 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 int valueIndex = entry.getKey();
                 RDBColumnMetadata column = entry.getValue();
+
                 Object value = column.encode(valueLen < valueIndex ? null : values.get(valueIndex));
                 if (vIndex++ != 0) {
                     fragments.addSql(",");
+                }
+                if (value == null && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                    value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
                 }
                 if (value instanceof NativeSql) {
                     fragments

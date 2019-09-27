@@ -1,11 +1,14 @@
 package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.core.DefaultValue;
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.NativeSqlDefaultValue;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 
+import java.math.BigDecimal;
 import java.sql.JDBCType;
+import java.util.Date;
 import java.util.function.Consumer;
 
 public interface ColumnBuilder {
@@ -17,14 +20,9 @@ public interface ColumnBuilder {
 
     ColumnBuilder dataType(String dataType);
 
-    ColumnBuilder jdbcType(JDBCType jdbcType);
+    ColumnBuilder type(String typeId);
 
-    default ColumnBuilder jdbcType(String jdbcType) {
-        JDBCType.valueOf(jdbcType.toUpperCase());
-        return this;
-    }
-
-    ColumnBuilder javaType(Class javaType);
+    ColumnBuilder type(DataType type);
 
     ColumnBuilder comment(String comment);
 
@@ -34,38 +32,50 @@ public interface ColumnBuilder {
 
     ColumnBuilder columnDef(String def);
 
-    default ColumnBuilder varchar(int length) {
-        return jdbcType(JDBCType.VARCHAR).length(length);
+    ColumnBuilder defaultValue(DefaultValue value);
+
+    default ColumnBuilder type(JDBCType jdbcType, Class type) {
+        return type(DataType.jdbc(jdbcType, type));
     }
 
-    default ColumnBuilder defaultValue(String defaultSql) {
+    default ColumnBuilder varchar(int length) {
+        return type(JDBCType.VARCHAR, String.class).length(length);
+    }
+
+    default ColumnBuilder defaultValueNative(String defaultSql) {
         return defaultValue(NativeSqlDefaultValue.of(defaultSql));
     }
 
-    ColumnBuilder defaultValue(DefaultValue value);
+    default ColumnBuilder defaultValueRuntime(RuntimeDefaultValue value) {
+        return defaultValue(value);
+    }
 
     default ColumnBuilder number(int precision, int scale) {
-        return jdbcType(JDBCType.NUMERIC).length(precision, scale);
+        return type(JDBCType.NUMERIC, BigDecimal.class).length(precision, scale);
     }
 
     default ColumnBuilder number(int len) {
-        return jdbcType(JDBCType.NUMERIC).length(len, 0);
+        return type(JDBCType.NUMERIC, Long.class).length(len, 0);
     }
 
     default ColumnBuilder clob() {
-        return jdbcType(JDBCType.CLOB);
+        return type(JDBCType.CLOB, String.class);
     }
 
     default ColumnBuilder integer() {
-        return jdbcType(JDBCType.INTEGER);
+        return type(JDBCType.INTEGER, Integer.class);
     }
 
-    default ColumnBuilder datetime() {
-        return jdbcType(JDBCType.TIMESTAMP);
+    default ColumnBuilder bigint() {
+        return type(JDBCType.BIGINT, Long.class);
     }
 
     default ColumnBuilder tinyint() {
-        return jdbcType(JDBCType.TINYINT);
+        return type(JDBCType.TINYINT, Byte.class);
+    }
+
+    default ColumnBuilder datetime() {
+        return type(JDBCType.TIMESTAMP, Date.class);
     }
 
     ColumnBuilder property(String propertyName, Object value);

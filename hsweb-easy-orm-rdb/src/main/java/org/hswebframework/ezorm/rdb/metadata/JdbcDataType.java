@@ -4,24 +4,25 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 
 @AllArgsConstructor(staticName = "of")
 public class JdbcDataType implements DataType {
 
     @Getter
-    private JDBCType jdbcType;
+    private SQLType sqlType;
 
     @Getter
     private Class javaType;
 
     @Override
     public String getName() {
-        return jdbcType.name().toLowerCase();
+        return sqlType.getName().toLowerCase();
     }
 
     @Override
     public String getId() {
-        return jdbcType.name().toLowerCase();
+        return sqlType.getName().toLowerCase();
     }
 
 

@@ -47,7 +47,7 @@ public class OracleTableMetaParserTest {
                 Assert.assertNotNull(column);
 
                 Assert.assertEquals(column.getDataType(), "varchar2(32)");
-                Assert.assertEquals(column.getType().getJdbcType(), JDBCType.VARCHAR);
+                Assert.assertEquals(column.getType().getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
                 // 这里只解析表结构，而不会解析键信息.
@@ -62,7 +62,7 @@ public class OracleTableMetaParserTest {
 
                 Assert.assertEquals(column.getDataType(), "varchar2(128)");
                 Assert.assertEquals(column.getLength(), 128);
-                Assert.assertEquals(column.getType().getJdbcType(), JDBCType.VARCHAR);
+                Assert.assertEquals(column.getType().getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
             }
@@ -75,7 +75,7 @@ public class OracleTableMetaParserTest {
                 Assert.assertEquals(column.getPrecision(), 10);
                 Assert.assertEquals(column.getScale(), 0);
                 Assert.assertEquals(column.getDataType(), "number(10,0)");
-                Assert.assertEquals(column.getType().getJdbcType(), JDBCType.NUMERIC);
+                Assert.assertEquals(column.getType().getSqlType(), JDBCType.NUMERIC);
                 Assert.assertEquals(column.getJavaType(), BigDecimal.class);
             }
         } finally {

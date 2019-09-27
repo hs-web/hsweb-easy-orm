@@ -3,9 +3,7 @@ package org.hswebframework.ezorm.rdb.mapping.parser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.junit.Assert;
@@ -38,7 +36,7 @@ public class DefaultDataTypeResolverTest {
             DataType dataType = resolver.resolve(Entity.class, name);
             assertNotNull(dataType);
             Assert.assertEquals(dataType.getId(), "varchar");
-            Assert.assertEquals(dataType.getJdbcType(), JDBCType.VARCHAR);
+            Assert.assertEquals(dataType.getSqlType(), JDBCType.VARCHAR);
 
         }
 
@@ -48,7 +46,7 @@ public class DefaultDataTypeResolverTest {
             DataType dataType = resolver.resolve(Entity.class, property);
             assertNotNull(dataType);
             Assert.assertEquals(dataType.getId(), "jsonb");
-            Assert.assertEquals(dataType.getJdbcType(), JDBCType.VARCHAR);
+            Assert.assertEquals(dataType.getSqlType(), JDBCType.VARCHAR);
 
         }
 
@@ -58,7 +56,7 @@ public class DefaultDataTypeResolverTest {
             DataType dataType = resolver.resolve(Entity.class, property);
             assertNotNull(dataType);
             Assert.assertEquals(dataType.getId(), "custom");
-            Assert.assertEquals(dataType.getJdbcType(), JDBCType.CLOB);
+            Assert.assertEquals(dataType.getSqlType(), JDBCType.CLOB);
 
         }
 
@@ -94,7 +92,7 @@ public class DefaultDataTypeResolverTest {
         }
 
         @Override
-        public JDBCType getJdbcType() {
+        public JDBCType getSqlType() {
             return JDBCType.CLOB;
         }
 

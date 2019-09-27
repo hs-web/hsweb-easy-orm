@@ -1,14 +1,11 @@
 package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.core.DefaultValue;
-import org.hswebframework.ezorm.core.OriginalValueCodec;
-import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.codec.BooleanValueCodec;
-import org.hswebframework.ezorm.rdb.codec.NumberValueCodec;
+import org.hswebframework.ezorm.rdb.metadata.ValueCodecFactory;
 
-import java.sql.JDBCType;
 import java.util.function.Consumer;
 
 /**
@@ -44,21 +41,20 @@ public class DefaultColumnBuilder implements ColumnBuilder {
     }
 
     @Override
+    public ColumnBuilder type(String typeId) {
+        type(columnMetaData.getDialect().convertDataType(typeId));
+        return this;
+    }
+
+    @Override
     public ColumnBuilder dataType(String dataType) {
         columnMetaData.setDataType(dataType);
         return this;
     }
 
     @Override
-    public ColumnBuilder jdbcType(JDBCType jdbcType) {
-        // TODO: 2019-09-25
-        columnMetaData.setJdbcType(jdbcType,null);
-        return this;
-    }
-
-    @Override
-    public ColumnBuilder javaType(Class javaType) {
-        columnMetaData.setJavaType(javaType);
+    public ColumnBuilder type(DataType type) {
+        columnMetaData.setType(type);
         return this;
     }
 
@@ -114,14 +110,9 @@ public class DefaultColumnBuilder implements ColumnBuilder {
 
     @Override
     public TableBuilder commit() {
-        if (columnMetaData.getJavaType() != null && columnMetaData.getValueCodec() == OriginalValueCodec.INSTANCE) {
-            if (Number.class.isAssignableFrom(columnMetaData.getJavaType())) {
-                columnMetaData.setValueCodec(new NumberValueCodec(columnMetaData.getJavaType()));
-            }
-            if (columnMetaData.getJavaType() == Boolean.class || columnMetaData.getJavaType() == boolean.class) {
-                columnMetaData.setValueCodec(new BooleanValueCodec(columnMetaData.getType().getJdbcType()));
-            }
-        }
+        tableMetaData.findFeature(ValueCodecFactory.ID)
+                .map(factory -> factory.createValueCodec(columnMetaData))
+                .ifPresent(columnMetaData::setValueCodec);
         tableMetaData.addColumn(columnMetaData);
         return tableBuilder;
     }

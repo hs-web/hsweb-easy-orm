@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 
 @Getter
 @AllArgsConstructor
@@ -27,7 +28,7 @@ public class JsonbType implements DataType {
     }
 
     @Override
-    public JDBCType getJdbcType() {
+    public SQLType getSqlType() {
         return JDBCType.CLOB;
     }
 }

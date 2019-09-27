@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -100,7 +101,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return getDialect().quote(getName());
     }
 
-    public void setJdbcType(JDBCType jdbcType, Class javaType) {
+    public void setJdbcType(SQLType jdbcType, Class javaType) {
         this.javaType = javaType;
         setType(JdbcDataType.of(jdbcType, javaType));
     }
@@ -125,9 +126,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return dataType;
     }
 
-    public JDBCType getJdbcType() {
+    public SQLType getSqlType() {
         return Optional.ofNullable(type)
-                .map(DataType::getJdbcType)
+                .map(DataType::getSqlType)
                 .orElse(null);
     }
 
