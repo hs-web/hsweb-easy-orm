@@ -23,7 +23,6 @@ import java.util.Set;
 @Data
 public class EasyormProperties {
 
-    @NonNull
     private String defaultSchema;
 
     private String[] schemas = {};
@@ -32,7 +31,7 @@ public class EasyormProperties {
 
     private boolean allowAlter = false;
 
-    private DialectEnum dialect = DialectEnum.postgres;
+    private DialectEnum dialect = DialectEnum.h2;
 
     private Class<? extends Dialect> dialectType;
 

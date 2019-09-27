@@ -9,18 +9,24 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.spring.EntityResultWrapperFactory;
 import org.hswebframework.ezorm.spring.EntityTableMetadataResolver;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Getter
 @Setter
 public class SyncRepositoryFactoryBean<E, PK>
         implements FactoryBean<SyncRepository<E, PK>> {
 
+
+    @Autowired
     private DatabaseOperator operator;
 
+
+    @Autowired
     private EntityTableMetadataResolver resolver;
 
     private Class<E> entityType;
 
+    @Autowired
     private EntityResultWrapperFactory wrapperFactory;
 
     @Override

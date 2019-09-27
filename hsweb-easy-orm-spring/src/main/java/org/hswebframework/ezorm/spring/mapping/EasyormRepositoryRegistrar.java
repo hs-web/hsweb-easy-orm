@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.spring.mapping;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.rdb.mapping.EntityManager;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
@@ -57,7 +56,7 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
 
         Class<Annotation>[] anno = (Class[]) attr.get("annotation");
         boolean enableSync = Boolean.TRUE.equals(attr.get("enableSync"));
-        boolean enableReactive = Boolean.TRUE.equals(attr.containsKey("enableReactive"));
+        boolean enableReactive = Boolean.TRUE.equals(attr.get("enableReactive"));
 
         List<Class> allEntities = new ArrayList<>();
 
@@ -79,10 +78,7 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
                 definition.setTargetType(repositoryType);
                 definition.setBeanClass(ReactiveRepositoryFactoryBean.class);
                 definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-                definition.getPropertyValues().add("operator", new RuntimeBeanReference(DatabaseOperator.class));
-                definition.getPropertyValues().add("resolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
                 definition.getPropertyValues().add("entityType", entityType);
-                definition.getPropertyValues().add("wrapperFactory", new RuntimeBeanReference(EntityResultWrapperFactory.class));
                 registry.registerBeanDefinition(entityType.getSimpleName().concat("ReactiveRepository"), definition);
             }
 
@@ -95,10 +91,7 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
                 definition.setTargetType(repositoryType);
                 definition.setBeanClass(SyncRepositoryFactoryBean.class);
                 definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-                definition.getPropertyValues().add("operator", new RuntimeBeanReference(DatabaseOperator.class));
-                definition.getPropertyValues().add("resolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
                 definition.getPropertyValues().add("entityType", entityType);
-                definition.getPropertyValues().add("wrapperFactory", new RuntimeBeanReference(EntityResultWrapperFactory.class));
                 registry.registerBeanDefinition(entityType.getSimpleName().concat("SyncRepository"), definition);
             }
 
@@ -109,12 +102,8 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
         definition.setTargetType(AutoDDLProcessor.class);
         definition.setBeanClass(AutoDDLProcessor.class);
         definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-        definition.getPropertyValues().add("operator", new RuntimeBeanReference(DatabaseOperator.class));
         definition.getPropertyValues().add("entities", allEntities);
-        definition.getPropertyValues().add("resolver", new RuntimeBeanReference(EntityTableMetadataResolver.class));
         definition.getPropertyValues().add("reactive", enableReactive);
-
-        definition.getPropertyValues().add("properties", new RuntimeBeanReference(EasyormProperties.class));
         definition.setInitMethodName("init");
         registry.registerBeanDefinition(AutoDDLProcessor.class.getName(), definition);
 

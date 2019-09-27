@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.spring.EasyormProperties;
 import org.hswebframework.ezorm.spring.EntityTableMetadataResolver;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
@@ -18,10 +19,13 @@ public class AutoDDLProcessor {
 
     private List<Class> entities = new ArrayList<>();
 
+    @Autowired
     private DatabaseOperator operator;
 
+    @Autowired
     private EasyormProperties properties;
 
+    @Autowired
     private EntityTableMetadataResolver resolver;
 
     private boolean reactive;
