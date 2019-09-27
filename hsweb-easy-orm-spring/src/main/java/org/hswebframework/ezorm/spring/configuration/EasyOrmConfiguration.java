@@ -1,7 +1,6 @@
 package org.hswebframework.ezorm.spring.configuration;
 
 
-import io.r2dbc.spi.ConnectionFactory;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -47,16 +46,22 @@ public class EasyOrmConfiguration {
     @Autowired
     private EasyormProperties properties;
 
-    @Bean
-    @ConditionalOnClass(ConnectionFactory.class)
+    @ConditionalOnClass(io.r2dbc.spi.ConnectionFactory.class)
     @ConditionalOnMissingBean(ReactiveSqlExecutor.class)
-    public ReactiveSqlExecutor reactiveSqlExecutor(ConnectionFactory factory) {
-        return new TransactionR2dbcSqlExecutor() {
-            @Override
-            protected ConnectionFactory getConnectionFactory() {
-                return factory;
-            }
-        };
+    @Configuration
+    public static class R2dbcReactiveSqlExecutorConfiguration {
+
+        @Bean
+
+        public ReactiveSqlExecutor reactiveSqlExecutor(io.r2dbc.spi.ConnectionFactory factory) {
+            return new TransactionR2dbcSqlExecutor() {
+                @Override
+                protected io.r2dbc.spi.ConnectionFactory getConnectionFactory() {
+                    return factory;
+                }
+            };
+        }
+
     }
 
     @Bean
