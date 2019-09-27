@@ -56,8 +56,8 @@ public class EasyormRepositoryRegistrar implements ImportBeanDefinitionRegistrar
                 .collect(Collectors.joining());
 
         Class<Annotation>[] anno = (Class[]) attr.get("annotation");
-        boolean enableSync = attr.containsKey("enableSync");
-        boolean enableReactive = attr.containsKey("enableReactive");
+        boolean enableSync = Boolean.TRUE.equals(attr.get("enableSync"));
+        boolean enableReactive = Boolean.TRUE.equals(attr.containsKey("enableReactive"));
 
         List<Class> allEntities = new ArrayList<>();
 

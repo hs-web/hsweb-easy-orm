@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.r2dbc.ConnectionFactoryAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,6 +48,7 @@ public class EasyOrmConfiguration {
     private EasyormProperties properties;
 
     @Bean
+    @ConditionalOnClass(ConnectionFactory.class)
     @ConditionalOnMissingBean(ReactiveSqlExecutor.class)
     public ReactiveSqlExecutor reactiveSqlExecutor(ConnectionFactory factory) {
         return new TransactionR2dbcSqlExecutor() {
