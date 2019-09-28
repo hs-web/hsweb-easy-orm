@@ -111,7 +111,7 @@ public class DefaultColumnBuilder implements ColumnBuilder {
     @Override
     public TableBuilder commit() {
         tableMetaData.findFeature(ValueCodecFactory.ID)
-                .map(factory -> factory.createValueCodec(columnMetaData))
+                .flatMap(factory -> factory.createValueCodec(columnMetaData))
                 .ifPresent(columnMetaData::setValueCodec);
         tableMetaData.addColumn(columnMetaData);
         return tableBuilder;

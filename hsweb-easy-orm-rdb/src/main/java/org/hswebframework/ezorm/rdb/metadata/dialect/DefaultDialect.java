@@ -122,7 +122,8 @@ public abstract class DefaultDialect implements Dialect {
     @Override
     public String buildColumnDataType(RDBColumnMetadata columnMetaData) {
         if (columnMetaData.getType() == null) {
-            return columnMetaData.getDataType();
+
+            throw new UnsupportedOperationException("unknown column type : " + columnMetaData);
         }
         DataType dataType = columnMetaData.getType();
         if (dataType instanceof DataTypeBuilder) {

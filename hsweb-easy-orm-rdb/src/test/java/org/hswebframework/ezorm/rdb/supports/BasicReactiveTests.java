@@ -156,6 +156,7 @@ public abstract class BasicReactiveTests {
                         .createTime(new Date())
                         .tags(Arrays.asList("a", "b", "c", "d"))
                         .state((byte) 1)
+                        .stateEnum(StateEnum.enabled)
                         .build())))
                 .expectNext(10)
                 .verifyComplete();

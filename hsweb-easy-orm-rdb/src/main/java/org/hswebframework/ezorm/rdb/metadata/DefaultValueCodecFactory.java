@@ -12,6 +12,7 @@ import org.hswebframework.ezorm.rdb.utils.DataTypeUtils;
 import java.sql.JDBCType;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -43,12 +44,11 @@ public class DefaultValueCodecFactory implements ValueCodecFactory {
     }
 
     @Override
-    public ValueCodec createValueCodec(RDBColumnMetadata column) {
+    public Optional<ValueCodec> createValueCodec(RDBColumnMetadata column) {
         return strategies.stream()
                 .filter(strategy -> strategy.predicate.test(column))
                 .map(strategy -> strategy.function.apply(column))
-                .findFirst()
-                .orElse(defaultCodec);
+                .findFirst();
     }
 
 

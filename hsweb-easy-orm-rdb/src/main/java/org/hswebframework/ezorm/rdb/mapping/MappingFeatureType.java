@@ -16,7 +16,13 @@ public enum MappingFeatureType implements FeatureType {
     /**
      * @see EntityManager
      */
-    entityManager("实体类管理器");
+    entityManager("实体类管理器"),
+
+    /**
+     * @see EntityPropertyDescriptor
+     */
+    propertyDescriptor("属性描述器")
+    ;
 
     private String name;
 

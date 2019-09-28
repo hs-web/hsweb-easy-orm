@@ -5,6 +5,8 @@ import org.hswebframework.ezorm.core.FeatureType;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.core.meta.Feature;
 
+import java.util.Optional;
+
 public interface ValueCodecFactory extends Feature {
 
     String ID_VALUE = "valueCodecFactory";
@@ -26,6 +28,6 @@ public interface ValueCodecFactory extends Feature {
         return ID_VALUE;
     }
 
-    ValueCodec createValueCodec(RDBColumnMetadata column);
+    Optional<ValueCodec> createValueCodec(RDBColumnMetadata column);
 
 }

@@ -17,7 +17,7 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     protected boolean updatable;
     protected boolean notNull;
     protected DictionaryCodec dictionaryCodec;
-    protected ValueCodec valueCodec = OriginalValueCodec.INSTANCE;
+    protected ValueCodec valueCodec;
     protected DefaultValue defaultValue;
     protected Map<String, Object> properties = new HashMap<>();
 

@@ -44,4 +44,8 @@ public class BasicTestEntity implements Serializable {
     @JsonCodec
     private List<String> tags;
 
+    @Column
+    @ColumnType(javaType = String.class)
+    private StateEnum stateEnum;
+
 }

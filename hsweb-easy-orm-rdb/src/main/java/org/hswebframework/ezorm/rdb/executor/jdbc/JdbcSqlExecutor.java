@@ -105,6 +105,9 @@ public abstract class JdbcSqlExecutor {
                 return set.getTimestamp(columnIndex);
             case Types.TIME:
                 return set.getTime(columnIndex);
+            case Types.LONGVARCHAR:
+            case Types.VARCHAR:
+                return set.getString(columnIndex);
             case Types.DATE:
                 return set.getDate(columnIndex);
             case Types.CLOB:
@@ -112,7 +115,7 @@ public abstract class JdbcSqlExecutor {
             case Types.BLOB:
                 return set.getBlob(columnIndex);
             default:
-               return set.getObject(columnIndex);
+                return set.getObject(columnIndex);
         }
     }
 
@@ -133,9 +136,9 @@ public abstract class JdbcSqlExecutor {
                 //调用包装器,将查询结果包装为对象
                 T data = wrapper.newRowInstance();
                 for (int i = 0; i < columns.size(); i++) {
-                    String column=columns.get(i);
+                    String column = columns.get(i);
                     Object value = getResultValue(metaData, resultSet, i + 1);
-                    DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(i,column , value, data);
+                    DefaultColumnWrapperContext<T> context = new DefaultColumnWrapperContext<>(i, column, value, data);
                     wrapper.wrapColumn(context);
                     data = context.getRowInstance();
                 }

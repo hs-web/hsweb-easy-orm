@@ -2,11 +2,13 @@ package org.hswebframework.ezorm.rdb.mapping.jpa;
 
 import lombok.Setter;
 import org.apache.commons.beanutils.BeanUtilsBean;
+import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
 import org.hswebframework.ezorm.rdb.mapping.parser.DataTypeResolver;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.parser.ValueCodecResolver;
 import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.utils.ClassUtils;
 
@@ -108,11 +110,16 @@ public class JpaEntityTableMetadataParserProcessor {
         } else {
             columnName = descriptor.getName();
         }
+        Class javaType = descriptor.getPropertyType();
+
+        if (javaType == Object.class) {
+            javaType = descriptor.getReadMethod().getReturnType();
+        }
         mapping.addMapping(columnName, descriptor.getName());
         RDBColumnMetadata metadata = tableMetadata.getColumn(columnName).orElseGet(tableMetadata::newColumn);
         metadata.setName(columnName);
         metadata.setAlias(descriptor.getName());
-        metadata.setJavaType(descriptor.getPropertyType());
+        metadata.setJavaType(javaType);
         metadata.setLength(column.length());
         metadata.setPrecision(column.precision());
         metadata.setScale(column.scale());
@@ -121,15 +128,19 @@ public class JpaEntityTableMetadataParserProcessor {
         if (!column.columnDefinition().isEmpty()) {
             metadata.setColumnDefinition(column.columnDefinition());
         }
-        Optional.ofNullable(AnnotationUtils.getAnnotation(entityType,descriptor, Comment.class))
+        Optional.ofNullable(AnnotationUtils.getAnnotation(entityType, descriptor, Comment.class))
                 .map(Comment::value)
                 .ifPresent(tableMetadata::setComment);
 
         ofNullable(getAnnotation(entityType, descriptor, Id.class))
                 .ifPresent(id -> metadata.setPrimaryKey(true));
 
+        EntityPropertyDescriptor propertyDescriptor = SimpleEntityPropertyDescriptor.of(entityType, descriptor.getName(), javaType, metadata, descriptor);
+
+        metadata.addFeature(propertyDescriptor);
+
         ofNullable(dataTypeResolver)
-                .map(resolver -> resolver.resolve(entityType, descriptor))
+                .map(resolver -> resolver.resolve(propertyDescriptor))
                 .ifPresent(metadata::setType);
 
         if (metadata.getType() == null) {
@@ -140,11 +151,11 @@ public class JpaEntityTableMetadataParserProcessor {
         }
 
         ofNullable(valueCodecResolver)
-                .map(resolver -> resolver.resolve(entityType, descriptor)
+                .map(resolver -> resolver.resolve(propertyDescriptor)
                         .orElseGet(() -> metadata.findFeature(ValueCodecFactory.ID)
-                                .map(factory -> factory.createValueCodec(metadata))
+                                .flatMap(factory -> factory.createValueCodec(metadata))
                                 .orElse(null)))
-                .ifPresent(metadata::setValueCodec);
+                .ifPresent(metadata::setValueCodec);;
 
         metadata.setDataType(tableMetadata.getDialect().buildColumnDataType(metadata));
 

@@ -101,6 +101,7 @@ public abstract class BasicCommonTests {
                         .createTime(new Date())
                         .tags(Arrays.asList("a", "b", "c", "d"))
                         .state((byte) 1)
+                        .stateEnum(StateEnum.enabled)
                         .build())
                 .collectList().block();
         Assert.assertEquals(100, repository.insertBatch(entities));
@@ -115,6 +116,7 @@ public abstract class BasicCommonTests {
                 .createTime(new Date())
                 .tags(Arrays.asList("a", "b", "c", "d"))
                 .state((byte) 1)
+                .stateEnum(StateEnum.enabled)
                 .build();
 
         repository.insert(entity);

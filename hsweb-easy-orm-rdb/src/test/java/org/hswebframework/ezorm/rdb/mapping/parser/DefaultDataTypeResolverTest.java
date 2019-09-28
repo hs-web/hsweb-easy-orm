@@ -5,10 +5,12 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
+import org.hswebframework.ezorm.rdb.mapping.jpa.SimpleEntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.persistence.Column;
 import java.beans.PropertyDescriptor;
 import java.sql.JDBCType;
 import java.util.List;
@@ -33,48 +35,80 @@ public class DefaultDataTypeResolverTest {
         {
             PropertyDescriptor name = descriptorMap.get("name");
 
-            DataType dataType = resolver.resolve(Entity.class, name);
+            DataType dataType = resolver.resolve(SimpleEntityPropertyDescriptor.of(name,null));
             assertNotNull(dataType);
             Assert.assertEquals(dataType.getId(), "varchar");
             Assert.assertEquals(dataType.getSqlType(), JDBCType.VARCHAR);
+            Assert.assertEquals(dataType.getJavaType(), String.class);
 
         }
 
         {
             PropertyDescriptor property = descriptorMap.get("jsonArray");
 
-            DataType dataType = resolver.resolve(Entity.class, property);
+            DataType dataType = resolver.resolve(SimpleEntityPropertyDescriptor.of(property,null));
             assertNotNull(dataType);
             Assert.assertEquals(dataType.getId(), "jsonb");
             Assert.assertEquals(dataType.getSqlType(), JDBCType.VARCHAR);
 
+            Assert.assertEquals(dataType.getJavaType(), String.class);
         }
 
         {
             PropertyDescriptor property = descriptorMap.get("custom");
 
-            DataType dataType = resolver.resolve(Entity.class, property);
+            DataType dataType = resolver.resolve(SimpleEntityPropertyDescriptor.of(property,null));
             assertNotNull(dataType);
             Assert.assertEquals(dataType.getId(), "custom");
             Assert.assertEquals(dataType.getSqlType(), JDBCType.CLOB);
 
+            Assert.assertEquals(dataType.getJavaType(), String.class);
         }
 
+        {
+            PropertyDescriptor property = descriptorMap.get("id");
+
+            DataType dataType = resolver.resolve(SimpleEntityPropertyDescriptor.of(property,null));
+            assertNotNull(dataType);
+            Assert.assertEquals(dataType.getId(), "varchar");
+            Assert.assertEquals(dataType.getSqlType(), JDBCType.VARCHAR);
+
+            Assert.assertEquals(dataType.getJavaType(), String.class);
+
+        }
 
     }
 
+    public interface InterfaceEntity<ID> {
+        ID getId();
+    }
 
     @Getter
     @Setter
-    public static class Entity {
+    public static class GenericEntity<ID> implements InterfaceEntity<ID> {
+        private ID id;
 
-        @ColumnType(jdbcType = JDBCType.VARCHAR)
-        private String name;
-
-        @ColumnType(typeId = "jsonb", jdbcType = JDBCType.VARCHAR)
+        @ColumnType(typeId = "jsonb", javaType =String.class)
         private List<String> jsonArray;
 
-        @ColumnType(type =CustomType.class)
+    }
+
+    @Getter
+    @Setter
+    public static class Entity extends GenericEntity<String> {
+
+        @Override
+        @Column
+        @ColumnType
+        public String getId() {
+            return super.getId();
+        }
+
+        @ColumnType
+        private String name;
+
+
+        @ColumnType(type = CustomType.class)
         private String custom;
 
     }

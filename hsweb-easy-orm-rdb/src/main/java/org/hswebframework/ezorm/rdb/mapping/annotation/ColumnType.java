@@ -26,7 +26,7 @@ public @interface ColumnType {
      * @return JDBCType
      * @see DataType#getSqlType()
      */
-    JDBCType jdbcType() default JDBCType.OTHER;
+    JDBCType jdbcType() default JDBCType.VARCHAR;
 
     /**
      * @return 自定义java类型

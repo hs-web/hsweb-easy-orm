@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.parser;
 
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.metadata.CustomDataType;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
@@ -19,21 +20,18 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
     }
 
     @Override
-    public DataType resolve(Class entityType, PropertyDescriptor descriptor) {
+    public DataType resolve(EntityPropertyDescriptor descriptor) {
 
-        ColumnType type = AnnotationUtils.getAnnotation(entityType, descriptor, ColumnType.class);
-        if (type != null) {
-            Class javaType = type.javaType() != Void.class ? descriptor.getPropertyType() : type.javaType();
-
-            if (!type.typeId().isEmpty()) {
-                return DataType.custom(type.typeId(), type.typeId(), type.jdbcType(), javaType);
-            } else if (type.type() != DataType.class) {
-                return getDataTypeInstance(type.type());
-            } else {
-                return DataType.jdbc(type.jdbcType(), javaType);
-            }
-        }
-
-        return null;
+        return descriptor.findAnnotation(ColumnType.class)
+                .map(type -> {
+                    Class javaType = type.javaType() != Void.class ? type.javaType() : descriptor.getPropertyType();
+                    if (!type.typeId().isEmpty()) {
+                        return DataType.custom(type.typeId(), type.typeId(), type.jdbcType(), javaType);
+                    } else if (type.type() != DataType.class) {
+                        return getDataTypeInstance(type.type());
+                    } else {
+                        return DataType.jdbc(type.jdbcType(), javaType);
+                    }
+                }).orElse(null);
     }
 }

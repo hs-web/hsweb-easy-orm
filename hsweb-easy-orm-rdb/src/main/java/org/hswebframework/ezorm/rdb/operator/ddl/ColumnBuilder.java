@@ -58,6 +58,10 @@ public interface ColumnBuilder {
         return type(JDBCType.NUMERIC, Long.class).length(len, 0);
     }
 
+    default ColumnBuilder text() {
+        return type(JDBCType.LONGVARCHAR, String.class);
+    }
+
     default ColumnBuilder clob() {
         return type(JDBCType.CLOB, String.class);
     }
