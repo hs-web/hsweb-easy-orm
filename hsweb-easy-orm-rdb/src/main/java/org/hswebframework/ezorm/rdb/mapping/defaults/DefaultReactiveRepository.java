@@ -13,9 +13,20 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implements ReactiveRepository<E, K> {
+
+    public DefaultReactiveRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
+        this(operator,
+                () -> operator.getMetadata().getTable(table).orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
+    }
+
     public DefaultReactiveRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
+        this(operator, () -> table, type, wrapper);
+    }
+
+    public DefaultReactiveRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         super(operator, table, wrapper);
         initMapping(type);
     }
@@ -28,14 +39,14 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     @Override
     public Mono<E> findById(Mono<K> primaryKey) {
         return primaryKey
-                .flatMap(k -> createQuery().where(idColumn, k).fetchOne());
+                .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
     }
 
     @Override
     public Mono<Integer> deleteById(Publisher<K> key) {
         return Flux.from(key)
                 .collectList()
-                .flatMap(list -> createDelete().where().in(idColumn, list).execute());
+                .flatMap(list -> createDelete().where().in(getIdColumn(), list).execute());
     }
 
     @Override
@@ -44,12 +55,12 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
         return Flux
                 .from(data)
                 .flatMap(e -> getPropertyOperator()
-                        .getProperty(e, idColumn)
+                        .getProperty(e, getIdColumn())
                         .map(CastUtil::<K>cast)
                         .map(primaryKey ->
                                 createUpdate()
                                         .set(e)
-                                        .where(idColumn, primaryKey)
+                                        .where(getIdColumn(), primaryKey)
                                         .execute()
                                         .flatMap(i -> {
                                             if (i >= 0) {
@@ -80,16 +91,16 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public ReactiveQuery<E> createQuery() {
-        return new DefaultReactiveQuery<>(table, mapping, operator.dml(), wrapper);
+        return new DefaultReactiveQuery<>(getTable(), mapping, operator.dml(), wrapper);
     }
 
     @Override
     public ReactiveUpdate<E> createUpdate() {
-        return new DefaultReactiveUpdate<>(table, operator.dml().update(table.getFullName()), mapping);
+        return new DefaultReactiveUpdate<>(getTable(), operator.dml().update(getTable().getFullName()), mapping);
     }
 
     @Override
     public ReactiveDelete createDelete() {
-        return new DefaultReactiveDelete(table, operator.dml().delete(table.getFullName()));
+        return new DefaultReactiveDelete(getTable(), operator.dml().delete(getTable().getFullName()));
     }
 }

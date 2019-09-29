@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.hswebframework.ezorm.rdb.mapping.EntityManager;
 import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.spring.EntityResultWrapperFactory;
 import org.hswebframework.ezorm.spring.EntityTableMetadataResolver;
@@ -31,9 +32,10 @@ public class SyncRepositoryFactoryBean<E, PK>
 
     @Override
     public SyncRepository<E, PK> getObject() {
+        RDBTableMetadata table = resolver.resolve(entityType);
 
         return new DefaultSyncRepository<>(operator,
-                resolver.resolve(entityType),
+                table.getFullName(),
                 entityType,
                 wrapperFactory.getWrapper(entityType));
     }

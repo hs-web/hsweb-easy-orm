@@ -150,4 +150,6 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     default List<Feature> findFeatures() {
         return findFeatures((feature -> true));
     }
+
+    void merge(TableOrViewMetadata metadata);
 }

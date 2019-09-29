@@ -43,6 +43,8 @@ public abstract class InsertOperator {
         return this;
     }
 
+    public abstract InsertOperator values(List<Map<String, Object>> values);
+
     public abstract SqlRequest getSql();
 
     public abstract InsertResultOperator execute();

@@ -16,7 +16,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import({EasyormRepositoryRegistrar.class,EasyOrmConfiguration.class})
+@Import({EasyormRepositoryRegistrar.class})
 public @interface EnableEasyormRepository {
 
     /**

@@ -194,4 +194,12 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     public String toString() {
         return FeatureUtils.metadataToString(this);
     }
+
+    @Override
+    public void merge(TableOrViewMetadata metadata) {
+        metadata.getForeignKeys().forEach(this::addForeignKey);
+        metadata.getFeatureList().forEach(this::addFeature);
+        metadata.getColumns().forEach(this::addColumn);
+
+    }
 }

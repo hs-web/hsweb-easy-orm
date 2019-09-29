@@ -10,10 +10,22 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements SyncRepository<E, K> {
 
+
+    public DefaultSyncRepository(DatabaseOperator operator, String table, Class<E> type,ResultWrapper<E, ?> wrapper) {
+        this(operator,
+                ()->operator.getMetadata().getTable(table).orElseThrow(()->new UnsupportedOperationException("table [" + table + "] doesn't exist")),type,wrapper);
+    }
+
+
     public DefaultSyncRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
+        this(operator, () -> table, type, wrapper);
+    }
+
+    public DefaultSyncRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         super(operator, table, wrapper);
         initMapping(type);
     }
@@ -29,7 +41,7 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
             return 0;
         }
         return createDelete()
-                .where().in(idColumn, idList)
+                .where().in(getIdColumn(), idList)
                 .execute();
     }
 
@@ -42,13 +54,13 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
         int updated = 0;
         for (E datum : list) {
             K id = getPropertyOperator()
-                    .getProperty(datum, idColumn)
+                    .getProperty(datum, getIdColumn())
                     .map(CastUtil::<K>cast)
                     .orElse(null);
             if (id == null) {
                 readyToInsert.add(datum);
             } else {
-                int thisUpdated = createUpdate().set(datum).where(idColumn, id).execute();
+                int thisUpdated = createUpdate().set(datum).where(getIdColumn(), id).execute();
                 if (thisUpdated == 0) {
                     readyToInsert.add(datum);
                 } else {
@@ -64,7 +76,7 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
     @Override
     public Optional<E> findById(K primaryKey) {
         return Optional.ofNullable(primaryKey)
-                .flatMap(k -> createQuery().where(idColumn, k).fetchOne());
+                .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
     }
 
     @Override
@@ -72,7 +84,7 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
         if (primaryKey.isEmpty()) {
             return new ArrayList<>();
         }
-        return createQuery().where().in(idColumn, primaryKey).fetch();
+        return createQuery().where().in(getIdColumn(), primaryKey).fetch();
     }
 
     @Override
@@ -90,16 +102,16 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     @Override
     public SyncQuery<E> createQuery() {
-        return new DefaultSyncQuery<>(table, mapping, operator.dml(), wrapper);
+        return new DefaultSyncQuery<>(getTable(), mapping, operator.dml(), wrapper);
     }
 
     @Override
     public SyncUpdate<E> createUpdate() {
-        return new DefaultSyncUpdate<>(table, operator.dml().update(table.getFullName()), mapping);
+        return new DefaultSyncUpdate<>(getTable(), operator.dml().update(getTable().getFullName()), mapping);
     }
 
     @Override
     public SyncDelete createDelete() {
-        return new DefaultSyncDelete(table, operator.dml().delete(table.getFullName()));
+        return new DefaultSyncDelete(getTable(), operator.dml().delete(getTable().getFullName()));
     }
 }

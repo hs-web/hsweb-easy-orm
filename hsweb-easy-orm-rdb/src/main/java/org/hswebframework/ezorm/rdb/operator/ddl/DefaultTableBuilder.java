@@ -73,7 +73,7 @@ public class DefaultTableBuilder implements TableBuilder {
 
     @Override
     public ColumnBuilder addColumn() {
-        RDBColumnMetadata rdbColumnMetaData = new RDBColumnMetadata();
+        RDBColumnMetadata rdbColumnMetaData = table.newColumn();
         return new DefaultColumnBuilder(rdbColumnMetaData, this, table);
     }
 
@@ -102,14 +102,16 @@ public class DefaultTableBuilder implements TableBuilder {
                             .oldTable(oldTable)
                             .build()))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported AlterTableSqlBuilder"));
+            return TableDDLResultOperator.of(schema, sqlRequest, () ->oldTable.merge(table));
 
         } else {
             //create
             sqlRequest = schema.findFeature(CreateTableSqlBuilder.ID)
                     .map(builder -> builder.build(table))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported CreateTableSqlBuilder"));
+            return TableDDLResultOperator.of(schema, sqlRequest, () ->schema.addTable(table));
+
         }
-        return TableDDLResultOperator.of(schema, sqlRequest, () -> schema.addTable(table));
 
 
     }

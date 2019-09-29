@@ -6,22 +6,23 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 
+import java.util.function.Supplier;
+
 public class RecordReactiveRepository<K> extends DefaultReactiveRepository<Record, K> {
-    public RecordReactiveRepository(DatabaseOperator operator, RDBTableMetadata table) {
-        super(operator, table, Record.class, RecordResultWrapper.INSTANCE);
+
+    public RecordReactiveRepository(DatabaseOperator operator, String table) {
+        this(operator,()->operator.getMetadata().getTable(table).orElseThrow(()->new UnsupportedOperationException("table [" + table + "] doesn't exist")));
+    }
+
+    public RecordReactiveRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> table) {
+        super(operator, table, Record.class, RecordResultWrapper.of(SimpleColumnMapping.of(table)));
     }
 
     @Override
     protected void initMapping(Class<Record> entityType) {
-        this.idColumn = table.getColumns().stream()
-                .filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst()
-                .map(RDBColumnMetadata::getName)
-                .orElse(null);
-        this.mapping = SimpleColumnMapping.of(table);
 
-        this.properties = mapping.getColumnPropertyMapping()
-                .values()
-                .toArray(new String[0]);
+        this.mapping = SimpleColumnMapping.of(tableSupplier);
+
+
     }
 }

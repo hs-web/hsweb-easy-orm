@@ -79,4 +79,10 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
 
         return clone;
     }
+
+    @Override
+    public void merge(TableOrViewMetadata metadata) {
+        super.merge(metadata);
+
+    }
 }

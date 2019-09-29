@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.hswebframework.ezorm.rdb.mapping.EntityManager;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.spring.EntityResultWrapperFactory;
 import org.hswebframework.ezorm.spring.EntityTableMetadataResolver;
@@ -29,9 +30,10 @@ public class ReactiveRepositoryFactoryBean<E, PK>
 
     @Override
     public ReactiveRepository<E, PK> getObject() {
+        RDBTableMetadata table = resolver.resolve(entityType);
 
         return new DefaultReactiveRepository<>(operator,
-                resolver.resolve(entityType),
+                table.getFullName(),
                 entityType,
                 wrapperFactory.getWrapper(entityType));
     }

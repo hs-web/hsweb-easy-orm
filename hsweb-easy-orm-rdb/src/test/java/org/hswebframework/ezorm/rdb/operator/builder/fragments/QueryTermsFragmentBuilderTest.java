@@ -52,7 +52,7 @@ public class QueryTermsFragmentBuilderTest {
         table.addColumn(id);
         table.addColumn(name);
 
-        builder = QueryTermsFragmentBuilder.of(table,new HashSet<>());
+        builder = QueryTermsFragmentBuilder.of(table);
         builder.setUseBlock(true);
     }
 

@@ -82,9 +82,6 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
         if (codecs.size() == 1) {
             return Optional.of(codecs.get(0));
         }
-        if (codecs.size() > 1) {
-            return Optional.of(new CompositeValueCodec().addAllCodec(codecs));
-        }
 
         return Optional.ofNullable(typeStrategies.get(descriptor.getPropertyType()))
                 .map(func -> func.apply(descriptor))

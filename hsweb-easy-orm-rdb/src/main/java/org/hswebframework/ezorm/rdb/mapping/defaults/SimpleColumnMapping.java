@@ -7,32 +7,37 @@ import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor(staticName = "of")
 public class SimpleColumnMapping implements EntityColumnMapping {
 
-    private TableOrViewMetadata metadata;
+    private Supplier<? extends TableOrViewMetadata> metadata;
+
+    public static SimpleColumnMapping of(TableOrViewMetadata metadata){
+        return of(()->metadata);
+    }
 
     @Override
     public Optional<RDBColumnMetadata> getColumnByProperty(String property) {
-        return  metadata.findColumn(property);
+        return  metadata.get().findColumn(property);
     }
 
     @Override
     public Optional<String> getPropertyByColumnName(String columnName) {
-        return metadata.findColumn(columnName)
+        return metadata.get().findColumn(columnName)
                 .map(RDBColumnMetadata::getAlias);
     }
 
     @Override
     public Optional<RDBColumnMetadata> getColumnByName(String columnName) {
-        return metadata.findColumn(columnName);
+        return metadata.get().findColumn(columnName);
     }
 
     @Override
     public Map<String, String> getColumnPropertyMapping() {
-        return metadata.getColumns()
+        return metadata.get().getColumns()
                 .stream()
                 .collect(Collectors.toMap(RDBColumnMetadata::getName, RDBColumnMetadata::getAlias));
     }

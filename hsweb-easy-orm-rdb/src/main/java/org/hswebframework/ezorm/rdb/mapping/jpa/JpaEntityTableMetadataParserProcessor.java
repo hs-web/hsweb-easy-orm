@@ -130,7 +130,7 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         Optional.ofNullable(AnnotationUtils.getAnnotation(entityType, descriptor, Comment.class))
                 .map(Comment::value)
-                .ifPresent(tableMetadata::setComment);
+                .ifPresent(metadata::setComment);
 
         ofNullable(getAnnotation(entityType, descriptor, Id.class))
                 .ifPresent(id -> metadata.setPrimaryKey(true));
@@ -156,8 +156,6 @@ public class JpaEntityTableMetadataParserProcessor {
                                 .flatMap(factory -> factory.createValueCodec(metadata))
                                 .orElse(null)))
                 .ifPresent(metadata::setValueCodec);;
-
-        metadata.setDataType(tableMetadata.getDialect().buildColumnDataType(metadata));
 
         tableMetadata.addColumn(metadata);
     }

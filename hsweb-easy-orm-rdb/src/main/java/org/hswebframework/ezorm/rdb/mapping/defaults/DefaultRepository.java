@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
+import org.hswebframework.ezorm.rdb.mapping.LazyEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
@@ -17,56 +18,75 @@ import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
 
-public class DefaultRepository<E> {
-
-    protected RDBTableMetadata table;
+public abstract class DefaultRepository<E> {
 
     protected DatabaseOperator operator;
 
     protected ResultWrapper<E, ?> wrapper;
 
-    protected String idColumn;
+    private volatile String idColumn;
 
+    @Getter
     protected EntityColumnMapping mapping;
 
-    protected String[] properties;
+    @Setter
+    protected volatile String[] properties;
+
+    protected Supplier<RDBTableMetadata> tableSupplier;
 
     @Getter
     @Setter
     private ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
 
-    public DefaultRepository(DatabaseOperator operator, RDBTableMetadata table, ResultWrapper<E, ?> wrapper) {
+    public DefaultRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> supplier, ResultWrapper<E, ?> wrapper) {
         this.operator = operator;
-        this.table = table;
         this.wrapper = wrapper;
+        this.tableSupplier = supplier;
+    }
+
+    protected RDBTableMetadata getTable() {
+        return tableSupplier.get();
+    }
+
+    public String[] getProperties() {
+        if (properties == null) {
+            properties = mapping.getColumnPropertyMapping()
+                    .entrySet()
+                    .stream()
+                    .filter(kv -> getTable().getColumn(kv.getKey()).isPresent())
+                    .map(Map.Entry::getValue)
+                    .toArray(String[]::new);
+        }
+        return properties;
+    }
+
+    protected String getIdColumn() {
+        if (idColumn == null) {
+            this.idColumn = getTable().getColumns().stream()
+                    .filter(RDBColumnMetadata::isPrimaryKey)
+                    .findFirst()
+                    .map(RDBColumnMetadata::getName)
+                    .orElseThrow(() -> new UnsupportedOperationException("id column not exists"));
+        }
+        return idColumn;
     }
 
     protected void initMapping(Class<E> entityType) {
-        this.idColumn = table.getColumns().stream()
-                .filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst()
-                .map(RDBColumnMetadata::getName)
-                .orElse(null);
 
-        this.mapping = table.<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature"));
-
-        this.properties = mapping.getColumnPropertyMapping()
-                .entrySet()
-                .stream()
-                .filter(kv -> table.getColumn(kv.getKey()).isPresent())
-                .map(Map.Entry::getValue)
-                .toArray(String[]::new);
+        this.mapping = LazyEntityColumnMapping.of(() -> getTable()
+                .<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature")));
 
     }
 
     protected InsertResultOperator doInsert(E data) {
-
+        RDBTableMetadata table = getTable();
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
         table.fireEvent(MappingEventTypes.insert_before,
@@ -85,15 +105,16 @@ public class DefaultRepository<E> {
     }
 
     protected InsertResultOperator doInsert(Collection<E> batch) {
+        RDBTableMetadata table = getTable();
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
         table.fireEvent(MappingEventTypes.insert_before,
                 ctx -> ctx.set(instance(batch), type("batch"), tableMetadata(table), insert(insert)));
 
-        insert.columns(properties);
+        insert.columns(getProperties());
 
         for (E e : batch) {
-            insert.values(Stream.of(properties)
+            insert.values(Stream.of(getProperties())
                     .map(property -> propertyOperator
                             .getProperty(e, property)
                             .orElseGet(() -> mapping.getColumnByProperty(property)

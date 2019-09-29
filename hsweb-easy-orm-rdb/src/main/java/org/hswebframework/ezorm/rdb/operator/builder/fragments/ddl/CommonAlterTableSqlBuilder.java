@@ -36,7 +36,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             if (oldColumn.isChanged(newColumn)) {
                 appendAlterColumnSql(batch, oldColumn, newColumn);
             }
-            if (newColumn.getComment() != null && !oldColumn.getComment().equals(newColumn.getComment())) {
+            if (newColumn.getComment() != null && !newColumn.getComment().equals(oldColumn.getComment())) {
                 appendAddColumnCommentSql(batch, newColumn);
             }
         }
@@ -83,6 +83,9 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
     }
 
     protected void appendAddColumnCommentSql(DefaultBatchSqlRequest batch, RDBColumnMetadata column) {
+        if (column.getComment() == null || column.getComment().isEmpty()) {
+            return;
+        }
         batch.addBatch(of()
                 .addSql("comment on column", column.getFullName(), "is", "'".concat(column.getComment()).concat("'")).toRequest());
     }

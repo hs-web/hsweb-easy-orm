@@ -40,47 +40,36 @@ import java.util.Optional;
 
 @Configuration
 @EnableConfigurationProperties(EasyormProperties.class)
-@AutoConfigureAfter(ConnectionFactoryAutoConfiguration.class)
 public class EasyOrmConfiguration {
 
     @Autowired
     private EasyormProperties properties;
 
-    @ConditionalOnClass(io.r2dbc.spi.ConnectionFactory.class)
-    @ConditionalOnMissingBean(ReactiveSqlExecutor.class)
-    @Configuration
-    public static class R2dbcReactiveSqlExecutorConfiguration {
-
-        @Bean
-
-        public ReactiveSqlExecutor reactiveSqlExecutor(io.r2dbc.spi.ConnectionFactory factory) {
-            return new TransactionR2dbcSqlExecutor() {
-                @Override
-                protected io.r2dbc.spi.ConnectionFactory getConnectionFactory() {
-                    return factory;
-                }
-            };
-        }
-
-    }
-
     @Bean
-    @ConditionalOnBean(ReactiveSqlExecutor.class)
-    @ConditionalOnMissingBean(SyncSqlExecutor.class)
-    public ReactiveSyncSqlExecutor reactiveSyncSqlExecutor(ReactiveSqlExecutor executor) {
-        return ReactiveSyncSqlExecutor.of(executor);
-    }
-
-    @Bean
-    @ConditionalOnBean(DataSource.class)
-    public SyncSqlExecutor syncSqlExecutor(DataSource dataSource) {
-        return new DataSourceJdbcSyncSqlExecutor() {
+    public ReactiveSqlExecutor reactiveSqlExecutor(io.r2dbc.spi.ConnectionFactory factory) {
+        return new TransactionR2dbcSqlExecutor() {
             @Override
-            protected DataSource getDataSource() {
-                return dataSource;
+            protected io.r2dbc.spi.ConnectionFactory getConnectionFactory() {
+                return factory;
             }
         };
     }
+
+    @Bean
+    public SyncSqlExecutor reactiveSyncSqlExecutor(ReactiveSqlExecutor executor) {
+        return ReactiveSyncSqlExecutor.of(executor);
+    }
+
+//    @Bean
+//    @ConditionalOnBean(DataSource.class)
+//    public SyncSqlExecutor syncSqlExecutor(DataSource dataSource) {
+//        return new DataSourceJdbcSyncSqlExecutor() {
+//            @Override
+//            protected DataSource getDataSource() {
+//                return dataSource;
+//            }
+//        };
+//    }
 
     @Bean
     @ConditionalOnMissingBean

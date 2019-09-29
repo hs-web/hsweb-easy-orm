@@ -120,10 +120,10 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     }
 
     public String getDataType() {
-        if (dataType == null) {
-            return dataType = getDialect().buildColumnDataType(this);
+        if (dataType != null) {
+            return dataType;
         }
-        return dataType;
+        return getDialect().buildColumnDataType(this);
     }
 
     public SQLType getSqlType() {
@@ -158,7 +158,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(name);
-        builder.append(" ").append(dataType);
+        builder.append(" ").append(getDataType());
 
         if (javaType != null) {
             builder.append(" ").append(javaType.getSimpleName());
@@ -211,6 +211,11 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
                 || this.getLength() != after.getLength()
                 || this.getScale() != after.getScale()
                 || (this.getColumnDefinition() != null && !this.getColumnDefinition().equals(after.getColumnDefinition()));
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+        this.setDataType(null);
     }
 
 

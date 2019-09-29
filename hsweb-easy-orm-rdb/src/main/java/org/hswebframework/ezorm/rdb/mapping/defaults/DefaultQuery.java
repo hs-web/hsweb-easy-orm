@@ -52,6 +52,7 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
         this.wrapper = wrapper;
         this.tableMetadata = tableMetadata;
         this.columnMapping = mapping;
+        param.setPaging(false);
     }
 
     @Override

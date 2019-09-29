@@ -4,9 +4,7 @@ import lombok.Getter;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class BuildParameterInsertOperator extends InsertOperator {
 
@@ -28,6 +26,25 @@ public class BuildParameterInsertOperator extends InsertOperator {
     public InsertOperator values(Object... values) {
         parameter.getValues().add(Arrays.asList(values));
         columnValueModel = true;
+        return this;
+    }
+
+    @Override
+    public InsertOperator values(List<Map<String, Object>> values) {
+        if (values == null || values.isEmpty()) {
+            return this;
+        }
+
+        Set<String> keys = values.get(0).keySet();
+        columns(keys.toArray(new String[0]));
+
+        for (Map<String, Object> value : values) {
+            values(keys
+                    .stream()
+                    .map(value::get)
+                    .toArray());
+        }
+
         return this;
     }
 
