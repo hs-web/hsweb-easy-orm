@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
+import org.hswebframework.ezorm.rdb.metadata.DataType;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
@@ -21,6 +23,10 @@ public class H2Dialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
+
+        addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
+        addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
+
     }
 
     @Override

@@ -206,9 +206,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public boolean isChanged(RDBColumnMetadata after) {
 
         return !this.getName().equals(this.getPreviousName())
-                || !this.getType().getId().equals(after.getType().getId())
-                || this.getLength() != after.getLength()
-                || this.getScale() != after.getScale();
+                || !getDataType().equals(after.getDataType());
     }
 
     public void setLength(int length) {

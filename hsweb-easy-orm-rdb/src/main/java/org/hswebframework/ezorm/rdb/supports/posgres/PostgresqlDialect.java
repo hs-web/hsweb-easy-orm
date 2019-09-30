@@ -47,7 +47,6 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("bool", JdbcDataType.of(JDBCType.BOOLEAN, Boolean.class));
         registerDataType("character", JdbcDataType.of(JDBCType.VARCHAR, String.class));
         registerDataType("xml", JdbcDataType.of(JDBCType.VARCHAR, String.class));
-        registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
         registerDataType("year", JdbcDataType.of(JDBCType.TIME, String.class));
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, String.class));
         registerDataType("text", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
