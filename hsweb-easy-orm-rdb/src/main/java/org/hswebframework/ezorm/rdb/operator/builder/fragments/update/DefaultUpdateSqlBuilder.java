@@ -53,6 +53,12 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                                     .addSql(((NativeSql) column).getSql())
                                     .addParameter(((NativeSql) column).getParameters());
                         }
+                        if (column.getValue() instanceof NativeSql) {
+                            return PrepareSqlFragments.of()
+                                    .addSql(columnMetadata.getQuoteName(), "=")
+                                    .addSql(((NativeSql) column.getValue()).getSql())
+                                    .addParameter(((NativeSql) column.getValue()).getParameters());
+                        }
                         sqlFragments.addFragments(ofNullable(column.getFunction())
                                 .flatMap(function -> columnMetadata.findFeature(createFeatureId(function)))
                                 .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, column.getOpts()))

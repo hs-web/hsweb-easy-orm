@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
 import org.junit.Assert;
@@ -39,7 +40,7 @@ public class MultiInsertSqlBuilderTest {
         }
 
         insert.getValues().add(Arrays.asList("1", "2"));
-        insert.getValues().add(Arrays.asList("3", "4"));
+        insert.getValues().add(Arrays.asList("3", NativeSql.of("1+1","4")));
 
         SqlRequest request = builder.build(insert);
         System.out.println(request);

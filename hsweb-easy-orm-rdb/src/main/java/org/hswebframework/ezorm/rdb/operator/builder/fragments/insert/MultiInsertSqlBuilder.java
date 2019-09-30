@@ -71,17 +71,22 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
 
-                Object value = column.encode(valueLen < vIndex ? null : values.get(vIndex));
+
+                Object value = valueLen < vIndex ? null : values.get(vIndex);
+
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
                 }
+
+                intoSql.addSql(column.getQuoteName());
+
                 if (value == null && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
                 }
-                intoSql.addSql(column.getQuoteName());
                 if (value instanceof NativeSql) {
-                    valuesSql.addSql(((NativeSql) value).getSql())
+                    valuesSql
+                            .addSql(((NativeSql) value).getSql())
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
@@ -90,7 +95,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                 if (null != function) {
                     valuesSql.addFragments(function);
                 } else {
-                    valuesSql.addSql("?").addParameter(value);
+                    valuesSql.addSql("?").addParameter(column.encode(value));
                 }
             }
             intoSql.addSql(")");

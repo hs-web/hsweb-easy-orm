@@ -80,7 +80,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
 
-                Object value = column.encode(valueLen < vIndex ? null : values.get(vIndex));
+                Object value = valueLen < vIndex ? null : values.get(vIndex);
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
@@ -89,6 +89,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
                 }
                 intoSql.addSql(column.getQuoteName());
+
                 if (value instanceof NativeSql) {
                     valuesSql
                             .addSql(((NativeSql) value).getSql())
@@ -100,7 +101,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                 if (null != function) {
                     valuesSql.addFragments(function);
                 } else {
-                    valuesSql.addSql("?").addParameter(value);
+                    valuesSql.addSql("?").addParameter(column.encode(value));
                 }
             }
             intoSql.addSql(")");
