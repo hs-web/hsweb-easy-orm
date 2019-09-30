@@ -9,14 +9,21 @@ public class MysqlAlterTableSqlBuilder extends CommonAlterTableSqlBuilder {
 
     @Override
     protected PrepareSqlFragments createAlterColumnFragments(RDBColumnMetadata oldColumn, RDBColumnMetadata newColumn) {
-        return super.createAlterColumnFragments(oldColumn, newColumn)
-                .addSql("comment", "'".concat(newColumn.getComment()).concat("'"));
+
+        if (newColumn.getComment() != null) {
+            return super.createAlterColumnFragments(oldColumn, newColumn)
+                    .addSql("comment", "'".concat(newColumn.getComment()).concat("'"));
+        }
+        return super.createAlterColumnFragments(oldColumn, newColumn);
     }
 
     @Override
     protected PrepareSqlFragments createAddColumnFragments(RDBColumnMetadata column) {
-        return super.createAddColumnFragments(column)
-                .addSql("comment", "'".concat(column.getComment()).concat("'"));
+        if (column.getComment() != null) {
+            return super.createAddColumnFragments(column)
+                    .addSql("comment", "'".concat(column.getComment()).concat("'"));
+        }
+        return super.createAddColumnFragments(column);
     }
 
     @Override
