@@ -16,8 +16,8 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "text");
-        addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "longblob");
-        addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "longtext");
+        addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
+        addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "blob");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
@@ -27,12 +27,14 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
-        addDataTypeBuilder("int", (meta) -> "int");
-        addDataTypeBuilder("json", meta->"json");
+        addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "text");
 
-        registerDataType("int", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
-        registerDataType("text", JdbcDataType.of(JDBCType.CLOB,String.class));
-        registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR,String.class));
+        addDataTypeBuilder("int", (meta) -> "int");
+        addDataTypeBuilder("json", meta -> "json");
+
+        registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
+        registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
+        registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
         registerDataType("year", JdbcDataType.of(JDBCType.DATE, Date.class));
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, Date.class));
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, Date.class));
