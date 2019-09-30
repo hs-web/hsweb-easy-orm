@@ -1,11 +1,15 @@
-package org.hswebframework.ezorm.rdb.metadata;
+package org.hswebframework.ezorm.rdb.metadata.key;
 
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBObjectType;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 外键
@@ -28,13 +32,13 @@ public interface ForeignKeyMetadata extends ObjectMetadata {
      */
     boolean isToMany();
 
+    AssociationType getType();
+
     TableOrViewMetadata getSource();
 
     TableOrViewMetadata getTarget();
 
-    RDBColumnMetadata getSourceColumn();
-
-    RDBColumnMetadata getTargetColumn();
+    List<ForeignKeyColumn> getColumns();
 
     boolean isAutoJoin();
 
@@ -43,5 +47,7 @@ public interface ForeignKeyMetadata extends ObjectMetadata {
 
     List<Term> getTerms();
 
-    List<ForeignKeyMetadata> getPreForeignKey();
+    Optional<ForeignKeyMetadata> getMiddleForeignKey(String name);
+
+    List<ForeignKeyMetadata> getMiddleForeignKeys();
 }

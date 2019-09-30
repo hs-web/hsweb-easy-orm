@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.ddl;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.QueryParam;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyBuilder;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 
 import java.util.function.Consumer;
@@ -11,59 +11,56 @@ import java.util.function.Consumer;
 public class ForeignKeyDSLBuilder {
 
     private RDBTableMetadata table;
-    private ForeignKeyBuilder.ForeignKeyBuilderBuilder builder = ForeignKeyBuilder.builder();
+    private ForeignKeyBuilder builder = ForeignKeyBuilder.builder().build();
 
 
     public ForeignKeyDSLBuilder(RDBTableMetadata table) {
         this.table = table;
-        this.builder.autoJoin(true);
+        this.builder.setAutoJoin(true);
     }
 
 
     public ForeignKeyDSLBuilder name(String name) {
-        builder.name(name);
+        builder.setName(name);
         return this;
     }
 
     public ForeignKeyDSLBuilder alias(String alias) {
-        builder.alias(alias);
+        builder.setAlias(alias);
         return this;
     }
 
     public ForeignKeyDSLBuilder target(String source) {
-        if (source.contains(".")) {
-            String[] arr = source.split("[.]");
-            return target(arr[0], arr[1]);
-        }
-        builder.target(source);
+
+        builder.setTarget(source);
         return this;
     }
 
-    public ForeignKeyDSLBuilder target(String source, String column) {
-        builder.target(source).targetColumn(column);
+    public ForeignKeyDSLBuilder column(String sourceColumn, String targetColumn) {
+        builder.addColumn(sourceColumn,targetColumn);
         return this;
     }
 
     public ForeignKeyDSLBuilder autoJoin(boolean autoJoin) {
-        builder.autoJoin(autoJoin);
+        builder.setAutoJoin(autoJoin);
         return this;
     }
 
     public ForeignKeyDSLBuilder toMany() {
-        builder.autoJoin(false)
-                .toMany(true);
+        builder.setAutoJoin(false);
+        builder.setToMany(true);
         return this;
     }
 
     public ForeignKeyDSLBuilder condition(Consumer<Conditional<?>> consumer) {
         Query<?, QueryParam> query = Query.of();
         consumer.accept(query);
-        builder.terms(query.getParam().getTerms());
+        builder.setTerms(query.getParam().getTerms());
         return this;
     }
 
     public RDBTableMetadata commit() {
-        table.addForeignKey(builder.build());
+        table.addForeignKey(builder);
         return table;
     }
 

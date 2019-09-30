@@ -66,7 +66,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                 )))
                 .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetchOne")))
                 .reactive()
-                .last();
+                .as(Mono::from);
     }
 
     @Override

@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
@@ -102,9 +102,9 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                 columnName = arr[1];
             } else {
                 return table.getForeignKey(arr[0])
-                        .flatMap(key -> key.getSourceColumn()
-                                .getFeature(ForeignKeyTermFragmentBuilder.ID)
-                                .map(builder -> builder.createFragments(key.getName(), key, createForeignKeyTerm(key, term))))
+                        .flatMap(key -> key.getSource()
+                                .findFeature(ForeignKeyTermFragmentBuilder.ID)
+                                .map(builder -> builder.createFragments(table.getName(), key, createForeignKeyTerm(key, term))))
                         .orElse(EmptySqlFragments.INSTANCE);
             }
         }

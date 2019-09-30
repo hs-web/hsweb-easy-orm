@@ -4,7 +4,7 @@ import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.FeatureType;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 

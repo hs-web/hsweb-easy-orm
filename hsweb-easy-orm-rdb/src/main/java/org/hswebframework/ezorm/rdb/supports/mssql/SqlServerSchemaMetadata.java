@@ -10,6 +10,7 @@ public class SqlServerSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new SqlServerCreateTableSqlBuilder());
         addFeature(new SqlServerAlterTableSqlBuilder());
         addFeature(new SqlServer2012Paginator());
+        addFeature(new SqlServer2012TableMetadataParser(this));
         addFeature(Dialect.MSSQL);
     }
 }

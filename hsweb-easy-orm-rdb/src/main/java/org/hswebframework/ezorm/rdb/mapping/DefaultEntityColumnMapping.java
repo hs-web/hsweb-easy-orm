@@ -36,9 +36,16 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
 
     @Override
     public Optional<RDBColumnMetadata> getColumnByProperty(String property) {
+        if (property.contains(".")) {
+            String[] key = property.split("[.]");
+
+            return table.getForeignKey(key[0])
+                    .flatMap(keyMetadata -> keyMetadata.getTarget().getColumn(key[1]));
+
+        }
         return Optional
                 .ofNullable(propertyColumnMapping.get(property))
-                .flatMap(table::findColumn);
+                .flatMap(table::getColumn);
     }
 
     @Override
@@ -49,7 +56,14 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
 
     @Override
     public Optional<RDBColumnMetadata> getColumnByName(String columnName) {
-        return table.findColumn(columnName);
+        if (columnName.contains(".")) {
+            String[] key = columnName.split("[.]");
+
+            return table.getForeignKey(key[0])
+                    .flatMap(keyMetadata -> keyMetadata.getTarget().getColumn(key[1]));
+
+        }
+        return table.getColumn(columnName);
     }
 
     @Override

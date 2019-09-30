@@ -45,8 +45,9 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
                                             QueryOperatorParameter joinOnParameter = new QueryOperatorParameter();
                                             joinOnParameter.setFrom(target.getName());
                                             joinOnParameter.setFromAlias(join.getAlias());
-                                            joinOnParameter.getWhere().addAll(join.getTerms());
-
+                                            if(join.getTerms()!=null) {
+                                                joinOnParameter.getWhere().addAll(join.getTerms());
+                                            }
                                             return builder.createFragments(joinOnParameter);
                                         })
                                         .filter(SqlFragments::isNotEmpty)

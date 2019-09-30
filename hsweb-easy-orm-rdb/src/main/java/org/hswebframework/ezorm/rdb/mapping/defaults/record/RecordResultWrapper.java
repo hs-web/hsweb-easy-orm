@@ -1,12 +1,15 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults.record;
 
+import org.hswebframework.ezorm.rdb.executor.wrapper.AbstractMapResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Optional;
 
-public class RecordResultWrapper implements ResultWrapper<Record, Record> {
+public class RecordResultWrapper extends AbstractMapResultWrapper<Record> {
 
     public static RecordResultWrapper INSTANCE = new RecordResultWrapper();
 
@@ -31,20 +34,16 @@ public class RecordResultWrapper implements ResultWrapper<Record, Record> {
                 .orElse(context.getColumnLabel());
 
         Object value = Optional.ofNullable(mapping)
-                .flatMap(mapping -> mapping.getColumnByName(context.getColumnLabel()))
+                .flatMap(mapping -> mapping.getColumnByProperty(property))
                 .map(columnMetadata -> columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
+        Record record = context.getRowInstance();
 
-        context.getRowInstance().put(property, value);
-    }
-
-    @Override
-    public boolean completedWrapRow(Record result) {
-        return true;
+        super.doWrap(record, property, value);
     }
 
     @Override
     public Record getResult() {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 }

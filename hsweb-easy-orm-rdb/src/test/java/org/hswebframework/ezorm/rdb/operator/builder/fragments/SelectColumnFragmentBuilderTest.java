@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
@@ -71,10 +72,8 @@ public class SelectColumnFragmentBuilderTest {
         //逻辑主键
         test.addForeignKey(ForeignKeyBuilder.builder()
                 .target("detail")
-                .targetColumn("comment")
-                .sourceColumn("id")
                 .autoJoin(true)
-                .build());
+                .build().addColumn("id","comment"));
 
         builder = SelectColumnFragmentBuilder.of(test);
     }

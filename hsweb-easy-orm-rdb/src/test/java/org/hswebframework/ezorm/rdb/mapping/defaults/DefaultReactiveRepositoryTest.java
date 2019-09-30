@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.*;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
 import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyBuilder;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -62,7 +62,7 @@ public class DefaultReactiveRepositoryTest {
         JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
         parser.setDatabaseMetadata(databaseMetadata);
         RDBTableMetadata table = parser
-                .parseTable(TestEntity.class)
+                .parseTableMetadata(TestEntity.class)
                 .orElseThrow(NullPointerException::new);
 
         h2.addTable(table);
@@ -70,11 +70,9 @@ public class DefaultReactiveRepositoryTest {
         table.addForeignKey(ForeignKeyBuilder.builder()
                 .autoJoin(true)
                 .toMany(false)
-                .targetColumn("id")
-                .sourceColumn("id")
                 .joinType(JoinType.left)
                 .target("entity_detail")
-                .build());
+                .build().addColumn("id","id"));
 
         EntityResultWrapper<TestEntity> wrapper = new EntityResultWrapper<>(TestEntity::new);
 

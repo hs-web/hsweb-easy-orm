@@ -4,8 +4,8 @@ import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyBuilder;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.junit.Assert;
@@ -35,10 +35,14 @@ public class DefaultForeignKeyTermFragmentBuilderTest {
                         test.addForeignKey(ForeignKeyBuilder.builder()
                                 .name("test")
                                 .target("detail")
-                                .sourceColumn("id")
-                                .targetColumn("id")
                                 .terms(Collections.singletonList(new Term().and("id", "1234").or("id", "12345")))
-                                .build()));
+                                .build()
+//                                .addMiddle(ForeignKeyBuilder.builder()
+//                                        .name("test2")
+//                                        .target("test")
+//                                        .source("detail")
+//                                        .build().addColumn("comment","id"))
+                                .addColumn("id","id")));
     }
 
     @Test
@@ -49,8 +53,8 @@ public class DefaultForeignKeyTermFragmentBuilderTest {
                                 .getParam().getTerms());
 
         SqlRequest request = fragments.toRequest();
-        System.out.println(fragments.toRequest().getSql());
-        Assert.assertEquals(request.getSql(), "exists(select 1 from detail where detail.\"ID\" = test.\"ID\" and ( ( detail.\"ID\" = ? or detail.\"ID\" = ? ) and ( detail.\"COMMENT\" = ? ) ) )");
+        System.out.println(fragments.toRequest());
+        Assert.assertEquals(request.getSql(), "exists( select 1 from PUBLIC.detail detail where test.\"ID\" = detail.\"ID\" and ( ( detail.\"ID\" = ? or detail.\"ID\" = ? ) and ( detail.\"COMMENT\" = ? ) ) )");
 
     }
 

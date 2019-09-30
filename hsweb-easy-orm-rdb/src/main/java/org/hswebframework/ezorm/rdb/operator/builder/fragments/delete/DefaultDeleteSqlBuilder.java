@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
@@ -51,9 +51,8 @@ public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<Delete
                 columnName = arr[1];
             } else {
                 return table.getForeignKey(arr[0])
-                        .flatMap(key -> key.getSourceColumn()
-                                .getFeature(ForeignKeyTermFragmentBuilder.ID)
-                                .map(builder -> builder.createFragments(key.getName(), key, createForeignKeyTerm(key, term))))
+                        .flatMap(key ->table.findFeature(ForeignKeyTermFragmentBuilder.ID)
+                                .map(builder -> builder.createFragments(table.getName(), key, createForeignKeyTerm(key, term))))
                         .orElse(EmptySqlFragments.INSTANCE);
             }
         }

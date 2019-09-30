@@ -27,6 +27,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
         return operator
                 .query(tableName)
                 .select(getSelectColumn())
+                .selectExcludes(param.getExcludes())
                 .where(param.getTerms())
                 .orderBy(getSortOrder())
                 .when(param.isPaging(), query -> query.paging(param.getPageIndex(), param.getPageSize()))

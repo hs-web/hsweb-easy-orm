@@ -46,7 +46,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
                 .orElse(context.getColumnLabel());
 
         Object value = Optional.ofNullable(mapping)
-                .flatMap(mapping -> mapping.getColumnByName(context.getColumnLabel()))
+                .flatMap(mapping -> mapping.getColumnByProperty(property))
                 .map(columnMetadata -> columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
         if (value != null) {

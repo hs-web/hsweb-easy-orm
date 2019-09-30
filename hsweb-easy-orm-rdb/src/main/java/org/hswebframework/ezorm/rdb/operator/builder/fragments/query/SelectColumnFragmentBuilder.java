@@ -3,6 +3,8 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyColumn;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -121,21 +123,52 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
     }
 
-    protected Join createJoin(String owner, String target, ForeignKeyMetadata key) {
-        SqlTerm on = new SqlTerm(key.getTargetColumn().getFullName(owner) +
-                " = " +
-                key.getSourceColumn().getFullName(target));
-        if (key.getTerms() != null) {
-            on.getTerms().addAll(key.getTerms());
-        }
-        Join join = new Join();
-        join.setType(key.getJoinType());
-        join.setTarget(key.getTarget().getFullName());
-        join.setAlias(owner);
-        join.addAlias(key.getTarget().getAlias());
-        join.setTerms(Collections.singletonList(on));
+    @SuppressWarnings("all")
+    protected List<Join> createJoin(String owner, String target, ForeignKeyMetadata key) {
 
-        return join;
+        List<Join> joins = new ArrayList<>();
+
+        //中间表
+        for (ForeignKeyMetadata middleForeignKey : key.getMiddleForeignKeys()) {
+            Join join = new Join();
+
+            for (ForeignKeyColumn column : middleForeignKey.getColumns()) {
+                PrepareSqlFragments condition = PrepareSqlFragments.of();
+                condition.addSql(column.getSourceColumn().getFullName(key.getAlias()));
+                condition.addSql("=").addSql(column.getTargetColumn().getFullName(middleForeignKey.getAlias()));
+                join.getTerms().add(SqlTerm.of(condition.toRequest().getSql()));
+            }
+
+            if (middleForeignKey.getTerms() != null) {
+                join.getTerms().addAll(middleForeignKey.getTerms());
+            }
+            join.setTarget(middleForeignKey.getTarget().getFullName());
+            join.setType(middleForeignKey.getJoinType());
+            join.addAlias(middleForeignKey.getName(),
+                    middleForeignKey.getAlias(),
+                    middleForeignKey.getTarget().getAlias(),
+                    middleForeignKey.getTarget().getName());
+            joins.add(join);
+        }
+
+        {
+            Join join = new Join();
+            join.setType(key.getJoinType());
+            join.setTarget(key.getTarget().getFullName());
+            join.setAlias(owner);
+            join.addAlias(key.getTarget().getAlias());
+            //关联条件
+            for (ForeignKeyColumn column : key.getColumns()) {
+                PrepareSqlFragments condition = PrepareSqlFragments.of();
+                condition.addSql(column.getSourceColumn().getFullName(target));
+                condition.addSql("=").addSql(column.getTargetColumn().getFullName(key.getAlias()));
+                join.getTerms().add(SqlTerm.of(condition.toRequest().getSql()));
+            }
+            joins.add(join);
+        }
+
+
+        return joins;
     }
 
     public PrepareSqlFragments createFragments(QueryOperatorParameter parameter, SelectColumn selectColumn) {
@@ -165,9 +198,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                                     .map(foreignKey -> {
                                         //自动join
                                         if (!parameter.findJoin(arr[0]).isPresent()) {
-                                            Join join = createJoin(arr[0], parameter.getFromAlias(), foreignKey);
-                                            // TODO: 2019-09-06 关联外键处理
-                                            parameter.getJoins().add(join);
+                                            parameter.getJoins().addAll(createJoin(arr[0], parameter.getFromAlias(), foreignKey));
                                         }
                                         PrepareSqlFragments sqlFragments = PrepareSqlFragments.of();
                                         RDBColumnMetadata targetColumn = foreignKey.getTarget().getColumn(arr[1]).orElse(null);

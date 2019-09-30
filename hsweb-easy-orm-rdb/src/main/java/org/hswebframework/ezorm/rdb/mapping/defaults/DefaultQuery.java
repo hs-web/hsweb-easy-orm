@@ -13,6 +13,7 @@ import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.DSLQuery;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.DMLOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.SortOrderSupplier;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
@@ -100,13 +101,19 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
     }
 
     protected SelectColumn[] getSelectColumn() {
-        return columnMapping.getColumnPropertyMapping()
-                .entrySet()
-                .stream()
-                .filter(this::isSelectInclude)
-                .filter(e -> !isSelectExclude(e))
-                .map(entry -> SelectColumn.of(entry.getKey(), entry.getValue()))
-                .toArray(SelectColumn[]::new);
+
+        return Stream.concat(
+                tableMetadata.getForeignKeys().stream()
+                        .map(key -> key.getAlias() == null ? key.getTarget().getName() : key.getAlias())
+                        .map(alias -> alias.concat(".*"))
+                        .map(name -> SelectColumn.of(name)), columnMapping.getColumnPropertyMapping()
+                        .entrySet()
+                        .stream()
+
+                        .filter(this::isSelectInclude)
+                        .filter(e -> !isSelectExclude(e))
+                        .map(entry -> SelectColumn.of(entry.getKey(), entry.getValue()))
+        ).toArray(SelectColumn[]::new);
     }
 
     protected SortOrder[] getSortOrder() {

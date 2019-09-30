@@ -1,10 +1,13 @@
 package org.hswebframework.ezorm.rdb.executor.reactive;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import reactor.core.publisher.Mono;
+
+import java.util.concurrent.TimeUnit;
 
 @AllArgsConstructor(staticName = "of")
 public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
@@ -26,9 +29,12 @@ public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
     }
 
     @Override
+    @SneakyThrows
     public <T, R> R select(SqlRequest request, ResultWrapper<T, R> wrapper) {
 
-        sqlExecutor.select(Mono.just(request), wrapper).collectList().block();
+        sqlExecutor.select(Mono.just(request), wrapper)
+                .collectList()
+                .toFuture().get(10, TimeUnit.SECONDS);
 
         return wrapper.getResult();
     }

@@ -7,6 +7,9 @@ import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.events.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.LazyForeignKeyMetadata;
 
 import java.util.List;
 import java.util.Optional;

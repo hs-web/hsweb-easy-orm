@@ -48,4 +48,9 @@ public class BasicTestEntity implements Serializable {
     @ColumnType(javaType = String.class)
     private StateEnum stateEnum;
 
+    @Column(name = "address_id")
+    private String addressId;
+
+    @JoinColumn(name = "address_id")
+    private Address address;
 }

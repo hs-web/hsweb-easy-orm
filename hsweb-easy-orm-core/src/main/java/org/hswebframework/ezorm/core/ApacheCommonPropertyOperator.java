@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 
@@ -34,7 +35,7 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     @SneakyThrows
     public void setProperty(Object object, String name, Object value) {
         try {
-            BeanUtilsBean.getInstance().setProperty(object, name, value);
+            BeanUtils.setProperty(object, name, value);
         } catch (Exception err) {
             log.warn(err.getMessage(), err);
         }
@@ -45,7 +46,7 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     public <T> T convert(Object from, Class<T> to) {
         T newInstance = to.newInstance();
         try {
-            BeanUtilsBean.getInstance().copyProperties(newInstance, from);
+            BeanUtils.copyProperties(newInstance, from);
         } catch (Exception err) {
             log.warn(err.getMessage(), err);
         }

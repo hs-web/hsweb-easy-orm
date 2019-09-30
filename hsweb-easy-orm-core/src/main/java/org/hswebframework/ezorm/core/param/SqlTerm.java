@@ -16,7 +16,11 @@ public class SqlTerm extends Term {
 
     private String sql;
 
-    public SqlTerm() {
+    private SqlTerm() {
+    }
+
+    public static SqlTerm of(String sql, Object... parameters) {
+        return new SqlTerm(sql, parameters);
     }
 
     public SqlTerm(String sql, Object... value) {

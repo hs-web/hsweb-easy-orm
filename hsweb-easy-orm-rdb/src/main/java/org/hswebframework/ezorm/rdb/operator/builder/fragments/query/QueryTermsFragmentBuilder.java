@@ -2,8 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.metadata.ForeignKeyMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -56,9 +55,9 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                                         .map(termFragment -> termFragment.createFragments(column.getFullName(join.getAlias()), column, term))))
                         .orElseGet(() -> {//外键关联查询
                             return metaData.getForeignKey(arr[0])
-                                    .flatMap(key -> key.getSourceColumn()
-                                            .getFeature(ForeignKeyTermFragmentBuilder.ID)
-                                            .map(builder -> builder.createFragments(key.getName(), key, createForeignKeyTerm(key, term))))
+                                    .flatMap(key -> key.getSource()
+                                            .findFeature(ForeignKeyTermFragmentBuilder.ID)
+                                            .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
                                     .orElse(EmptySqlFragments.INSTANCE);
                         });
             }

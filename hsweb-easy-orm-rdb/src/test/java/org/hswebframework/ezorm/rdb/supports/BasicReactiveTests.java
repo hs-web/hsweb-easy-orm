@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
-import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
@@ -10,7 +9,7 @@ import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
-import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
 import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
@@ -20,9 +19,7 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -31,7 +28,6 @@ import reactor.test.StepVerifier;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
@@ -41,6 +37,7 @@ import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 public abstract class BasicReactiveTests {
 
     protected ReactiveRepository<BasicTestEntity, String> repository;
+    protected ReactiveRepository<Record, String> addressRepository;
 
     protected abstract RDBSchemaMetadata getSchema();
 
@@ -71,6 +68,11 @@ public abstract class BasicReactiveTests {
         } catch (Exception e) {
 
         }
+        try {
+            getSqlExecutor().execute(Mono.just(SqlRequests.of("drop table test_address"))).block();
+        } catch (Exception e) {
+
+        }
     }
 
     @Before
@@ -80,8 +82,16 @@ public abstract class BasicReactiveTests {
 
         JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
         parser.setDatabaseMetadata(metadata);
+        parser.parseTableMetadata(Address.class)
+                .ifPresent(address -> {
+                    operator.ddl()
+                            .createOrAlter(address)
+                            .commit()
+                            .reactive()
+                            .block();
+                });
 
-        RDBTableMetadata table = parser.parseTable(BasicTestEntity.class).orElseThrow(NullPointerException::new);
+        RDBTableMetadata table = parser.parseTableMetadata(BasicTestEntity.class).orElseThrow(NullPointerException::new);
 
         operator.ddl()
                 .createOrAlter(table)
@@ -93,6 +103,8 @@ public abstract class BasicReactiveTests {
 
 
         repository = new DefaultReactiveRepository<>(operator, table, BasicTestEntity.class, wrapper);
+        addressRepository = operator.dml().createReactiveRepository("test_address");
+
     }
 
     @Test
@@ -187,7 +199,13 @@ public abstract class BasicReactiveTests {
                 .tags(Arrays.asList("a", "b", "c", "d"))
                 .createTime(new Date())
                 .state((byte) 1)
+                .addressId("test")
                 .build();
+
+        addressRepository.insert(Mono.just(Record.newRecord().putValue("id", "test").putValue("name", "test_address")))
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
 
         Mono.just(entity)
                 .as(repository::insert)

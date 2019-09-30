@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
+import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
@@ -44,22 +45,7 @@ public class SimpleEntityPropertyDescriptor implements EntityPropertyDescriptor 
     @Override
     @SneakyThrows
     public Field getField() {
-        Field field = null;
-        Class tmp = entityType;
-        do {
-            try {
-                field = tmp.getDeclaredField(descriptor.getName());
-            } catch (NoSuchFieldException e) {
-                tmp = tmp.getSuperclass();
-                if (tmp == null || tmp == Object.class) {
-                    break;
-                }
-            }
-        } while (field == null);
-        if (field == null) {
-            throw new NoSuchFieldException("no such field " + propertyName + " in " + entityType);
-        }
-        return field;
+        return PropertiesUtils.getPropertyField(entityType, descriptor.getName()).orElseThrow(() -> new NoSuchFieldException("no such field " + propertyName + " in " + entityType));
     }
 
     @Override

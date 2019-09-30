@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
 import org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.Orders;
@@ -71,9 +72,8 @@ public class DefaultQuerySqlBuilderTest {
                 .alias("info")
                 .autoJoin(true)
                 .joinType(JoinType.left)
-                .sourceColumn("id")
-                .targetColumn("id")
-                .build());
+
+                .build().addColumn("id","id"));
 
     }
 

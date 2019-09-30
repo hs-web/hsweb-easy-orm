@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * @see javax.persistence.Column
  * @see javax.persistence.JoinTable
- * @see javax.persistence.CollectionTable
+ * @see javax.persistence.JoinColumn
  */
 public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
 
@@ -30,7 +30,7 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
     private ValueCodecResolver valueCodecResolver = DefaultValueCodecResolver.COMMONS;
 
 
-    public Optional<RDBTableMetadata> parseTable(Class<?> entityType) {
+    public Optional<RDBTableMetadata> parseTableMetadata(Class<?> entityType) {
 
         Table table = AnnotationUtils.getAnnotation(entityType, Table.class);
         if (table == null) {

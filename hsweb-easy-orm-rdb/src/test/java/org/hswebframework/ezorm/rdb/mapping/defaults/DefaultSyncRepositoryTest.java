@@ -50,7 +50,7 @@ public class DefaultSyncRepositoryTest {
 
         JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
         parser.setDatabaseMetadata(databaseMetadata);
-        RDBTableMetadata table = parser.parseTable(TestEntity.class).orElseThrow(NullPointerException::new);
+        RDBTableMetadata table = parser.parseTableMetadata(TestEntity.class).orElseThrow(NullPointerException::new);
 
         h2.addTable(table);
 
