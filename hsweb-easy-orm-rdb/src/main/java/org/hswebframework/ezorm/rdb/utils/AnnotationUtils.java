@@ -7,17 +7,38 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class AnnotationUtils {
 
     public static Set<Annotation> getAnnotations(Class entityClass, PropertyDescriptor descriptor) {
         Set<Annotation> annotations = new HashSet<>();
+        Set<Class<? extends Annotation>> types = new HashSet<>();
+
+        Consumer<Annotation[]> annoConsumer =(ann)->{
+            for (Annotation annotation : ann) {
+                if(!types.contains(annotation.getClass())){
+                    annotations.add(annotation);
+                }
+                types.add(annotation.annotationType());
+            }
+        };
+
+        //先获取方法
+        Method read = descriptor.getReadMethod(),
+                write = descriptor.getWriteMethod();
+        if (read != null) {
+            annoConsumer.accept(read.getAnnotations());
+        }
+        if (write != null) {
+            annoConsumer.accept(write.getAnnotations());
+        }
 
         //获取属性
         while (true) {
             try {
                 Field field = entityClass.getDeclaredField(descriptor.getName());
-                annotations.addAll(Arrays.asList(field.getAnnotations()));
+                annoConsumer.accept(field.getAnnotations());
                 break;
             } catch (NoSuchFieldException e) {
                 entityClass = entityClass.getSuperclass();
@@ -27,15 +48,6 @@ public class AnnotationUtils {
             }
         }
 
-        //先获取方法
-        Method read = descriptor.getReadMethod(),
-                write = descriptor.getWriteMethod();
-        if (read != null) {
-            annotations.addAll(Arrays.asList(read.getAnnotations()));
-        }
-        if (write != null) {
-            annotations.addAll(Arrays.asList(write.getAnnotations()));
-        }
 
         return annotations;
     }
