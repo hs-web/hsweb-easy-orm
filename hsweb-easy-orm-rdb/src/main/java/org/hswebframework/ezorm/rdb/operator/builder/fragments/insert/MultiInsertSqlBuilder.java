@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -81,7 +82,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
 
                 intoSql.addSql(column.getQuoteName());
 
-                if (value == null && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                if ((value == null || value instanceof NullValue) && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
                 }
                 if (value instanceof NativeSql) {

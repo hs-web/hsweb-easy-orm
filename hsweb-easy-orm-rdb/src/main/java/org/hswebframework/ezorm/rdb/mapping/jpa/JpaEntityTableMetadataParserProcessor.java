@@ -5,19 +5,19 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtilsBean;
+import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
+import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
 import org.hswebframework.ezorm.rdb.mapping.parser.DataTypeResolver;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.parser.ValueCodecResolver;
 import org.hswebframework.ezorm.rdb.metadata.*;
-import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.rdb.metadata.key.AssociationType;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 import org.hswebframework.utils.ClassUtils;
-import org.reactivestreams.Publisher;
 
 import javax.persistence.*;
 import java.beans.PropertyDescriptor;
@@ -58,8 +58,6 @@ public class JpaEntityTableMetadataParserProcessor {
         PropertyDescriptor[] descriptors = BeanUtilsBean.getInstance()
                 .getPropertyUtils()
                 .getPropertyDescriptors(entityType);
-
-        //List<Runnable> lastRun = new ArrayList<>();
 
         Table table = ClassUtils.getAnnotation(entityType, Table.class);
         int idx = 0;
@@ -203,9 +201,9 @@ public class JpaEntityTableMetadataParserProcessor {
             columnInfo.nullable = column.nullable();
             columnInfo.name = column.name();
             columnInfo.table = column.table();
-            columnInfo.length=column.length();
-            columnInfo.scale=column.scale();
-            columnInfo.precision=column.precision();
+            columnInfo.length = column.length();
+            columnInfo.scale = column.scale();
+            columnInfo.precision = column.precision();
 
             return columnInfo;
         }
@@ -242,6 +240,18 @@ public class JpaEntityTableMetadataParserProcessor {
         if (!column.columnDefinition.isEmpty()) {
             metadata.setColumnDefinition(column.columnDefinition);
         }
+        getAnnotation(annotations, GeneratedValue.class)
+                .map(GeneratedValue::generator)
+                .flatMap(gen -> tableMetadata.findFeature(DefaultValueGenerator.createId(gen)))
+                .map(DefaultValueGenerator::generate)
+                .ifPresent(metadata::setDefaultValue);
+
+        getAnnotation(annotations, DefaultValue.class)
+                .map(DefaultValue::generator)
+                .flatMap(gen -> tableMetadata.findFeature(DefaultValueGenerator.createId(gen)))
+                .map(DefaultValueGenerator::generate)
+                .ifPresent(metadata::setDefaultValue);
+
         getAnnotation(annotations, Comment.class)
                 .map(Comment::value)
                 .ifPresent(metadata::setComment);

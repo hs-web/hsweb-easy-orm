@@ -8,7 +8,8 @@ import org.hswebframework.ezorm.core.FeatureType;
 @Getter
 public enum DefaultFeatureType implements FeatureType {
     metadataParser("元数据解析器"),
-    eventListener("事件监听器")
+    eventListener("事件监听器"),
+    defaultValueGenerator("默认值生成器")
     ;
 
     private String name;

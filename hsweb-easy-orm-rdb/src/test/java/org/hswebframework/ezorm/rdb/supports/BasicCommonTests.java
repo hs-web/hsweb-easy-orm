@@ -1,7 +1,10 @@
 package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.DefaultValue;
+import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.GlobalConfig;
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.events.EventListener;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -34,6 +37,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
@@ -51,7 +55,22 @@ public abstract class BasicCommonTests {
 
     protected RDBDatabaseMetadata getDatabase() {
         RDBDatabaseMetadata metadata = new RDBDatabaseMetadata(getDialect());
+        metadata.addFeature(new DefaultValueGenerator() {
+            @Override
+            public String getSortId() {
+                return "uuid";
+            }
 
+            @Override
+            public DefaultValue generate() {
+                return (RuntimeDefaultValue) () -> UUID.randomUUID().toString().replace("-","");
+            }
+
+            @Override
+            public String getName() {
+                return "UUID";
+            }
+        });
         RDBSchemaMetadata schema = getSchema();
         log.debug(schema.toString());
 
@@ -114,7 +133,7 @@ public abstract class BasicCommonTests {
     public void testRepositoryInsertBach() {
         List<BasicTestEntity> entities = Flux.range(0, 100)
                 .map(integer -> BasicTestEntity.builder()
-                        .id("test_id_" + integer)
+                      // .id("test_id_" + integer)
                         .balance(1000L)
                         .name("test:" + integer)
                         .createTime(new Date())

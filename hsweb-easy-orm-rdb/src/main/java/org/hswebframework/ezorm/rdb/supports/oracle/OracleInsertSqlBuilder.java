@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
@@ -85,7 +86,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
                 }
-                if (value == null && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                if ((value == null || value instanceof NullValue) && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
                 }
                 intoSql.addSql(column.getQuoteName());
