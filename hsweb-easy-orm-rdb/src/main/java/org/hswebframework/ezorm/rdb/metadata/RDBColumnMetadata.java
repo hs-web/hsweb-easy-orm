@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.meta.AbstractColumnMetadata;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
 import java.sql.JDBCType;
@@ -153,6 +154,14 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         columnMetadata.setFeatures(new HashMap<>(getFeatures()));
 
         return columnMetadata;
+    }
+
+    @Override
+    public Object encode(Object data) {
+        if (data instanceof NullValue) {
+            return data;
+        }
+        return super.encode(data);
     }
 
     @Override

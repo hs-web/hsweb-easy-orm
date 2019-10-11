@@ -80,30 +80,28 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
-
+                SqlFragments function = functionValues.get(vIndex);
+                if (null != function) {
+                    valuesSql.addFragments(function);
+                    continue;
+                }
                 Object value = valueLen < vIndex ? null : values.get(vIndex);
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
                 }
-                if ((value == null || value instanceof NullValue) && column.getDefaultValue() instanceof RuntimeDefaultValue) {
-                    value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
+                if ((value == null || value instanceof NullValue)
+                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                    value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
                 }
                 intoSql.addSql(column.getQuoteName());
 
                 if (value instanceof NativeSql) {
-                    valuesSql
-                            .addSql(((NativeSql) value).getSql())
+                    valuesSql.addSql(((NativeSql) value).getSql())
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
-                SqlFragments function = functionValues.get(vIndex);
-
-                if (null != function) {
-                    valuesSql.addFragments(function);
-                } else {
-                    valuesSql.addSql("?").addParameter(column.encode(value));
-                }
+                valuesSql.addSql("?").addParameter(column.encode(value));
             }
             intoSql.addSql(")");
             valuesSql.addSql(")");

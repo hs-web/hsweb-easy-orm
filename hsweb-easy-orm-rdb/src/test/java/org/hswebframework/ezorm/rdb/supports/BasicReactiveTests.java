@@ -1,6 +1,9 @@
 package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.DefaultValue;
+import org.hswebframework.ezorm.core.DefaultValueGenerator;
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSyncSqlExecutor;
@@ -26,8 +29,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
@@ -49,6 +54,22 @@ public abstract class BasicReactiveTests {
         RDBDatabaseMetadata metadata = new RDBDatabaseMetadata(getDialect());
 
         RDBSchemaMetadata schema = getSchema();
+        schema.addFeature(new DefaultValueGenerator() {
+            @Override
+            public String getSortId() {
+                return "uuid";
+            }
+
+            @Override
+            public DefaultValue generate() {
+                return (RuntimeDefaultValue) () -> UUID.randomUUID().toString().replace("-","");
+            }
+
+            @Override
+            public String getName() {
+                return "UUID";
+            }
+        });
         log.debug(schema.toString());
 
         metadata.setCurrentSchema(schema);
@@ -183,7 +204,7 @@ public abstract class BasicReactiveTests {
                                 .createTime(new Date())
                                 .state((byte) 1)
                                 .build())
-                        .buffer(30)))
+                        .buffer(30).delayElements(Duration.ofSeconds(2))))
                 .expectNext(100)
                 .verifyComplete();
 

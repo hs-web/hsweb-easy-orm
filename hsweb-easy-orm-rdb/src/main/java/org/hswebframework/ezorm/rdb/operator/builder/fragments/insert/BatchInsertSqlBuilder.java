@@ -74,6 +74,11 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 int valueIndex = entry.getKey();
+                SqlFragments function = functionValues.get(valueIndex);
+                if (null != function) {
+                    fragments.addFragments(function);
+                    continue;
+                }
                 RDBColumnMetadata column = entry.getValue();
                 if (vIndex++ != 0) {
                     fragments.addSql(",");
@@ -81,8 +86,9 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
                 Object value = valueLen < valueIndex ? null : values.get(valueIndex);
 
-                if ((value == null || value instanceof NullValue) && column.getDefaultValue() instanceof RuntimeDefaultValue) {
-                    value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
+                if ((value == null || value instanceof NullValue)
+                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                    value = column.getDefaultValue().get();
                 }
                 if (value instanceof NativeSql) {
                     fragments
@@ -90,14 +96,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
-
-                SqlFragments function = functionValues.get(valueIndex);
-
-                if (null != function) {
-                    fragments.addFragments(function);
-                } else {
-                    fragments.addSql("?").addParameter(column.encode(value));
-                }
+                fragments.addSql("?").addParameter(column.encode(value));
             }
 
             fragments.addSql(")");

@@ -29,7 +29,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Optional.*;
-import static org.hswebframework.ezorm.rdb.utils.AnnotationUtils.getAnnotation;
 import static org.hswebframework.ezorm.rdb.utils.AnnotationUtils.getAnnotations;
 
 @Slf4j
@@ -242,13 +241,17 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         getAnnotation(annotations, GeneratedValue.class)
                 .map(GeneratedValue::generator)
-                .flatMap(gen -> tableMetadata.findFeature(DefaultValueGenerator.createId(gen)))
+                .map(gen -> LazyDefaultValueGenerator.of(() ->
+                        tableMetadata.findFeature(DefaultValueGenerator.createId(gen))
+                                .orElseThrow(() -> new UnsupportedOperationException("unsupported generator " + gen))))
                 .map(DefaultValueGenerator::generate)
                 .ifPresent(metadata::setDefaultValue);
 
         getAnnotation(annotations, DefaultValue.class)
                 .map(DefaultValue::generator)
-                .flatMap(gen -> tableMetadata.findFeature(DefaultValueGenerator.createId(gen)))
+                .map(gen -> LazyDefaultValueGenerator.of(() ->
+                        tableMetadata.findFeature(DefaultValueGenerator.createId(gen))
+                                .orElseThrow(() -> new UnsupportedOperationException("unsupported generator " + gen))))
                 .map(DefaultValueGenerator::generate)
                 .ifPresent(metadata::setDefaultValue);
 

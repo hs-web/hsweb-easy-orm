@@ -71,7 +71,11 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
+                SqlFragments function = functionValues.get(vIndex);
 
+                if (null != function) {
+                    valuesSql.addFragments(function);
+                }
 
                 Object value = valueLen < vIndex ? null : values.get(vIndex);
 
@@ -82,8 +86,9 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
 
                 intoSql.addSql(column.getQuoteName());
 
-                if ((value == null || value instanceof NullValue) && column.getDefaultValue() instanceof RuntimeDefaultValue) {
-                    value = ((RuntimeDefaultValue) column.getDefaultValue()).getValue();
+                if ((value == null || value instanceof NullValue)
+                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                    value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
                 }
                 if (value instanceof NativeSql) {
                     valuesSql
@@ -91,13 +96,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
-                SqlFragments function = functionValues.get(vIndex);
-
-                if (null != function) {
-                    valuesSql.addFragments(function);
-                } else {
-                    valuesSql.addSql("?").addParameter(column.encode(value));
-                }
+                valuesSql.addSql("?").addParameter(column.encode(value));
             }
             intoSql.addSql(")");
             valuesSql.addSql(")");

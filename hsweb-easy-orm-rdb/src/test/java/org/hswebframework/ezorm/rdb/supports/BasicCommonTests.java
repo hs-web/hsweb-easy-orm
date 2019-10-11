@@ -55,15 +55,17 @@ public abstract class BasicCommonTests {
 
     protected RDBDatabaseMetadata getDatabase() {
         RDBDatabaseMetadata metadata = new RDBDatabaseMetadata(getDialect());
-        metadata.addFeature(new DefaultValueGenerator() {
+
+        RDBSchemaMetadata schema = getSchema();
+        schema.addFeature(new DefaultValueGenerator() {
             @Override
             public String getSortId() {
                 return "uuid";
             }
 
             @Override
-            public DefaultValue generate() {
-                return (RuntimeDefaultValue) () -> UUID.randomUUID().toString().replace("-","");
+            public RuntimeDefaultValue generate() {
+                return  () -> UUID.randomUUID().toString().replace("-","");
             }
 
             @Override
@@ -71,7 +73,6 @@ public abstract class BasicCommonTests {
                 return "UUID";
             }
         });
-        RDBSchemaMetadata schema = getSchema();
         log.debug(schema.toString());
 
         metadata.setCurrentSchema(schema);

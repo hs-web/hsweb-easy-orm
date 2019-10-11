@@ -17,5 +17,8 @@ public class NativeSqlDefaultValue implements DefaultValue, NativeSql {
         return sql;
     }
 
-
+    @Override
+    public Object get() {
+        return this;
+    }
 }

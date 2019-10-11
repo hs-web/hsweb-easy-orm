@@ -33,6 +33,7 @@ public class DefaultDatabaseOperatorTest {
         database = new RDBDatabaseMetadata(Dialect.H2);
 
         SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new H2ConnectionProvider());
+        database.addFeature(sqlExecutor);
 
         H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
 
@@ -42,7 +43,7 @@ public class DefaultDatabaseOperatorTest {
         database.addSchema(schema);
         database.setCurrentSchema(schema);
 
-        database.addFeature(sqlExecutor);
+
         operator = DefaultDatabaseOperator.of(database);
 
     }

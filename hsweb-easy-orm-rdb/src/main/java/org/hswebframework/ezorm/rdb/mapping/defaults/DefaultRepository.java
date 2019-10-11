@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
@@ -95,13 +96,29 @@ public abstract class DefaultRepository<E> {
         for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
             String column = entry.getKey();
             String property = entry.getValue();
-            propertyOperator.getProperty(data, property)
-                    .ifPresent(val -> insert.value(column, val));
 
+            insert.value(column, getInsertColumnValue(data,property));
         }
 
         return insert.execute();
 
+    }
+
+    private Object getInsertColumnValue(E data, String property) {
+        Object value = propertyOperator.getProperty(data, property).orElse(null);
+        if (value == null) {
+            value = mapping.getColumnByProperty(property)
+                    .map(RDBColumnMetadata::getDefaultValue)
+                    .filter(RuntimeDefaultValue.class::isInstance)
+                    .map(RuntimeDefaultValue.class::cast)
+                    .map(RuntimeDefaultValue::get)
+                    .orElse(null);
+            if (value != null) {
+                //回填
+                propertyOperator.setProperty(data, property, value);
+            }
+        }
+        return value;
     }
 
     protected InsertResultOperator doInsert(Collection<E> batch) {
@@ -115,11 +132,7 @@ public abstract class DefaultRepository<E> {
 
         for (E e : batch) {
             insert.values(Stream.of(getProperties())
-                    .map(property -> propertyOperator
-                            .getProperty(e, property)
-                            .orElseGet(() -> mapping.getColumnByProperty(property)
-                                    .map(column -> NullValue.of(column.getJavaType(), column.getType()))
-                                    .orElse(null)))
+                    .map(property -> getInsertColumnValue(e,property))
                     .toArray());
         }
         return insert.execute();
