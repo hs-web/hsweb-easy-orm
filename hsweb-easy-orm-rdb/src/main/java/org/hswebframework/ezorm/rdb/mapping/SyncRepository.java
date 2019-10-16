@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping;
 
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -24,6 +25,8 @@ public interface SyncRepository<T, K> {
     }
 
     SaveResult save(Collection<T> list);
+
+    int updateById(K id, T data);
 
     void insert(T data);
 

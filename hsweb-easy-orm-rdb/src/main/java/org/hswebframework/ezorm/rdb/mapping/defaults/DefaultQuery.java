@@ -1,8 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
-import org.hswebframework.ezorm.core.NestConditional;
-import org.hswebframework.ezorm.core.SimpleNestConditional;
-import org.hswebframework.ezorm.core.TermTypeConditionalSupport;
+import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
@@ -63,6 +61,30 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
     }
 
     @Override
+    @SafeVarargs
+    public final <T> ME select(StaticMethodReferenceColumn<T>... column) {
+        return select(Arrays.stream(column).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    @SafeVarargs
+    @Override
+    public final <T> ME select(MethodReferenceColumn<T>... column) {
+        return select(Arrays.stream(column).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    @SafeVarargs
+    @Override
+    public final <T> ME selectExcludes(StaticMethodReferenceColumn<T>... column) {
+        return selectExcludes(Arrays.stream(column).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    @SafeVarargs
+    @Override
+    public final <T> ME selectExcludes(MethodReferenceColumn<T>... column) {
+        return selectExcludes(Arrays.stream(column).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
+    }
+
+    @Override
     public ME selectExcludes(String... columns) {
         param.excludes(columns);
         return (ME) this;
@@ -92,12 +114,17 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
         return (ME) this;
     }
 
-    private boolean isSelectInclude(Map.Entry<String, String> entry) {
-        return param.getIncludes().isEmpty() || param.getIncludes().containsAll(Arrays.asList(entry.getKey(), entry.getValue()));
+    private boolean isSelectInclude(SelectColumn column) {
+        return param.getIncludes().isEmpty() ||
+                param.getIncludes()
+                        .stream()
+                        .anyMatch(s -> s.equals(column.getColumn()) || s.equals(column.getAlias()));
     }
 
-    private boolean isSelectExclude(Map.Entry<String, String> entry) {
-        return param.getExcludes().containsAll(Arrays.asList(entry.getKey(), entry.getValue()));
+    private boolean isSelectExclude(SelectColumn column) {
+        return param.getExcludes()
+                .stream()
+                .anyMatch(s -> s.equals(column.getColumn()) || s.equals(column.getAlias()));
     }
 
     protected SelectColumn[] getSelectColumn() {
@@ -106,14 +133,14 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
                 tableMetadata.getForeignKeys().stream()
                         .map(key -> key.getAlias() == null ? key.getTarget().getName() : key.getAlias())
                         .map(alias -> alias.concat(".*"))
-                        .map(name -> SelectColumn.of(name)), columnMapping.getColumnPropertyMapping()
+                        .map(name -> SelectColumn.of(name))
+                , columnMapping.getColumnPropertyMapping()
                         .entrySet()
                         .stream()
-
-                        .filter(this::isSelectInclude)
-                        .filter(e -> !isSelectExclude(e))
-                        .map(entry -> SelectColumn.of(entry.getKey(), entry.getValue()))
-        ).toArray(SelectColumn[]::new);
+                        .map(entry -> SelectColumn.of(entry.getKey(), entry.getValue())))
+                .filter(this::isSelectInclude)
+                .filter(e -> !isSelectExclude(e))
+                .toArray(SelectColumn[]::new);
     }
 
     protected SortOrder[] getSortOrder() {

@@ -46,6 +46,17 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
     }
 
     @Override
+    public int updateById(K id, E data) {
+        if(id==null||data==null){
+            return 0;
+        }
+        return createUpdate()
+                .set(data)
+                .where(getIdColumn(),id)
+                .execute();
+    }
+
+    @Override
     public SaveResult save(Collection<E> list) {
         if (list == null || list.isEmpty()) {
             return SaveResult.of(0, 0);

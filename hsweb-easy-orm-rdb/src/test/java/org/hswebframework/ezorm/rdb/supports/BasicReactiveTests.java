@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSyncSqlExecutor;
@@ -61,7 +62,7 @@ public abstract class BasicReactiveTests {
             }
 
             @Override
-            public DefaultValue generate() {
+            public DefaultValue generate(ObjectMetadata meta) {
                 return (RuntimeDefaultValue) () -> UUID.randomUUID().toString().replace("-","");
             }
 

@@ -17,8 +17,6 @@ public @interface DefaultValue {
     /**
      * @return 生成器ID
      * @see DefaultValueGenerator#getId()
-     * @see DefaultValueGenerator#uuid
-     * @see DefaultValueGenerator#currentTimestamp
      */
     String generator();
 

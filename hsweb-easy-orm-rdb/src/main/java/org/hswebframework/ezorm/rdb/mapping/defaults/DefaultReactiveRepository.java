@@ -43,10 +43,25 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     }
 
     @Override
+    public Flux<E> findById(Flux<K> key) {
+        return key.collectList()
+                .flatMapMany(idList -> createQuery().where().in(getIdColumn(), idList).fetch());
+    }
+
+    @Override
     public Mono<Integer> deleteById(Publisher<K> key) {
         return Flux.from(key)
                 .collectList()
                 .flatMap(list -> createDelete().where().in(getIdColumn(), list).execute());
+    }
+
+    @Override
+    public Mono<Integer> updateById(K id, Mono<E> data) {
+        return data
+                .flatMap(_data -> createUpdate()
+                        .where(getIdColumn(), id)
+                        .set(_data)
+                        .execute());
     }
 
     @Override

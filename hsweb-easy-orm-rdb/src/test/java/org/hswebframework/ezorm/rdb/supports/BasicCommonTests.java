@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.events.EventListener;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -64,7 +65,7 @@ public abstract class BasicCommonTests {
             }
 
             @Override
-            public RuntimeDefaultValue generate() {
+            public RuntimeDefaultValue generate(ObjectMetadata meta) {
                 return  () -> UUID.randomUUID().toString().replace("-","");
             }
 

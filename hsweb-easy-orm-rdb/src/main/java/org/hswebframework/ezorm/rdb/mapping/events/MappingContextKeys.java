@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.mapping.events;
 
-import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.events.ContextKey;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
@@ -13,11 +12,11 @@ import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 @SuppressWarnings("all")
 public interface MappingContextKeys {
 
-    ContextKey result = ContextKey.of("result");
-    ContextKey instance = ContextKey.of("instance");
-    ContextKey context = ContextKey.of("context");
-    ContextKey type = ContextKey.of("type");
-    ContextKey executorType = ContextKey.of("executorType");
+    ContextKey<?> result = ContextKey.of("result");
+    ContextKey<?> instance = ContextKey.of("instance");
+    ContextKey<?> context = ContextKey.of("context");
+    ContextKey<String> type = ContextKey.of("type");
+    ContextKey<String> executorType = ContextKey.of("executorType");
 
     ContextKey<DMLOperator> dml = ContextKey.of("dml");
 

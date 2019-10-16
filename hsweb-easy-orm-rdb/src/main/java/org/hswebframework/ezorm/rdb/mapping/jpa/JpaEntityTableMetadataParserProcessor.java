@@ -242,9 +242,9 @@ public class JpaEntityTableMetadataParserProcessor {
         getAnnotation(annotations, GeneratedValue.class)
                 .map(GeneratedValue::generator)
                 .map(gen -> LazyDefaultValueGenerator.of(() ->
-                        tableMetadata.findFeature(DefaultValueGenerator.createId(gen))
+                        tableMetadata.findFeature(DefaultValueGenerator.<RDBColumnMetadata>createId(gen))
                                 .orElseThrow(() -> new UnsupportedOperationException("unsupported generator " + gen))))
-                .map(DefaultValueGenerator::generate)
+                .map(gen->gen.generate(metadata))
                 .ifPresent(metadata::setDefaultValue);
 
         getAnnotation(annotations, DefaultValue.class)
@@ -252,7 +252,7 @@ public class JpaEntityTableMetadataParserProcessor {
                 .map(gen -> LazyDefaultValueGenerator.of(() ->
                         tableMetadata.findFeature(DefaultValueGenerator.createId(gen))
                                 .orElseThrow(() -> new UnsupportedOperationException("unsupported generator " + gen))))
-                .map(DefaultValueGenerator::generate)
+                .map(gen->gen.generate(metadata))
                 .ifPresent(metadata::setDefaultValue);
 
         getAnnotation(annotations, Comment.class)

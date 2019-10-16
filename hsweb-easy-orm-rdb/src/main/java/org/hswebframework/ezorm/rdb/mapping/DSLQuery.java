@@ -16,21 +16,13 @@ public interface DSLQuery<ME extends DSLQuery> extends Conditional<ME> {
 
     ME selectExcludes(String... columns);
 
-    default <T> ME select(StaticMethodReferenceColumn<T>... column) {
-        return select(Arrays.stream(column).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
-    }
+    <T> ME select(StaticMethodReferenceColumn<T>... column);
 
-    default <T> ME select(MethodReferenceColumn<T>... column) {
-        return select(Arrays.stream(column).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
-    }
+    <T> ME select(MethodReferenceColumn<T>... column);
 
-    default <T> ME selectExcludes(StaticMethodReferenceColumn<T>... column) {
-        return selectExcludes(Arrays.stream(column).map(StaticMethodReferenceColumn::getColumn).toArray(String[]::new));
-    }
+    <T> ME selectExcludes(StaticMethodReferenceColumn<T>... column);
 
-    default <T> ME selectExcludes(MethodReferenceColumn<T>... column) {
-        return selectExcludes(Arrays.stream(column).map(MethodReferenceColumn::getColumn).toArray(String[]::new));
-    }
+    <T> ME selectExcludes(MethodReferenceColumn<T>... column);
 
     ME paging(int pageIndex, int pageSize);
 

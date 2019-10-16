@@ -39,7 +39,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
                                 .addSql("on");
 
                         fragments.addFragments(
-                                target.<QuerySqlFragmentBuilder>getFeature(RDBFeatures.where)
+                                target.getFeature(RDBFeatures.where)
                                         .map(builder -> {
 
                                             QueryOperatorParameter joinOnParameter = new QueryOperatorParameter();

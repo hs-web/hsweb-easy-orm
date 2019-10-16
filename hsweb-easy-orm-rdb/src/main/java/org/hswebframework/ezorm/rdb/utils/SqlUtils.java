@@ -49,6 +49,9 @@ public class SqlUtils {
 
 
     public static String toNativeSql(String sql, Object... parameters) {
+        if(parameters==null){
+            return sql;
+        }
 
         String[] stringParameter = new String[parameters.length];
         int len = 0;

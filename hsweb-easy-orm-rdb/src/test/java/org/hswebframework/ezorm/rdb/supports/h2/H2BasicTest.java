@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.BasicCommonTests;
+import org.junit.Test;
 
 public class H2BasicTest extends BasicCommonTests {
 
@@ -21,5 +22,12 @@ public class H2BasicTest extends BasicCommonTests {
     @Override
     protected SyncSqlExecutor getSqlExecutor() {
         return new TestSyncSqlExecutor(new H2ConnectionProvider());
+    }
+
+    @Test
+    public void test(){
+        repository.createQuery()
+                .select("id")
+                .fetch();
     }
 }

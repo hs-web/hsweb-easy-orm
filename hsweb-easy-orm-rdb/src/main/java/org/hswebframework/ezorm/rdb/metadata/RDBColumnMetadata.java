@@ -167,7 +167,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(name);
-        builder.append(" ").append(getDataType());
+        builder.append(" ").append(type != null ? getDataType() : "");
 
         if (javaType != null) {
             builder.append(" ").append(javaType.getSimpleName());

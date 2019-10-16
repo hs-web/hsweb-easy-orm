@@ -19,7 +19,7 @@ public interface ContextKeyValue<T> {
         };
     }
 
-    static <T> ContextKeyValue<T> of(ContextKey<T> key, T value) {
+    static <T> ContextKeyValue<T> of(ContextKey<?> key, T value) {
         return of(key.getKey(), value);
     }
 }
