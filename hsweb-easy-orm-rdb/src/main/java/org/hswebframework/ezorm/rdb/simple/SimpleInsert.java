@@ -47,11 +47,13 @@ class SimpleInsert<T> extends ValidatorAndTriggerSupport<Insert<T>> implements I
 
     @Override
     public int exec() throws SQLException {
+        tryValidate(insertParam.getData(), Validator.Operation.INSERT);
         boolean supportBefore = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.insert_before);
         boolean supportDone = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.insert_done);
         Map<String, Object> context =null;
         if (supportBefore || supportDone) {
             context = table.getDatabase().getTriggerContextRoot();
+            table.createQuery().where("","").and("","").total();
             context.put("table", table);
             context.put("database", table.getDatabase());
             context.put("param", insertParam);
@@ -61,7 +63,6 @@ class SimpleInsert<T> extends ValidatorAndTriggerSupport<Insert<T>> implements I
         }
         SqlRender<InsertParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.INSERT);
         SQL sql = render.render(table.getMeta(), insertParam);
-        tryValidate(insertParam.getData(), Validator.Operation.INSERT);
         int total = sqlExecutor.insert(sql);
         if (supportDone) {
             context.put("total", total);

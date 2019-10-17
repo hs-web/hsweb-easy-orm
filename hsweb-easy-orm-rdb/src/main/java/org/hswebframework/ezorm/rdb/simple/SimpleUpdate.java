@@ -138,6 +138,7 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
 
     @Override
     public int exec() throws SQLException {
+        tryValidate(updateParam.getData(), Validator.Operation.UPDATE);
         boolean supportBefore = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.update_before);
         boolean supportDone = !triggerSkip && table.getMeta().triggerIsSupport(Trigger.update_done);
         Map<String, Object> context = null;
@@ -152,7 +153,6 @@ class SimpleUpdate<T> extends ValidatorAndTriggerSupport<Update<T>> implements U
         }
         SqlRender<UpdateParam> render = table.getMeta().getDatabaseMetaData().getRenderer(SqlRender.TYPE.UPDATE);
         SQL sql = render.render(table.getMeta(), updateParam);
-        tryValidate(updateParam.getData(), Validator.Operation.UPDATE);
         int total = sqlExecutor.update(sql);
         if (supportDone) {
             context.put("total", total);
