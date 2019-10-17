@@ -47,7 +47,7 @@ public class SqlServerUpdateSqlRender extends CommonSqlRender<UpdateParam> {
 
         public SQL process() {
             SqlAppender appender = new SqlAppender();
-            appender.add("UPDATE ", metaData.getAlias(), " SET ");
+            appender.add("UPDATE ", metaData.getFullName(), " SET ");
             byte[] bytes = new byte[1];
             Map<String, Object> valueProxy = new HashMap<>();
             updateField.forEach(operationColumn -> {
@@ -97,7 +97,6 @@ public class SqlServerUpdateSqlRender extends CommonSqlRender<UpdateParam> {
             if (whereSql.isEmpty()) {
                 throw new UnsupportedOperationException("禁止执行未设置任何条件的修改操作!");
             }
-            appender.add(" FROM ", metaData.getFullName(), " ", metaData.getAlias());
             appender.add(" WHERE ", "").addAll(whereSql);
             String sql = appender.toString();
             param.setData(valueProxy);
