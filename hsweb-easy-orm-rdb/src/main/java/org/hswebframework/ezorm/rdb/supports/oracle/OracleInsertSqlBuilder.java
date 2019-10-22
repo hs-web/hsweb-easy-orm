@@ -54,6 +54,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                 }
             }
             index++;
+
         }
 
         if (indexMapping.isEmpty()) {
@@ -80,16 +81,19 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
-                SqlFragments function = functionValues.get(vIndex);
-                if (null != function) {
-                    valuesSql.addFragments(function);
-                    continue;
-                }
-                Object value = valueLen < vIndex ? null : values.get(vIndex);
+                int valueIndex = entry.getKey();
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
                 }
+                SqlFragments function = functionValues.get(valueIndex);
+                if (null != function) {
+                    valuesSql.addFragments(function);
+                    continue;
+                }
+
+                Object value = valueLen < valueIndex ? null : values.get(valueIndex);
+
                 if ((value == null || value instanceof NullValue)
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
