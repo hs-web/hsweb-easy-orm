@@ -25,6 +25,8 @@ public interface TableBuilder {
 
     TableBuilder alias(String name);
 
+    TableBuilder allowAlter(boolean allow);
+
     IndexBuilder index();
 
     ForeignKeyDSLBuilder  foreignKey();

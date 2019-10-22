@@ -26,7 +26,7 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "bytea");
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "bytea");
-        addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
+        addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "int8");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "integer");
         addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
@@ -39,11 +39,12 @@ public class PostgresqlDialect extends DefaultDialect {
 
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
-        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class),(c)->"text"));
-        registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class),(c)->"bytea"));
+        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class),(c)->"text"));
+        registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.BLOB, String.class),(c)->"bytea"));
 
+        registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT,Integer.class));
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
-        registerDataType("int2", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
+        registerDataType("int2", JdbcDataType.of(JDBCType.TINYINT,Byte.class));
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
         registerDataType("flat8", JdbcDataType.of(JDBCType.DOUBLE,Double.class));
         registerDataType("money", JdbcDataType.of(JDBCType.DECIMAL, BigDecimal.class));

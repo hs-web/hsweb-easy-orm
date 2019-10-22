@@ -19,6 +19,7 @@ public class DefaultTableBuilder implements TableBuilder {
     private RDBSchemaMetadata schema;
 
     private boolean dropColumn = false;
+    private boolean allowAlter = true;
 
     public DefaultTableBuilder(RDBTableMetadata table) {
         this.table = table;
@@ -90,6 +91,12 @@ public class DefaultTableBuilder implements TableBuilder {
     }
 
     @Override
+    public TableBuilder allowAlter(boolean allow) {
+        allowAlter = allow;
+        return this;
+    }
+
+    @Override
     public TableDDLResultOperator commit() {
         RDBTableMetadata oldTable = schema.getTable(table.getName()).orElse(null);
         SqlRequest sqlRequest;
@@ -99,17 +106,18 @@ public class DefaultTableBuilder implements TableBuilder {
                     .map(builder -> builder.build(AlterRequest.builder()
                             .allowDrop(dropColumn)
                             .newTable(table)
+                            .allowAlter(allowAlter)
                             .oldTable(oldTable)
                             .build()))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported AlterTableSqlBuilder"));
-            return TableDDLResultOperator.of(schema, sqlRequest, () ->oldTable.merge(table));
+            return TableDDLResultOperator.of(schema, sqlRequest, () -> oldTable.merge(table));
 
         } else {
             //create
             sqlRequest = schema.findFeature(CreateTableSqlBuilder.ID)
                     .map(builder -> builder.build(table))
                     .orElseThrow(() -> new UnsupportedOperationException("Unsupported CreateTableSqlBuilder"));
-            return TableDDLResultOperator.of(schema, sqlRequest, () ->schema.addTable(table));
+            return TableDDLResultOperator.of(schema, sqlRequest, () -> schema.addTable(table));
 
         }
 
