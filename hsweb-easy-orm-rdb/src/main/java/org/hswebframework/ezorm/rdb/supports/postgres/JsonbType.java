@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.supports.posgres;
+package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

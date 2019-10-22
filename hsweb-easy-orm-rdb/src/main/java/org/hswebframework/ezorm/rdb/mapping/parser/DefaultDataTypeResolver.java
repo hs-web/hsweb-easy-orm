@@ -26,18 +26,18 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
         return descriptor.findAnnotation(ColumnType.class)
                 .map(type -> {
                     RDBColumnMetadata column = descriptor.getColumn();
-                    Class javaType = type.javaType()==Void.class?descriptor.getPropertyType():type.javaType();
+                    Class javaType = type.javaType() == Void.class ? descriptor.getPropertyType() : type.javaType();
 
                     if (!type.typeId().isEmpty()) {
                         return column == null ?
-                                DataType.custom(type.typeId(),type.name(),type.jdbcType(),javaType )
+                                DataType.custom(type.typeId(), type.name(), type.jdbcType(), javaType)
                                 :
                                 column.getDialect().convertDataType(type.typeId());
                     } else if (type.type() != DataType.class) {
                         return getDataTypeInstance(type.type());
                     } else {
 
-                        if (javaType == Void.class && null != column) {
+                        if (type.javaType() == Void.class && null != column) {
                             return column.getDialect()
                                     .convertDataType(type.jdbcType().getName());
                         }

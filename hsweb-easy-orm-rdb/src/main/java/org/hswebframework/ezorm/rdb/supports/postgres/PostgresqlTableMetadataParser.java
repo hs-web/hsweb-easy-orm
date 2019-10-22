@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.supports.posgres;
+package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;

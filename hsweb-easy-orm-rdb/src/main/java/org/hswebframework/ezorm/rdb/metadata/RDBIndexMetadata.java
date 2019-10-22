@@ -99,7 +99,9 @@ public class RDBIndexMetadata implements ObjectMetadata {
 
         for (IndexColumn oldColumn : old.getColumns()) {
             IndexColumn column = nameMapping.get(oldColumn.column);
-            if (column == null || column.getSort() != oldColumn.getSort()) {
+            if (column == null
+                   // || column.getSort() != oldColumn.getSort()
+            ) {
                 return true;
             }
         }

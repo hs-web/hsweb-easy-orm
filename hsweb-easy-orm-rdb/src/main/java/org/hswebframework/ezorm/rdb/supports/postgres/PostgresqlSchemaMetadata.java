@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.supports.posgres;
+package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -11,7 +11,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new PostgresqlAlterTableSqlBuilder());
 
         addFeature(new PostgresqlTableMetadataParser(this));
-
+        addFeature(new PostgresIndexMetadataParser(this));
         addFeature(Dialect.POSTGRES);
     }
 

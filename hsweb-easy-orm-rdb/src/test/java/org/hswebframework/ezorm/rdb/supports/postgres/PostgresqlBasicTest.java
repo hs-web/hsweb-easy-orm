@@ -5,7 +5,6 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.BasicCommonTests;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
 
 public class PostgresqlBasicTest extends BasicCommonTests {
     @Override

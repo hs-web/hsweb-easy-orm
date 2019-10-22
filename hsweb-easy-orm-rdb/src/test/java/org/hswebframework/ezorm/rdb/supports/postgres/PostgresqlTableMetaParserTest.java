@@ -5,8 +5,6 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlTableMetadataParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

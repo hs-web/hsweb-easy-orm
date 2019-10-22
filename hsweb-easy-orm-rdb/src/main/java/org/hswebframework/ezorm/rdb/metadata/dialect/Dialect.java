@@ -8,10 +8,9 @@ import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlDialect;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDialect;
 import org.hswebframework.utils.StringUtils;
 
-import java.sql.JDBCType;
 import java.sql.SQLType;
 import java.util.Optional;
 

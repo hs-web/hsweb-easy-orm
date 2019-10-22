@@ -6,7 +6,6 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.BasicReactiveTests;
 import org.hswebframework.ezorm.rdb.supports.BasicTestEntity;
-import org.hswebframework.ezorm.rdb.supports.posgres.PostgresqlSchemaMetadata;
 import org.junit.Ignore;
 import org.junit.Test;
 import reactor.core.publisher.Flux;

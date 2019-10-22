@@ -1,4 +1,4 @@
-package org.hswebframework.ezorm.rdb.supports.posgres;
+package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
