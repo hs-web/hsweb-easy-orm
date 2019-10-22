@@ -33,9 +33,7 @@ public class TestReactiveSqlExecutor extends R2dbcReactiveSqlExecutor {
     @Override
     protected Mono<Connection> getConnection() {
         return provider.getConnection()
-                .doOnNext(connection -> {
-                     log.debug("get connection {}", connection);
-                });
+                .doOnNext(connection -> log.debug("get connection {}", connection));
     }
 
     @Override

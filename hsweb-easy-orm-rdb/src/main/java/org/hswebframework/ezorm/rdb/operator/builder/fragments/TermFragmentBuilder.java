@@ -16,12 +16,12 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.Function
 public interface TermFragmentBuilder extends Feature {
 
     static FeatureId<TermFragmentBuilder> createFeatureId(String suffix){
-        return FeatureId.of(RDBFeatureType.termType.getId().concat(":").concat(suffix));
+        return FeatureId.of(RDBFeatureType.termType.getId().concat(":").concat(suffix.toLowerCase()));
     }
 
     @Override
     default String getId() {
-        return getType().getFeatureId(getTermType());
+        return getType().getFeatureId(getTermType().toLowerCase());
     }
 
     @Override
