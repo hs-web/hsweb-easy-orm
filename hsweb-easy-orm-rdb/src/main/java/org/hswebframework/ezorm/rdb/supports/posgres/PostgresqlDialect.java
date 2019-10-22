@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.posgres;
 
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
@@ -38,6 +39,8 @@ public class PostgresqlDialect extends DefaultDialect {
 
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
+        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class),(c)->"text"));
+        registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class),(c)->"bytea"));
 
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
         registerDataType("int2", JdbcDataType.of(JDBCType.INTEGER,Integer.class));

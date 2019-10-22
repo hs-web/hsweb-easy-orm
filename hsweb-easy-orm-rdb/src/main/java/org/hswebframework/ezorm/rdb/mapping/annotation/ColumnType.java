@@ -22,6 +22,8 @@ public @interface ColumnType {
      */
     String typeId() default "";
 
+    String name() default "";
+
     /**
      * @return JDBCType
      * @see DataType#getSqlType()

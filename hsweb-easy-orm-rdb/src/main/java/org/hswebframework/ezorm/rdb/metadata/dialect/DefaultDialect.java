@@ -54,8 +54,8 @@ public abstract class DefaultDialect implements Dialect {
         registerDataType("timestamp", JdbcDataType.of(JDBCType.TIMESTAMP, Timestamp.class));
         registerDataType("date", JdbcDataType.of(JDBCType.DATE, LocalDate.class));
         registerDataType("time", JdbcDataType.of(JDBCType.TIME, LocalTime.class));
-        registerDataType("clob", JdbcDataType.of(JDBCType.CLOB, String.class));
-        registerDataType("blob", JdbcDataType.of(JDBCType.BLOB, byte[].class));
+//        registerDataType("clob", JdbcDataType.of(JDBCType.CLOB, String.class));
+//        registerDataType("blob", JdbcDataType.of(JDBCType.BLOB, byte[].class));
         registerDataType("long", JdbcDataType.of(JDBCType.BIGINT, Long.class));
         registerDataType("double", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
         registerDataType("binary", JdbcDataType.of(JDBCType.BINARY, byte[].class));
@@ -109,7 +109,7 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public void addDataTypeBuilder(String typeId, DataTypeBuilder mapper) {
-        dataTypeMappers.put(typeId, mapper);
+        dataTypeMappers.put(typeId.toLowerCase(), mapper);
     }
 
     @Override
@@ -129,7 +129,7 @@ public abstract class DefaultDialect implements Dialect {
         if (dataType instanceof DataTypeBuilder) {
             return ((DataTypeBuilder) dataType).createColumnDataType(columnMetaData);
         }
-        DataTypeBuilder mapper = dataTypeMappers.get(columnMetaData.getType().getId());
+        DataTypeBuilder mapper = dataTypeMappers.get(dataType.getId().toLowerCase());
         if (null == mapper) {
             mapper = defaultDataTypeBuilder;
         }
@@ -141,7 +141,7 @@ public abstract class DefaultDialect implements Dialect {
         if (dataType.contains("(")) {
             dataType = dataType.substring(0, dataType.indexOf("("));
         }
-        return dataTypeMapping.getOrDefault(dataType, convertUnknownDataType(dataType));
+        return dataTypeMapping.getOrDefault(dataType.toLowerCase(), convertUnknownDataType(dataType));
     }
 
     protected DataType convertUnknownDataType(String dataType) {

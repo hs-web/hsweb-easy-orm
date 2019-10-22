@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.metadata.CustomDataType;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 
 import java.beans.PropertyDescriptor;
@@ -24,18 +25,20 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
 
         return descriptor.findAnnotation(ColumnType.class)
                 .map(type -> {
+                    RDBColumnMetadata column = descriptor.getColumn();
+                    Class javaType = type.javaType()==Void.class?descriptor.getPropertyType():type.javaType();
 
                     if (!type.typeId().isEmpty()) {
-                        return descriptor.getColumn()
-                                .getDialect()
-                                .convertDataType(type.typeId());
+                        return column == null ?
+                                DataType.custom(type.typeId(),type.name(),type.jdbcType(),javaType )
+                                :
+                                column.getDialect().convertDataType(type.typeId());
                     } else if (type.type() != DataType.class) {
                         return getDataTypeInstance(type.type());
                     } else {
-                        Class javaType = type.javaType();
-                        if (javaType == Void.class) {
-                            return descriptor.getColumn()
-                                    .getDialect()
+
+                        if (javaType == Void.class && null != column) {
+                            return column.getDialect()
                                     .convertDataType(type.jdbcType().getName());
                         }
                         return DataType.jdbc(type.jdbcType(), javaType);
