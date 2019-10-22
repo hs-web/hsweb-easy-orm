@@ -96,6 +96,9 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
+                if (value == null) {
+                    value = NullValue.of(column.getJavaType(), column.getType());
+                }
                 fragments.addSql("?").addParameter(column.encode(value));
             }
 

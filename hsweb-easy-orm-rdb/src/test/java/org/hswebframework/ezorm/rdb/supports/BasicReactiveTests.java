@@ -137,16 +137,17 @@ public abstract class BasicReactiveTests {
             operator.ddl()
                     .createOrAlter("test_reactive_pager")
                     .addColumn().name("id").number(32).primaryKey().comment("ID").commit()
+                    .addColumn().name("id2").number(32).comment("ID2").commit()
                     .commit()
                     .reactive()
                     .block();
 
             InsertOperator insert = operator.dml()
                     .insert("test_reactive_pager")
-                    .columns("id");
+                    .columns("id","id2");
 
             for (int i = 0; i < 100; i++) {
-                insert.values(i + 1);
+                insert.values(String.valueOf(i + 1),null);
             }
 
             StepVerifier.create(insert.execute().reactive())

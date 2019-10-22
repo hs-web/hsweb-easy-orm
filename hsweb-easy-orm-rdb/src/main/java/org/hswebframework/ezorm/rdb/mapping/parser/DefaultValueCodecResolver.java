@@ -42,9 +42,18 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
 
         COMMONS.register(Number.class::isAssignableFrom, field -> new NumberValueCodec(field.getPropertyType()));
 
+        COMMONS.register(type ->
+                type.isPrimitive()
+                        && type == Byte.TYPE
+                        && type == Boolean.TYPE
+                        && type == Short.TYPE
+                        && type == Float.TYPE
+                        && type == Double.TYPE
+                        && type == Long.TYPE, field -> new NumberValueCodec(field.getPropertyType()));
         COMMONS.register(Enum.class::isAssignableFrom, field -> new EnumValueCodec(field.getPropertyType()));
 
         COMMONS.register(Enum[].class::isAssignableFrom, field -> new EnumValueCodec(field.getPropertyType()));
+
 
     }
 
