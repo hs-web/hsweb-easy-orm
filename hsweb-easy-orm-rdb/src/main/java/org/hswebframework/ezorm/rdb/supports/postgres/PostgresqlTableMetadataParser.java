@@ -12,7 +12,7 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
             " , case when is_nullable = 'YES' then 0 else 1 end as \"not-null\"" +
             " ,col_description(a.attrelid,a.attnum) as \"comment\"" +
             " from information_schema.columns columns ," +
-            "     pg_class as c,pg_attribute as a" +
+            " pg_class as c,pg_attribute as a" +
             " where a.attrelid = c.oid and a.attnum>0 and a.attname = columns.column_name and c.relname=columns.table_name" +
             " and table_schema = #{schema}" +
             " and table_name = #{table}";

@@ -1,17 +1,16 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
-import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlConnectionProvider;
-import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlSchemaMetadata;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
-public class PostgresIndexMetadataParserTest {
+public class PostgresqlIndexMetadataParserTest {
 
     @Test
     public void test() {
@@ -21,7 +20,7 @@ public class PostgresIndexMetadataParserTest {
 
             PostgresqlSchemaMetadata schema= new PostgresqlSchemaMetadata("public");
 
-            PostgresIndexMetadataParser parser =new PostgresIndexMetadataParser(schema);
+            PostgresqlIndexMetadataParser parser =new PostgresqlIndexMetadataParser(schema);
 
             parser.getSchema().addFeature(sqlExecutor);
 
@@ -31,6 +30,7 @@ public class PostgresIndexMetadataParserTest {
                             "name varchar(32) not null," +
                             "age int," +
                             "addr varchar(128))"));
+
 
 
             sqlExecutor.execute(SqlRequests.of("create index test_index on test_index_parser (age)"));

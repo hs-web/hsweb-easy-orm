@@ -17,25 +17,24 @@ import java.util.*;
 @AllArgsConstructor
 @Slf4j
 @SuppressWarnings("all")
-public class PostgresIndexMetadataParser implements IndexMetadataParser {
+public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
 
     @Getter
     private RDBSchemaMetadata schema;
 
-    private static final String all = "select A.SCHEMANAME," +
-            " A.TABLENAME," +
-            " A.INDEXNAME," +
-            " IA.ATTNAME," +
-            " IA.ATTNUM," +
-            " A.TABLESPACE," +
-            " B.AMNAME," +
-            " C.INDNATTS," +
-            " C.INDISUNIQUE," +
-            " C.INDISPRIMARY," +
-            " C.INDISCLUSTERED," +
-            " D.DESCRIPTION," +
-            " C.indkey," +
-            " indoption" +
+    private static final String all = "select " +
+            "A.SCHEMANAME::varchar," +
+            " A.TABLENAME::varchar," +
+            " A.INDEXNAME::varchar," +
+            " IA.ATTNAME::varchar," +
+            " IA.ATTNUM::int2," +
+            " A.TABLESPACE::varchar," +
+            " B.AMNAME::varchar," +
+            " C.INDNATTS::varchar," +
+            " C.INDISUNIQUE::boolean," +
+            " C.INDISPRIMARY::boolean,"+
+            " C.INDISCLUSTERED::boolean," +
+            " D.DESCRIPTION::varchar"+
             " from PG_AM B" +
             " left join PG_CLASS F on B.OID = F.RELAM" +
             " left join PG_STAT_ALL_INDEXES E on F.OID = E.INDEXRELID" +
@@ -74,14 +73,14 @@ public class PostgresIndexMetadataParser implements IndexMetadataParser {
 
     protected List<RDBIndexMetadata> doSelect(SqlRequest sqlRequest) {
         return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
-                .map(sqlExecutor -> sqlExecutor.select(sqlRequest, new H2IndexMetadataWrapper()))
+                .map(sqlExecutor -> sqlExecutor.select(sqlRequest, new PostgresqlIndexMetadataWrapper()))
                 .orElseGet(() -> {
                     log.warn("unsupported SyncSqlExecutor");
                     return Collections.emptyList();
                 });
     }
 
-    class H2IndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
+    class PostgresqlIndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
         Map<String, RDBIndexMetadata> group = new LinkedHashMap<>();
 
         @Override

@@ -11,7 +11,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new PostgresqlAlterTableSqlBuilder());
 
         addFeature(new PostgresqlTableMetadataParser(this));
-        addFeature(new PostgresIndexMetadataParser(this));
+        addFeature(new PostgresqlIndexMetadataParser(this));
         addFeature(Dialect.POSTGRES);
     }
 
