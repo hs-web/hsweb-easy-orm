@@ -68,6 +68,9 @@ public class MysqlR2dbcConnectionProvider implements R2dbcConnectionProvider {
 
             @Override
             protected void bindNull(Statement statement, int index, Class type) {
+                if (type == Date.class) {
+                    type = LocalDateTime.class;
+                }
                 statement.bindNull(index, type);
             }
 

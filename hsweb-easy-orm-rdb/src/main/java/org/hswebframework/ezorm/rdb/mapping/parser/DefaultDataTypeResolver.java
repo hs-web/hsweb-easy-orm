@@ -24,12 +24,20 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
 
         return descriptor.findAnnotation(ColumnType.class)
                 .map(type -> {
-                    Class javaType = type.javaType() != Void.class ? type.javaType() : descriptor.getPropertyType();
+
                     if (!type.typeId().isEmpty()) {
-                        return DataType.custom(type.typeId(), type.typeId(), type.jdbcType(), javaType);
+                        return descriptor.getColumn()
+                                .getDialect()
+                                .convertDataType(type.typeId());
                     } else if (type.type() != DataType.class) {
                         return getDataTypeInstance(type.type());
                     } else {
+                        Class javaType = type.javaType();
+                        if (javaType == Void.class) {
+                            return descriptor.getColumn()
+                                    .getDialect()
+                                    .convertDataType(type.jdbcType().getName());
+                        }
                         return DataType.jdbc(type.jdbcType(), javaType);
                     }
                 }).orElse(null);

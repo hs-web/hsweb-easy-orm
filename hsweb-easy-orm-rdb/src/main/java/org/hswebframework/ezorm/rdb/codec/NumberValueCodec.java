@@ -78,7 +78,7 @@ public class NumberValueCodec implements ValueCodec {
         if(value instanceof NullValue){
             return value;
         }
-        throw new UnsupportedOperationException("值" + value + "无法转换为数字");
+        throw new IllegalArgumentException("值" + value + "无法转换为数字");
     }
 
 
