@@ -40,13 +40,13 @@ public abstract class DefaultDialect implements Dialect {
                 column -> "nvarchar(" + column.getLength() + ")"));
 
         registerDataType("decimal", DataType.builder(DataType.jdbc(JDBCType.DECIMAL, BigDecimal.class),
-                column -> "decimal(" + column.getPrecision() + "," + column.getScale() + ")"));
+                column -> "decimal(" + column.getPrecision(32) + "," + column.getScale() + ")"));
 
         registerDataType("numeric", DataType.builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                column -> "numeric(" + column.getPrecision() + "," + column.getScale() + ")"));
+                column -> "numeric(" + column.getPrecision(32) + "," + column.getScale() + ")"));
 
         registerDataType("number", DataType.builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                column -> "number(" + column.getPrecision() + "," + column.getScale() + ")"));
+                column -> "number(" + column.getPrecision(32) + "," + column.getScale() + ")"));
 
 
         registerDataType("bigint", JdbcDataType.of(JDBCType.BIGINT, Long.class));

@@ -26,8 +26,8 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "blob");
         addDataTypeBuilder(JDBCType.BINARY, (meta) -> "blob");
-        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("number(", meta.getPrecision(38), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(38), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
 
