@@ -54,7 +54,7 @@ public class CommonAlterTableSqlBuilderTest {
         {
             RDBColumnMetadata test = new RDBColumnMetadata();
             test.setName("test");
-            test.setJdbcType(JDBCType.VARCHAR,String.class);
+            test.setJdbcType(JDBCType.VARCHAR, String.class);
             test.setLength(32);
             test.setComment("test");
             copy.addColumn(test);
@@ -75,6 +75,7 @@ public class CommonAlterTableSqlBuilderTest {
             copy.getColumn("name").ifPresent(name -> name.setLength(200));
 
             SqlRequest sql = builder.build(AlterRequest.builder()
+                    .allowAlter(true)
                     .oldTable(old)
                     .newTable(copy)
                     .build());

@@ -16,7 +16,7 @@ public class AlterRequest {
 
     private boolean allowDrop;
 
-    private boolean allowAlter=true;
+    private boolean allowAlter = true;
 
-    private boolean allowIndexAlter=true;
+    private boolean allowIndexAlter = true;
 }
