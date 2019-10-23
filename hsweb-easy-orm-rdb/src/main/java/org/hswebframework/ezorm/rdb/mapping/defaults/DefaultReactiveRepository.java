@@ -78,7 +78,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
                                         .where(getIdColumn(), primaryKey)
                                         .execute()
                                         .flatMap(i -> {
-                                            if (i >= 0) {
+                                            if (i > 0) {
                                                 return Mono.just(SaveResult.of(0, i));
                                             }
                                             return insert(Mono.just(e))
