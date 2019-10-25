@@ -71,7 +71,7 @@ public class RDBTableMetaData extends AbstractTableMetaData<RDBColumnMetaData> i
     @Override
     public RDBColumnMetaData getColumn(String name) {
         RDBColumnMetaData metaData = columnMetaDataMap.get(name);
-        if (metaData == null) metaData = columnMetaDataMap.get(name);
+        if (metaData == null) metaData = aliasColumnMetaDataMap.get(name);
         return metaData;
     }
 
