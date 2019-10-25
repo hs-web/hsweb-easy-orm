@@ -34,7 +34,7 @@ public class MSSQLDialect extends DefaultDialect {
         setDataTypeMapper(JDBCType.INTEGER, (meta) -> "int");
         setDataTypeMapper(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(), ",", meta.getScale(), ")"));
         setDataTypeMapper(JDBCType.DECIMAL, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(), ",", meta.getScale(), ")"));
-        setDataTypeMapper(JDBCType.TINYINT, (meta) -> "tinyint");
+        setDataTypeMapper(JDBCType.TINYINT, (meta) -> "smallint");
         setDataTypeMapper(JDBCType.BIGINT, (meta) -> "bigint");
         setDataTypeMapper(JDBCType.OTHER, (meta) -> "other");
         setDataTypeMapper(JDBCType.REAL, (meta) -> "real");
@@ -62,7 +62,7 @@ public class MSSQLDialect extends DefaultDialect {
         setJdbcTypeMapping("sysname", JDBCType.VARCHAR);
         setJdbcTypeMapping("text", JDBCType.LONGVARCHAR);
         setJdbcTypeMapping("timestamp", JDBCType.BINARY);
-        setJdbcTypeMapping("tinyint", JDBCType.TINYINT);
+        setJdbcTypeMapping("tinyint", JDBCType.SMALLINT);
         setJdbcTypeMapping("uniqueidentifier", JDBCType.CHAR);
         setJdbcTypeMapping("varbinary", JDBCType.VARBINARY);
         setJdbcTypeMapping("varchar", JDBCType.VARCHAR);
