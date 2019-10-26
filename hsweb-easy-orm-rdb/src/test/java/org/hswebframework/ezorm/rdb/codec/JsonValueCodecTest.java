@@ -35,6 +35,19 @@ public class JsonValueCodecTest {
 
     }
 
+
+    @Test
+    public void testByteBuffer() {
+        JsonValueCodec codec = JsonValueCodec.ofCollection(Set.class, String.class);
+
+        Object arr = codec.decode(ByteBuffer.wrap("[\"1\",\"2\"]".getBytes()));
+
+        Assert.assertTrue(arr instanceof Set);
+
+        Assert.assertEquals(((Set) arr).size(), 2);
+
+    }
+
     @Test
     public void testSet() {
         JsonValueCodec codec = JsonValueCodec.ofCollection(Set.class, String.class);
@@ -50,13 +63,13 @@ public class JsonValueCodecTest {
 
     @Test
     public void testMap() {
-        JsonValueCodec codec = JsonValueCodec.ofMap(Map.class, String.class,Integer.class);
+        JsonValueCodec codec = JsonValueCodec.ofMap(Map.class, String.class, Integer.class);
 
         Object arr = codec.decode("{\"a\":1,\"b\":\"2\"}");
 
         Assert.assertTrue(arr instanceof Map);
 
-        Map<String,Integer> val = ((Map) arr);
+        Map<String, Integer> val = ((Map) arr);
 
         Assert.assertEquals(val.size(), 2);
         Assert.assertEquals(val.get("a"), Integer.valueOf(1));
@@ -88,7 +101,7 @@ public class JsonValueCodecTest {
 
         Assert.assertTrue(val instanceof Map);
 
-        JsonCodecEntity entity = (JsonCodecEntity)((Map) val).get("nest");
+        JsonCodecEntity entity = (JsonCodecEntity) ((Map) val).get("nest");
 
         Assert.assertEquals(entity.name, "test");
     }
@@ -102,7 +115,7 @@ public class JsonValueCodecTest {
 
         Assert.assertTrue(val instanceof List);
 
-        JsonCodecEntity entity = (JsonCodecEntity)((List) val).get(0);
+        JsonCodecEntity entity = (JsonCodecEntity) ((List) val).get(0);
 
         Assert.assertEquals(entity.name, "test");
     }
@@ -117,16 +130,16 @@ public class JsonValueCodecTest {
 
             Assert.assertTrue(val instanceof Mono);
 
-            JsonCodecEntity entity = ((Mono<JsonCodecEntity>)val).block();
+            JsonCodecEntity entity = ((Mono<JsonCodecEntity>) val).block();
 
             Assert.assertEquals(entity.name, "test");
         }
         {
-            Object val = codec.decode(Clob.from(Flux.just("{\"name\"",":\"test\"}")));
+            Object val = codec.decode(Clob.from(Flux.just("{\"name\"", ":\"test\"}")));
 
             Assert.assertTrue(val instanceof Mono);
 
-            JsonCodecEntity entity = ((Mono<JsonCodecEntity>)val).block();
+            JsonCodecEntity entity = ((Mono<JsonCodecEntity>) val).block();
 
             Assert.assertEquals(entity.name, "test");
         }
@@ -136,7 +149,7 @@ public class JsonValueCodecTest {
 
             Assert.assertTrue(val instanceof Mono);
 
-            JsonCodecEntity entity = ((Mono<JsonCodecEntity>)val).block();
+            JsonCodecEntity entity = ((Mono<JsonCodecEntity>) val).block();
 
             Assert.assertEquals(entity.name, "test");
         }
@@ -200,12 +213,12 @@ public class JsonValueCodecTest {
 
     @Getter
     @Setter
-    public static class JsonCodecEntity{
+    public static class JsonCodecEntity {
         private String name;
 
         private Date time;
 
-        private Map<String,JsonCodecEntity> nest;
+        private Map<String, JsonCodecEntity> nest;
 
         private List<JsonCodecEntity> nest2;
 

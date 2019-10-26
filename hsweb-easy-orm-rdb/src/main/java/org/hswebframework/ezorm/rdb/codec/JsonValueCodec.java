@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.util.*;
@@ -134,7 +136,10 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             target = mapper.readValue((byte[]) data, jacksonType);
         } else if (data instanceof String) {
             target = mapper.readValue(((String) data), jacksonType);
-        } else if (FeatureUtils.r2dbcIsAlive()) {
+        }else if(data instanceof ByteBuffer){
+            return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
+        }
+        else if (FeatureUtils.r2dbcIsAlive()) {
             Mono mono = null;
             if (data instanceof io.r2dbc.spi.Clob) {
                 mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())

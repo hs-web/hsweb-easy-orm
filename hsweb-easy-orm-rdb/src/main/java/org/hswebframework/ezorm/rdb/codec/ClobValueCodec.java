@@ -7,6 +7,8 @@ import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Clob;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -45,6 +47,13 @@ public class ClobValueCodec implements ValueCodec {
                 // TODO: 2019-09-25 更好的方式？
                 return mono.toFuture().get(10, TimeUnit.SECONDS);
             }
+        }else if(data instanceof ByteBuffer){
+            ByteBuffer byteBuffer = ((ByteBuffer) data);
+
+            byte[] bytes = new byte[byteBuffer.remaining()];
+
+            byteBuffer.get(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
         }
 
         return data;
