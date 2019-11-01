@@ -33,7 +33,7 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder("int", (meta) -> "int");
         addDataTypeBuilder("json", meta -> "json");
 
-        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, Integer.class), c -> "text"));
+        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class), c -> "text"));
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
         registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
