@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
+import org.hswebframework.ezorm.rdb.exception.DuplicateKeyException;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
@@ -33,6 +34,27 @@ public class PostgresqlReactiveTests extends BasicReactiveTests {
     protected ReactiveSqlExecutor getSqlExecutor() {
 
         return new TestReactiveSqlExecutor(new PostgresqlR2dbcConnectionProvider());
+    }
+
+    @Test
+    public void testException(){
+        repository.insert(Mono.just(BasicTestEntity.builder()
+                .name("test")
+                .id("test")
+                .state((byte)1)
+                .build()))
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
+
+        repository.insert(Mono.just(BasicTestEntity.builder()
+                .name("test")
+                .id("test")
+                .state((byte)1)
+                .build()))
+                .as(StepVerifier::create)
+                .expectError(DuplicateKeyException.class)
+                .verify();
     }
 
     @Test

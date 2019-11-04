@@ -44,6 +44,8 @@ public enum RDBFeatureType implements FeatureType {
      * @see ValueCodecFactory
      */
     codec("编解码器"),
+
+    exceptionTranslation("异常转换")
     ;
 
 

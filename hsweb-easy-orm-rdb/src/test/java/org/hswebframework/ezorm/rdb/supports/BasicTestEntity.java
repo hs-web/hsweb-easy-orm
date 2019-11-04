@@ -37,7 +37,7 @@ public class BasicTestEntity implements Serializable {
     private Byte state;
 
     @Column
-    @DefaultValue(generator = "random")
+//    @DefaultValue(generator = "random")
     private Long balance;
 
     @Column(table = "entity_test_table_detail")

@@ -8,8 +8,6 @@ public interface ResultOperator<E, R> {
 
     R sync();
 
-    CompletionStage<R> async();
-
     Publisher<E> reactive();
 
 }

@@ -66,7 +66,7 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-h2</artifactId>
-            <scope>test</scope>
+            <optional>test</optional>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.github.jasync-sql/jasync-r2dbc-mysql -->
@@ -87,20 +87,20 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
-            <scope>test</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-mssql</artifactId>
-            <scope>test</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.17</version>
-            <scope>test</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

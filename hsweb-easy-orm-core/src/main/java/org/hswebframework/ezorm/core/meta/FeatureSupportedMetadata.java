@@ -38,6 +38,14 @@ public interface FeatureSupportedMetadata {
         return getFeature(id.getId());
     }
 
+    default <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
+        return getFeature(id.getId());
+    }
+
+    default <T extends Feature> Optional<T> findFeature(String id) {
+        return getFeature(id);
+    }
+
     default <T extends Feature> Optional<T> getFeature(String id) {
         return ofNullable(getFeatures())
                 .map(feature -> feature.get(id))

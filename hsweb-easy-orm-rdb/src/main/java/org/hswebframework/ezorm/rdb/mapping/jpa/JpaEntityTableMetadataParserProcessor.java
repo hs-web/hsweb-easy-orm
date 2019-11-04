@@ -18,6 +18,7 @@ import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 import org.hswebframework.utils.ClassUtils;
+import org.hswebframework.utils.StringUtils;
 
 import javax.persistence.*;
 import java.beans.PropertyDescriptor;
@@ -98,6 +99,8 @@ public class JpaEntityTableMetadataParserProcessor {
                     .ifPresent(column -> afterRun.add(() -> handleJoinColumnAnnotation(descriptor, annotations, column)));
 
         }
+
+
         afterRun.forEach(Runnable::run);
     }
 
@@ -219,7 +222,7 @@ public class JpaEntityTableMetadataParserProcessor {
         if (!column.name.isEmpty()) {
             columnName = column.name;
         } else {
-            columnName = descriptor.getName();
+            columnName = StringUtils.camelCase2UnderScoreCase(descriptor.getName());
         }
         Class javaType = descriptor.getPropertyType();
 

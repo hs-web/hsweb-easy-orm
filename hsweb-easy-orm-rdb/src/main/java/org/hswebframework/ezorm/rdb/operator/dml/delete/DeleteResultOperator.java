@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
+import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CompletionStage;
@@ -20,23 +21,17 @@ public class DeleteResultOperator implements ResultOperator<Integer, Integer> {
 
     @Override
     public Integer sync() {
-        return table.findFeature(SyncSqlExecutor.ID)
+        return ExceptionUtils.translation(() -> table.findFeature(SyncSqlExecutor.ID)
                 .map(executor -> executor.update(sql))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
-    }
-
-    @Override
-    public CompletionStage<Integer> async() {
-        return table.findFeature(AsyncSqlExecutor.ID)
-                .map(executor -> executor.update(sql))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor")), table);
     }
 
     @Override
     public Mono<Integer> reactive() {
-        return table.findFeature(ReactiveSqlExecutor.ID)
-                .map(executor -> executor.update(Mono.just(sql)))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
+       return Mono.defer(()-> table.findFeature(ReactiveSqlExecutor.ID)
+               .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"))
+               .update(Mono.just(sql))
+               .onErrorMap(error -> ExceptionUtils.translation(table, error)));
     }
 
 }

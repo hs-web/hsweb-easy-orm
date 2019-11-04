@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
+import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CompletionStage;
@@ -22,35 +23,25 @@ public class TableDDLResultOperator implements ResultOperator<Boolean, Boolean> 
 
     @Override
     public Boolean sync() {
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
+        return ExceptionUtils.translation(() -> schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
                 .map(sqlExecutor -> {
                     sqlExecutor.execute(sqlRequest);
                     whenCompleted.run();
                     return true;
                 })
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported SyncSqlExecutor"));
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported SyncSqlExecutor")), schema);
 
-    }
-
-    @Override
-    public CompletionStage<Boolean> async() {
-        return schema.<AsyncSqlExecutor>findFeature(AsyncSqlExecutor.ID)
-                .map(sqlExecutor -> sqlExecutor.execute(sqlRequest)
-                        .thenApply(__ -> {
-                            whenCompleted.run();
-                            return true;
-                        }))
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported AsyncSqlExecutor"));
     }
 
     @Override
     public Mono<Boolean> reactive() {
         return schema.findFeature(ReactiveSqlExecutor.ID)
-                .map(sqlExecutor -> sqlExecutor
-                        .execute(Mono.just(sqlRequest))
-                        .doOnSuccess(__->whenCompleted.run())
-                        .thenReturn(true))
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported ReactiveSqlExecutor"));
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported ReactiveSqlExecutor"))
+                .execute(Mono.just(sqlRequest))
+                .doOnSuccess(__ -> whenCompleted.run())
+                .thenReturn(true)
+                .onErrorMap(error -> ExceptionUtils.translation(schema, error))
+                ;
     }
 
 }
