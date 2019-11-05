@@ -77,7 +77,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                     valuesSql.addFragments(function);
                 }
 
-                Object value = valueLen < vIndex ? null : values.get(vIndex);
+                Object value = valueLen <= vIndex ? null : values.get(vIndex);
 
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");

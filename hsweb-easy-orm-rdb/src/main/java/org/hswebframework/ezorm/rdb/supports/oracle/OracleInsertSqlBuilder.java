@@ -92,7 +92,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                     continue;
                 }
 
-                Object value = valueLen < valueIndex ? null : values.get(valueIndex);
+                Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
 
                 if ((value == null || value instanceof NullValue)
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {

@@ -17,12 +17,15 @@ import java.util.*;
 
 import static java.util.Optional.*;
 
-@AllArgsConstructor(staticName = "of")
+@AllArgsConstructor
 @SuppressWarnings("all")
 public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
     private RDBTableMetadata table;
 
+    public static BatchInsertSqlBuilder of(RDBTableMetadata table){
+        return new BatchInsertSqlBuilder(table);
+    }
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
@@ -84,7 +87,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                     fragments.addSql(",");
                 }
 
-                Object value = valueLen < valueIndex ? null : values.get(valueIndex);
+                Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
 
                 if ((value == null || value instanceof NullValue)
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
@@ -103,9 +106,14 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             }
 
             fragments.addSql(")");
+            afterValues(parameter.getColumns(),values,fragments);
         }
 
         return fragments.toRequest();
+    }
+
+    protected void afterValues(Set<InsertColumn> columns, List<Object> values, PrepareSqlFragments sql) {
+
     }
 
 

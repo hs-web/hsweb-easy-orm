@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.delete.DefaultDeleteSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.update.DefaultUpdateSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.DefaultSaveOrUpdateOperator;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,7 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
         addFeature(BatchInsertSqlBuilder.of(this));
         addFeature(DefaultUpdateSqlBuilder.of(this));
         addFeature(DefaultDeleteSqlBuilder.of(this));
-
+        addFeature(DefaultSaveOrUpdateOperator.of(this));
     }
 
     public void addIndex(RDBIndexMetadata index) {

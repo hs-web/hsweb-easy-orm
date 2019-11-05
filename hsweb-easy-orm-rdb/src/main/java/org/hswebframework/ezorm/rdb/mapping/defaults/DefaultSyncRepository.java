@@ -15,9 +15,9 @@ import java.util.function.Supplier;
 public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements SyncRepository<E, K> {
 
 
-    public DefaultSyncRepository(DatabaseOperator operator, String table, Class<E> type,ResultWrapper<E, ?> wrapper) {
+    public DefaultSyncRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         this(operator,
-                ()->operator.getMetadata().getTable(table).orElseThrow(()->new UnsupportedOperationException("table [" + table + "] doesn't exist")),type,wrapper);
+                () -> operator.getMetadata().getTable(table).orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
     }
 
 
@@ -47,41 +47,19 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     @Override
     public int updateById(K id, E data) {
-        if(id==null||data==null){
+        if (id == null || data == null) {
             return 0;
         }
         return createUpdate()
                 .set(data)
-                .where(getIdColumn(),id)
+                .where(getIdColumn(), id)
                 .execute();
     }
 
     @Override
     public SaveResult save(Collection<E> list) {
-        if (list == null || list.isEmpty()) {
-            return SaveResult.of(0, 0);
-        }
-        List<E> readyToInsert = new ArrayList<>();
-        int updated = 0;
-        for (E datum : list) {
-            K id = getPropertyOperator()
-                    .getProperty(datum, getIdColumn())
-                    .map(CastUtil::<K>cast)
-                    .orElse(null);
-            if (id == null) {
-                readyToInsert.add(datum);
-            } else {
-                int thisUpdated = createUpdate().set(datum).where(getIdColumn(), id).execute();
-                if (thisUpdated == 0) {
-                    readyToInsert.add(datum);
-                } else {
-                    updated += thisUpdated;
-                }
-            }
-        }
-        int added = insertBatch(readyToInsert);
 
-        return SaveResult.of(added, updated);
+        return doSave(list).sync();
     }
 
     @Override

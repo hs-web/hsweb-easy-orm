@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
 
 public interface DMLOperator {
 
@@ -17,6 +18,8 @@ public interface DMLOperator {
     InsertOperator insert(String table);
 
     DeleteOperator delete(String table);
+
+    UpsertOperator upsert(String table);
 
     <K> SyncRepository<Record, K> createRepository(String tableName);
 

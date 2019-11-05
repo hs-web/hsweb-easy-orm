@@ -45,7 +45,8 @@ public enum RDBFeatureType implements FeatureType {
      */
     codec("编解码器"),
 
-    exceptionTranslation("异常转换")
+    exceptionTranslation("异常转换"),
+    saveOrUpdateOperator("新增或者保存操作器")
     ;
 
 

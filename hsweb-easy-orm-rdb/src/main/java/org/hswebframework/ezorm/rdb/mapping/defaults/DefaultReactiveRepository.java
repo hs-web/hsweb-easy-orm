@@ -66,28 +66,10 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public Mono<SaveResult> save(Publisher<E> data) {
-        // TODO: 2019-09-24 还应该按照唯一约束来处理
         return Flux
                 .from(data)
-                .flatMap(e -> getPropertyOperator()
-                        .getProperty(e, getIdColumn())
-                        .map(CastUtil::<K>cast)
-                        .map(primaryKey ->
-                                createUpdate()
-                                        .set(e)
-                                        .where(getIdColumn(), primaryKey)
-                                        .execute()
-                                        .flatMap(i -> {
-                                            if (i > 0) {
-                                                return Mono.just(SaveResult.of(0, i));
-                                            }
-                                            return insert(Mono.just(e))
-                                                    .map(j -> SaveResult.of(j, 0));
-                                        }))
-                        .orElseGet(() ->
-                                insert(Mono.just(e)).map(i -> SaveResult.of(i, 0))
-                        ))
-                .reduce(SaveResult.of(0, 0), SaveResult::merge);
+                .collectList()
+                .flatMap(list -> doSave(list).reactive());
     }
 
     @Override

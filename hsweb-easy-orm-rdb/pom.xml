@@ -69,14 +69,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.jasync-sql/jasync-r2dbc-mysql -->
-        <!--<dependency>-->
-            <!--<groupId>com.github.jasync-sql</groupId>-->
-            <!--<artifactId>jasync-r2dbc-mysql</artifactId>-->
-            <!--<version>1.0.7</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>dev.miku</groupId>
             <artifactId>r2dbc-mysql</artifactId>

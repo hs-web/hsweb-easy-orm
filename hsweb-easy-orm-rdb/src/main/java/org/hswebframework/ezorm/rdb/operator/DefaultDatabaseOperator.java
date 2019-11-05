@@ -23,6 +23,8 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.ExecutableQueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.ExecutableUpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.DefaultUpsertOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
 
 @AllArgsConstructor(staticName = "of")
 public class DefaultDatabaseOperator
@@ -53,6 +55,13 @@ public class DefaultDatabaseOperator
     @Override
     public DeleteOperator delete(String table) {
         return ExecutableDeleteOperator.of(metadata
+                .getTable(table)
+                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+    }
+
+    @Override
+    public UpsertOperator upsert(String table) {
+        return DefaultUpsertOperator.of(metadata
                 .getTable(table)
                 .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }

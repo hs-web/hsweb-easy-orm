@@ -16,8 +16,13 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveOrUpdateOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -84,6 +89,23 @@ public abstract class DefaultRepository<E> {
                 .<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature")));
 
+    }
+
+    protected SaveResultOperator doSave(Collection<E> data) {
+        RDBTableMetadata table = getTable();
+        UpsertOperator upsert = operator.dml().upsert(table.getFullName());
+
+//        table.fireEvent(MappingEventTypes.insert_before,
+//                ctx -> ctx.set(instance(batch), type("batch"), tableMetadata(table), insert(insert)));
+
+        upsert.columns(getProperties());
+
+        for (E e : data) {
+            upsert.values(Stream.of(getProperties())
+                    .map(property -> getInsertColumnValue(e,property))
+                    .toArray());
+        }
+        return upsert.execute();
     }
 
     protected InsertResultOperator doInsert(E data) {

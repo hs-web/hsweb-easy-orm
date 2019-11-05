@@ -66,8 +66,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     public Mono<Integer> update(Publisher<SqlRequest> request) {
         return this.doExecute(toFlux(request))
                 .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
-                .collect(Collectors.summingInt(Integer::intValue))
-                .doOnNext(count -> logger.debug("==>    Updated: {}", count));
+                .doOnNext(count -> logger.debug("==>    Updated: {}", count))
+                .collect(Collectors.summingInt(Integer::intValue));
     }
 
     @Override

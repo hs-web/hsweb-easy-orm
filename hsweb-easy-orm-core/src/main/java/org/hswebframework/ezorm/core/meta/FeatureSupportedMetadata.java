@@ -38,12 +38,30 @@ public interface FeatureSupportedMetadata {
         return getFeature(id.getId());
     }
 
+    default <T extends Feature> T getFeatureNow(FeatureId<T> id) {
+        return getFeatureNow(id.getId());
+    }
+
     default <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
         return getFeature(id.getId());
     }
 
+    default <T extends Feature> T findFeatureNow(FeatureId<T> id) {
+        return this.findFeatureNow(id.getId());
+    }
+
     default <T extends Feature> Optional<T> findFeature(String id) {
         return getFeature(id);
+    }
+
+    default <T extends Feature> T findFeatureNow(String id) {
+        return this.<T>findFeature(id)
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported feature " + id));
+    }
+
+    default <T extends Feature> T getFeatureNow(String id) {
+        return this.<T>getFeature(id)
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported feature " + id));
     }
 
     default <T extends Feature> Optional<T> getFeature(String id) {

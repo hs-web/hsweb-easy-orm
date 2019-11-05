@@ -6,7 +6,6 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.JoinType;
-import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

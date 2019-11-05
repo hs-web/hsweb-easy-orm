@@ -13,6 +13,7 @@ import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
 import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
@@ -63,7 +64,7 @@ public abstract class BasicReactiveTests {
 
             @Override
             public DefaultValue generate(ObjectMetadata meta) {
-                return (RuntimeDefaultValue) () -> UUID.randomUUID().toString().replace("-","");
+                return (RuntimeDefaultValue) () -> UUID.randomUUID().toString().replace("-", "");
             }
 
             @Override
@@ -144,10 +145,10 @@ public abstract class BasicReactiveTests {
 
             InsertOperator insert = operator.dml()
                     .insert("test_reactive_pager")
-                    .columns("id","id2");
+                    .columns("id", "id2");
 
             for (int i = 0; i < 100; i++) {
-                insert.values(String.valueOf(i + 1),null);
+                insert.values(String.valueOf(i + 1), null);
             }
 
             StepVerifier.create(insert.execute().reactive())
@@ -206,8 +207,36 @@ public abstract class BasicReactiveTests {
                                 .createTime(new Date())
                                 .state((byte) 1)
                                 .build())
-                        .buffer(30).delayElements(Duration.ofSeconds(2))))
+                        .buffer(30).delayElements(Duration.ofMillis(100))))
                 .expectNext(100)
+                .verifyComplete();
+
+    }
+
+
+    @Test
+    public void testReactiveRepositorySave() {
+        BasicTestEntity entity = BasicTestEntity.builder()
+                .id("test_id_save")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("test")
+                .stateEnum(StateEnum.enabled)
+                .build();
+
+        repository.save(Mono.just(entity))
+                .map(SaveResult::getAdded)
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
+
+        repository.save(Mono.just(entity))
+                .map(SaveResult::getUpdated)
+                .as(StepVerifier::create)
+                .expectNext(1)
                 .verifyComplete();
 
     }

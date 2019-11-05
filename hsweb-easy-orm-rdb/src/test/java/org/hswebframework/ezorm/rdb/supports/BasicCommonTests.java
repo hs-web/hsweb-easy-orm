@@ -66,7 +66,7 @@ public abstract class BasicCommonTests {
 
             @Override
             public RuntimeDefaultValue generate(ObjectMetadata meta) {
-                return  () -> UUID.randomUUID().toString().replace("-","");
+                return () -> UUID.randomUUID().toString().replace("-", "");
             }
 
             @Override
@@ -102,7 +102,7 @@ public abstract class BasicCommonTests {
 
         RDBTableMetadata table = parser.parseTableMetadata(BasicTestEntity.class).orElseThrow(NullPointerException::new);
 
-      //  table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}", type, context));
+        //  table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}", type, context));
 
         operator.ddl()
                 .createOrAlter(table)
@@ -135,7 +135,7 @@ public abstract class BasicCommonTests {
     public void testRepositoryInsertBach() {
         List<BasicTestEntity> entities = Flux.range(0, 100)
                 .map(integer -> BasicTestEntity.builder()
-                      // .id("test_id_" + integer)
+                        // .id("test_id_" + integer)
                         .balance(1000L)
                         .name("test:" + integer)
                         .createTime(new Date())
@@ -145,6 +145,24 @@ public abstract class BasicCommonTests {
                         .build())
                 .collectList().block();
         Assert.assertEquals(100, repository.insertBatch(entities));
+    }
+
+    @Test
+    public void testRepositorySave() {
+        BasicTestEntity entity = BasicTestEntity.builder()
+                .id("test_id_save")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("test")
+                .stateEnum(StateEnum.enabled)
+                .build();
+
+        Assert.assertEquals(repository.save(entity).getTotal(), 1);
+        Assert.assertEquals(repository.save(entity).getTotal(), 1);
+
     }
 
     @Test
@@ -161,7 +179,7 @@ public abstract class BasicCommonTests {
                 .addressId("test")
                 .stateEnum(StateEnum.enabled)
                 .build();
-        addressRepository.insert(Record.newRecord().putValue("id","test").putValue("name","test_address"));
+        addressRepository.insert(Record.newRecord().putValue("id", "test").putValue("name", "test_address"));
         repository.insert(entity);
 
         Assert.assertEquals(repository.findById("test_id").orElseThrow(NullPointerException::new), entity);
@@ -170,7 +188,7 @@ public abstract class BasicCommonTests {
                 .selectExcludes("address.*")
                 .where(entity::getId)
                 .nest()
-                .is(entity::getId).or().is("address.name","test")
+                .is(entity::getId).or().is("address.name", "test")
                 .end()
                 .orderBy(SortOrder.desc("id"))
                 .paging(0, 10)
@@ -183,14 +201,14 @@ public abstract class BasicCommonTests {
                 .nest()
                 .is(entity::getId).or().is(entity::getId)
                 .end()
-                .where(entity::getId).and().is("address.name","test_address")
+                .where(entity::getId).and().is("address.name", "test_address")
                 .execute());
 
         Assert.assertEquals(1, repository.createDelete()
                 .where(entity::getId)
                 .nest()
                 .is(entity::getId).or().is(entity::getId)
-                .end().is("address.name","test_address")
+                .end().is("address.name", "test_address")
                 .execute());
 
     }
