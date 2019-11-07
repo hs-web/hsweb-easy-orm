@@ -97,7 +97,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                     continue;
                 }
                 if (value == null) {
-                    value = NullValue.of(column.getJavaType(), column.getType());
+                    value = NullValue.of( column.getType());
                 }
                 valuesSql.addSql("?").addParameter(column.encode(value));
             }

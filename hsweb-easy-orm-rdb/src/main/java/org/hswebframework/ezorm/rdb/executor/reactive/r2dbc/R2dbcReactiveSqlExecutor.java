@@ -154,7 +154,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
             if (parameter == null) {
                 bindNull(statement, index, String.class);
             } else if (parameter instanceof NullValue) {
-                bindNull(statement, index, ((NullValue) parameter).getType());
+                bindNull(statement, index, ((NullValue) parameter).getDataType().getJavaType());
             } else {
                 bind(statement, index, parameter);
             }

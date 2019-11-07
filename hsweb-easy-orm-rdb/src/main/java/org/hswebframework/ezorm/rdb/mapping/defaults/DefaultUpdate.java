@@ -106,8 +106,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     @Override
     public ME setNull(String column) {
         NullValue nullValue = table.getColumn(column)
-                .map(columnMetadata -> NullValue.of(columnMetadata.getJavaType(), columnMetadata.getType()))
-                .orElseGet(() -> NullValue.of(String.class, JdbcDataType.of(JDBCType.VARCHAR, String.class)));
+                .map(columnMetadata -> NullValue.of(columnMetadata.getType()))
+                .orElseGet(() -> NullValue.of(JdbcDataType.of(JDBCType.VARCHAR, String.class)));
         set(column, nullValue);
         return (ME) this;
     }

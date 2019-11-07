@@ -101,7 +101,7 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                     if (index > 0) {
                         sql.addSql(",");
                     }
-                    sql.addSql(columnMetadata.getName())
+                    sql.addSql(columnMetadata.getQuoteName())
                             .addSql("=");
 
                     Object value = index >= values.size() ? null : values.get(index);
@@ -113,7 +113,7 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                         continue;
                     }
                     if (value == null) {
-                        value = NullValue.of(columnMetadata.getJavaType(), columnMetadata.getType());
+                        value = NullValue.of(columnMetadata.getType());
                     }
                     sql.addSql("?").addParameter(columnMetadata.encode(value));
                 } finally {
