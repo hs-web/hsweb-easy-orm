@@ -228,13 +228,13 @@ public abstract class BasicReactiveTests {
                 .build();
 
         repository.save(Mono.just(entity))
-                .map(SaveResult::getAdded)
+                .map(SaveResult::getTotal)
                 .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
         repository.save(Mono.just(entity))
-                .map(SaveResult::getUpdated)
+                .map(SaveResult::getTotal)
                 .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();

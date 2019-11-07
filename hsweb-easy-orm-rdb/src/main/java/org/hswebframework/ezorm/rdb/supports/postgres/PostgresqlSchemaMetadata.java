@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
@@ -17,8 +18,20 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(Dialect.POSTGRES);
 
         addFeature(new CompositeExceptionTranslation()
-            .add(FeatureUtils.r2dbcIsAlive(),()->PostgresqlR2DBCExceptionTranslation.of(this))
+                .add(FeatureUtils.r2dbcIsAlive(), () -> PostgresqlR2DBCExceptionTranslation.of(this))
         );
     }
 
+    @Override
+    public void addTable(RDBTableMetadata metadata) {
+        metadata.addFeature(new PostgresqlSaveOrUpdateOperator(metadata));
+        super.addTable(metadata);
+    }
+
+    @Override
+    public RDBTableMetadata newTable(String name) {
+        RDBTableMetadata metadata = super.newTable(name);
+        metadata.addFeature(new PostgresqlSaveOrUpdateOperator(metadata));
+        return metadata;
+    }
 }
