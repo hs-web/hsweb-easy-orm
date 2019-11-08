@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("all")
 public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
     private RDBTableMetadata table;
@@ -60,9 +61,10 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             int added = 0, updated = 0;
             for (SqlRequest request : sqlRequest) {
                 int num = sqlExecutor.update(request);
-                added += num;
                 if (num == 0) {
                     updated++;
+                } else {
+                    added++;
                 }
             }
             return SaveResult.of(added, updated);
@@ -73,7 +75,7 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
             return Flux.fromIterable(sqlRequest)
                     .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
-                    .map(i -> SaveResult.of(i > 0 ? i : 0, i == 0 ? 1 : 0))
+                    .map(i -> SaveResult.of(i > 0 ? 1 : 0, i == 0 ? 1 : 0))
                     .reduce(SaveResult::merge);
         }
     }
@@ -89,37 +91,34 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             sql.addSql("on duplicate key update");
 
             int index = 0;
+            boolean more = false;
             for (InsertColumn column : columns) {
-                try {
-                    RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
-                    if (columnMetadata == null
-                            || columnMetadata.isPrimaryKey()
-                            || !columnMetadata.isUpdatable()) {
+                index++;
+                RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
+                if (columnMetadata == null
+                        || columnMetadata.isPrimaryKey()
+                        || !columnMetadata.isUpdatable()) {
 
-                        continue;
-                    }
-                    if (index > 0) {
-                        sql.addSql(",");
-                    }
-                    sql.addSql(columnMetadata.getQuoteName())
-                            .addSql("=");
-
-                    Object value = index >= values.size() ? null : values.get(index);
-                    if (value == null && columnMetadata.isNotNull()) {
-                        continue;
-                    }
-                    if (value instanceof NativeSql) {
-                        sql.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters());
-                        continue;
-                    }
-                    if (value == null) {
-                        value = NullValue.of(columnMetadata.getType());
-                    }
-                    sql.addSql("?").addParameter(columnMetadata.encode(value));
-                } finally {
-                    index++;
+                    continue;
                 }
-
+                Object value = index >= values.size() ? null : values.get(index);
+                index++;
+                if (value == null && columnMetadata.isNotNull()) {
+                    continue;
+                }
+                if (more) {
+                    sql.addSql(",");
+                }
+                more = true;
+                sql.addSql(columnMetadata.getQuoteName()).addSql("=");
+                if (value instanceof NativeSql) {
+                    sql.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters());
+                    continue;
+                }
+                if (value == null) {
+                    value = NullValue.of(columnMetadata.getType());
+                }
+                sql.addSql("?").addParameter(columnMetadata.encode(value));
             }
         }
     }

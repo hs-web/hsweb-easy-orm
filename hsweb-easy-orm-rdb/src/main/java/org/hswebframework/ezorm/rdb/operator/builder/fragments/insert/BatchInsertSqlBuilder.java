@@ -77,15 +77,15 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 int valueIndex = entry.getKey();
+                if (vIndex++ != 0) {
+                    fragments.addSql(",");
+                }
                 SqlFragments function = functionValues.get(valueIndex);
                 if (null != function) {
                     fragments.addFragments(function);
                     continue;
                 }
                 RDBColumnMetadata column = entry.getValue();
-                if (vIndex++ != 0) {
-                    fragments.addSql(",");
-                }
 
                 Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
 
