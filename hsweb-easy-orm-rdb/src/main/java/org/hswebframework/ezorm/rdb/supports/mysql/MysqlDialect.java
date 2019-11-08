@@ -34,6 +34,9 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder("json", meta -> "json");
 
         registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class), c -> "text"));
+        registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "text"));
+        registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "text"));
+
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
         registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));

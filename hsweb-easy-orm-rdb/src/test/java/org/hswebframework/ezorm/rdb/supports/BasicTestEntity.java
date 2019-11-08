@@ -44,7 +44,7 @@ public class BasicTestEntity implements Serializable {
     private String detail;
 
     @Column
-    @ColumnType(jdbcType = JDBCType.CLOB)
+    @ColumnType(jdbcType = JDBCType.LONGNVARCHAR)
     @JsonCodec
     private List<String> tags;
 

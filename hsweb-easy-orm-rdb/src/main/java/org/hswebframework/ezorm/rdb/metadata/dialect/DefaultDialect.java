@@ -54,12 +54,9 @@ public abstract class DefaultDialect implements Dialect {
         registerDataType("timestamp", JdbcDataType.of(JDBCType.TIMESTAMP, Timestamp.class));
         registerDataType("date", JdbcDataType.of(JDBCType.DATE, LocalDate.class));
         registerDataType("time", JdbcDataType.of(JDBCType.TIME, LocalTime.class));
-//        registerDataType("clob", JdbcDataType.of(JDBCType.CLOB, String.class));
-//        registerDataType("blob", JdbcDataType.of(JDBCType.BLOB, byte[].class));
         registerDataType("long", JdbcDataType.of(JDBCType.BIGINT, Long.class));
         registerDataType("double", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
         registerDataType("binary", JdbcDataType.of(JDBCType.BINARY, byte[].class));
-
 
         classJDBCTypeMapping.put(String.class, JDBCType.VARCHAR);
 
@@ -145,8 +142,13 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     protected DataType convertUnknownDataType(String dataType) {
-
-        return CustomDataType.of(dataType, dataType, JDBCType.OTHER, String.class);
+        JDBCType type;
+        try {
+            type = JDBCType.valueOf(dataType.toUpperCase());
+        } catch (Exception e) {
+            type = JDBCType.OTHER;
+        }
+        return CustomDataType.of(dataType, dataType, type, String.class);
     }
 
     protected String doClearQuote(String string) {

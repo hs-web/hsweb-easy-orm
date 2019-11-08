@@ -102,6 +102,7 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             int index = 0;
             boolean more = false;
             for (InsertColumn column : columns) {
+                Object value = index >= values.size() ? null : values.get(index);
                 index++;
                 RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
                 if (columnMetadata == null
@@ -110,8 +111,6 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
                     continue;
                 }
-                Object value = index >= values.size() ? null : values.get(index);
-                index++;
                 if (value == null && columnMetadata.isNotNull()) {
                     continue;
                 }
