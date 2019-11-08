@@ -41,6 +41,8 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("jsonb", JsonbType.INSTANCE);
         registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class),(c)->"text"));
         registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.BLOB, String.class),(c)->"bytea"));
+        registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "text"));
+        registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "text"));
 
         registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT,Integer.class));
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER,Integer.class));

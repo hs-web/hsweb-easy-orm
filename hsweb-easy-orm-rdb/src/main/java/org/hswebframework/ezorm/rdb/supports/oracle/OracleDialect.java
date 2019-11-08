@@ -30,6 +30,8 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(38), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
+        registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "clob"));
+        registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));
 
         registerDataType("varchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
                 column -> "varchar2(" + column.getLength() + ")"));
