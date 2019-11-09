@@ -20,7 +20,7 @@ public class ExecutableInsertOperator extends BuildParameterInsertOperator {
     @Override
     public InsertResultOperator execute() {
 
-        return InsertResultOperator.of(table,getSql());
+        return DefaultInsertResultOperator.of(table, this::getSql);
 
     }
 }

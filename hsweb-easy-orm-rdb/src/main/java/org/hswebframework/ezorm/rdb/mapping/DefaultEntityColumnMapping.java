@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
@@ -23,6 +24,9 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
     @Getter
     private TableOrViewMetadata table;
 
+    @Getter
+    private Class<?> entityType;
+
     public void addMapping(String column, String property) {
         columnPropertyMapping.put(column, property);
         propertyColumnMapping.put(property, column);
@@ -32,6 +36,7 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
         this.id = getType().createFeatureId(entityType);
         this.name = getType().getName() + ":" + entityType.getSimpleName();
         this.table = table;
+        this.entityType=entityType;
     }
 
     @Override

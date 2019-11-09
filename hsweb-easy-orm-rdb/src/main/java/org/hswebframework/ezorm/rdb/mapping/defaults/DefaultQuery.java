@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.events.EventContext;
 import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -45,7 +46,11 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
 
     protected List<SortOrder> orders = new ArrayList<>();
 
-    public DefaultQuery(TableOrViewMetadata tableMetadata, EntityColumnMapping mapping, DMLOperator operator, ResultWrapper<T, ?> wrapper) {
+    public DefaultQuery(TableOrViewMetadata tableMetadata,
+                        EntityColumnMapping mapping,
+                        DMLOperator operator,
+                        ResultWrapper<T, ?> wrapper,
+                        ContextKeyValue<?>... keyValues) {
         this.operator = operator;
         this.tableName = tableMetadata.getName();
         this.wrapper = wrapper;

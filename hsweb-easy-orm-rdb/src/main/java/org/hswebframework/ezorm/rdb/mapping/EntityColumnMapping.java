@@ -13,6 +13,8 @@ public interface EntityColumnMapping extends Feature {
         return MappingFeatureType.columnPropertyMapping;
     }
 
+    Class<?> getEntityType();
+
     Optional<RDBColumnMetadata> getColumnByProperty(String property);
 
     Optional<String> getPropertyByColumnName(String columnName);

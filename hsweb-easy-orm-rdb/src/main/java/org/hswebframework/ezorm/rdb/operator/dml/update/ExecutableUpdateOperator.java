@@ -19,6 +19,6 @@ public class ExecutableUpdateOperator extends BuildParameterUpdateOperator {
 
     @Override
     public UpdateResultOperator execute() {
-        return UpdateResultOperator.of(table, getSql());
+        return DefaultUpdateResultOperator.of(table,this::getSql);
     }
 }

@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
+import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveQuery;
@@ -20,8 +21,12 @@ import static org.hswebframework.ezorm.rdb.operator.dml.query.Selects.count1;
 
 public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> implements ReactiveQuery<T> {
 
-    public DefaultReactiveQuery(TableOrViewMetadata tableMetadata, EntityColumnMapping mapping, DMLOperator operator, ResultWrapper<T, ?> wrapper) {
-        super(tableMetadata, mapping, operator, wrapper);
+    public DefaultReactiveQuery(TableOrViewMetadata tableMetadata,
+                                EntityColumnMapping mapping,
+                                DMLOperator operator,
+                                ResultWrapper<T, ?> wrapper,
+                                ContextKeyValue<?>... keyValues) {
+        super(tableMetadata, mapping, operator, wrapper,keyValues);
     }
 
     @Override
@@ -48,7 +53,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
 
     @Override
     public Mono<T> fetchOne() {
-        return operator
+        return  operator
                 .query(tableName)
                 .select(getSelectColumn())
                 .where(param.getTerms())
@@ -88,7 +93,8 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                 .fetch(column("total", Number.class::cast))
                 .reactive()
                 .map(Number::intValue)
-                .last(0);
+                .reduce(Math::addExact)
+                .switchIfEmpty(Mono.just(0));
     }
 
 }

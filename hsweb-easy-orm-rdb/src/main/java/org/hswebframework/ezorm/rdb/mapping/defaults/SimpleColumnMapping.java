@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
@@ -12,12 +13,17 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor(staticName = "of")
 public class SimpleColumnMapping implements EntityColumnMapping {
+    @Getter
+    private Class<?> entityType;
+
 
     private Supplier<? extends TableOrViewMetadata> metadata;
 
-    public static SimpleColumnMapping of(TableOrViewMetadata metadata){
-        return of(()->metadata);
+
+    public static SimpleColumnMapping of(Class<?> type,TableOrViewMetadata metadata){
+        return of(type,()->metadata);
     }
+
 
     @Override
     public Optional<RDBColumnMetadata> getColumnByProperty(String property) {

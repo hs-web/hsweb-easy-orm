@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
-import org.hswebframework.ezorm.core.CastUtil;
+import org.hswebframework.ezorm.rdb.events.ContextKey;
+import org.hswebframework.ezorm.rdb.events.ContextKeys;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveDelete;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveQuery;
@@ -88,16 +89,25 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public ReactiveQuery<E> createQuery() {
-        return new DefaultReactiveQuery<>(getTable(), mapping, operator.dml(), wrapper);
+        return new DefaultReactiveQuery<>(getTable()
+                , mapping
+                , operator.dml()
+                , wrapper
+                , getDefaultContextKeyValue());
     }
 
     @Override
     public ReactiveUpdate<E> createUpdate() {
-        return new DefaultReactiveUpdate<>(getTable(), operator.dml().update(getTable().getFullName()), mapping);
+        return new DefaultReactiveUpdate<>(getTable()
+                , operator.dml().update(getTable().getFullName())
+                , mapping, getDefaultContextKeyValue());
     }
 
     @Override
     public ReactiveDelete createDelete() {
-        return new DefaultReactiveDelete(getTable(), operator.dml().delete(getTable().getFullName()));
+        return new DefaultReactiveDelete(getTable()
+                , operator.dml().delete(getTable().getFullName())
+                , getDefaultContextKeyValue()
+        );
     }
 }

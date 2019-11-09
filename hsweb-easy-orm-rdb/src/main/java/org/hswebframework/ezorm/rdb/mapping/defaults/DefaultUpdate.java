@@ -11,12 +11,14 @@ import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.mapping.DSLUpdate;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
+import org.hswebframework.ezorm.rdb.mapping.events.EventResultOperator;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -41,14 +43,22 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
 
     protected EntityColumnMapping mapping;
 
-    protected List<ContextKeyValue<?>> contextKeyValues = new ArrayList<>();
+    protected Set<ContextKeyValue<?>> contextKeyValues = new HashSet<>();
 
     protected Map<String, Object> tempInstance = new HashMap<>();
 
-    public DefaultUpdate(RDBTableMetadata table, UpdateOperator operator, EntityColumnMapping mapping) {
+    public DefaultUpdate(RDBTableMetadata table,
+                         UpdateOperator operator,
+                         EntityColumnMapping mapping,
+                         ContextKeyValue<?>... keyValues) {
         this.table = table;
         this.operator = operator;
         this.mapping = mapping;
+        contextKeyValues.add(source(this));
+        contextKeyValues.add(update(operator));
+        contextKeyValues.add(tableMetadata(table));
+        contextKeyValues.add(updateColumnInstance(tempInstance));
+        contextKeyValues.addAll(Arrays.asList(keyValues));
     }
 
     public QueryParam toQueryParam() {
@@ -58,16 +68,18 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     }
 
     protected UpdateResultOperator doExecute() {
-        return operator
-                .where(dsl -> terms.forEach(dsl::accept))
-                .accept(operator ->
-                        table.fireEvent(MappingEventTypes.update_before, eventContext ->
-                                eventContext.set(
-                                        source(DefaultUpdate.this),
-                                        update(operator),
-                                        tableMetadata(table)
-                                ).set(contextKeyValues.toArray(new ContextKeyValue[0]))))
-                .execute();
+        return EventResultOperator.create(
+                () -> {
+                    return operator
+                            .where(dsl -> terms.forEach(dsl::accept))
+                            .execute();
+                },
+                UpdateResultOperator.class,
+                table,
+                MappingEventTypes.update_before,
+                MappingEventTypes.update_after,
+                contextKeyValues.toArray(new ContextKeyValue[0])
+        );
     }
 
     @Override
@@ -99,6 +111,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     public ME set(String column, Object value) {
         if (value != null) {
             operator.set(column, value);
+            tempInstance.put(column,value);
         }
         return (ME) this;
     }

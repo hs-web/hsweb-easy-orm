@@ -5,6 +5,9 @@ import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.events.EventContext;
+import org.hswebframework.ezorm.rdb.events.EventListener;
+import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSyncSqlExecutor;
@@ -70,6 +73,13 @@ public abstract class BasicReactiveTests {
             @Override
             public String getName() {
                 return "UUID";
+            }
+        });
+
+        schema.addFeature(new EventListener() {
+            @Override
+            public void onEvent(EventType type, EventContext context) {
+                System.out.println(type);
             }
         });
         log.debug(schema.toString());

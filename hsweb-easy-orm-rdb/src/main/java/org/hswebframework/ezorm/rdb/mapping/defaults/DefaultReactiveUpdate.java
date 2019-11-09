@@ -1,36 +1,34 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
+import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SignalType;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class DefaultReactiveUpdate<E> extends DefaultUpdate<E, ReactiveUpdate<E>> implements ReactiveUpdate<E> {
 
-    public DefaultReactiveUpdate(RDBTableMetadata table, UpdateOperator operator, EntityColumnMapping mapping) {
-        super(table, operator, mapping);
+    public DefaultReactiveUpdate(RDBTableMetadata table,
+                                 UpdateOperator operator,
+                                 EntityColumnMapping mapping,
+                                 ContextKeyValue<?>... keyValues) {
+        super(table, operator, mapping, keyValues);
     }
 
-    private Consumer<SignalType> consumer = (s) -> {
-    };
 
-    private Function<Mono<Integer>, Mono<Integer>> before = Function.identity();
+    private BiFunction<ReactiveUpdate<E>, Mono<Integer>, Mono<Integer>> mapper = (update, mono) -> mono;
 
     @Override
     public Mono<Integer> execute() {
-        return before.apply(doExecute()
-                .reactive()
-                .doFinally(consumer));
+        return mapper.apply(this, doExecute().reactive());
     }
 
     @Override
-    public ReactiveUpdate<E> onExecute(Function<Mono<Integer>, Mono<Integer>> consumer) {
-        this.before = this.before.andThen(consumer);
+    public ReactiveUpdate<E> onExecute(BiFunction<ReactiveUpdate<E>, Mono<Integer>, Mono<Integer>> consumer) {
+        this.mapper = this.mapper.andThen((r) -> consumer.apply(this, r));
         return this;
     }
 

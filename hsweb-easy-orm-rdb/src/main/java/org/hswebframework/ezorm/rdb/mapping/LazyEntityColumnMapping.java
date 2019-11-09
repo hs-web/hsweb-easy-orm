@@ -18,6 +18,7 @@ public abstract class LazyEntityColumnMapping implements EntityColumnMapping {
             public EntityColumnMapping getMapping() {
                 return mappingSupplier.get();
             }
+
         };
     }
 
@@ -49,5 +50,10 @@ public abstract class LazyEntityColumnMapping implements EntityColumnMapping {
     @Override
     public String getName() {
         return getMapping().getName();
+    }
+
+    @Override
+    public Class<?> getEntityType() {
+        return getMapping().getEntityType();
     }
 }

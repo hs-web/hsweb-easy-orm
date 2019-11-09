@@ -23,6 +23,6 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
     @Override
     public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
-        return new QueryResultOperator<>(getSql(), metadata, wrapper);
+        return new DefaultQueryResultOperator<>(this::getSql, metadata, wrapper);
     }
 }

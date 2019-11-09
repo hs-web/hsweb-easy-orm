@@ -19,6 +19,6 @@ public class ExecutableDeleteOperator extends BuildParameterDeleteOperator {
 
     @Override
     public DeleteResultOperator execute() {
-        return DeleteResultOperator.of(table, getSql());
+        return DefaultDeleteResultOperator.of(table, this::getSql);
     }
 }
