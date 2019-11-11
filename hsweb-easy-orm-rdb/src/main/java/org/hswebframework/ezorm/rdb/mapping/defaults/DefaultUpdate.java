@@ -64,6 +64,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> 
     public QueryParam toQueryParam() {
         QueryParam param = new QueryParam();
         param.setTerms(terms);
+        param.setPaging(false);
         return param;
     }
 

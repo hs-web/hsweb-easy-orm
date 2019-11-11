@@ -61,6 +61,7 @@ public class DefaultDelete<ME extends DSLDelete> implements DSLDelete<ME> {
     public QueryParam toQueryParam() {
         QueryParam param = new QueryParam();
         param.setTerms(terms);
+        param.setPaging(false);
         return param;
     }
 
