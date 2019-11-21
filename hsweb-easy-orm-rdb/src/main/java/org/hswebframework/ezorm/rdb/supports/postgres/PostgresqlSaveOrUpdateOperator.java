@@ -16,11 +16,13 @@ import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.DefaultSaveOrUpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveOrUpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
+import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("all")
@@ -48,7 +50,7 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
         if (idColumn == null) {
             return fallback.execute(parameter);
         }
-        return new PostgresqlSaveResultOperator(parameter.getValues()
+        return new PostgresqlSaveResultOperator(() -> parameter.getValues()
                 .stream()
                 .map(value -> {
                     InsertOperatorParameter newParam = new InsertOperatorParameter();
@@ -63,29 +65,33 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
     @AllArgsConstructor
     private class PostgresqlSaveResultOperator implements SaveResultOperator {
 
-        List<SqlRequest> sqlRequest;
+        Supplier<List<SqlRequest>> sqlRequest;
 
         @Override
         public SaveResult sync() {
-            SyncSqlExecutor sqlExecutor = table.findFeatureNow(SyncSqlExecutor.ID);
-            int added = 0, updated = 0;
-            for (SqlRequest request : sqlRequest) {
-                int num = sqlExecutor.update(request);
-                added += num;
-                if (num == 0) {
-                    updated++;
+            return ExceptionUtils.translation(() -> {
+                SyncSqlExecutor sqlExecutor = table.findFeatureNow(SyncSqlExecutor.ID);
+                int added = 0, updated = 0;
+                for (SqlRequest request : sqlRequest.get()) {
+                    int num = sqlExecutor.update(request);
+                    added += num;
+                    if (num == 0) {
+                        updated++;
+                    }
                 }
-            }
-            return SaveResult.of(added, updated);
+                return SaveResult.of(added, updated);
+            }, table);
         }
 
         @Override
         public Mono<SaveResult> reactive() {
-            ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
-            return Flux.fromIterable(sqlRequest)
-                    .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
-                    .map(i -> SaveResult.of(i > 0 ? i : 0, i == 0 ? 1 : 0))
-                    .reduce(SaveResult::merge);
+            return Mono.defer(() -> {
+                ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
+                return Flux.fromIterable(sqlRequest.get())
+                        .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
+                        .map(i -> SaveResult.of(i > 0 ? i : 0, i == 0 ? 1 : 0))
+                        .reduce(SaveResult::merge);
+            });
         }
     }
 
@@ -117,7 +123,7 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 if (more) {
                     sql.addSql(",");
                 }
-                more=true;
+                more = true;
                 sql.addSql(columnMetadata.getQuoteName()).addSql("=");
                 if (value instanceof NativeSql) {
                     sql.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters());

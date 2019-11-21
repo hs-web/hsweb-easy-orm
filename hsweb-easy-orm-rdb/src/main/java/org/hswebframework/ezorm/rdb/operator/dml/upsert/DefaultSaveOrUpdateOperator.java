@@ -68,11 +68,13 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
     @Override
     public SaveResultOperator execute(InsertOperatorParameter parameter) {
+        return new DefaultSaveResultOperator(() -> createUpsert(parameter));
+    }
 
+    protected Upsert createUpsert(InsertOperatorParameter parameter) {
         Map<String, InsertColumn> mapping = parameter.getColumns().stream()
                 .collect(Collectors.toMap(InsertColumn::getColumn, Function.identity()));
-        InsertSqlBuilder insertSqlBuilder = table.findFeature(InsertSqlBuilder.ID)
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported InsertSqlBuilder"));
+        InsertSqlBuilder insertSqlBuilder = table.findFeatureNow(InsertSqlBuilder.ID);
         List<SqlRequest> insert = new ArrayList<>();
         List<UpdateOrInsert> uoi = new ArrayList<>();
 
@@ -119,7 +121,6 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                             }));
                 }
             } else {
-
                 insertParameter.getColumns().add(InsertColumn.of(idColumn.getName()));
                 insertParameter.getValues().addAll(parameter.getValues());
             }
@@ -129,28 +130,33 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
         } else {
             insert.add(insertSqlBuilder.build(parameter));
         }
+        return new Upsert(insert, uoi);
+    }
 
-        return new DefaultSaveResultOperator(insert, uoi);
+    @AllArgsConstructor
+    class Upsert {
+        protected List<SqlRequest> insert;
+        protected List<UpdateOrInsert> upserts;
     }
 
 
     @AllArgsConstructor
     protected class DefaultSaveResultOperator implements SaveResultOperator {
 
-        protected List<SqlRequest> insert;
-        protected List<UpdateOrInsert> uoi;
+        Supplier<Upsert> supplier;
 
         @Override
         public SaveResult sync() {
             SyncSqlExecutor sqlExecutor = table.findFeatureNow(SyncSqlExecutor.ID);
             return ExceptionUtils.translation(() -> {
+                Upsert upsert = supplier.get();
                 int inserted = 0;
                 int updated = 0;
 
-                for (SqlRequest sqlRequest : insert) {
+                for (SqlRequest sqlRequest : upsert.insert) {
                     inserted += sqlExecutor.update(sqlRequest);
                 }
-                for (UpdateOrInsert updateOrInsert : uoi) {
+                for (UpdateOrInsert updateOrInsert : upsert.upserts) {
                     int tmp = sqlExecutor.update(updateOrInsert.updateSql);
                     updated += tmp;
                     if (tmp == 0) {
@@ -165,13 +171,12 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
         public Mono<SaveResult> reactive() {
 
             return Mono.defer(() -> {
-                ReactiveSqlExecutor sqlExecutor = table.findFeature(ReactiveSqlExecutor.ID)
-                        .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
-
+                ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
+                Upsert upsert = supplier.get();
                 return sqlExecutor
-                        .update(Flux.fromIterable(insert))
+                        .update(Flux.fromIterable(upsert.insert))
                         .flatMap(inserted ->
-                                Flux.fromIterable(uoi)
+                                Flux.fromIterable(upsert.upserts)
                                         .flatMap(updateOrInsert ->
                                                 sqlExecutor.update(Mono.just(updateOrInsert.updateSql))
                                                         .flatMap(updated -> {
