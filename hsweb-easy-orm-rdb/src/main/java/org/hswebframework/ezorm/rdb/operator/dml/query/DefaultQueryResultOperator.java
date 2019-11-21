@@ -24,7 +24,6 @@ class DefaultQueryResultOperator<E, R> implements QueryResultOperator<E, R> {
                                       ResultWrapper<E, R> wrapper) {
         this.sqlRequest = sqlRequest;
         this.metadata = tableOrViewMetadata.getSchema().getDatabase();
-
         this.wrapper = wrapper;
     }
 
@@ -36,8 +35,7 @@ class DefaultQueryResultOperator<E, R> implements QueryResultOperator<E, R> {
     @Override
     public R sync() {
         return ExceptionUtils.translation(() -> metadata
-                .getFeature(SyncSqlExecutor.ID)
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"))
+                .findFeatureNow(SyncSqlExecutor.ID)
                 .select(sqlRequest.get(), getWrapper()), metadata);
     }
 
@@ -45,8 +43,7 @@ class DefaultQueryResultOperator<E, R> implements QueryResultOperator<E, R> {
     @SuppressWarnings("all")
     public Flux<E> reactive() {
         return Flux.defer(() -> {
-            return metadata.getFeature(ReactiveSqlExecutor.ID)
-                    .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"))
+            return metadata.findFeatureNow(ReactiveSqlExecutor.ID)
                     .select(Mono.fromSupplier(sqlRequest), getWrapper())
                     .onErrorMap(error -> ExceptionUtils.translation(metadata, error));
         });

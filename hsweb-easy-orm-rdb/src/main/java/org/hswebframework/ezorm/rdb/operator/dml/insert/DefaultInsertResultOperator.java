@@ -19,16 +19,12 @@ public class DefaultInsertResultOperator implements InsertResultOperator {
 
     @Override
     public Integer sync() {
-        return ExceptionUtils.translation(() -> table.findFeature(SyncSqlExecutor.ID)
-                .map(executor -> executor.update(sql.get()))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor")), table);
+        return ExceptionUtils.translation(() -> table.findFeatureNow(SyncSqlExecutor.ID).update(sql.get()), table);
     }
-
 
     @Override
     public Mono<Integer> reactive() {
-        return table.findFeature(ReactiveSqlExecutor.ID)
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"))
+        return table.findFeatureNow(ReactiveSqlExecutor.ID)
                 .update(Mono.fromSupplier(sql))
                 .onErrorMap((err) -> ExceptionUtils.translation(table, err));
     }

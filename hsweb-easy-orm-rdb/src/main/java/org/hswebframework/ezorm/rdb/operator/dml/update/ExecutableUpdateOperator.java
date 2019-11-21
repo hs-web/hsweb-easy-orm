@@ -12,9 +12,8 @@ public class ExecutableUpdateOperator extends BuildParameterUpdateOperator {
 
     @Override
     public SqlRequest getSql() {
-        return table.<UpdateSqlBuilder>findFeature(UpdateSqlBuilder.ID_VALUE)
-                .map(builder -> builder.build(getParameter()))
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported UpdateSqlBuilder"));
+        return table.<UpdateSqlBuilder>findFeatureNow(UpdateSqlBuilder.ID_VALUE)
+                .build(getParameter());
     }
 
     @Override

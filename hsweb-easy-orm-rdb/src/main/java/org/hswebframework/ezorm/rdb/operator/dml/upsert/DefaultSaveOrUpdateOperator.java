@@ -85,8 +85,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
             InsertColumn id = mapping.getOrDefault(idColumn.getName(), mapping.get(idColumn.getAlias()));
             if (id != null) {
                 //update
-                UpdateSqlBuilder updateSqlBuilder = table.findFeature(UpdateSqlBuilder.ID)
-                        .orElseThrow(() -> new UnsupportedOperationException("unsupported UpdateSqlBuilder"));
+                UpdateSqlBuilder updateSqlBuilder = table.findFeatureNow(UpdateSqlBuilder.ID);
                 Set<InsertColumn> columns = parameter.getColumns();
                 V:
                 for (List<Object> value : parameter.getValues()) {

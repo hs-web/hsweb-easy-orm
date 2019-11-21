@@ -245,16 +245,14 @@ public class JpaEntityTableMetadataParserProcessor {
         getAnnotation(annotations, GeneratedValue.class)
                 .map(GeneratedValue::generator)
                 .map(gen -> LazyDefaultValueGenerator.of(() ->
-                        tableMetadata.findFeature(DefaultValueGenerator.<RDBColumnMetadata>createId(gen))
-                                .orElseThrow(() -> new UnsupportedOperationException("unsupported generator " + gen))))
+                        tableMetadata.findFeatureNow(DefaultValueGenerator.<RDBColumnMetadata>createId(gen))))
                 .map(gen->gen.generate(metadata))
                 .ifPresent(metadata::setDefaultValue);
 
         getAnnotation(annotations, DefaultValue.class)
                 .map(DefaultValue::generator)
                 .map(gen -> LazyDefaultValueGenerator.of(() ->
-                        tableMetadata.findFeature(DefaultValueGenerator.createId(gen))
-                                .orElseThrow(() -> new UnsupportedOperationException("unsupported generator " + gen))))
+                        tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen))))
                 .map(gen->gen.generate(metadata))
                 .ifPresent(metadata::setDefaultValue);
 
