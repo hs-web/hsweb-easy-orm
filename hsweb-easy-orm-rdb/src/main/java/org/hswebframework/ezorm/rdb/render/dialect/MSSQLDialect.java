@@ -97,7 +97,7 @@ public class MSSQLDialect extends DefaultDialect {
 
     @Override
     public String doPaging(String sql, int pageIndex, int pageSize, boolean prepare) {
-        if (!sql.contains("order") && !sql.contains("ORDER")) {
+        if (!sql.contains("order by") && !sql.contains("ORDER BY")) {
             sql = sql.concat(" order by 1");
         }
         if (prepare) {
