@@ -217,7 +217,7 @@ public abstract class BasicReactiveTests {
                                 .createTime(new Date())
                                 .state((byte) 1)
                                 .build())
-                        .buffer(30).delayElements(Duration.ofMillis(100))))
+                        .buffer(10).delayElements(Duration.ofMillis(100))))
                 .expectNext(100)
                 .verifyComplete();
 
