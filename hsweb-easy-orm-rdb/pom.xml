@@ -72,7 +72,6 @@
         <dependency>
             <groupId>dev.miku</groupId>
             <artifactId>r2dbc-mysql</artifactId>
-            <version>0.8.0.BUILD-SNAPSHOT</version>
             <optional>true</optional>
         </dependency>
 
