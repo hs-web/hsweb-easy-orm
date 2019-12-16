@@ -48,7 +48,15 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
     @Override
     public SaveResultOperator execute(InsertOperatorParameter parameter) {
         if (idColumn == null) {
-            return fallback.execute(parameter);
+            this.idColumn = table.getColumns()
+                    .stream()
+                    .filter(RDBColumnMetadata::isPrimaryKey)
+                    .findFirst()
+                    .orElse(null);
+
+            if (this.idColumn == null) {
+                return fallback.execute(parameter);
+            }
         }
         return new PostgresqlSaveResultOperator(() -> parameter.getValues()
                 .stream()

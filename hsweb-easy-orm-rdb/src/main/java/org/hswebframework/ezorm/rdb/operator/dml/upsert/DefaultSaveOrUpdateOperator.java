@@ -61,7 +61,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
     @Getter
     @AllArgsConstructor
-    protected class UpdateOrInsert {
+    protected static class UpdateOrInsert {
         SqlRequest updateSql;
         Supplier<SqlRequest> insertSql;
     }
@@ -133,7 +133,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
     }
 
     @AllArgsConstructor
-    class Upsert {
+    static class Upsert {
         protected List<SqlRequest> insert;
         protected List<UpdateOrInsert> upserts;
     }
