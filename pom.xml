@@ -13,7 +13,7 @@
         <module>hsweb-easy-orm-elasticsearch</module>
     </modules>
 
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
     <url>http://www.hswebframework.org</url>
     <description>一个简单的orm工具</description>
 
