@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
+import io.r2dbc.spi.Result;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.exception.DuplicateKeyException;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
@@ -37,11 +38,11 @@ public class PostgresqlReactiveTests extends BasicReactiveTests {
     }
 
     @Test
-    public void testException(){
+    public void testException() {
         repository.insert(Mono.just(BasicTestEntity.builder()
                 .name("test")
                 .id("test")
-                .state((byte)1)
+                .state((byte) 1)
                 .build()))
                 .as(StepVerifier::create)
                 .expectNext(1)
@@ -50,7 +51,7 @@ public class PostgresqlReactiveTests extends BasicReactiveTests {
         repository.insert(Mono.just(BasicTestEntity.builder()
                 .name("test")
                 .id("test")
-                .state((byte)1)
+                .state((byte) 1)
                 .build()))
                 .as(StepVerifier::create)
                 .expectError(DuplicateKeyException.class)

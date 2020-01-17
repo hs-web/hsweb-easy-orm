@@ -102,16 +102,14 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 Object value = index >= values.size() ? null : values.get(index);
                 index++;
                 RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
-                if (columnMetadata == null
+                if (value == null
+                        || columnMetadata == null
                         || columnMetadata.isPrimaryKey()
                         || !columnMetadata.isUpdatable()) {
 
                     continue;
                 }
 
-                if (value == null && columnMetadata.isNotNull()) {
-                    continue;
-                }
                 if (more) {
                     sql.addSql(",");
                 }
@@ -121,9 +119,7 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                     sql.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
-                if (value == null) {
-                    value = NullValue.of(columnMetadata.getType());
-                }
+
                 sql.addSql("?").addParameter(columnMetadata.encode(value));
             }
         }

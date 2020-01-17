@@ -243,10 +243,21 @@ public abstract class BasicReactiveTests {
                 .expectNext(1)
                 .verifyComplete();
 
-        repository.save(Mono.just(entity))
+        BasicTestEntity entity2 = BasicTestEntity.builder()
+                .id("test_id_save2")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("test")
+                .stateEnum(StateEnum.enabled)
+                .build();
+
+        repository.save(Flux.just(entity2,entity))
                 .map(SaveResult::getTotal)
                 .as(StepVerifier::create)
-                .expectNext(1)
+                .expectNext(2)
                 .verifyComplete();
 
     }
