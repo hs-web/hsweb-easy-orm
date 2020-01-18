@@ -41,7 +41,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                     .flatMap(table::getColumn)
                     .orElse(null);
 
-            if (columnMetadata != null) {
+            if (columnMetadata != null && columnMetadata.isInsertable()) {
                 indexMapping.put(index, columnMetadata);
                 //列为函数
                 SqlFragments functionFragments = Optional.of(column)

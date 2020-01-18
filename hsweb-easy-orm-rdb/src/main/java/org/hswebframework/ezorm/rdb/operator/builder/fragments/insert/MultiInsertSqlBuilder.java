@@ -39,7 +39,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                     .flatMap(table::getColumn)
                     .orElse(null);
 
-            if (columnMetadata != null) {
+            if (columnMetadata != null && columnMetadata.isInsertable()) {
                 indexMapping.put(index, columnMetadata);
                 //列为函数
                 SqlFragments functionFragments = Optional.of(column)
@@ -97,7 +97,7 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                     continue;
                 }
                 if (value == null) {
-                    value = NullValue.of( column.getType());
+                    value = NullValue.of(column.getType());
                 }
                 valuesSql.addSql("?").addParameter(column.encode(value));
             }

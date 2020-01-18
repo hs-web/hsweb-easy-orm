@@ -74,6 +74,13 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     private boolean updatable = true;
 
     /**
+     * 是否可以新增
+     *
+     * @since 4.0
+     */
+    private boolean insertable = true;
+
+    /**
      * DataType
      *
      * @since 4.0
@@ -220,10 +227,10 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public boolean isChanged(RDBColumnMetadata after) {
 
         return !this.getName().equals(this.getPreviousName())
-                ||(getType() != null && !getSqlType().equals(after.getSqlType()))
-                ||getLength()!=after.getLength()
-                ||getPrecision()!=after.getPrecision()
-                ||getScale()!=after.getScale();
+                || (getType() != null && !getSqlType().equals(after.getSqlType()))
+                || getLength() != after.getLength()
+                || getPrecision() != after.getPrecision()
+                || getScale() != after.getScale();
     }
 
     public void setLength(int length) {
@@ -231,11 +238,11 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         this.setDataType(null);
     }
 
-    public Optional<Object> generateDefaultValue(){
+    public Optional<Object> generateDefaultValue() {
         return Optional.ofNullable(defaultValue)
                 .filter(RuntimeDefaultValue.class::isInstance)
                 .map(RuntimeDefaultValue.class::cast)
-                .map(defaultValue->{
+                .map(defaultValue -> {
                     return decode(defaultValue.get());
                 });
     }

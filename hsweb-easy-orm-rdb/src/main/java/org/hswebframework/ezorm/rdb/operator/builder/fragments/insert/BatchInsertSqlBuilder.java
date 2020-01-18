@@ -23,9 +23,10 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
     private RDBTableMetadata table;
 
-    public static BatchInsertSqlBuilder of(RDBTableMetadata table){
+    public static BatchInsertSqlBuilder of(RDBTableMetadata table) {
         return new BatchInsertSqlBuilder(table);
     }
+
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
@@ -44,7 +45,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                     .flatMap(table::getColumn)
                     .orElse(null);
 
-            if (columnMetadata != null) {
+            if (columnMetadata != null && columnMetadata.isInsertable()) {
                 if (indexMapping.size() != 0) {
                     fragments.addSql(",");
                 }
@@ -106,7 +107,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             }
 
             fragments.addSql(")");
-            afterValues(parameter.getColumns(),values,fragments);
+            afterValues(parameter.getColumns(), values, fragments);
         }
 
         return fragments.toRequest();

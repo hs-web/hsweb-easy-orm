@@ -240,6 +240,7 @@ public class JpaEntityTableMetadataParserProcessor {
         metadata.setScale(column.scale);
         metadata.setNotNull(!column.nullable);
         metadata.setUpdatable(column.updatable);
+        metadata.setInsertable(column.insertable);
         if (!column.columnDefinition.isEmpty()) {
             metadata.setColumnDefinition(column.columnDefinition);
         }
