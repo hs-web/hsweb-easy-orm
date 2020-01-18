@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import lombok.*;
 import org.hswebframework.ezorm.core.FeatureId;
+import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.core.meta.AbstractColumnMetadata;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.meta.Feature;
@@ -230,5 +231,13 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         this.setDataType(null);
     }
 
+    public Optional<Object> generateDefaultValue(){
+        return Optional.ofNullable(defaultValue)
+                .filter(RuntimeDefaultValue.class::isInstance)
+                .map(RuntimeDefaultValue.class::cast)
+                .map(defaultValue->{
+                    return decode(defaultValue.get());
+                });
+    }
 
 }

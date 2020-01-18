@@ -165,10 +165,7 @@ public abstract class DefaultRepository<E> {
         Object value = propertyOperator.getProperty(data, property).orElse(null);
         if (value == null) {
             value = mapping.getColumnByProperty(property)
-                    .map(RDBColumnMetadata::getDefaultValue)
-                    .filter(RuntimeDefaultValue.class::isInstance)
-                    .map(RuntimeDefaultValue.class::cast)
-                    .map(RuntimeDefaultValue::get)
+                    .flatMap(RDBColumnMetadata::generateDefaultValue)
                     .orElse(null);
             if (value != null) {
                 //回填

@@ -50,6 +50,7 @@ public class BasicTestEntity implements Serializable {
 
     @Column
     @ColumnType(javaType = String.class)
+    @DefaultValue("disabled")
     private StateEnum stateEnum;
 
     @Column(name = "address_id")
