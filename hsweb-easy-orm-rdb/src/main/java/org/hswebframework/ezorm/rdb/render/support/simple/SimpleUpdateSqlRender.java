@@ -12,7 +12,11 @@ import org.hswebframework.ezorm.rdb.render.SqlAppender;
 import org.hswebframework.ezorm.rdb.render.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +69,7 @@ public class SimpleUpdateSqlRender extends CommonSqlRender<UpdateParam> {
                     }
                     if (value == null) {
                         if (logger.isInfoEnabled()) {
-                            logger.info("跳过修改列:[{}], 属性[{}]为null!", column.getName(), column.getAlias());
+                            logger.info("跳过修改表:[{}]中的列:[{}], 属性[{}]为null!", metaData.getFullName(), column.getName(), column.getAlias());
                         }
                         return;
                     }
