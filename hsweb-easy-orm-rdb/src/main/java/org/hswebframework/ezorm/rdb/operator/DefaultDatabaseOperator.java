@@ -1,8 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.core.CastUtil;
-import org.hswebframework.ezorm.rdb.executor.AsyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
@@ -15,12 +13,12 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.ddl.DefaultTableBuilder;
 import org.hswebframework.ezorm.rdb.operator.ddl.TableBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.ExecutableDeleteOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.ExecutableInsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.ExecutableQueryOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.ExecutableUpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.DefaultUpsertOperator;
@@ -92,12 +90,6 @@ public class DefaultDatabaseOperator
     public SyncSqlExecutor sync() {
         return metadata.getFeature(SyncSqlExecutor.ID)
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
-    }
-
-    @Override
-    public AsyncSqlExecutor async() {
-        return metadata.getFeature(AsyncSqlExecutor.ID)
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported AsyncSqlExecutor"));
     }
 
     @Override
