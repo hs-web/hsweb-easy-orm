@@ -65,6 +65,11 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         return sort;
     }
 
+    public <Q extends QueryParam> Q noPaging() {
+        setPaging(false);
+        return (Q) this;
+    }
+
     public <Q extends QueryParam> Q doPaging(int pageIndex) {
         setPageIndex(pageIndex);
         setPaging(true);

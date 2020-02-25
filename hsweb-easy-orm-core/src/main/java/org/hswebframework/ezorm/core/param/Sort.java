@@ -19,7 +19,7 @@ public class Sort extends Column {
 
     public Sort() {
     }
-    public Sort(String column){
+    public Sort(String column) {
         this.setName(column);
     }
 

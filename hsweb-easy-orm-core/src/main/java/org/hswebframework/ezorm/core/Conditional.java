@@ -36,6 +36,12 @@ public interface Conditional<T extends Conditional> extends LogicalOperation<T>,
 
     NestConditional<T> orNest();
 
+    default T nest(Consumer<NestConditional<T>> consumer) {
+        NestConditional<T> nest = nest();
+        consumer.accept(nest);
+        return nest.end();
+    }
+
     /*
      * and or 切换
      * */

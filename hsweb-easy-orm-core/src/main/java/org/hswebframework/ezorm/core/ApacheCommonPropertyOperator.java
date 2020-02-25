@@ -8,6 +8,8 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 
+import java.beans.PropertyDescriptor;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -58,7 +60,14 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     public <T> T convert(Object from, Supplier<T> to) {
         T instance = to.get();
         try {
-            BeanUtilsBean.getInstance().copyProperties(instance, from);
+            if (instance instanceof Map) {
+                Map<Object, Object> mapValue = ((Map<Object, Object>) instance);
+                for (PropertyDescriptor propertyDescriptor : BeanUtilsBean.getInstance().getPropertyUtils().getPropertyDescriptors(from)) {
+                    mapValue.put(propertyDescriptor.getName(), BeanUtilsBean.getInstance().getPropertyUtils().getProperty(from, propertyDescriptor.getName()));
+                }
+                return instance;
+            }
+            BeanUtils.copyProperties(instance, from);
         } catch (Exception err) {
             log.warn(err.getMessage(), err);
         }

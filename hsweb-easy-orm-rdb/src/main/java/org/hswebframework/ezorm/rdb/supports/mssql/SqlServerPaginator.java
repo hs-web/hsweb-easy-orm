@@ -14,8 +14,8 @@ import static org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock.*;
 import static org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock.orderBy;
 
 /**
- * column top pageSize *
- * from (column row_number()
+ * select top pageSize *
+ * from (select row_number()
  * over(order by sno asc) as rownumber,*
  * from student) temp_row
  * where rownumber>((pageIndex-1)*pageSize);

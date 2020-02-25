@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * database
  * .dml()
  * .query()
- * .column(count("id","total"))
+ * .select(count("id","total"))
  * .from("user")
  * .where(dsl->dsl.is("name","1"))
  * .execute()

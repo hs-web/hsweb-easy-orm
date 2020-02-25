@@ -34,7 +34,8 @@ public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
 
         sqlExecutor.select(Mono.just(request), wrapper)
                 .collectList()
-                .toFuture().get(10, TimeUnit.SECONDS);
+                .toFuture()
+                .get(10, TimeUnit.MINUTES);
 
         return wrapper.getResult();
     }
