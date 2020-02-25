@@ -11,7 +11,6 @@
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
         <module>hsweb-easy-orm-elasticsearch</module>
-        <module>hsweb-easy-orm-spring</module>
     </modules>
 
     <name>${artifactId}</name>
