@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MethodReferenceConverter {
 
-    private static final Map<Class, String> cache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, String> cache = new ConcurrentHashMap<>();
 
     public static <T> String convertToColumn(MethodReferenceColumn<T> column) {
         return convertToColumn((Object) column);

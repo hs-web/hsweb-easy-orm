@@ -159,8 +159,7 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
     }
 
     public Query<T, Q> selectExcludes(String... columns) {
-        param.excludes(columns);
-        return this;
+        return excludes(columns);
     }
 
     public Query<T, Q> select(String... columns) {
@@ -173,7 +172,7 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
     }
 
     public static <R> Query<R, QueryParam> of() {
-        return new Query<>(new QueryParam());
+        return of(new QueryParam());
     }
 
 }
