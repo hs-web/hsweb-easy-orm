@@ -17,7 +17,7 @@ public class ElasticSearchQueryParamTranslatorTest {
      */
     @Test
     public void test1() {
-        QueryBuilder builder = Query.empty(new QueryParam())
+        QueryBuilder builder = Query.of()
                 .where()
                 .is("ownerId", "public")
                 .and()
@@ -43,7 +43,7 @@ public class ElasticSearchQueryParamTranslatorTest {
      */
     @Test
     public void test2() {
-        QueryBuilder builder = Query.empty(new QueryParam())
+        QueryBuilder builder = Query.of()
                 .where()
                 .nest()
                 .is("ownerId", "张")

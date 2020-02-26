@@ -8,8 +8,6 @@ import java.util.Map;
 public interface PropertyWrapper extends Serializable {
     <T> T getValue();
 
-    String toString();
-
     int toInt();
 
     double toDouble();

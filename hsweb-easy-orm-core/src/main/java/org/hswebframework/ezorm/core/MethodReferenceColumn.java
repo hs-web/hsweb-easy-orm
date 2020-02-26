@@ -19,11 +19,11 @@ import java.util.function.Supplier;
  * @see Conditional
  * @see NestConditional
  * @see StaticMethodReferenceColumn
- * @see MethodReferenceConvert
+ * @see MethodReferenceConverter
  */
 public interface MethodReferenceColumn<T> extends Supplier<T>, Serializable {
 
     default String getColumn() {
-        return MethodReferenceConvert.convertToColumn(this);
+        return MethodReferenceConverter.convertToColumn(this);
     }
 }

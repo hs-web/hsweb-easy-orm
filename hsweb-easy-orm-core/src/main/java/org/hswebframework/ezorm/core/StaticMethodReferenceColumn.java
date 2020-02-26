@@ -17,6 +17,6 @@ import java.util.function.Function;
 public interface StaticMethodReferenceColumn<T> extends Function<T, Object>, Serializable {
 
     default String getColumn() {
-        return MethodReferenceConvert.convertToColumn(this);
+        return MethodReferenceConverter.convertToColumn(this);
     }
 }

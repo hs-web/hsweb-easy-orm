@@ -3,9 +3,7 @@ package org.hswebframework.ezorm.core.dsl;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.NestConditional;
 import org.hswebframework.ezorm.core.SimpleNestConditional;
-import org.hswebframework.ezorm.core.SqlConditionSupport;
 import org.hswebframework.ezorm.core.param.Param;
-import org.hswebframework.ezorm.core.param.SqlTerm;
 import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.function.Function;
@@ -14,18 +12,12 @@ import java.util.function.Supplier;
 /**
  * @author zhouhao
  */
-public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>> implements Conditional<Delete<P>> {
-    private P param = null;
+public final class Delete<P extends Param> implements Conditional<Delete<P>> {
+    private P param;
     private Accepter<Delete<P>, Object> accepter = this::and;
-    private Executor<P> executor;
 
     public Delete(P param) {
         this.param = param;
-    }
-
-    public Delete setExecutor(Executor<P> executor) {
-        this.executor = executor;
-        return this;
     }
 
     public P getParam() {
@@ -47,31 +39,20 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
         return new SimpleNestConditional<>(this, this.param.nest());
     }
 
-    public NestConditional<Delete<P>> nest(String column, Object value) {
-        return new SimpleNestConditional<>(this, this.param.nest(column, value));
-    }
-
     @Override
     public NestConditional<Delete<P>> orNest() {
         return new SimpleNestConditional<>(this, this.param.orNest());
     }
 
-    @Override
-    public NestConditional<Delete<P>> orNest(String column, Object value) {
-        return new SimpleNestConditional<>(this, this.param.orNest(column, value));
-    }
-
 
     @Override
     public Delete<P> and() {
-        setAnd();
         this.accepter = this::and;
         return this;
     }
 
     @Override
     public Delete<P> or() {
-        setOr();
         this.accepter = this::or;
         return this;
     }
@@ -98,40 +79,15 @@ public final class Delete<P extends Param> extends SqlConditionSupport<Delete<P>
         return accepter;
     }
 
-    @Override
-    protected Delete<P> addSqlTerm(SqlTerm term) {
-        param.addTerm(term);
-        return this;
-    }
-
-    @FunctionalInterface
-    public interface Executor<P> {
-        int doExecute(P param);
-    }
-
-    public Delete<P> excludes(String... columns) {
-        param.excludes(columns);
-        return this;
-    }
-
-    public Delete<P> includes(String... columns) {
-        param.includes(columns);
-        return this;
-    }
-
-    public <R> R exec(Function<P, R> executor) {
+    public <R> R execute(Function<P, R> executor) {
         return executor.apply(getParam());
     }
 
-    public int exec() {
-        return executor.doExecute(param);
-    }
-
-    public static Delete<Param> empty() {
+    public static Delete<Param> of() {
         return new Delete<>(new Param());
     }
 
-    public static <P extends Param> Delete<P> empty(Supplier<P> supplier) {
+    public static <P extends Param> Delete<P> of(Supplier<P> supplier) {
         return new Delete<>(supplier.get());
     }
 }

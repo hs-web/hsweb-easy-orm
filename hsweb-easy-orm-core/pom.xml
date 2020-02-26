@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hsweb-easy-orm</artifactId>
         <groupId>org.hswebframework</groupId>
-        <version>3.0.6</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,19 @@
         <dependency>
             <groupId>org.hswebframework</groupId>
             <artifactId>hsweb-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.10</version>
+
+        </dependency>
+
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

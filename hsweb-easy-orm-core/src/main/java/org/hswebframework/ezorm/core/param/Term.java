@@ -1,13 +1,20 @@
 package org.hswebframework.ezorm.core.param;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 执行条件
  */
+@Getter
+@Setter
 public class Term implements Cloneable {
 
     /**
@@ -98,8 +105,13 @@ public class Term implements Cloneable {
         return queryTerm;
     }
 
-    public String getColumn() {
-        return column;
+
+    public Term addTerm(Term term) {
+        if (term == this) {
+            term = term.clone();
+        }
+        terms.add(term);
+        return this;
     }
 
     public void setColumn(String column) {
@@ -115,74 +127,34 @@ public class Term implements Cloneable {
         this.column = column;
     }
 
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public String getTermType() {
-        return termType.toLowerCase();
-    }
-
     public void setTermType(String termType) {
+        if (termType.contains("$")) {
+            String tmp[] = termType.split("[$]");
+            termType = tmp[0];
+            if (tmp.length > 1) {
+                options.addAll(Arrays.asList(tmp).subList(1, tmp.length));
+            }
+        }
+
         this.termType = termType;
     }
 
-    public List<Term> getTerms() {
-        return terms;
-    }
-
-    public void setTerms(List<Term> terms) {
-        this.terms = terms;
-    }
-
-    public Term addTerm(Term term) {
-        terms.add(term);
-        return this;
-    }
-
-    public List<String> getOptions() {
-        return options;
-    }
-
-    public void setOptions(List<String> options) {
-        this.options = options;
-    }
 
     @Override
+    @SneakyThrows
     public Term clone() {
-        Term term = new Term();
+        Term term = ((Term) super.clone());
         term.setColumn(column);
         term.setValue(value);
         term.setTermType(termType);
         term.setType(type);
-        terms.forEach(t -> term.addTerm(t.clone()));
+        term.setTerms(terms.stream().map(Term::clone).collect(Collectors.toList()));
         term.setOptions(new ArrayList<>(getOptions()));
         return term;
     }
 
     public enum Type {
         or, and;
-
-        public static Type fromString(String str) {
-            try {
-                return Type.valueOf(str.toLowerCase());
-            } catch (Exception e) {
-                return and;
-            }
-        }
     }
-
 
 }

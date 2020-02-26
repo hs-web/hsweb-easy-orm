@@ -1,62 +1,38 @@
 package org.hswebframework.ezorm.core.param;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+
 /**
  * 直接拼接sql的方式
  *
  * @author zhouhao
  * @since 3.0
  */
+@Getter
+@Setter
 public class SqlTerm extends Term {
 
     private String sql;
 
-    private Object param;
-
-    public SqlTerm() {
+    private SqlTerm() {
     }
 
-    public SqlTerm(String sql) {
-        this(sql, null);
+    public static SqlTerm of(String sql, Object... parameters) {
+        return new SqlTerm(sql, parameters);
     }
 
-    public SqlTerm(String sql, Object param) {
+    public SqlTerm(String sql, Object... value) {
         this.sql = sql;
-        this.param = param;
-        setColumn(sql);
-        if (param == null) {
-            param = sql;
-        }
-        setValue(param);
-    }
-
-    public String getSql() {
-        return sql;
-    }
-
-    public void setSql(String sql) {
-        setColumn(sql);
-        this.sql = sql;
-    }
-
-    public Object getParam() {
-        return param;
-    }
-
-    public void setParam(Object param) {
-        setValue(param);
-        this.param = param;
+        setValue(value);
     }
 
     @Override
+    @SneakyThrows
     public SqlTerm clone() {
-        SqlTerm term = new SqlTerm();
-        term.setColumn(getColumn());
-        term.setValue(getValue());
-        term.setTermType(getTermType());
-        term.setType(getType());
+        SqlTerm term = (SqlTerm) super.clone();
         term.setSql(getSql());
-        term.setParam(getParam());
-        getTerms().forEach(t -> term.addTerm(t.clone()));
         return term;
     }
 }

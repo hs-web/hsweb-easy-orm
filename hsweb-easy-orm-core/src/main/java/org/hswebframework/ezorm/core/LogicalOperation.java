@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.param.TermType;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -294,10 +295,30 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
         return when(condition.apply(value), column, termType, value, accepter);
     }
 
-    default <V> T accept(MethodReferenceColumn<V> column, BiConsumer<V, T> consumer) {
+    @SuppressWarnings("all")
+    default <V> T when(Optional<V> value, BiConsumer<T, V> consumer) {
+        value.ifPresent(v -> consumer.accept((T) this, v));
+        return (T) this;
+    }
+
+    default <R> R as(Function<T, R> function) {
+        return function.apply((T) this);
+    }
+
+    default T accept(Consumer<T> consumer) {
+        consumer.accept((T) this);
+        return (T) this;
+    }
+
+    default <V> T accept(V v, BiConsumer<T, V> consumer) {
+        consumer.accept((T) this, v);
+        return (T) this;
+    }
+
+    default <V> T accept(MethodReferenceColumn<V> column, BiConsumer<T, V> consumer) {
         V v = column.get();
         if (v != null) {
-            consumer.accept(v, (T) this);
+            consumer.accept((T) this, v);
         }
         return (T) this;
     }
