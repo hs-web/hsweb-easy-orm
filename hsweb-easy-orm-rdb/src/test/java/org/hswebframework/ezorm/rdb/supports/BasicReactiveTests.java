@@ -76,12 +76,7 @@ public abstract class BasicReactiveTests {
             }
         });
 
-        schema.addFeature(new EventListener() {
-            @Override
-            public void onEvent(EventType type, EventContext context) {
-                System.out.println(type);
-            }
-        });
+        schema.addFeature((EventListener) (type, context) -> System.out.println(type));
         log.debug(schema.toString());
 
         metadata.setCurrentSchema(schema);
@@ -97,12 +92,12 @@ public abstract class BasicReactiveTests {
     @After
     public void after() {
         try {
-            getSqlExecutor().execute(Mono.just(SqlRequests.of("drop table entity_test_table"))).block();
+            getSqlExecutor().execute(Mono.just(SqlRequests.of("delete from entity_test_table"))).block();
         } catch (Exception e) {
 
         }
         try {
-            getSqlExecutor().execute(Mono.just(SqlRequests.of("drop table test_address"))).block();
+            getSqlExecutor().execute(Mono.just(SqlRequests.of("delete from test_address"))).block();
         } catch (Exception e) {
 
         }

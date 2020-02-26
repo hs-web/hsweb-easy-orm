@@ -4,11 +4,11 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 
 public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
-    private static final String TABLE_META_SQL = "select column_name as \"name\"" +
-            " , udt_name as \"data_type\"" +
-            " , character_maximum_length as \"data_length\"" +
-            " , numeric_precision as \"data_precision\"" +
-            " , numeric_scale as \"data_scale\"" +
+    private static final String TABLE_META_SQL = "select column_name::varchar as \"name\"" +
+            " , udt_name::varchar as \"data_type\"" +
+            " , character_maximum_length::int4 as \"data_length\"" +
+            " , numeric_precision::int4 as \"data_precision\"" +
+            " , numeric_scale::int4 as \"data_scale\"" +
             " , case when is_nullable = 'YES' then 0 else 1 end as \"not-null\"" +
             " ,col_description(a.attrelid,a.attnum) as \"comment\"" +
             " from information_schema.columns columns ," +
@@ -22,7 +22,7 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
             " where relname=#{table} and relkind = 'r' and relname not like 'pg_%'" +
             " and relname not like 'sql_%'";
 
-    private static final String ALL_TABLE_SQL = "select table_name as \"name\" from information_schema.TABLES where table_schema=#{schema}";
+    private static final String ALL_TABLE_SQL = "select table_name::varchar as \"name\" from information_schema.TABLES where table_schema=#{schema}";
 
     private static final String TABLE_EXISTS_SQL = "select count(1) as total from information_schema.TABLES where table_schema=#{schema} and table_name=#{table}";
 
