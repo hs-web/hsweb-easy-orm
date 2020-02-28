@@ -13,7 +13,7 @@ public class JdbcDataType implements DataType {
     private SQLType sqlType;
 
     @Getter
-    private Class javaType;
+    private Class<?> javaType;
 
     @Override
     public String getName() {

@@ -29,7 +29,7 @@ public class DataTypeBuilderSupport implements DataType, DataTypeBuilder {
     }
 
     @Override
-    public Class getJavaType() {
+    public Class<?> getJavaType() {
         return parent.getJavaType();
     }
 

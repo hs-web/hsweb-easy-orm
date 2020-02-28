@@ -225,12 +225,22 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     }
 
     public boolean isChanged(RDBColumnMetadata after) {
-
-        return !this.getName().equals(this.getPreviousName())
-                || (getType() != null && !getSqlType().equals(after.getSqlType()))
-                || getLength() != after.getLength()
-                || getPrecision() != after.getPrecision()
-                || getScale() != after.getScale();
+        if (!this.getName().equals(this.getPreviousName())) {
+            return true;
+        }
+        DataType type = getType();
+        if (type != null) {
+            if (!getSqlType().equals(after.getSqlType())) {
+                return true;
+            }
+            if (type.isLengthSupport()) {
+                return getLength() != after.getLength();
+            }
+            if (type.isScaleSupport()) {
+                return getScale() != after.getScale();
+            }
+        }
+        return false;
     }
 
     public void setLength(int length) {
@@ -242,9 +252,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return Optional.ofNullable(defaultValue)
                 .filter(RuntimeDefaultValue.class::isInstance)
                 .map(RuntimeDefaultValue.class::cast)
-                .map(defaultValue -> {
-                    return decode(defaultValue.get());
-                });
+                .map(defaultValue -> decode(defaultValue.get()));
     }
 
 }

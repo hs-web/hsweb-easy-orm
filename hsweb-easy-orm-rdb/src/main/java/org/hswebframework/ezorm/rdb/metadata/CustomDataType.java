@@ -16,6 +16,6 @@ public class CustomDataType implements DataType {
 
     private SQLType sqlType;
 
-    private Class javaType;
+    private Class<?> javaType;
 
 }

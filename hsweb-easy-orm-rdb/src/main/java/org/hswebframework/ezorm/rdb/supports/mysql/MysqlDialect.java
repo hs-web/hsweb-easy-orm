@@ -13,12 +13,14 @@ public class MysqlDialect extends DefaultDialect {
         super();
         addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar(", meta.getLength(), ")"));
+
         addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "datetime(6)");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "text");
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
-        addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
+        addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "longtext");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "blob");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
@@ -34,8 +36,8 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder("json", meta -> "json");
 
         registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.CLOB, String.class), c -> "text"));
-        registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "text"));
-        registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "text"));
+        registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "longtext"));
+        registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "longtext"));
 
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));

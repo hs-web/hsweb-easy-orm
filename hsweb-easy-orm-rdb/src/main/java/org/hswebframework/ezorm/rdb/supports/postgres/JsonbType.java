@@ -13,7 +13,7 @@ public class JsonbType implements DataType {
     public static JsonbType INSTANCE = new JsonbType();
 
     @Override
-    public Class getJavaType() {
+    public Class<?> getJavaType() {
         return String.class;
     }
 

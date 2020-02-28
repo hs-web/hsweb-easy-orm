@@ -73,7 +73,7 @@ public class DataTypeUtils {
         }
 
         if (type.getJavaType() != null) {
-            Class clazz = type.getJavaType();
+            Class<?> clazz = type.getJavaType();
 
             if (Number.class.isAssignableFrom(clazz)) {
                 return true;
@@ -88,8 +88,6 @@ public class DataTypeUtils {
                     return true;
             }
         }
-
-
         return false;
 
     }

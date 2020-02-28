@@ -13,7 +13,7 @@ public class JsonType implements DataType {
     public static JsonType INSTANCE = new JsonType();
 
     @Override
-    public Class getJavaType() {
+    public Class<?> getJavaType() {
         return String.class;
     }
 

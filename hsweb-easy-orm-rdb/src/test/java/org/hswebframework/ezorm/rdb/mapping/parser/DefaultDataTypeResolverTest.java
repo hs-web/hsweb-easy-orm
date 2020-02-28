@@ -131,7 +131,7 @@ public class DefaultDataTypeResolverTest {
         }
 
         @Override
-        public Class getJavaType() {
+        public Class<?> getJavaType() {
             return String.class;
         }
     }
