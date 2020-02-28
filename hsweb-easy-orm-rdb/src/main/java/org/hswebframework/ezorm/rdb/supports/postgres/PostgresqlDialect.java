@@ -28,27 +28,30 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "bytea");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "int8");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
-        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "integer");
+        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int4");
         addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
-        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "smallint");
+        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "int2");
+        addDataTypeBuilder(JDBCType.SMALLINT, (meta) -> "int2");
+
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
         addDataTypeBuilder("json", meta -> "json");
         addDataTypeBuilder("jsonb", meta -> "jsonb");
 
+
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
-        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class),(c)->"text"));
-        registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.BLOB, String.class),(c)->"bytea"));
+        registerDataType("clob", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), (c) -> "text"));
+        registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.BLOB, String.class), (c) -> "bytea"));
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "text"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "text"));
 
-        registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT,Integer.class));
-        registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
-        registerDataType("int2", JdbcDataType.of(JDBCType.TINYINT,Byte.class));
-        registerDataType("int", JdbcDataType.of(JDBCType.INTEGER,Integer.class));
-        registerDataType("flat8", JdbcDataType.of(JDBCType.DOUBLE,Double.class));
+        registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT, Long.class));
+        registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
+        registerDataType("int2", JdbcDataType.of(JDBCType.SMALLINT, Byte.class));
+        registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
+        registerDataType("flat8", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
         registerDataType("money", JdbcDataType.of(JDBCType.DECIMAL, BigDecimal.class));
         registerDataType("bool", JdbcDataType.of(JDBCType.BOOLEAN, Boolean.class));
         registerDataType("character", JdbcDataType.of(JDBCType.VARCHAR, String.class));

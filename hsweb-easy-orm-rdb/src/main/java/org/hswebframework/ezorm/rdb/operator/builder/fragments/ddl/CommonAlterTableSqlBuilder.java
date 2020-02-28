@@ -34,8 +34,8 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
                 continue;
             }
             if (parameter.isAllowAlter()
-                    && oldColumn.isChanged(newColumn)
-                    && !oldColumn.isPrimaryKey()) {
+                    && !oldColumn.isPrimaryKey()
+                    && oldColumn.isChanged(newColumn)) {
                 appendAlterColumnSql(batch, oldColumn, newColumn);
             }
             if (newColumn.getComment() != null && !newColumn.getComment().equals(oldColumn.getComment())) {

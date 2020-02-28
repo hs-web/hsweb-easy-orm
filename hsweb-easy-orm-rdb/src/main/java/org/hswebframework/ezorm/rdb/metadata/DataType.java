@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
+import org.hswebframework.ezorm.rdb.utils.DataTypeUtils;
+
 import java.sql.JDBCType;
 import java.sql.SQLType;
 import java.util.function.Function;
@@ -31,6 +33,10 @@ public interface DataType {
                 getSqlType() == JDBCType.CHAR||
                 getSqlType() == JDBCType.NVARCHAR
                 ;
+    }
+
+    default boolean isNumber(){
+        return DataTypeUtils.typeIsNumber(this);
     }
 
     static DataType custom(String id, String name, SQLType sqlType, Class<?> javaType) {

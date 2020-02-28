@@ -230,11 +230,17 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         }
         DataType type = getType();
         if (type != null) {
+            if (getDialect().buildColumnDataType(this).equals(getDialect().buildColumnDataType(after))) {
+                return false;
+            }
             if (!getSqlType().equals(after.getSqlType())) {
                 return true;
             }
             if (type.isLengthSupport()) {
-                return getLength() != after.getLength();
+                return type.isNumber()
+                        ? getPrecision() != after.getPrecision()
+                        : getLength() != after.getLength()
+                        ;
             }
             if (type.isScaleSupport()) {
                 return getScale() != after.getScale();
