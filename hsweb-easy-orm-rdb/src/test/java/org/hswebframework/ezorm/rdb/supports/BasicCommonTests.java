@@ -141,7 +141,7 @@ public abstract class BasicCommonTests {
                         .createTime(new Date())
                         .tags(Arrays.asList("a", "b", "c", "d"))
                         .state((byte) 1)
-                       // .stateEnum(StateEnum.enabled)
+                        // .stateEnum(StateEnum.enabled)
                         .build())
                 .collectList().block();
         Assert.assertEquals(100, repository.insertBatch(entities));
@@ -161,7 +161,17 @@ public abstract class BasicCommonTests {
                 .build();
 
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
+
+        entity.setStateEnum(null);
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
+
+        Assert.assertEquals(StateEnum.enabled, repository.createQuery()
+                .select("*")
+                .where("id", entity.getId())
+                .fetchOne()
+                .map(BasicTestEntity::getStateEnum)
+                .orElse(null));
+
 
     }
 

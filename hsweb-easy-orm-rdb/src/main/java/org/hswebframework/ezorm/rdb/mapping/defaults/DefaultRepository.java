@@ -31,6 +31,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -73,7 +75,7 @@ public abstract class DefaultRepository<E> {
     }
 
     protected ContextKeyValue[] getDefaultContextKeyValue(ContextKeyValue... kv) {
-        if(kv.length==0){
+        if (kv.length == 0) {
             return defaultContextKeyValue.toArray(new ContextKeyValue[0]);
         }
         List<ContextKeyValue> keyValues = new ArrayList<>(defaultContextKeyValue);
@@ -117,11 +119,14 @@ public abstract class DefaultRepository<E> {
         UpsertOperator upsert = operator.dml().upsert(table.getFullName());
         upsert.columns(getProperties());
 
+        List<String> ignore = new ArrayList<>();
+
         for (E e : data) {
             upsert.values(Stream.of(getProperties())
-                    .map(property -> getInsertColumnValue(e, property))
+                    .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
                     .toArray());
         }
+        upsert.ignoreUpdate(ignore.toArray(new String[0]));
         return EventResultOperator.create(
                 upsert::execute,
                 SaveResultOperator.class,
@@ -153,26 +158,33 @@ public abstract class DefaultRepository<E> {
                 MappingEventTypes.insert_before,
                 MappingEventTypes.insert_after,
                 getDefaultContextKeyValue(
-                instance(data),
-                type("single"),
-                tableMetadata(table),
-                insert(insert))
+                        instance(data),
+                        type("single"),
+                        tableMetadata(table),
+                        insert(insert))
         );
 
     }
 
-    private Object getInsertColumnValue(E data, String property) {
+    private Object getInsertColumnValue(E data, String property, BiConsumer<String, Object> whenDefaultValue) {
         Object value = propertyOperator.getProperty(data, property).orElse(null);
         if (value == null) {
             value = mapping.getColumnByProperty(property)
                     .flatMap(RDBColumnMetadata::generateDefaultValue)
                     .orElse(null);
             if (value != null) {
+                whenDefaultValue.accept(property, value);
                 //回填
                 propertyOperator.setProperty(data, property, value);
             }
         }
         return value;
+    }
+
+    private Object getInsertColumnValue(E data, String property) {
+
+        return getInsertColumnValue(data, property, (prop, val) -> {
+        });
     }
 
     protected InsertResultOperator doInsert(Collection<E> batch) {
@@ -195,10 +207,10 @@ public abstract class DefaultRepository<E> {
                 MappingEventTypes.insert_before,
                 MappingEventTypes.insert_after,
                 getDefaultContextKeyValue(
-                instance(batch),
-                type("batch"),
-                tableMetadata(table),
-                insert(insert))
+                        instance(batch),
+                        type("batch"),
+                        tableMetadata(table),
+                        insert(insert))
         );
     }
 

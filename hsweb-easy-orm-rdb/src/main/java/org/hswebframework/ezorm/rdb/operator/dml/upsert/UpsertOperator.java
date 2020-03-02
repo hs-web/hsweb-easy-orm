@@ -13,9 +13,13 @@ public abstract class UpsertOperator {
 
     public abstract UpsertOperator columns(String... columns);
 
+    public abstract UpsertOperator ignoreUpdate(String... columns);
+
     public abstract UpsertOperator values(Object... values);
 
     public abstract UpsertOperator value(String column, Object value);
+
+    public abstract UpsertOperator value(String column, Object value,boolean ignoreUpdate);
 
     @SafeVarargs
     public final <T> UpsertOperator columns(StaticMethodReferenceColumn<T>... columns) {

@@ -67,11 +67,11 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
     }
 
     @Override
-    public SaveResultOperator execute(InsertOperatorParameter parameter) {
+    public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         return new DefaultSaveResultOperator(() -> createUpsert(parameter));
     }
 
-    protected Upsert createUpsert(InsertOperatorParameter parameter) {
+    protected Upsert createUpsert(UpsertOperatorParameter parameter) {
         Map<String, InsertColumn> mapping = parameter.getColumns().stream()
                 .collect(Collectors.toMap(InsertColumn::getColumn, Function.identity()));
         InsertSqlBuilder insertSqlBuilder = table.findFeatureNow(InsertSqlBuilder.ID);
@@ -86,13 +86,13 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
             if (id != null) {
                 //update
                 UpdateSqlBuilder updateSqlBuilder = table.findFeatureNow(UpdateSqlBuilder.ID);
-                Set<InsertColumn> columns = parameter.getColumns();
+                Set<UpsertColumn> columns = parameter.getColumns();
                 V:
                 for (List<Object> value : parameter.getValues()) {
                     UpdateOperatorParameter updateParameter = new UpdateOperatorParameter();
                     int index = 0;
-                    for (InsertColumn column : columns) {
-                        if (column == id) {
+                    for (UpsertColumn column : columns) {
+                        if (column.getColumn().equals(id.getColumn())) {
                             Object idValue = value.get(index);
                             if (idValue == null) {//ID未指定则新增
                                 insertParameter.getValues().add(value);
@@ -103,6 +103,10 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                             whereIdIs.setValue(idValue);
                             updateParameter.getWhere().add(whereIdIs);
                         } else {
+                            if (column.isUpdateIgnore()) {
+                                index++;
+                                continue;
+                            }
                             UpdateColumn updateColumn = new UpdateColumn();
                             updateColumn.setValue(value.get(index));
                             updateColumn.setColumn(column.getColumn());
@@ -127,7 +131,10 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 insert.add(insertSqlBuilder.build(insertParameter));
             }
         } else {
-            insert.add(insertSqlBuilder.build(parameter));
+            InsertOperatorParameter insertParameter = new InsertOperatorParameter();
+            insertParameter.setColumns(parameter.toInsertColumns());
+            insertParameter.setValues(parameter.getValues());
+            insert.add(insertSqlBuilder.build(insertParameter));
         }
         return new Upsert(insert, uoi);
     }

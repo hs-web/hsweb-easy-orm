@@ -27,6 +27,6 @@ public interface SaveOrUpdateOperator extends Feature {
         return RDBFeatureType.saveOrUpdateOperator;
     }
 
-    SaveResultOperator execute(InsertOperatorParameter parameter);
+    SaveResultOperator execute(UpsertOperatorParameter parameter);
 
 }

@@ -13,9 +13,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
-import org.hswebframework.ezorm.rdb.operator.dml.upsert.DefaultSaveOrUpdateOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveOrUpdateOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.*;
 import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -46,7 +44,7 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
     }
 
     @Override
-    public SaveResultOperator execute(InsertOperatorParameter parameter) {
+    public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         if (idColumn == null) {
             this.idColumn = table.getColumns()
                     .stream()
@@ -62,7 +60,7 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 .stream()
                 .map(value -> {
                     InsertOperatorParameter newParam = new InsertOperatorParameter();
-                    newParam.setColumns(parameter.getColumns());
+                    newParam.setColumns(parameter.toInsertColumns());
                     newParam.getValues().add(value);
                     return newParam;
                 })
@@ -116,6 +114,9 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             int index = 0;
             boolean more = false;
             for (InsertColumn column : columns) {
+                if (column instanceof UpsertColumn && ((UpsertColumn) column).isUpdateIgnore()) {
+                    continue;
+                }
                 Object value = index >= values.size() ? null : values.get(index);
                 index++;
                 RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
