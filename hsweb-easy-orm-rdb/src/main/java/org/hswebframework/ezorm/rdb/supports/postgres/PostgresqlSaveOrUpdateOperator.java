@@ -114,11 +114,11 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             int index = 0;
             boolean more = false;
             for (InsertColumn column : columns) {
+                Object value = index >= values.size() ? null : values.get(index);
+                index++;
                 if (column instanceof UpsertColumn && ((UpsertColumn) column).isUpdateIgnore()) {
                     continue;
                 }
-                Object value = index >= values.size() ? null : values.get(index);
-                index++;
                 RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
                 if (value == null
                         || columnMetadata == null
