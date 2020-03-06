@@ -90,7 +90,7 @@ public class DefaultUpsertOperator extends UpsertOperator {
 
     @Override
     public UpsertOperator value(String column, Object value) {
-        return value(column, value, true);
+        return value(column, value, false);
     }
 
 
