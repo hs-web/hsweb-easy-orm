@@ -102,7 +102,7 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
-    public QueryOperator groupBy(Operator... operators) {
+    public  QueryOperator groupBy(Operator<?>... operators) {
         return this;
     }
 
@@ -116,7 +116,7 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
-    public QueryOperator having(Operator... operators) {
+    public QueryOperator having(Operator<?>... operators) {
         return this;
     }
 

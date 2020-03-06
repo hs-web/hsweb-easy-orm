@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.core.param.QueryParam;
 
 import java.util.Arrays;
+import java.util.function.BiFunction;
 
 @SuppressWarnings("all")
 public interface DSLUpdate<E, ME extends DSLUpdate> extends Conditional<ME> {

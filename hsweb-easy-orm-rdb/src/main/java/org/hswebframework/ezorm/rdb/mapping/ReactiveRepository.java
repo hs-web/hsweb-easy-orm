@@ -8,9 +8,20 @@ import reactor.util.function.Tuple2;
 
 import java.util.Collection;
 
+/**
+ * 响应式仓库接口
+ *
+ * @param <T> 实体类型
+ * @param <K> 主键类型
+ */
 public interface ReactiveRepository<T, K> {
 
     Mono<T> newInstance();
+
+
+    Mono<T> findById(Mono<K> key);
+
+    Flux<T> findById(Flux<K> key);
 
     default Mono<T> findById(K key) {
         return findById(Mono.just(key));
@@ -20,9 +31,7 @@ public interface ReactiveRepository<T, K> {
         return findById(Flux.fromIterable(key));
     }
 
-    Mono<T> findById(Mono<K> key);
-
-    Flux<T> findById(Flux<K> key);
+    Mono<Integer> deleteById(Publisher<K> key);
 
     default Mono<Integer> deleteById(K key) {
         return deleteById(Mono.just(key));
@@ -32,7 +41,7 @@ public interface ReactiveRepository<T, K> {
         return deleteById(Flux.fromIterable(key));
     }
 
-    Mono<Integer> deleteById(Publisher<K> key);
+    Mono<SaveResult> save(Publisher<T> data);
 
     default Mono<SaveResult> save(T data) {
         return save(Mono.just(data));
@@ -41,8 +50,6 @@ public interface ReactiveRepository<T, K> {
     default Mono<SaveResult> save(Collection<T> data) {
         return save(Flux.fromIterable(data));
     }
-
-    Mono<SaveResult> save(Publisher<T> data);
 
     default Mono<Integer> updateById(K id, T data) {
         return updateById(id, Mono.just(data));
@@ -66,10 +73,25 @@ public interface ReactiveRepository<T, K> {
 
     Mono<Integer> insertBatch(Publisher<? extends Collection<T>> data);
 
+    /**
+     * DSL方式动态查询
+     *
+     * @return 动态查询器
+     */
     ReactiveQuery<T> createQuery();
 
+    /**
+     * DSL动态更新
+     *
+     * @return 更新器
+     */
     ReactiveUpdate<T> createUpdate();
 
+    /**
+     * DSL动态删除
+     *
+     * @return 删除器
+     */
     ReactiveDelete createDelete();
 
 }

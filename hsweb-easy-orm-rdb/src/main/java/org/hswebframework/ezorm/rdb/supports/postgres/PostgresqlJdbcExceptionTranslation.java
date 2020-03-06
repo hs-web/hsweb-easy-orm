@@ -9,6 +9,6 @@ public class PostgresqlJdbcExceptionTranslation implements ExceptionTranslation 
     public Throwable translate(Throwable e) {
 
 
-        return null;
+        return e;
     }
 }
