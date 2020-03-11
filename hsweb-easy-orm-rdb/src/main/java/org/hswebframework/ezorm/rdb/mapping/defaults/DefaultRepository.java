@@ -134,7 +134,7 @@ public abstract class DefaultRepository<E> {
                 MappingEventTypes.save_before,
                 MappingEventTypes.save_after,
                 getDefaultContextKeyValue(instance(data),
-                        type("single"),
+                        type("batch"),
                         tableMetadata(table),
                         upsert(upsert))
         );
