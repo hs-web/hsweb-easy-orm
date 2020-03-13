@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.hswebframework.ezorm.rdb.events.ContextKey;
 import org.hswebframework.ezorm.rdb.events.ContextKeys;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -77,14 +78,17 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public Mono<Integer> insert(Publisher<E> data) {
         return Flux.from(data)
                 .flatMap(e -> doInsert(e).reactive().flux())
-                .reduce(Math::addExact);
+                .reduce(Math::addExact)
+                .defaultIfEmpty(0);
     }
 
     @Override
     public Mono<Integer> insertBatch(Publisher<? extends Collection<E>> data) {
         return Flux.from(data)
+                .filter(CollectionUtils::isNotEmpty)
                 .flatMap(e -> doInsert(e).reactive().flux())
-                .reduce(Math::addExact);
+                .reduce(Math::addExact)
+                .defaultIfEmpty(0);
     }
 
     @Override
