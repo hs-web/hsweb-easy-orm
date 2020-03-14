@@ -24,14 +24,14 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
 
     @Override
     public void addTable(RDBTableMetadata metadata) {
-        metadata.addFeature(new PostgresqlSaveOrUpdateOperator(metadata));
+        metadata.addFeature(new PostgresqlBatchUpsertOperator(metadata));
         super.addTable(metadata);
     }
 
     @Override
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata = super.newTable(name);
-        metadata.addFeature(new PostgresqlSaveOrUpdateOperator(metadata));
+        metadata.addFeature(new PostgresqlBatchUpsertOperator(metadata));
         return metadata;
     }
 }

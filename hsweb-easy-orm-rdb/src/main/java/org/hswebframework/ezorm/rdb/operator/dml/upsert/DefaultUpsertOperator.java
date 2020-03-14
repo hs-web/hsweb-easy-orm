@@ -3,9 +3,6 @@ package org.hswebframework.ezorm.rdb.operator.dml.upsert;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
-import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
 
 import java.util.*;
 
@@ -71,6 +68,12 @@ public class DefaultUpsertOperator extends UpsertOperator {
                     .toArray());
         }
 
+        return this;
+    }
+
+    @Override
+    public UpsertOperator doNothingOnConflict(boolean doNothing) {
+        parameter.setDoNothingOnConflict(doNothing);
         return this;
     }
 

@@ -17,7 +17,10 @@ public class UpsertOperatorParameter {
 
     private List<List<Object>> values = new ArrayList<>();
 
-    public Set<InsertColumn> toInsertColumns(){
+    private boolean doNothingOnConflict = false;
+
+    @SuppressWarnings("all")
+    public Set<InsertColumn> toInsertColumns() {
         return (Set) columns;
     }
 }

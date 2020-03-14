@@ -11,6 +11,7 @@ import java.util.function.Function;
  * @param <E> 实体类型
  * @author zhouhao
  * @version 1.0
+ * @see org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator
  */
 public interface ReactiveUpdate<E> extends DSLUpdate<E, ReactiveUpdate<E>> {
 

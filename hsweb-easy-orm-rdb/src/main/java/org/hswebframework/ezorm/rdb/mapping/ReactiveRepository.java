@@ -18,7 +18,6 @@ public interface ReactiveRepository<T, K> {
 
     Mono<T> newInstance();
 
-
     Mono<T> findById(Mono<K> key);
 
     Flux<T> findById(Flux<K> key);

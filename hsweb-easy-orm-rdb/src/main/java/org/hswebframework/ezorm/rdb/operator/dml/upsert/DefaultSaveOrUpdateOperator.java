@@ -193,7 +193,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                                                             }
                                                             return Mono.just(SaveResult.of(0, updated));
                                                         })).reduce(SaveResult.of(inserted, 0), SaveResult::merge))
-                        .onErrorMap(err -> ExceptionUtils.translation(table, err));
+                        .as(ExceptionUtils.translation(table));
 
             });
         }
