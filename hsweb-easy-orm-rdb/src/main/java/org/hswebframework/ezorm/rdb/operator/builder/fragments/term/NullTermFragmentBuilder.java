@@ -10,7 +10,7 @@ public class NullTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
     public NullTermFragmentBuilder(String termType, String name, boolean isNot) {
         super(termType, name);
-        symbol = isNot ? "not" : "is";
+        symbol = isNot ? "is not" : "is";
     }
 
     @Override
