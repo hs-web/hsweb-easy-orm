@@ -29,11 +29,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
 
-        fragments.addSql("insert into")
-                .addSql(table.getFullName())
-                .addSql("(");
         Map<Integer, RDBColumnMetadata> indexMapping = new HashMap<>();
         Map<Integer, SqlFragments> functionValues = new HashMap<>();
 
@@ -107,10 +104,20 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             }
 
             fragments.addSql(")");
-            afterValues(parameter.getColumns(), values, fragments);
+            afterValues(columns, values, fragments);
         }
 
-        return fragments.toRequest();
+        return afterBuild(columns, parameter, fragments).toRequest();
+    }
+
+    protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
+        return fragments.addSql("insert into")
+                .addSql(table.getFullName());
+    }
+
+    protected PrepareSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
+
+        return fragments;
     }
 
     protected void afterValues(Set<InsertColumn> columns, List<Object> values, PrepareSqlFragments sql) {

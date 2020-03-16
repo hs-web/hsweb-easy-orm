@@ -249,7 +249,18 @@ public abstract class BasicReactiveTests {
                 .stateEnum(StateEnum.enabled)
                 .build();
 
-        repository.save(Flux.just(entity2,entity))
+        entity.setName("test2");
+
+        repository.createQuery()
+                .select("*")
+                .where("id", "test_id_save")
+                .fetch()
+                .map(BasicTestEntity::getName)
+                .as(StepVerifier::create)
+                .expectNext("test")
+                .verifyComplete();
+
+        repository.save(Flux.just(entity2, entity))
                 .map(SaveResult::getTotal)
                 .as(StepVerifier::create)
                 .expectNext(2)

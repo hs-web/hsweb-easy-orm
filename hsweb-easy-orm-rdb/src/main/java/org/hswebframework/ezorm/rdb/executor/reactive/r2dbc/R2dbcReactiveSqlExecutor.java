@@ -56,8 +56,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
         return this.getConnection()
-                .flux()
-                .flatMap(connection -> sqlRequestFlux
+                .flatMapMany(connection -> sqlRequestFlux
                         .flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
                         .doFinally(type -> releaseConnection(type, connection)));
     }
@@ -127,7 +126,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return 1;
     }
 
-    protected void bindNull(Statement statement, int index, Class type) {
+    protected void bindNull(Statement statement, int index, Class<?> type) {
         if (type == Date.class) {
             type = LocalDateTime.class;
         }

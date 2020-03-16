@@ -21,13 +21,13 @@ public class MysqlSchemaMetadata extends RDBSchemaMetadata {
     @Override
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata= super.newTable(name);
-        metadata.addFeature(new MysqlSaveOrUpdateOperator(metadata));
+        metadata.addFeature(new MysqlBatchUpsertOperator(metadata));
         return metadata;
     }
 
     @Override
     public void addTable(RDBTableMetadata metadata) {
-        metadata.addFeature(new MysqlSaveOrUpdateOperator(metadata));
+        metadata.addFeature(new MysqlBatchUpsertOperator(metadata));
         super.addTable(metadata);
     }
 }

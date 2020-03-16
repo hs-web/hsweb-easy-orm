@@ -67,6 +67,14 @@ public abstract class UpsertOperator {
     public abstract UpsertOperator value(String column, Object value, boolean ignoreUpdate);
 
     /**
+     * 设置当数据已存在时是否不做任何操作,注意: 只有部分数据库支持此操作.
+     *
+     * @param doNothing 是否不做任何操作
+     * @return this
+     */
+    public abstract UpsertOperator doNothingOnConflict(boolean doNothing);
+
+    /**
      * 使用静态方法引用来描述列名,与{@link this#columns(String...)}一样的效果.
      * 例如:
      * <pre>
