@@ -30,7 +30,7 @@ public class DefaultDeleteSqlBuilderTest {
 
         SqlRequest sql= builder.build(parameter);
         System.out.println(sql);
-        Assert.assertEquals(sql.getSql(),"delete from PUBLIC.test where \"ID\" = ? and \"NAME\" not null");
+        Assert.assertEquals(sql.getSql(),"delete from PUBLIC.test where \"ID\" = ? and \"NAME\" is not null");
 
     }
 }
