@@ -15,7 +15,7 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar(", meta.getLength(), ")"));
 
-        addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "datetime(6)");
+        addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "datetime(" + Math.min(6, meta.getLength()) + ")");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "text");
