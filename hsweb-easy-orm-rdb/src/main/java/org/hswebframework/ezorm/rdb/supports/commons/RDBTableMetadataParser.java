@@ -255,7 +255,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
             } else if (attr.equalsIgnoreCase("comment")) {
                 instance.setComment(stringValue);
             } else {
-                if (attr.toLowerCase().equals("not-null")) {
+                if (attr.toLowerCase().equals("not_null")) {
                     value = "1" .equals(stringValue);
                     instance.setNotNull((boolean) value);
                 }

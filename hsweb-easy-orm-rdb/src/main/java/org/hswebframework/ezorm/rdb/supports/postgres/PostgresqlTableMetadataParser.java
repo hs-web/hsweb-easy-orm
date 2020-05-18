@@ -14,7 +14,7 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
                     ", character_maximum_length::int4 as \"data_length\"",
                     ", numeric_precision::int4 as \"data_precision\"",
                     ", numeric_scale::int4 as \"data_scale\"",
-                    ", case when is_nullable = 'YES' then 0 else 1 end as \"not-null\"",
+                    ", case when is_nullable = 'YES' then 0 else 1 end as \"not_null\"",
                     ",col_description(a.attrelid,a.attnum) as \"comment\"",
                     ",table_name as \"table_name\"",
                     "from information_schema.columns columns ,",
@@ -25,8 +25,10 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
             );
 
     private static final String TABLE_COMMENT_SQL = String.join(" ",
-            "select ",
-            "cast(obj_description(relfilenode,'pg_class') as varchar) as \"comment\" from pg_class c",
+            "select"
+            , "relname as \"table_name\""
+            , "cast(obj_description(relfilenode,'pg_class') as varchar) as \"comment\" "
+            , "from pg_class c",
             "where relname like #{table} and relkind = 'r' and relname not like 'pg_%'",
             "and relname not like 'sql_%'"
     );
