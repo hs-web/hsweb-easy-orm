@@ -10,6 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 
@@ -22,9 +26,28 @@ public class PostgresqlTableMetaParserTest {
     @Before
     public void init() {
         executor = new TestSyncSqlExecutor(new PostgresqlConnectionProvider());
-        PostgresqlSchemaMetadata schema =new PostgresqlSchemaMetadata("public");
+        PostgresqlSchemaMetadata schema = new PostgresqlSchemaMetadata("public");
         schema.addFeature(executor);
         parser = new PostgresqlTableMetadataParser(schema);
+    }
+
+    @Test
+    public void testParseAll() {
+        executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table2(" +
+                "id varchar(32) primary key," +
+                "name varchar(128) not null" +
+                ")"));
+        try {
+            List<RDBTableMetadata> table = parser.parseAll();
+
+            Map<String, RDBTableMetadata> mapping = table.stream()
+                    .collect(Collectors.toMap(RDBTableMetadata::getName, Function.identity()));
+
+            Assert.assertNotNull(mapping.get("test_table2"));
+
+        }finally {
+            executor.execute(prepare("drop table test_table2"));
+        }
     }
 
     @Test

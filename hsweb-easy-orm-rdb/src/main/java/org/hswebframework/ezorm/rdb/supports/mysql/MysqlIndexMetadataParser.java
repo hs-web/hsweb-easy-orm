@@ -39,7 +39,7 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
     }
 
     @Override
-    public <T extends ObjectMetadata> List<T> parseAll() {
+    public  List<RDBIndexMetadata> parseAll() {
         return Collections.emptyList();
     }
 

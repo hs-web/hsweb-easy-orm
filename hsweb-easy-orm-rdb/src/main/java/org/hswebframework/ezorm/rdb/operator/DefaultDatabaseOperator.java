@@ -28,7 +28,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
 public class DefaultDatabaseOperator
         implements DatabaseOperator, DMLOperator, SQLOperator, DDLOperator {
 
-    private RDBDatabaseMetadata metadata;
+    private final RDBDatabaseMetadata metadata;
 
     @Override
     public RDBDatabaseMetadata getMetadata() {

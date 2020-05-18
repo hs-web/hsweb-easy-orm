@@ -7,25 +7,27 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @AllArgsConstructor(staticName = "of")
 public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
 
-    private ReactiveSqlExecutor sqlExecutor;
+    private final ReactiveSqlExecutor sqlExecutor;
 
     @Override
     public int update(SqlRequest request) {
         return sqlExecutor
                 .update(Mono.just(request))
-                .blockOptional()
+                .blockOptional(Duration.ofMinutes(2))
                 .orElse(0);
     }
 
     @Override
     public void execute(SqlRequest request) {
-        sqlExecutor.execute(Mono.just(request))
-                .block();
+        sqlExecutor
+                .execute(Mono.just(request))
+                .block(Duration.ofMinutes(2));
     }
 
     @Override
