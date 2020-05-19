@@ -26,7 +26,7 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
 
     private static final String TABLE_COMMENT_SQL = String.join(" ",
             "select"
-            , "relname as \"table_name\""
+            , "relname as \"table_name\","
             , "cast(obj_description(relfilenode,'pg_class') as varchar) as \"comment\" "
             , "from pg_class c",
             "where relname like #{table} and relkind = 'r' and relname not like 'pg_%'",
