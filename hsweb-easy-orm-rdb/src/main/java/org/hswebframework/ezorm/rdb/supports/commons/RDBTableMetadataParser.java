@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.*;
@@ -124,7 +125,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 .select(
                         template(getTableMetaSql(null), param),
                         consumer(new RecordResultWrapper(), record -> {
-                            String tableName = record.getString("table_name").orElseThrow(() -> new NullPointerException("table_name is null"));
+                            String tableName = record
+                                    .getString("table_name")
+                                    .map(String::toLowerCase)
+                                    .orElseThrow(() -> new NullPointerException("table_name is null"));
                             RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
                                 RDBTableMetadata metaData = createTable(__t);
                                 metaData.setName(__t);
@@ -142,6 +146,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                         , consumer(new RecordResultWrapper(), record -> {
 
                             record.getString("table_name")
+                                    .map(String::toLowerCase)
                                     .map(metadata::get)
                                     .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
                         }));
@@ -159,10 +164,12 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     }
 
     protected void applyColumnInfo(RDBColumnMetadata column, Record record) {
-        record.getString("name").ifPresent(name -> {
-            column.setName(name);
-            column.setProperty("old-name", name);
-        });
+        record.getString("name")
+                .map(String::toLowerCase)
+                .ifPresent(name -> {
+                    column.setName(name);
+                    column.setProperty("old-name", name);
+                });
         record.getString("comment").ifPresent(column::setComment);
 
         record.getString("not_null").ifPresent(value -> {
@@ -174,6 +181,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         record.getInteger("data_scale").ifPresent(column::setScale);
 
         record.getString("data_type")
+                .map(String::toLowerCase)
                 .map(getDialect()::convertDataType)
                 .ifPresent(column::setType);
 
