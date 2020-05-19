@@ -12,7 +12,7 @@ public class PostgresqlDropIndexSqlBuilder implements DropIndexSqlBuilder {
     @Override
     public SqlRequest build(CreateIndexParameter parameter) {
        return PrepareSqlFragments.of("drop index")
-                .addSql(parameter.getIndex().getName())
+                .addSql(parameter.getTable().getSchema().getName()+"."+parameter.getIndex().getName())
                 .toRequest();
     }
 }
