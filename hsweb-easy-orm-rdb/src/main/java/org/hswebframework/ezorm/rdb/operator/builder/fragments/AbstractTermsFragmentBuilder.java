@@ -30,7 +30,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                         .addSql(((SqlTerm) term).getSql())
                         .addParameter(PropertiesUtils.convertList(term.getValue()));
             } else {
-                termFragments = createTermFragments(parameter, term);
+                termFragments = term.getValue() == null ? EmptySqlFragments.INSTANCE : createTermFragments(parameter, term);
             }
 
             termAvailable = termFragments.isNotEmpty();
@@ -86,7 +86,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                         .addSql(((SqlTerm) term).getSql())
                         .addParameter(PropertiesUtils.convertList(term.getValue()));
             } else {
-                termFragments = createTermFragments(parameter, term);
+                termFragments = term.getValue() == null ? EmptySqlFragments.INSTANCE : createTermFragments(parameter, term);
             }
 
             termAvailable = termFragments.isNotEmpty();
