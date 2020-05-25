@@ -36,7 +36,7 @@ public class BetweenAndTermFragmentBuilder extends AbstractTermFragmentBuilder {
         }
 
         return fragments
-                .addParameter(columnFullName)
+                .addSql(columnFullName)
                 .addSql(symbol)
                 .addParameter(values);
     }
