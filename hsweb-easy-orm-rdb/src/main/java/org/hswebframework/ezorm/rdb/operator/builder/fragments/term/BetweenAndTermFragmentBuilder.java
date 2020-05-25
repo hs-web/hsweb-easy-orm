@@ -10,7 +10,7 @@ import java.util.List;
 
 public class BetweenAndTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    private String symbol;
+    private final String symbol;
 
     public BetweenAndTermFragmentBuilder(String termType, String name, boolean isNot) {
         super(termType, name);
@@ -36,6 +36,7 @@ public class BetweenAndTermFragmentBuilder extends AbstractTermFragmentBuilder {
         }
 
         return fragments
+                .addParameter(columnFullName)
                 .addSql(symbol)
                 .addParameter(values);
     }
