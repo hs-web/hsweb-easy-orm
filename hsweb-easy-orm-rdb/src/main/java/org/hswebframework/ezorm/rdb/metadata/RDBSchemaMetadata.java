@@ -66,7 +66,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(CommonAlterTableSqlBuilder.INSTANCE);
             addFeature(CommonCreateIndexSqlBuilder.INSTANCE);
             addFeature(CommonDropIndexSqlBuilder.INSTANCE);
-            
+
             /* 编解码器工厂 */
             addFeature(DefaultValueCodecFactory.COMMONS);
         }
@@ -142,6 +142,13 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         RDBTableMetadata tableMetadata = new RDBTableMetadata(name);
         tableMetadata.setSchema(this);
         return tableMetadata;
+    }
+
+    public void loadAllTable() {
+
+        loadMetadata(RDBObjectType.table)
+                .forEach(table -> addTable(((RDBTableMetadata) table)));
+
     }
 
     @Override

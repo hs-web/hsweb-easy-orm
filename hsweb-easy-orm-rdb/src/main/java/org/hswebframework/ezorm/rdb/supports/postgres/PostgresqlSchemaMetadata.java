@@ -11,6 +11,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
     public PostgresqlSchemaMetadata(String name) {
         super(name);
         addFeature(new PostgresqlPaginator());
+        addFeature(PostgresqlDropIndexSqlBuilder.INSTANCE);
         addFeature(new PostgresqlAlterTableSqlBuilder());
 
         addFeature(new PostgresqlTableMetadataParser(this));

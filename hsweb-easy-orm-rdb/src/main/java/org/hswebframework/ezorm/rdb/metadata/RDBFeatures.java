@@ -29,8 +29,9 @@ public interface RDBFeatures {
     SymbolTermFragmentBuilder gte = new SymbolTermFragmentBuilder("gte", "大于等于", ">=");
     SymbolTermFragmentBuilder lte = new SymbolTermFragmentBuilder("lte", "小于等于", "<=");
 
-    BetweenAndTermFragmentBuilder between = new BetweenAndTermFragmentBuilder("bwt", "在...之间", false);
-    BetweenAndTermFragmentBuilder notBetween = new BetweenAndTermFragmentBuilder("nbwt", "不在...之间", true);
+    BetweenAndTermFragmentBuilder between = new BetweenAndTermFragmentBuilder("btw", "在...之间", false);
+    BetweenAndTermFragmentBuilder notBetween = new BetweenAndTermFragmentBuilder("nbtw", "不在...之间", true);
+
 
     InTermFragmentBuilder in = new InTermFragmentBuilder("in", "在...之中", false);
     InTermFragmentBuilder notIn = new InTermFragmentBuilder("nin", "不在...之中", true);

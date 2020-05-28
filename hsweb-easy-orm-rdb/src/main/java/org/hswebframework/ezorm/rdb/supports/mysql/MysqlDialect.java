@@ -28,6 +28,7 @@ public class MysqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
+        addDataTypeBuilder(JDBCType.BOOLEAN, (meta) -> "tinyint");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "text");

@@ -27,4 +27,7 @@ public interface IndexMetadataParser extends ObjectMetadataParser {
     }
 
     List<RDBIndexMetadata> parseTableIndex(String tableName);
+
+    @Override
+    List<RDBIndexMetadata> parseAll();
 }

@@ -17,7 +17,7 @@ import static java.util.stream.Collectors.*;
 @Slf4j
 public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
-    private Map<String, Map<String, ObjectMetadata>> metaRepository = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, ObjectMetadata>> metaRepository = new ConcurrentHashMap<>();
 
     @Getter
     @Setter
