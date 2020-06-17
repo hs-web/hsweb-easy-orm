@@ -224,7 +224,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return getFullName(getOwner().getName());
     }
 
-    public boolean isChanged(RDBColumnMetadata after) {
+    public boolean ddlModifiable(RDBColumnMetadata after) {
         if (!this.getName().equals(this.getPreviousName())) {
             return true;
         }
@@ -238,12 +238,12 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             }
             if (type.isLengthSupport()) {
                 return type.isNumber()
-                        ? getPrecision() != after.getPrecision()
-                        : getLength() != after.getLength()
+                        ? getPrecision() < after.getPrecision()
+                        : getLength() < after.getLength()
                         ;
             }
             if (type.isScaleSupport()) {
-                return getScale() != after.getScale();
+                return getScale() < after.getScale();
             }
         }
         return false;
