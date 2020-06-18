@@ -261,4 +261,8 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
                 .map(defaultValue -> decode(defaultValue.get()));
     }
 
+    @Override
+    public boolean isNotNull() {
+        return isPrimaryKey() || super.isNotNull();
+    }
 }
