@@ -138,7 +138,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
         if (newColumn.getColumnDefinition() != null) {
             fragments.addSql(newColumn.getColumnDefinition());
         } else {
-            fragments.addSql(newColumn.getDataType(), newColumn.isNotNull() ? "not null" : "null");
+            fragments.addSql(newColumn.getDataType(), (newColumn.isNotNull() || newColumn.isPrimaryKey()) ? "not null" : "null");
             DefaultValue defaultValue = newColumn.getDefaultValue();
 
             if (defaultValue instanceof NativeSql) {
