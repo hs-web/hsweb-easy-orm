@@ -110,7 +110,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             if (defaultValue instanceof NativeSql) {
                 fragments.addSql("default", ((NativeSql) defaultValue).getSql());
             }
-            if (column.isNotNull()) {
+            if (column.isNotNull() || column.isPrimaryKey()) {
                 fragments.addSql("not null");
             }
         }
