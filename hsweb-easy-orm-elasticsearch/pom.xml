@@ -12,7 +12,7 @@
     <artifactId>hsweb-easy-orm-elasticsearch</artifactId>
 
     <properties>
-        <log4j.version>2.6.2</log4j.version>
+        <log4j.version>2.13.2</log4j.version>
     </properties>
 
     <dependencies>
