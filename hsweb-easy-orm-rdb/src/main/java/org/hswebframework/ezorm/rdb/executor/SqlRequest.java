@@ -1,5 +1,8 @@
 package org.hswebframework.ezorm.rdb.executor;
 
+/**
+ * @see SqlRequests
+ */
 public interface SqlRequest {
 
     String getSql();

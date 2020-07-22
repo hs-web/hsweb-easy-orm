@@ -3,7 +3,13 @@ package org.hswebframework.ezorm.rdb.executor;
 import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 同步sql执行器,用于执行sql,并同步获取执行结果
@@ -63,5 +69,17 @@ public interface SyncSqlExecutor extends Feature {
      * @see org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers
      */
     <T, R> R select(SqlRequest request, ResultWrapper<T, R> wrapper);
+
+    default int update(String sql, Object... args) {
+        return update(SqlRequests.of(sql, args));
+    }
+
+    default <T, R> R select(String sql, ResultWrapper<T, R> wrapper) {
+        return select(SqlRequests.of(sql), wrapper);
+    }
+
+    default List<Map<String, Object>> select(String sql, Object... args) {
+        return select(SqlRequests.of(sql, args), ResultWrappers.mapList());
+    }
 
 }
