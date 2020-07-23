@@ -48,14 +48,16 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     protected Flux<Result> doExecute(Connection connection,
                                      SqlRequest request) {
 
-        return Flux.just(prepareStatement(connection.createStatement(request.getSql()), request))
+        return Flux
+                .just(prepareStatement(connection.createStatement(request.getSql()), request))
                 .flatMap(Statement::execute)
                 .map(Result.class::cast)
                 .doOnSubscribe(subscription -> printSql(logger, request));
     }
 
     protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
-        return this.getConnection()
+        return this
+                .getConnection()
                 .flatMapMany(connection -> sqlRequestFlux
                         .flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
                         .doFinally(type -> releaseConnection(type, connection)));
@@ -63,7 +65,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-        return this.doExecute(toFlux(request))
+        return this
+                .doExecute(toFlux(request))
                 .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
                 .doOnNext(count -> logger.debug("==>    Updated: {}", count))
                 .collect(Collectors.summingInt(Integer::intValue))
@@ -77,24 +80,27 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
-        return this.doExecute(toFlux(request))
-                .flatMap(result -> result.map((row, meta) -> {
-                    List<String> columns = new ArrayList<>(meta.getColumnNames());
-                    wrapper.beforeWrap(() -> columns);
-                    E e = wrapper.newRowInstance();
-                    for (int i = 0, len = columns.size(); i < len; i++) {
-                        String column = columns.get(i);
+        return this
+                .toFlux(request)
+                .as(this::doExecute)
+                .flatMap(result ->
+                        result.map((row, meta) -> {
+                            List<String> columns = new ArrayList<>(meta.getColumnNames());
+                            wrapper.beforeWrap(() -> columns);
+                            E e = wrapper.newRowInstance();
+                            for (int i = 0, len = columns.size(); i < len; i++) {
+                                String column = columns.get(i);
 
-                        DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, row.get(column), e);
+                                DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, row.get(column), e);
 
-                        wrapper.wrapColumn(context);
-                        e = context.getRowInstance();
-                    }
-                    if (!wrapper.completedWrapRow(e)) {
-                        return Interrupted.instance;
-                    }
-                    return e;
-                }))
+                                wrapper.wrapColumn(context);
+                                e = context.getRowInstance();
+                            }
+                            if (!wrapper.completedWrapRow(e)) {
+                                return Interrupted.instance;
+                            }
+                            return e;
+                        }))
                 .takeWhile(Interrupted::nonInterrupted)
                 .map(CastUtil::<E>cast)
                 .doOnCancel(wrapper::completedWrap)
@@ -104,13 +110,15 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     @SuppressWarnings("all")
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
 
-        return Flux.from(request)
+        return Flux
+                .from(request)
                 .flatMap(sql -> {
                     if (sql instanceof BatchSqlRequest) {
                         return Flux.concat(Flux.just(sql), Flux.fromIterable(((BatchSqlRequest) sql).getBatch()));
                     }
                     return Flux.just(sql);
-                }).filter(SqlRequest::isNotEmpty)
+                })
+                .filter(SqlRequest::isNotEmpty)
                 .map(this::convertRequest);
     }
 
