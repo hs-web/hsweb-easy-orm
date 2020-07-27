@@ -59,17 +59,26 @@ public final class Delete<P extends Param> implements Conditional<Delete<P>> {
 
     @Override
     public Delete<P> and(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         this.param.and(column, termType, value);
         return this;
     }
 
     @Override
     public Delete<P> or(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         this.param.or(column, termType, value);
         return this;
     }
 
     public Delete<P> where(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         and(column, termType, value);
         return this;
     }

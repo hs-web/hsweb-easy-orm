@@ -43,6 +43,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                 }
                 termBlock.addBlock(FragmentBlock.term, termFragments);
                 fragments.addBlock(FragmentBlock.term, termBlock);
+                lastTermAvailable = termAvailable;
             }
             BlockSqlFragments nestBlock = BlockSqlFragments.of();
 
@@ -65,7 +66,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                     continue;
                 }
             }
-            lastTermAvailable = termAvailable;
+
 
         }
 
@@ -96,6 +97,7 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                     fragments.addSql(term.getType().name());
                 }
                 fragments.addFragments(termFragments);
+                lastTermAvailable = termAvailable;
             }
 
             List<Term> nest = term.getTerms();
@@ -115,7 +117,6 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                     continue;
                 }
             }
-            lastTermAvailable = termAvailable;
 
         }
 

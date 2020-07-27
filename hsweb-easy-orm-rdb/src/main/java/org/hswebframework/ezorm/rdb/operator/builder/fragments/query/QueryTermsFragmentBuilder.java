@@ -17,9 +17,9 @@ import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragme
 @AllArgsConstructor(staticName = "of")
 public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<QueryOperatorParameter> implements QuerySqlFragmentBuilder {
 
-    private TableOrViewMetadata metaData;
+    private final TableOrViewMetadata metaData;
 
-    private Set<String> alias;
+    private final Set<String> alias;
 
     public static QueryTermsFragmentBuilder of(TableOrViewMetadata metadata) {
         return of(metadata, Collections.emptySet());

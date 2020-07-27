@@ -138,17 +138,26 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
 
     @Override
     public Query<T, Q> and(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         this.param.and(column, termType, value);
         return this;
     }
 
     @Override
     public Query<T, Q> or(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         this.param.or(column, termType, value);
         return this;
     }
 
     public Query<T, Q> where(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         and(column, termType, value);
         return this;
     }

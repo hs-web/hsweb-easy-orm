@@ -77,17 +77,26 @@ public final class Update<T, Q extends UpdateParam<T>> implements Conditional<Up
 
     @Override
     public Update<T, Q> and(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         this.param.and(column, termType, value);
         return this;
     }
 
     @Override
     public Update<T, Q> or(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         this.param.or(column, termType, value);
         return this;
     }
 
     public Update<T, Q> where(String column, String termType, Object value) {
+        if (value == null) {
+            return this;
+        }
         and(column, termType, value);
         return this;
     }

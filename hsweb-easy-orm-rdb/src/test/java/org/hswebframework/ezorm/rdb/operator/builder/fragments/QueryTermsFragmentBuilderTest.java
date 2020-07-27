@@ -106,6 +106,14 @@ public class QueryTermsFragmentBuilderTest {
     }
 
     @Test
+    public void testNull() {
+        assertSql(
+                Query.of().is("id", "1").is("name", null).is("name","123"),
+                "test.\"ID\" = ? and test.\"NAME\" = ?"
+        );
+    }
+
+    @Test
     public void testFullColumnName() {
         assertSql(
                 Query.of().is("test.id", "1").is("test.name", "123"),
