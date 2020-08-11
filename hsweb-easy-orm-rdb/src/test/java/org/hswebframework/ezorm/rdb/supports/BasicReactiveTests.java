@@ -5,16 +5,13 @@ import org.hswebframework.ezorm.core.DefaultValue;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
-import org.hswebframework.ezorm.rdb.events.EventContext;
 import org.hswebframework.ezorm.rdb.events.EventListener;
-import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
-import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
@@ -41,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.map;
-import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.desc;
 
 @Slf4j
 public abstract class BasicReactiveTests {
