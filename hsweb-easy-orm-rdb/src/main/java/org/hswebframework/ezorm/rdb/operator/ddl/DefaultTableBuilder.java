@@ -1,22 +1,29 @@
 package org.hswebframework.ezorm.rdb.operator.ddl;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterRequest;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.AlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author zhouhao
  */
 public class DefaultTableBuilder implements TableBuilder {
-    private RDBTableMetadata table;
+    private final RDBTableMetadata table;
 
-    private RDBSchemaMetadata schema;
+    private final RDBSchemaMetadata schema;
 
     private boolean dropColumn = false;
     private boolean allowAlter = true;
@@ -96,30 +103,75 @@ public class DefaultTableBuilder implements TableBuilder {
         return this;
     }
 
+    private SqlRequest buildAlterSql(RDBTableMetadata oldTable) {
+        return schema.findFeatureNow(AlterTableSqlBuilder.ID)
+                .build(AlterRequest.builder()
+                        .allowDrop(dropColumn)
+                        .newTable(table)
+                        .allowAlter(allowAlter)
+                        .oldTable(oldTable)
+                        .build());
+    }
+
     @Override
     public TableDDLResultOperator commit() {
-        RDBTableMetadata oldTable = schema.getTable(table.getName()).orElse(null);
-        SqlRequest sqlRequest;
-        //alter
-        if (oldTable != null) {
-            sqlRequest = schema.findFeature(AlterTableSqlBuilder.ID)
-                    .map(builder -> builder.build(AlterRequest.builder()
-                            .allowDrop(dropColumn)
-                            .newTable(table)
-                            .allowAlter(allowAlter)
-                            .oldTable(oldTable)
-                            .build()))
-                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported AlterTableSqlBuilder"));
-            return TableDDLResultOperator.of(schema, sqlRequest, () -> oldTable.merge(table));
 
-        } else {
-            //create
-            sqlRequest = schema.findFeature(CreateTableSqlBuilder.ID)
-                    .map(builder -> builder.build(table))
-                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported CreateTableSqlBuilder"));
-            return TableDDLResultOperator.of(schema, sqlRequest, () -> schema.addTable(table));
+        return new TableDDLResultOperator() {
+            @Override
+            public Boolean sync() {
+                RDBTableMetadata oldTable = schema.getTable(table.getName()).orElse(null);
+                SqlRequest sqlRequest;
+                Runnable whenComplete;
+                //alter
+                if (oldTable != null) {
+                    sqlRequest = buildAlterSql(oldTable);
 
-        }
+                    whenComplete = () -> oldTable.merge(table);
+                } else {
+                    //create
+                    sqlRequest = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
+                    whenComplete = () -> schema.addTable(table);
+                }
+                if (sqlRequest.isEmpty()) {
+                    whenComplete.run();
+                    return true;
+                }
+                ExceptionUtils.translation(() -> {
+                    schema.findFeatureNow(SyncSqlExecutor.ID).execute(sqlRequest);
+                    return true;
+                }, schema);
+                whenComplete.run();
+                return true;
+            }
+
+            @Override
+            public Mono<Boolean> reactive() {
+
+                ReactiveSqlExecutor sqlExecutor = schema.findFeatureNow(ReactiveSqlExecutor.ID);
+
+                return schema.getTableReactive(table.getName())
+                        .map(oldTable -> {
+                            SqlRequest request = buildAlterSql(oldTable);
+                            if (request.isEmpty()) {
+                                oldTable.merge(table);
+                                return Mono.just(true);
+                            }
+                            return sqlExecutor.execute(request)
+                                    .doOnSuccess(ignore -> oldTable.merge(table))
+                                    .thenReturn(true);
+                        })
+                        .switchIfEmpty(Mono.fromSupplier(() -> {
+                            SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
+                            if (request.isEmpty()) {
+                                return Mono.just(true);
+                            }
+                            return sqlExecutor.execute(request)
+                                    .doOnSuccess(ignore -> schema.addTable(table))
+                                    .thenReturn(true);
+                        }))
+                        .flatMap(Function.identity());
+            }
+        };
 
 
     }

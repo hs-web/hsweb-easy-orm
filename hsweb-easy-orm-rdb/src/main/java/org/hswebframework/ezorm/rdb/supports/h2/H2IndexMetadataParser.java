@@ -5,11 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -70,13 +74,35 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
         return doSelect(SqlRequests.of(all, schema.getName().toUpperCase()));
     }
 
+    @Override
+    public Flux<RDBIndexMetadata> parseAllReactive() {
+        return doSelectReactive(SqlRequests.of(all, schema.getName().toUpperCase()));
+    }
+
+    @Override
+    public Mono<RDBIndexMetadata> parseByNameReactive(String name) {
+        return doSelectReactive(SqlRequests.of(byName, name.toUpperCase(), schema.getName().toUpperCase()))
+                .singleOrEmpty();
+    }
+
+    @Override
+    public Flux<RDBIndexMetadata> parseTableIndexReactive(String tableName) {
+        return doSelectReactive(SqlRequests.of(sql, tableName.toUpperCase(), schema.getName().toUpperCase()));
+    }
+
+    protected Flux<RDBIndexMetadata> doSelectReactive(SqlRequest sqlRequest) {
+        H2IndexMetadataWrapper wrapper = new H2IndexMetadataWrapper();
+
+        return schema.<ReactiveSqlExecutor>findFeatureNow(ReactiveSqlExecutor.ID)
+                .select(sqlRequest, ResultWrappers.map())
+                .doOnNext(wrapper::completedWrapRow)
+                .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
+                ;
+    }
+
     protected List<RDBIndexMetadata> doSelect(SqlRequest sqlRequest) {
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
-                .map(sqlExecutor -> sqlExecutor.select(sqlRequest, new H2IndexMetadataWrapper()))
-                .orElseGet(() -> {
-                    log.warn("unsupported SyncSqlExecutor");
-                    return Collections.emptyList();
-                });
+        return schema.<SyncSqlExecutor>findFeatureNow(SyncSqlExecutor.ID)
+                .select(sqlRequest, new H2IndexMetadataWrapper());
     }
 
     class H2IndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {

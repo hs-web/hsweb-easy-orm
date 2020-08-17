@@ -17,20 +17,22 @@ public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
     private final ReactiveSqlExecutor sqlExecutor;
 
     @Override
+    @SneakyThrows
     public int update(SqlRequest request) {
         return sqlExecutor
                 .update(Mono.just(request))
-                .publishOn(Schedulers.elastic())
-                .blockOptional(Duration.ofSeconds(30))
-                .orElse(0);
+                .toFuture()
+                .get(30, TimeUnit.SECONDS);
     }
 
     @Override
+    @SneakyThrows
     public void execute(SqlRequest request) {
         sqlExecutor
                 .execute(Mono.just(request))
-                .publishOn(Schedulers.elastic())
-                .block(Duration.ofSeconds(30));
+                .toFuture()
+                .get(30, TimeUnit.SECONDS);
+
     }
 
     @Override
@@ -38,8 +40,8 @@ public class ReactiveSyncSqlExecutor implements SyncSqlExecutor {
     public <T, R> R select(SqlRequest request, ResultWrapper<T, R> wrapper) {
         sqlExecutor.select(Mono.just(request), wrapper)
                 .collectList()
-                .publishOn(Schedulers.elastic())
-                .block(Duration.ofSeconds(30));
+                .toFuture()
+                .get(30, TimeUnit.SECONDS);
 
         return wrapper.getResult();
     }

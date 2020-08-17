@@ -39,6 +39,10 @@ public interface ReactiveSqlExecutor extends Feature {
 
     <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper);
 
+    default Mono<Void> execute(SqlRequest request) {
+        return execute(Mono.just(request));
+    }
+
     default Mono<Integer> update(SqlRequest request) {
         return update(Mono.just(request));
     }

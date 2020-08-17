@@ -12,7 +12,7 @@ public enum DefaultFeatureType implements FeatureType {
     defaultValueGenerator("默认值生成器")
     ;
 
-    private String name;
+    private final String name;
 
     @Override
     public String getId() {

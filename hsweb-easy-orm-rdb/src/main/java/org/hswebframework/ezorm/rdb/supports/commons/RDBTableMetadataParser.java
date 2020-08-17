@@ -2,9 +2,11 @@ package org.hswebframework.ezorm.rdb.supports.commons;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectMetadataParser;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
@@ -14,6 +16,8 @@ import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +56,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         return this.sqlExecutor;
     }
 
+    protected ReactiveSqlExecutor getReactiveSqlExecutor() {
+        return schema.findFeatureNow(ReactiveSqlExecutor.ID);
+    }
+
     protected RDBTableMetadata createTable(String name) {
         return schema.newTable(name);
     }
@@ -83,6 +91,48 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     }
 
     @Override
+    public Mono<RDBTableMetadata> parseByNameReactive(String name) {
+        return tableExistsReactive(name)
+                .filter(Boolean::booleanValue)
+                .flatMap(ignore -> {
+                    RDBTableMetadata metaData = createTable(name);
+                    metaData.setName(name);
+                    metaData.setAlias(name);
+                    Map<String, Object> param = new HashMap<>();
+                    param.put("table", name);
+                    param.put("schema", schema.getName());
+                    ReactiveSqlExecutor reactiveSqlExecutor = getReactiveSqlExecutor();
+
+                    //列
+                    Mono<List<RDBColumnMetadata>> columns = reactiveSqlExecutor
+                            .select(template(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper(metaData))
+                            .doOnNext(metaData::addColumn)
+                            .collectList();
+                    //注释
+                    Mono<Map<String, Object>> comments = reactiveSqlExecutor
+                            .select(template(getTableCommentSql(name), param), singleMap())
+                            .doOnNext(comment -> metaData.setComment(String.valueOf(comment.get("comment"))))
+                            .singleOrEmpty();
+
+                    //加载索引
+                    Flux<RDBIndexMetadata> index = schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+                            .map(parser -> parser.parseTableIndexReactive(name))
+                            .orElseGet(Flux::empty)
+                            .doOnNext(metaData::addIndex);
+
+                    return Flux
+                            .merge(columns, comments, index)
+                            .then(Mono.just(metaData));
+                });
+    }
+
+    @Override
+    public Flux<RDBTableMetadata> parseAllReactive() {
+        return parseAllTableNameReactive()
+                .flatMap(this::parseByNameReactive);
+    }
+
+    @Override
     @SuppressWarnings("all")
     public Optional<RDBTableMetadata> parseByName(String name) {
         if (!tableExists(name)) {
@@ -106,12 +156,81 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     }
 
     @Override
+    public Mono<Boolean> tableExistsReactive(String name) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("table", name);
+        param.put("schema", schema.getName());
+        return getReactiveSqlExecutor()
+                .select(template(getTableExistsSql(), param),
+                        optional(single(column("total", Number.class::cast))))
+                .map(number -> number.intValue() > 0)
+                .singleOrEmpty();
+    }
+
+    @Override
     @SneakyThrows
     public List<String> parseAllTableName() {
         return getSqlExecutor()
                 .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)));
     }
 
+    @Override
+    public Flux<String> parseAllTableNameReactive() {
+        return getReactiveSqlExecutor()
+                .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)));
+
+    }
+
+    protected Flux<RDBTableMetadata> fastParseAllReactive() {
+        Map<String, Object> param = new HashMap<>();
+        param.put("table", "%%");
+        param.put("schema", schema.getName());
+
+        Map<String, RDBTableMetadata> metadata = new ConcurrentHashMap<>();
+
+        //列
+        Mono<Void> columns = getReactiveSqlExecutor()
+                .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
+                .doOnNext(record -> {
+                    String tableName = record
+                            .getString("table_name")
+                            .map(String::toLowerCase)
+                            .orElseThrow(() -> new NullPointerException("table_name is null"));
+                    RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
+                        RDBTableMetadata metaData = createTable(__t);
+                        metaData.setName(__t);
+                        metaData.setAlias(__t);
+                        return metaData;
+                    });
+                    RDBColumnMetadata column = tableMetadata.newColumn();
+                    applyColumnInfo(column, record);
+                    tableMetadata.addColumn(column);
+                })
+                .then();
+
+        //说明
+        Flux<Record> comments = getReactiveSqlExecutor()
+                .select(template(getTableCommentSql(null), param)
+                        , new RecordResultWrapper())
+                .doOnNext(record -> {
+                    record.getString("table_name")
+                            .map(String::toLowerCase)
+                            .map(metadata::get)
+                            .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
+                });
+
+        //索引
+        Flux<RDBIndexMetadata> indexes = schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+                .map(IndexMetadataParser::parseAllReactive)
+                .orElseGet(Flux::empty)
+                .doOnNext(index -> Optional.ofNullable(metadata.get(index.getTableName())).ifPresent(table -> table.addIndex(index)));
+
+
+        return columns
+                .thenMany(Flux.merge(comments, indexes))
+                .thenMany(Flux.defer(() -> Flux.fromIterable(metadata.values())));
+
+    }
 
     protected List<RDBTableMetadata> fastParseAll() {
         Map<String, Object> param = new HashMap<>();
@@ -173,7 +292,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         record.getString("comment").ifPresent(column::setComment);
 
         record.getString("not_null").ifPresent(value -> {
-            column.setNotNull("1" .equals(value));
+            column.setNotNull("1".equals(value));
         });
 
         record.getInteger("data_length").ifPresent(column::setLength);
@@ -264,7 +383,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 instance.setComment(stringValue);
             } else {
                 if (attr.toLowerCase().equals("not_null")) {
-                    value = "1" .equals(stringValue);
+                    value = "1".equals(stringValue);
                     instance.setNotNull((boolean) value);
                 }
                 instance.setProperty(attr.toLowerCase(), value);

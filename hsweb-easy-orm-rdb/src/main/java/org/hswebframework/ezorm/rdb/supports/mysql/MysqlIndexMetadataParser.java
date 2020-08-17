@@ -4,14 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.h2.H2IndexMetadataParser;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -49,12 +54,11 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
     @Override
     public Optional<RDBIndexMetadata> parseByName(String name) {
         return schema.findFeatureNow(SyncSqlExecutor.ID)
-                .select(SqlRequests.of(selectIndexSql, schema.getName(), "%%"),
+                .select(SqlRequests.of(selectIndexSqlByName, schema.getName(), name),
                         new MysqlIndexWrapper())
                 .stream()
                 .findAny()
                 ;
-
     }
 
     @Override
@@ -64,7 +68,32 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
                         ResultWrappers.lowerCase(new MysqlIndexWrapper()));
     }
 
-    class MysqlIndexWrapper implements ResultWrapper<Map<String, String>, List<RDBIndexMetadata>> {
+    @Override
+    public Flux<RDBIndexMetadata> parseAllReactive() {
+        return doSelectReactive(SqlRequests.of(selectIndexSql, schema.getName(), "%%"));
+    }
+
+    protected Flux<RDBIndexMetadata> doSelectReactive(SqlRequest sqlRequest) {
+        MysqlIndexWrapper wrapper = new MysqlIndexWrapper();
+
+        return schema.findFeatureNow(ReactiveSqlExecutor.ID)
+                .select(sqlRequest,ResultWrappers.lowerCase(wrapper))
+                .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
+                ;
+    }
+
+    @Override
+    public Mono<RDBIndexMetadata> parseByNameReactive(String name) {
+        return doSelectReactive(SqlRequests.of(selectIndexSqlByName, schema.getName(), name))
+                .singleOrEmpty();
+    }
+
+    @Override
+    public Flux<RDBIndexMetadata> parseTableIndexReactive(String tableName) {
+        return doSelectReactive(SqlRequests.of(selectIndexSql, schema.getName(), tableName));
+    }
+
+    static class MysqlIndexWrapper implements ResultWrapper<Map<String, String>, List<RDBIndexMetadata>> {
         Map<String, RDBIndexMetadata> groupByName = new HashMap<>();
 
         @Override

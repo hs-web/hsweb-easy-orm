@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.h2;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -63,5 +64,10 @@ public class H2TableMetadataParser extends RDBTableMetadataParser {
     @Override
     public List<RDBTableMetadata> parseAll() {
         return super.fastParseAll();
+    }
+
+    @Override
+    public Flux<RDBTableMetadata> parseAllReactive() {
+        return super.fastParseAllReactive();
     }
 }

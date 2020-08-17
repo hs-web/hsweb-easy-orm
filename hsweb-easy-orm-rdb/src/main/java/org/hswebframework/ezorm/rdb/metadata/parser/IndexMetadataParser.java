@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.meta.ObjectMetadataParser;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBObjectType;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -30,4 +31,9 @@ public interface IndexMetadataParser extends ObjectMetadataParser {
 
     @Override
     List<RDBIndexMetadata> parseAll();
+
+    Flux<RDBIndexMetadata> parseTableIndexReactive(String tableName);
+
+    @Override
+    Flux<RDBIndexMetadata> parseAllReactive();
 }

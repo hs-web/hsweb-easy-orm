@@ -10,6 +10,8 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class OracleIndexMetadataParser implements IndexMetadataParser {
     private static final String primaryKeyIndexSql = "select index_name from all_constraints where " +
             "owner=? and upper(table_name) = ? and constraint_type = 'P'";
 
-    private RDBSchemaMetadata schema;
+    private final RDBSchemaMetadata schema;
 
     @Override
     public List<RDBIndexMetadata> parseTableIndex(String tableName) {
@@ -63,13 +65,29 @@ public class OracleIndexMetadataParser implements IndexMetadataParser {
     }
 
     @Override
-    public <T extends ObjectMetadata> Optional<T> parseByName(String name) {
+    public Optional<RDBIndexMetadata> parseByName(String name) {
         return Optional.empty();
     }
 
     @Override
     public List<RDBIndexMetadata> parseAll() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Flux<RDBIndexMetadata> parseAllReactive() {
+        // TODO: 2020/8/17
+        return Flux.empty();
+    }
+
+    @Override
+    public Mono<RDBIndexMetadata> parseByNameReactive(String name) {
+        return Mono.empty();
+    }
+
+    @Override
+    public Flux<RDBIndexMetadata> parseTableIndexReactive(String tableName) {
+        return Flux.empty();
     }
 
     class OracleIndexWrapper implements ResultWrapper<Map<String, String>, List<RDBIndexMetadata>> {

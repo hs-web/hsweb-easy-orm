@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import org.hswebframework.ezorm.core.meta.AbstractDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -22,6 +23,14 @@ public class RDBDatabaseMetadata extends AbstractDatabaseMetadata<RDBSchemaMetad
 
     public Optional<RDBTableMetadata> getTable(String name) {
         return this.getObject(name, RDBSchemaMetadata::getTable);
+    }
+
+    public Mono<TableOrViewMetadata> getTableOrViewReactive(String name) {
+        return this.getObjectReactive(name, RDBSchemaMetadata::getTableOrViewReactive);
+    }
+
+    public Mono<RDBTableMetadata> getTableReactive(String name) {
+        return this.getObjectReactive(name, RDBSchemaMetadata::getTableReactive);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -64,5 +65,10 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
     @Override
     public List<RDBTableMetadata> parseAll() {
         return super.fastParseAll();
+    }
+
+    @Override
+    public Flux<RDBTableMetadata> parseAllReactive() {
+        return super.fastParseAllReactive();
     }
 }

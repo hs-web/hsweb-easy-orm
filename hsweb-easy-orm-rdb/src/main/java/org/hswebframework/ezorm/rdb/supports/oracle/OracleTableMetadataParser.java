@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -61,5 +62,10 @@ public class OracleTableMetadataParser extends RDBTableMetadataParser {
     @Override
     public List<RDBTableMetadata> parseAll() {
         return super.fastParseAll();
+    }
+
+    @Override
+    public Flux<RDBTableMetadata> parseAllReactive() {
+        return super.fastParseAllReactive();
     }
 }

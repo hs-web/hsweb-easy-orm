@@ -11,6 +11,8 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateT
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.DefaultForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +90,24 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return getObject(RDBObjectType.table, name);
     }
 
+    public Mono<RDBTableMetadata> getTableReactive(String name) {
+        if (name.contains(".")) {
+            return findTableOrViewReactive(name)
+                    .map(RDBTableMetadata.class::cast);
+        }
+        return getObjectReactive(RDBObjectType.table, name);
+    }
+
+    public Mono<TableOrViewMetadata> getTableOrViewReactive(String name) {
+        return getTableReactive(name)
+                .cast(TableOrViewMetadata.class)
+                .switchIfEmpty(Mono.defer(() -> getViewReactive(name).cast(TableOrViewMetadata.class)));
+    }
+
+    public Mono<RDBViewMetadata> getViewReactive(String name) {
+        return getObjectReactive(RDBObjectType.view, name);
+    }
+
     public Optional<RDBViewMetadata> getView(String name) {
         return getObject(RDBObjectType.view, name);
     }
@@ -100,6 +120,10 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     @Override
     public <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name) {
         return super.getObject(type, getDialect().clearQuote(name));
+    }
+
+    public Mono<TableOrViewMetadata> findTableOrViewReactive(String name) {
+        return getDatabase().getTableOrViewReactive(name);
     }
 
     public Optional<TableOrViewMetadata> findTableOrView(String name) {
@@ -123,6 +147,12 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    protected <T extends ObjectMetadata> Flux<T> loadMetadataReactive(ObjectType type) {
+        return super.<T>loadMetadataReactive(type)
+                .map(this::metadataParsed);
+    }
+
 
     protected <T extends ObjectMetadata> T metadataParsed(T metadata) {
         if (metadata instanceof AbstractTableOrViewMetadata) {
@@ -138,6 +168,13 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return this.metadataParsed(metadata);
     }
 
+    @Override
+    protected <T extends ObjectMetadata> Mono<T> loadMetadataReactive(ObjectType type, String name) {
+        return super
+                .<T>loadMetadataReactive(type, name)
+                .map(this::metadataParsed);
+    }
+
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata tableMetadata = new RDBTableMetadata(name);
         tableMetadata.setSchema(this);
@@ -149,6 +186,12 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         loadMetadata(RDBObjectType.table)
                 .forEach(table -> addTable(((RDBTableMetadata) table)));
 
+    }
+
+    public Mono<Void> loadAllTableReactive() {
+        return loadMetadataReactive(RDBObjectType.table)
+                .doOnNext(table -> addTable(((RDBTableMetadata) table)))
+                .then();
     }
 
     @Override

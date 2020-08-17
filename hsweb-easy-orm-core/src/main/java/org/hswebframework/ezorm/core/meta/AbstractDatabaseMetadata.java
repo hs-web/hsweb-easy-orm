@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.CastUtil;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,6 +64,20 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
                     .flatMap(schema -> mapper.apply(schema, arr[1]));
         }
         return of(this.getCurrentSchema())
+                .flatMap(schema -> mapper.apply(schema, name));
+    }
+
+    @Override
+    public <T extends ObjectMetadata> Mono<T> getObjectReactive(String name, BiFunction<S, String, Mono<T>> mapper) {
+        if (name == null) {
+            return Mono.empty();
+        }
+        if (name.contains(".")) {
+            String[] arr = name.split("[.]");
+            return Mono.justOrEmpty(this.getSchema(arr[0]))
+                    .flatMap(schema -> mapper.apply(schema, arr[1]));
+        }
+        return Mono.just(this.getCurrentSchema())
                 .flatMap(schema -> mapper.apply(schema, name));
     }
 

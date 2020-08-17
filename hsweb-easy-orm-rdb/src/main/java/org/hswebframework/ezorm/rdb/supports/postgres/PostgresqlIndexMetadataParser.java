@@ -3,14 +3,20 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlIndexMetadataParser;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -72,12 +78,32 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
     }
 
     protected List<RDBIndexMetadata> doSelect(SqlRequest sqlRequest) {
-        return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
-                .map(sqlExecutor -> sqlExecutor.select(sqlRequest, new PostgresqlIndexMetadataWrapper()))
-                .orElseGet(() -> {
-                    log.warn("unsupported SyncSqlExecutor");
-                    return Collections.emptyList();
-                });
+        return schema.<SyncSqlExecutor>findFeatureNow(SyncSqlExecutor.ID)
+                .select(sqlRequest, new PostgresqlIndexMetadataWrapper());
+    }
+
+    protected Flux<RDBIndexMetadata> doSelectReactive(SqlRequest sqlRequest) {
+        PostgresqlIndexMetadataWrapper wrapper = new  PostgresqlIndexMetadataWrapper();
+
+        return schema.findFeatureNow(ReactiveSqlExecutor.ID)
+                .select(sqlRequest, ResultWrappers.lowerCase(wrapper))
+                .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
+                ;
+    }
+
+    @Override
+    public Flux<RDBIndexMetadata> parseTableIndexReactive(String tableName) {
+        return doSelectReactive(SqlRequests.of(sql, schema.getName(), tableName));
+    }
+
+    @Override
+    public Mono<RDBIndexMetadata> parseByNameReactive(String name) {
+        return doSelectReactive(SqlRequests.of(byName, schema.getName(), name)).singleOrEmpty();
+    }
+
+    @Override
+    public Flux<RDBIndexMetadata> parseAllReactive() {
+        return doSelectReactive(SqlRequests.of(all, schema.getName()));
     }
 
     class PostgresqlIndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
