@@ -26,7 +26,12 @@ public class DefaultBatchSqlRequest extends PrepareSqlRequest implements BatchSq
         return super.isEmpty() && batch.isEmpty();
     }
 
-    public DefaultBatchSqlRequest addBatch(SqlRequest sqlRequest) {
+    public synchronized DefaultBatchSqlRequest addBatch(SqlRequest sqlRequest) {
+        if (this.getSql() == null) {
+            this.setSql(sqlRequest.getSql());
+            this.setParameters(sqlRequest.getParameters());
+            return this;
+        }
         batch.add(sqlRequest);
         return this;
     }
