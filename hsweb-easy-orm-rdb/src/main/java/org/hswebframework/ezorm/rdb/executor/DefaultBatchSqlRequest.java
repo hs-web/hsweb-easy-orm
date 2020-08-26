@@ -21,6 +21,10 @@ public class DefaultBatchSqlRequest extends PrepareSqlRequest implements BatchSq
     @Setter
     private List<SqlRequest> batch = new ArrayList<>();
 
+    @Override
+    public boolean isEmpty() {
+        return super.isEmpty() && batch.isEmpty();
+    }
 
     public DefaultBatchSqlRequest addBatch(SqlRequest sqlRequest) {
         batch.add(sqlRequest);
@@ -30,13 +34,13 @@ public class DefaultBatchSqlRequest extends PrepareSqlRequest implements BatchSq
     @Override
     public String toString() {
 
-        StringBuilder builder=new StringBuilder();
-        if(isNotEmpty()){
+        StringBuilder builder = new StringBuilder();
+        if (isNotEmpty()) {
             builder.append(super.toString());
         }
         for (SqlRequest request : batch) {
-            if(request.isNotEmpty()){
-                if(builder.length()>0){
+            if (request.isNotEmpty()) {
+                if (builder.length() > 0) {
                     builder.append("\n");
                 }
                 builder.append(request.toString());
