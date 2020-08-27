@@ -47,8 +47,8 @@ public class MultiInsertSqlBuilderTest {
         Assert.assertTrue(request instanceof BatchSqlRequest);
 
         BatchSqlRequest batch = ((BatchSqlRequest) request);
-        Assert.assertArrayEquals(batch.getBatch().get(0).getParameters(),new Object[]{"1","2"});
-        Assert.assertArrayEquals(batch.getBatch().get(1).getParameters(),new Object[]{"3","4"});
+        Assert.assertArrayEquals(batch.getParameters(),new Object[]{"1","2"});
+        Assert.assertArrayEquals(batch.getBatch().get(0).getParameters(),new Object[]{"3","4"});
 
     }
 }
