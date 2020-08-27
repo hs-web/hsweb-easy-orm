@@ -35,8 +35,8 @@ public class CommonAlterTableSqlBuilderTest {
                     .oldTable(old)
                     .newTable(copy)
                     .build());
-            List<SqlRequest> sqlList = ((BatchSqlRequest) sqlRequest).getBatch();
-            Assert.assertEquals(sqlList.size(), 1);
+            Assert.assertTrue(sqlRequest.isNotEmpty());
+
         }
 
 
@@ -64,9 +64,9 @@ public class CommonAlterTableSqlBuilderTest {
                     .build());
             System.out.println(sql);
             List<SqlRequest> sqlList = ((BatchSqlRequest) sql).getBatch();
-            Assert.assertEquals(sqlList.size(), 2);
-            Assert.assertEquals(sqlList.get(0).getSql(), "alter table PUBLIC.test add \"TEST\" varchar(32)");
-            Assert.assertEquals(sqlList.get(1).getSql(), "comment on column test.\"TEST\" is 'test'");
+            Assert.assertEquals(sqlList.size(), 1);
+            Assert.assertEquals(sql.getSql(), "alter table PUBLIC.test add \"TEST\" varchar(32)");
+            Assert.assertEquals(sqlList.get(0).getSql(), "comment on column test.\"TEST\" is 'test'");
 
         }
 
@@ -79,8 +79,7 @@ public class CommonAlterTableSqlBuilderTest {
                     .oldTable(old)
                     .newTable(copy)
                     .build());
-            List<SqlRequest> sqlList = ((BatchSqlRequest) sql).getBatch();
-            Assert.assertEquals(sqlList.get(0).getSql(), "alter table PUBLIC.test modify \"NAME\" varchar(200) null");
+            Assert.assertEquals(sql.getSql(), "alter table PUBLIC.test modify \"NAME\" varchar(200) null");
         }
 
         {
@@ -91,8 +90,8 @@ public class CommonAlterTableSqlBuilderTest {
                     .newTable(copy)
                     .allowDrop(true)
                     .build());
-            List<SqlRequest> sqlList = ((BatchSqlRequest) sql).getBatch();
-            Assert.assertEquals(sqlList.get(0).getSql(), "alter table PUBLIC.test drop column \"NAME\"");
+
+            Assert.assertEquals(sql.getSql(), "alter table PUBLIC.test drop column \"NAME\"");
         }
     }
 
