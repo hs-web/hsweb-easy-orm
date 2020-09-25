@@ -238,7 +238,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             }
             if (type.isLengthSupport()) {
                 return type.isNumber()
-                        ? getPrecision() < after.getPrecision()
+                        ? getPrecision() < after.getPrecision() || getScale() < after.getScale()
                         : getLength() < after.getLength()
                         ;
             }
