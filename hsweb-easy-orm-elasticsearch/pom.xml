@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hsweb-easy-orm</artifactId>
         <groupId>org.hswebframework</groupId>
-        <version>4.0.6</version>
+        <version>4.0.7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,10 +21,18 @@
             <artifactId>hsweb-easy-orm-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>3.2</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>

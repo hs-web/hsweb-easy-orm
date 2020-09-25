@@ -6,7 +6,7 @@
     <groupId>org.hswebframework</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.6</version>
+    <version>4.0.7-SNAPSHOT</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
@@ -277,14 +277,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>transport</artifactId>
-                <version>5.0.0</version>
-            </dependency>
-            <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
-                <version>5.0.0</version>
+                <version>7.9.0</version>
             </dependency>
 
             <dependency>
