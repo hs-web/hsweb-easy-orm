@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.core.param;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +30,7 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     /**
      * 是否进行分页，默认为true
      */
+    @Schema(description = "是否分页")
     private boolean paging = true;
 
     /**
@@ -36,16 +39,19 @@ public class QueryParam extends Param implements Serializable, Cloneable {
      * @since 3.0.3
      */
     @Getter
+    @Schema(description = "第一页索引")
     private int firstPageIndex = DEFAULT_FIRST_PAGE_INDEX;
 
     /**
      * 第几页
      */
+    @Schema(description = "页码")
     private int pageIndex = firstPageIndex;
 
     /**
      * 每页显示记录条数
      */
+    @Schema(description = "每页数量")
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     /**
@@ -55,8 +61,10 @@ public class QueryParam extends Param implements Serializable, Cloneable {
      */
     private List<Sort> sorts = new LinkedList<>();
 
+    @Hidden
     private transient int pageIndexTmp = 0;
 
+    @Hidden
     private boolean forUpdate = false;
 
     public Sort orderBy(String column) {

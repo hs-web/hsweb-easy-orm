@@ -30,5 +30,12 @@
             <artifactId>reactor-core</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.1.4</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>

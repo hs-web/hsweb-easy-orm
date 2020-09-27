@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.core.param;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -20,21 +21,25 @@ public class Term implements Cloneable {
     /**
      * 字段
      */
+    @Schema(description = "字段名")
     private String column;
 
     /**
      * 值
      */
+    @Schema(description = "条件值")
     private Object value;
 
     /**
      * 链接类型
      */
+    @Schema(description = "多个条件关联类型",defaultValue = "and")
     private Type type = Type.and;
 
     /**
      * 条件类型
      */
+    @Schema(description = "动态条件类型",defaultValue = "eq")
     private String termType = TermType.eq;
 
     /**
@@ -43,11 +48,13 @@ public class Term implements Cloneable {
      *
      * @since 3.0.1
      */
+    @Schema(description = "拓展选项")
     private List<String> options = new ArrayList<>();
 
     /**
      * 嵌套的条件
      */
+    @Schema(description = "嵌套条件")
     private List<Term> terms = new LinkedList<>();
 
 
