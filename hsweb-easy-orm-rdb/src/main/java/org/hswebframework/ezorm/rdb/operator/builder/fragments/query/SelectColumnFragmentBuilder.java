@@ -229,7 +229,13 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         if (function != null) {
             return metadata
                     .findFeature(createFeatureId(function))
-                    .map(fragment -> fragment.create(columnFullName, columnMetadata, column.getOpts()));
+                    .map(fragment -> fragment.create(columnFullName, columnMetadata, column.getOpts()))
+                    .map(fragment -> {
+                        if (fragment.isEmpty()) {
+                            throw new UnsupportedOperationException("unsupported function:" + column);
+                        }
+                        return fragment;
+                    });
         } else {
             return ofNullable(columnFullName)
                     .map(PrepareSqlFragments::of);

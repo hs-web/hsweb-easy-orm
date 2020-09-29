@@ -16,4 +16,8 @@ public class FunctionColumn {
 
     private Map<String, Object> opts;
 
+    @Override
+    public String toString() {
+        return function + "(" + column + ")";
+    }
 }

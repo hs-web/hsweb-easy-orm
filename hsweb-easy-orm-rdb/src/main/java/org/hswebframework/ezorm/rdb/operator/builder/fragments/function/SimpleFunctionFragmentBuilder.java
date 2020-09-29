@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.function;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
@@ -12,9 +13,9 @@ import java.util.Map;
 @AllArgsConstructor
 public class SimpleFunctionFragmentBuilder implements FunctionFragmentBuilder {
 
-    private String function;
+    private final String function;
 
-    private String name;
+    private final String name;
 
 
     @Override
@@ -25,6 +26,9 @@ public class SimpleFunctionFragmentBuilder implements FunctionFragmentBuilder {
             if ("1".equals(arg)) {
                 columnFullName = arg;
             }
+        }
+        if (columnFullName == null) {
+            return EmptySqlFragments.INSTANCE;
         }
         return PrepareSqlFragments
                 .of()
