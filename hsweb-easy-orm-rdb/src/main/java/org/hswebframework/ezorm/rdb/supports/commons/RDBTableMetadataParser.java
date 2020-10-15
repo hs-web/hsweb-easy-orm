@@ -284,6 +284,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
     protected void applyColumnInfo(RDBColumnMetadata column, Record record) {
         record.getString("name")
+                .map(String::toLowerCase)
                 .ifPresent(name -> {
                     column.setName(name);
                     column.setProperty("old-name", name);
