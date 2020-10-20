@@ -32,7 +32,20 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     private RDBSchemaMetadata schema;
 
-    protected Map<String, RDBColumnMetadata> allColumns = new ConcurrentHashMap<>();
+    protected Map<String, RDBColumnMetadata> allColumns = new ConcurrentHashMap<String, RDBColumnMetadata>() {
+        @Override
+        public RDBColumnMetadata get(Object key) {
+            String k = String.valueOf(key);
+            RDBColumnMetadata metadata = super.get(k);
+            if (metadata == null) {
+                metadata = super.get(k.toUpperCase());
+            }
+            if (metadata == null) {
+                metadata = super.get(k.toLowerCase());
+            }
+            return metadata;
+        }
+    };
 
     protected List<ForeignKeyMetadata> foreignKey = new ArrayList<>();
 
