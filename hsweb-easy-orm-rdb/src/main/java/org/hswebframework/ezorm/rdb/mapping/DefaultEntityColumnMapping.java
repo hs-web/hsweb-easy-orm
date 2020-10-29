@@ -11,28 +11,28 @@ import java.util.Optional;
 
 public class DefaultEntityColumnMapping implements EntityColumnMapping {
 
-    private Map<String, String> propertyColumnMapping = new HashMap<>();
+    private final Map<String, String> propertyColumnMapping = new HashMap<>();
 
-    private Map<String, String> columnPropertyMapping = new HashMap<>();
-
-    @Getter
-    private String id;
+    private final Map<String, String> columnPropertyMapping = new HashMap<>();
 
     @Getter
-    private String name;
+    private final String id;
 
     @Getter
-    private TableOrViewMetadata table;
+    private final String name;
 
     @Getter
-    private Class<?> entityType;
+    private final TableOrViewMetadata table;
+
+    @Getter
+    private final Class<?> entityType;
 
     public void addMapping(String column, String property) {
         columnPropertyMapping.put(column, property);
         propertyColumnMapping.put(property, column);
     }
 
-    public DefaultEntityColumnMapping(TableOrViewMetadata table, Class entityType) {
+    public DefaultEntityColumnMapping(TableOrViewMetadata table, Class<?> entityType) {
         this.id = getType().createFeatureId(entityType);
         this.name = getType().getName() + ":" + entityType.getSimpleName();
         this.table = table;

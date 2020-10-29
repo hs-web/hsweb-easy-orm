@@ -106,7 +106,7 @@ public class JpaEntityTableMetadataParserTest {
 //    @JoinColumn(table = "entity_detail", name = "id", referencedColumnName = "id")
         private String infoName;
 
-        @Column(name = "address_id")
+        @Column
         private String addressId;
 
         @JoinColumn(name = "address_id")

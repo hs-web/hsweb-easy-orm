@@ -36,11 +36,11 @@ import static org.hswebframework.ezorm.rdb.utils.AnnotationUtils.getAnnotations;
 @Slf4j
 public class JpaEntityTableMetadataParserProcessor {
 
-    private DefaultEntityColumnMapping mapping;
+    private final DefaultEntityColumnMapping mapping;
 
-    private Class<?> entityType;
+    private final Class<?> entityType;
 
-    private RDBTableMetadata tableMetadata;
+    private final RDBTableMetadata tableMetadata;
 
     @Setter
     private DataTypeResolver dataTypeResolver;
@@ -223,9 +223,10 @@ public class JpaEntityTableMetadataParserProcessor {
         if (!column.name.isEmpty()) {
             columnName = column.name;
         } else {
+            //驼峰命名
             columnName = StringUtils.camelCase2UnderScoreCase(descriptor.getName());
         }
-        Class javaType = descriptor.getPropertyType();
+        Class<?> javaType = descriptor.getPropertyType();
 
         if (javaType == Object.class) {
             javaType = descriptor.getReadMethod().getReturnType();
