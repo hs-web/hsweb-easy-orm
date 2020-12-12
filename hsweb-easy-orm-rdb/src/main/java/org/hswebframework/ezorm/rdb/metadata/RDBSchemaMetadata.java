@@ -129,8 +129,12 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return getObjectReactive(RDBObjectType.view, name, autoLoad);
     }
 
+    public Optional<RDBViewMetadata> getView(String name, boolean autoLoad) {
+        return getObject(RDBObjectType.view, name, autoLoad);
+    }
+
     public Optional<RDBViewMetadata> getView(String name) {
-        return getObject(RDBObjectType.view, name);
+        return getView(name, true);
     }
 
     public void addTable(RDBTableMetadata metadata) {
@@ -139,20 +143,29 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Mono<TableOrViewMetadata> findTableOrViewReactive(String name) {
-        return getDatabase().getTableOrViewReactive(name);
+        return getTableOrViewReactive(name, false)
+                .switchIfEmpty(getDatabase().getTableOrViewReactive(name));
     }
 
     public Optional<TableOrViewMetadata> findTableOrView(String name) {
+        Optional<TableOrViewMetadata> current = getTableOrView(name, false);
+        if (current.isPresent()) {
+            return current;
+        }
         return getDatabase().getTableOrView(name);
     }
 
-    public Optional<TableOrViewMetadata> getTableOrView(String name) {
-        return Optional.of(getTable(name)
+    public Optional<TableOrViewMetadata> getTableOrView(String name, boolean autoLoad) {
+        return Optional.of(getTable(name, autoLoad)
                                    .map(AbstractTableOrViewMetadata.class::cast))
                        .filter(Optional::isPresent)
-                       .orElseGet(() -> getView(name)
+                       .orElseGet(() -> getView(name, autoLoad)
                                .map(AbstractTableOrViewMetadata.class::cast))
                        .map(TableOrViewMetadata.class::cast);
+    }
+
+    public Optional<TableOrViewMetadata> getTableOrView(String name) {
+        return getTableOrView(name, true);
     }
 
     @Override
