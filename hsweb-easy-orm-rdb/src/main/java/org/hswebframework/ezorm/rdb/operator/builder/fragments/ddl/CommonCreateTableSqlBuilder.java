@@ -46,7 +46,7 @@ public class CommonCreateTableSqlBuilder implements CreateTableSqlBuilder {
 
             }
             if (column.getComment() != null) {
-                sql.addBatch(of(String.format("comment on column %s is '%s'", column.getFullName(), column.getComment())));
+                sql.addBatch(of(String.format("comment on column %s is '%s'", column.getFullTableName(), column.getComment())));
             }
         }
         createTable.addSql(")");

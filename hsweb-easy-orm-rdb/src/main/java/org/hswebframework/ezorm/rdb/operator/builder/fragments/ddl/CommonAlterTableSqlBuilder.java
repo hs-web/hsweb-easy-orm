@@ -89,7 +89,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             return;
         }
         batch.addBatch(of()
-                .addSql("comment on column", column.getFullName(), "is", "'".concat(column.getComment()).concat("'")).toRequest());
+                .addSql("comment on column", column.getFullTableName(), "is", "'".concat(column.getComment()).concat("'")).toRequest());
     }
 
     protected void appendAddColumnSql(DefaultBatchSqlRequest batch, RDBColumnMetadata column) {

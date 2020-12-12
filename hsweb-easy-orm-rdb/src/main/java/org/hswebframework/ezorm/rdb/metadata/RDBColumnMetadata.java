@@ -224,6 +224,10 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return getFullName(getOwner().getName());
     }
 
+    public String getFullTableName() {
+        return getFullName(getOwner().getFullName());
+    }
+
     public boolean ddlModifiable(RDBColumnMetadata after) {
         if (!this.getName().equals(this.getPreviousName())) {
             return true;
