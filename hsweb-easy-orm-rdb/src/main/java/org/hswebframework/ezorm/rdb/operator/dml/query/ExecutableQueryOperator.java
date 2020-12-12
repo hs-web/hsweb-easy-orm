@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBui
 
 public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
-    private TableOrViewMetadata metadata;
+    private final TableOrViewMetadata metadata;
 
     public ExecutableQueryOperator(TableOrViewMetadata metadata) {
         super(metadata.getName());

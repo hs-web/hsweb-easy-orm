@@ -25,7 +25,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
     @Override
     public List<T> fetch() {
         return operator
-                .query(tableName)
+                .query(tableMetadata)
                 .select(getSelectColumn())
                 .selectExcludes(param.getExcludes())
                 .where(param.getTerms())
@@ -47,7 +47,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
     @Override
     public Optional<T> fetchOne() {
         return operator
-                .query(tableName)
+                .query(tableMetadata)
                 .select(getSelectColumn())
                 .where(param.getTerms())
                 .orderBy(getSortOrder())
@@ -68,7 +68,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
     @Override
     public int count() {
         return operator
-                .query(tableName)
+                .query(tableMetadata)
                 .select(count1().as("total"))
                 .where(param.getTerms())
                 .accept(queryOperator ->

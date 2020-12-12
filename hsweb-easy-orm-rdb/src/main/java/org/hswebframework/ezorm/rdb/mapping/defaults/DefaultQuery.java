@@ -36,8 +36,6 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
 
     protected DMLOperator operator;
 
-    protected String tableName;
-
     protected ResultWrapper<T, ?> wrapper;
 
     protected TableOrViewMetadata tableMetadata;
@@ -52,7 +50,6 @@ public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
                         ResultWrapper<T, ?> wrapper,
                         ContextKeyValue<?>... keyValues) {
         this.operator = operator;
-        this.tableName = tableMetadata.getName();
         this.wrapper = wrapper;
         this.tableMetadata = tableMetadata;
         this.columnMapping = mapping;

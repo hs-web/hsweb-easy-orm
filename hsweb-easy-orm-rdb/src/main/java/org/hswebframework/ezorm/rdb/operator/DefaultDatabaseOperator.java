@@ -11,6 +11,7 @@ import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordSyncRepository
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.ddl.DefaultTableBuilder;
 import org.hswebframework.ezorm.rdb.operator.ddl.TableBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
@@ -48,6 +49,31 @@ public class DefaultDatabaseOperator
     @Override
     public SQLOperator sql() {
         return this;
+    }
+
+    @Override
+    public QueryOperator query(TableOrViewMetadata tableOrView) {
+        return new ExecutableQueryOperator(tableOrView);
+    }
+
+    @Override
+    public DeleteOperator delete(RDBTableMetadata table) {
+        return ExecutableDeleteOperator.of(table);
+    }
+
+    @Override
+    public UpdateOperator update(RDBTableMetadata table) {
+        return ExecutableUpdateOperator.of(table);
+    }
+
+    @Override
+    public UpsertOperator upsert(RDBTableMetadata table) {
+        return DefaultUpsertOperator.of(table);
+    }
+
+    @Override
+    public InsertOperator insert(RDBTableMetadata table) {
+        return ExecutableInsertOperator.of(table);
     }
 
     @Override
