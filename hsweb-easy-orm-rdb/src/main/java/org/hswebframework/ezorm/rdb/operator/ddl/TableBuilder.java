@@ -27,6 +27,8 @@ public interface TableBuilder {
 
     TableBuilder allowAlter(boolean allow);
 
+    TableBuilder autoLoad(boolean autoLoad);
+
     IndexBuilder index();
 
     ForeignKeyDSLBuilder  foreignKey();

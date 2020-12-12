@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
-    private List<ObjectType> allObjectType = Arrays.asList(RDBObjectType.table, RDBObjectType.view);
+    private final List<ObjectType> allObjectType = Arrays.asList(RDBObjectType.table, RDBObjectType.view);
 
 
     public RDBSchemaMetadata(String name) {
@@ -82,6 +82,14 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return ((RDBDatabaseMetadata) super.getDatabase());
     }
 
+    public Optional<RDBTableMetadata> getTable(String name, boolean autoLoad) {
+        if (name.contains(".")) {
+            return findTableOrView(name)
+                    .map(RDBTableMetadata.class::cast);
+        }
+        return getObject(RDBObjectType.table, name, autoLoad);
+    }
+
     public Optional<RDBTableMetadata> getTable(String name) {
         if (name.contains(".")) {
             return findTableOrView(name)
@@ -91,21 +99,34 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Mono<RDBTableMetadata> getTableReactive(String name) {
+        return getTableReactive(name, true);
+    }
+
+    public Mono<RDBTableMetadata> getTableReactive(String name, boolean autoLoad) {
         if (name.contains(".")) {
             return findTableOrViewReactive(name)
                     .map(RDBTableMetadata.class::cast);
         }
-        return getObjectReactive(RDBObjectType.table, name);
+        return getObjectReactive(RDBObjectType.table, name, autoLoad);
+    }
+
+    public Mono<TableOrViewMetadata> getTableOrViewReactive(String name, boolean autoLoad) {
+        return getTableReactive(name, autoLoad)
+                .cast(TableOrViewMetadata.class)
+                .switchIfEmpty(Mono.defer(() -> getViewReactive(name, autoLoad).cast(TableOrViewMetadata.class)));
     }
 
     public Mono<TableOrViewMetadata> getTableOrViewReactive(String name) {
-        return getTableReactive(name)
-                .cast(TableOrViewMetadata.class)
-                .switchIfEmpty(Mono.defer(() -> getViewReactive(name).cast(TableOrViewMetadata.class)));
+        return getTableOrViewReactive(name, true);
     }
+
 
     public Mono<RDBViewMetadata> getViewReactive(String name) {
         return getObjectReactive(RDBObjectType.view, name);
+    }
+
+    public Mono<RDBViewMetadata> getViewReactive(String name, boolean autoLoad) {
+        return getObjectReactive(RDBObjectType.view, name, autoLoad);
     }
 
     public Optional<RDBViewMetadata> getView(String name) {
@@ -115,11 +136,6 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     public void addTable(RDBTableMetadata metadata) {
         metadata.setSchema(this);
         addObject(metadata);
-    }
-
-    @Override
-    public <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name) {
-        return super.getObject(type, getDialect().clearQuote(name));
     }
 
     public Mono<TableOrViewMetadata> findTableOrViewReactive(String name) {
@@ -132,11 +148,11 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     public Optional<TableOrViewMetadata> getTableOrView(String name) {
         return Optional.of(getTable(name)
-                .map(AbstractTableOrViewMetadata.class::cast))
-                .filter(Optional::isPresent)
-                .orElseGet(() -> getView(name)
-                        .map(AbstractTableOrViewMetadata.class::cast))
-                .map(TableOrViewMetadata.class::cast);
+                                   .map(AbstractTableOrViewMetadata.class::cast))
+                       .filter(Optional::isPresent)
+                       .orElseGet(() -> getView(name)
+                               .map(AbstractTableOrViewMetadata.class::cast))
+                       .map(TableOrViewMetadata.class::cast);
     }
 
     @Override
@@ -201,12 +217,12 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     public Dialect getDialect() {
         return Optional.ofNullable(getDatabase())
-                .map(RDBDatabaseMetadata::getDialect)
-                .orElseGet(() -> this
-                        .<Dialect>getFeatures(RDBFeatureType.dialect)
-                        .stream()
-                        .findFirst()
-                        .orElse(null));
+                       .map(RDBDatabaseMetadata::getDialect)
+                       .orElseGet(() -> this
+                               .<Dialect>getFeatures(RDBFeatureType.dialect)
+                               .stream()
+                               .findFirst()
+                               .orElse(null));
     }
 
     public Optional<TableOrViewMetadata> removeTableOrView(String name) {

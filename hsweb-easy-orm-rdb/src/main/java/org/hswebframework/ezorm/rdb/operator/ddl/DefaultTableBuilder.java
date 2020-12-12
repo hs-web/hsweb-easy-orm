@@ -27,6 +27,7 @@ public class DefaultTableBuilder implements TableBuilder {
 
     private boolean dropColumn = false;
     private boolean allowAlter = true;
+    private boolean autoLoad = true;
 
     public DefaultTableBuilder(RDBTableMetadata table) {
         this.table = table;
@@ -43,13 +44,13 @@ public class DefaultTableBuilder implements TableBuilder {
         return new ForeignKeyDSLBuilder(table);
     }
 
-    public TableBuilder custom(Consumer<RDBTableMetadata> consumer) {
+    public DefaultTableBuilder custom(Consumer<RDBTableMetadata> consumer) {
         consumer.accept(table);
         return this;
     }
 
     @Override
-    public TableBuilder addColumn(RDBColumnMetadata column) {
+    public DefaultTableBuilder addColumn(RDBColumnMetadata column) {
         table.addColumn(column);
         return this;
     }
@@ -57,23 +58,23 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public ColumnBuilder addColumn(String name) {
         RDBColumnMetadata rdbColumnMetaData = table.getColumn(name)
-                .orElseGet(() -> {
-                    RDBColumnMetadata columnMetaData = table.newColumn();
-                    columnMetaData.setName(name);
-                    return columnMetaData;
-                });
+                                                   .orElseGet(() -> {
+                                                       RDBColumnMetadata columnMetaData = table.newColumn();
+                                                       columnMetaData.setName(name);
+                                                       return columnMetaData;
+                                                   });
 
         return new DefaultColumnBuilder(rdbColumnMetaData, this, table);
     }
 
     @Override
-    public TableBuilder removeColumn(String name) {
+    public DefaultTableBuilder removeColumn(String name) {
         table.removeColumn(name);
         return this;
     }
 
     @Override
-    public TableBuilder dropColumn(String name) {
+    public DefaultTableBuilder dropColumn(String name) {
         table.removeColumn(name);
         dropColumn = true;
         return this;
@@ -86,31 +87,38 @@ public class DefaultTableBuilder implements TableBuilder {
     }
 
     @Override
-    public TableBuilder comment(String comment) {
+    public DefaultTableBuilder comment(String comment) {
         table.setComment(comment);
         return this;
     }
 
     @Override
-    public TableBuilder alias(String name) {
+    public DefaultTableBuilder alias(String name) {
         table.setAlias(name);
         return this;
     }
 
     @Override
-    public TableBuilder allowAlter(boolean allow) {
+    public DefaultTableBuilder allowAlter(boolean allow) {
         allowAlter = allow;
         return this;
     }
 
+    @Override
+    public TableBuilder autoLoad(boolean autoLoad) {
+        this.autoLoad = autoLoad;
+        return this;
+    }
+
     private SqlRequest buildAlterSql(RDBTableMetadata oldTable) {
-        return schema.findFeatureNow(AlterTableSqlBuilder.ID)
+        return schema
+                .findFeatureNow(AlterTableSqlBuilder.ID)
                 .build(AlterRequest.builder()
-                        .allowDrop(dropColumn)
-                        .newTable(table)
-                        .allowAlter(allowAlter)
-                        .oldTable(oldTable)
-                        .build());
+                                   .allowDrop(dropColumn)
+                                   .newTable(table)
+                                   .allowAlter(allowAlter)
+                                   .oldTable(oldTable)
+                                   .build());
     }
 
     @Override
@@ -119,7 +127,7 @@ public class DefaultTableBuilder implements TableBuilder {
         return new TableDDLResultOperator() {
             @Override
             public Boolean sync() {
-                RDBTableMetadata oldTable = schema.getTable(table.getName()).orElse(null);
+                RDBTableMetadata oldTable = schema.getTable(table.getName(), autoLoad).orElse(null);
                 SqlRequest sqlRequest;
                 Runnable whenComplete;
                 //alter
@@ -149,7 +157,8 @@ public class DefaultTableBuilder implements TableBuilder {
 
                 ReactiveSqlExecutor sqlExecutor = schema.findFeatureNow(ReactiveSqlExecutor.ID);
 
-                return schema.getTableReactive(table.getName())
+                return schema
+                        .getTableReactive(table.getName(), autoLoad)
                         .map(oldTable -> {
                             SqlRequest request = buildAlterSql(oldTable);
                             if (request.isEmpty()) {
@@ -157,8 +166,8 @@ public class DefaultTableBuilder implements TableBuilder {
                                 return Mono.just(true);
                             }
                             return sqlExecutor.execute(request)
-                                    .doOnSuccess(ignore -> oldTable.merge(table))
-                                    .thenReturn(true);
+                                              .doOnSuccess(ignore -> oldTable.merge(table))
+                                              .thenReturn(true);
                         })
                         .switchIfEmpty(Mono.fromSupplier(() -> {
                             SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
@@ -166,8 +175,8 @@ public class DefaultTableBuilder implements TableBuilder {
                                 return Mono.just(true);
                             }
                             return sqlExecutor.execute(request)
-                                    .doOnSuccess(ignore -> schema.addTable(table))
-                                    .thenReturn(true);
+                                              .doOnSuccess(ignore -> schema.addTable(table))
+                                              .thenReturn(true);
                         }))
                         .flatMap(Function.identity());
             }
