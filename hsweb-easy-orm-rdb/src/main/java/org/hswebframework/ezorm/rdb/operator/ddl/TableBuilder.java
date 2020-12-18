@@ -29,6 +29,8 @@ public interface TableBuilder {
 
     TableBuilder autoLoad(boolean autoLoad);
 
+    TableBuilder merge(boolean merge);
+
     IndexBuilder index();
 
     ForeignKeyDSLBuilder  foreignKey();

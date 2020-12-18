@@ -28,6 +28,7 @@ public class DefaultTableBuilder implements TableBuilder {
     private boolean dropColumn = false;
     private boolean allowAlter = true;
     private boolean autoLoad = true;
+    private boolean merge=true;
 
     public DefaultTableBuilder(RDBTableMetadata table) {
         this.table = table;
@@ -110,6 +111,12 @@ public class DefaultTableBuilder implements TableBuilder {
         return this;
     }
 
+    @Override
+    public TableBuilder merge(boolean merge) {
+        this.merge=merge;
+        return this;
+    }
+
     private SqlRequest buildAlterSql(RDBTableMetadata oldTable) {
         return schema
                 .findFeatureNow(AlterTableSqlBuilder.ID)
@@ -134,7 +141,11 @@ public class DefaultTableBuilder implements TableBuilder {
                 if (oldTable != null) {
                     sqlRequest = buildAlterSql(oldTable);
 
-                    whenComplete = () -> oldTable.merge(table);
+                  if(merge){
+                      whenComplete = () -> oldTable.merge(table);
+                  }else {
+                      whenComplete = () -> oldTable.replace(table);
+                  }
                 } else {
                     //create
                     sqlRequest = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
@@ -162,7 +173,11 @@ public class DefaultTableBuilder implements TableBuilder {
                         .map(oldTable -> {
                             SqlRequest request = buildAlterSql(oldTable);
                             if (request.isEmpty()) {
-                                oldTable.merge(table);
+                                if(merge) {
+                                    oldTable.merge(table);
+                                }else {
+                                    oldTable.replace(table);
+                                }
                                 return Mono.just(true);
                             }
                             return sqlExecutor.execute(request)

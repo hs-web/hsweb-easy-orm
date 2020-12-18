@@ -85,6 +85,5 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
     @Override
     public void merge(TableOrViewMetadata metadata) {
         super.merge(metadata);
-
     }
 }

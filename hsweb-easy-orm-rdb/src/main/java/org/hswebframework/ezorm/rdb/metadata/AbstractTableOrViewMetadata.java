@@ -17,6 +17,7 @@ import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -47,9 +48,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         }
     };
 
-    protected List<ForeignKeyMetadata> foreignKey = new ArrayList<>();
+    protected List<ForeignKeyMetadata> foreignKey = new CopyOnWriteArrayList<>();
 
-    protected Map<String, Feature> features = new HashMap<>();
+    protected Map<String, Feature> features = new ConcurrentHashMap<>();
 
     public AbstractTableOrViewMetadata() {
         //注册默认的where条件构造器
@@ -217,5 +218,13 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         metadata.getFeatureList().forEach(this::addFeature);
         metadata.getColumns().forEach(this::addColumn);
 
+    }
+
+    @Override
+    public void replace(TableOrViewMetadata metadata) {
+        foreignKey.clear();
+        features.clear();
+        allColumns.clear();
+        merge(metadata);
     }
 }

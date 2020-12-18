@@ -155,4 +155,6 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     }
 
     void merge(TableOrViewMetadata metadata);
+
+    void replace(TableOrViewMetadata metadata);
 }
