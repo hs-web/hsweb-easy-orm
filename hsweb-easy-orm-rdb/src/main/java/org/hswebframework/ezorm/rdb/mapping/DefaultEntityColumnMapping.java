@@ -6,14 +6,15 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class DefaultEntityColumnMapping implements EntityColumnMapping {
 
-    private final Map<String, String> propertyColumnMapping = new HashMap<>();
+    private final Map<String, String> propertyColumnMapping = new LinkedHashMap<>();
 
-    private final Map<String, String> columnPropertyMapping = new HashMap<>();
+    private final Map<String, String> columnPropertyMapping = new LinkedHashMap<>();
 
     @Getter
     private final String id;
@@ -73,6 +74,6 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
 
     @Override
     public Map<String, String> getColumnPropertyMapping() {
-        return new HashMap<>(columnPropertyMapping);
+        return new LinkedHashMap<>(columnPropertyMapping);
     }
 }

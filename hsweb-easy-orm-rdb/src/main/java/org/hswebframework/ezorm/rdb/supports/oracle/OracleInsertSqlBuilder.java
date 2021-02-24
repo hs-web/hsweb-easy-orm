@@ -31,8 +31,8 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
 
-        Map<Integer, RDBColumnMetadata> indexMapping = new HashMap<>();
-        Map<Integer, SqlFragments> functionValues = new HashMap<>();
+        Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>();
+        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
 
         int index = 0;
         Set<InsertColumn> columns = parameter.getColumns();

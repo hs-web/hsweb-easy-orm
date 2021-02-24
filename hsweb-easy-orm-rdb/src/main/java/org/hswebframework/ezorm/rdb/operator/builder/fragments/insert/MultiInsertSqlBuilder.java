@@ -29,8 +29,8 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
 
         DefaultBatchSqlRequest sqlRequest = new DefaultBatchSqlRequest();
 
-        Map<Integer, RDBColumnMetadata> indexMapping = new HashMap<>();
-        Map<Integer, SqlFragments> functionValues = new HashMap<>();
+        Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>();
+        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
 
         int index = 0;
         Set<InsertColumn> columns = parameter.getColumns();

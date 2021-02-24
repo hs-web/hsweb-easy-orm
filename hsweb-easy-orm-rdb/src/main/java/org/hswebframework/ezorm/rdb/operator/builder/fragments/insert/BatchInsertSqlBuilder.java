@@ -31,8 +31,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
     public SqlRequest build(InsertOperatorParameter parameter) {
         PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
 
-        Map<Integer, RDBColumnMetadata> indexMapping = new HashMap<>();
-        Map<Integer, SqlFragments> functionValues = new HashMap<>();
+        Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>();
+        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
 
         int index = 0;
         Set<InsertColumn> columns = parameter.getColumns();
