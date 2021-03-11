@@ -1,7 +1,7 @@
 # 一个简单的orm工具
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.hswebframework/hsweb-easy-orm.svg?style=plastic)](http://search.maven.org/#search%7Cga%7C1%7Chsweb-easy-orm)
-[![Build Status](https://travis-ci.com/hs-web/hsweb-easy-orm.svg?branch=master)](https://travis-ci.org/hs-web/hsweb-easy-orm)
+[![Build Status](https://travis-ci.com/hs-web/hsweb-easy-orm.svg?branch=master)](https://travis-ci.com/hs-web/hsweb-easy-orm)
 [![codecov](https://codecov.io/gh/hs-web/hsweb-easy-orm/branch/master/graph/badge.svg)](https://codecov.io/gh/hs-web/hsweb-easy-orm)
 
 
