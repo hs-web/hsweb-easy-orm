@@ -2,14 +2,11 @@ package org.hswebframework.ezorm.rdb.supports.commons;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.core.meta.ObjectMetadata;
-import org.hswebframework.ezorm.core.meta.ObjectMetadataParser;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.*;
@@ -83,7 +80,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
             metaData.setComment(String.valueOf(comment.get("comment")));
         }
         //加载索引
-        schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+        schema.findFeature(IndexMetadataParser.ID)
                 .map(parser -> parser.parseTableIndex(name))
                 .ifPresent(indexes -> indexes.forEach(metaData::addIndex));
 
@@ -115,7 +112,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                             .singleOrEmpty();
 
                     //加载索引
-                    Flux<RDBIndexMetadata> index = schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+                    Flux<RDBIndexMetadata> index = schema.findFeature(IndexMetadataParser.ID)
                             .map(parser -> parser.parseTableIndexReactive(name))
                             .orElseGet(Flux::empty)
                             .doOnNext(metaData::addIndex);
@@ -221,7 +218,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 });
 
         //索引
-        Flux<RDBIndexMetadata> indexes = schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+        Flux<RDBIndexMetadata> indexes = schema.findFeature(IndexMetadataParser.ID)
                 .map(IndexMetadataParser::parseAllReactive)
                 .orElseGet(Flux::empty)
                 .doOnNext(index -> Optional.ofNullable(metadata.get(index.getTableName())).ifPresent(table -> table.addIndex(index)));
@@ -272,7 +269,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                         }));
 
         //索引
-        schema.<IndexMetadataParser>findFeature(IndexMetadataParser.id)
+        schema.<IndexMetadataParser>findFeature(IndexMetadataParser.ID_VALUE)
                 .map(IndexMetadataParser::parseAll)
                 .ifPresent(indexes -> indexes.forEach(index -> {
                     Optional.ofNullable(metadata.get(index.getTableName()))

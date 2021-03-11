@@ -20,7 +20,7 @@ public class MSSQLConnectionProvider implements ConnectionProvider {
     public Connection getConnection() {
 
         String username = System.getProperty("mssql.username", "sa");
-        String password = System.getProperty("mssql.password", "ezorm!PasswOrd");
+        String password = System.getProperty("mssql.password", "ezorm@PasswOrd");
         String url = System.getProperty("mssql.url", "127.0.0.1:11433");
 //        String db = System.getProperty("mysql.db", "dbo");
         return DriverManager.getConnection("jdbc:sqlserver://" + url, username, password);

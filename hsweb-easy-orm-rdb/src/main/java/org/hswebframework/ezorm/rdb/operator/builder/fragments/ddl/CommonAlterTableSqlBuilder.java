@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 
@@ -50,38 +51,39 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
                 appendAddColumnCommentSql(batch, newColumn);
             }
         }
+        //支持索引解析才处理索引
+        if (newTable.getFeature(IndexMetadataParser.ID).isPresent()) {
+            //index
+            for (RDBIndexMetadata index : newTable.getIndexes()) {
+                if (index.isPrimaryKey()) {
+                    continue;
+                }
+                RDBIndexMetadata oldIndex = oldTable.getIndex(index.getName()).orElse(null);
+                if (oldIndex == null) {
+                    //add index
+                    appendAddIndexSql(batch, newTable, index);
+                    continue;
+                }
+                if (index.isChanged(oldIndex)) {
+                    appendDropIndexSql(batch, newTable, index);
+                    appendAddIndexSql(batch, newTable, index);
 
-        //index
-        for (RDBIndexMetadata index : newTable.getIndexes()) {
-            if (index.isPrimaryKey()) {
-                continue;
+                }
             }
-            RDBIndexMetadata oldIndex = oldTable.getIndex(index.getName()).orElse(null);
-            if (oldIndex == null) {
-                //add index
-                appendAddIndexSql(batch, newTable, index);
-                continue;
-            }
-            if (index.isChanged(oldIndex)) {
-                appendDropIndexSql(batch, newTable, index);
-                appendAddIndexSql(batch, newTable, index);
-
-            }
-
         }
         return batch;
     }
 
     protected void appendDropIndexSql(DefaultBatchSqlRequest batch, RDBTableMetadata table, RDBIndexMetadata index) {
         table.findFeature(DropIndexSqlBuilder.ID)
-                .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
-                .ifPresent(batch::addBatch);
+             .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
+             .ifPresent(batch::addBatch);
     }
 
     protected void appendAddIndexSql(DefaultBatchSqlRequest batch, RDBTableMetadata table, RDBIndexMetadata index) {
         table.findFeature(CreateIndexSqlBuilder.ID)
-                .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
-                .ifPresent(batch::addBatch);
+             .map(builder -> builder.build(CreateIndexParameter.of(table, index)))
+             .ifPresent(batch::addBatch);
     }
 
     protected void appendAddColumnCommentSql(DefaultBatchSqlRequest batch, RDBColumnMetadata column) {
@@ -89,7 +91,9 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             return;
         }
         batch.addBatch(of()
-                .addSql("comment on column", column.getFullTableName(), "is", "'".concat(column.getComment()).concat("'")).toRequest());
+                               .addSql("comment on column", column.getFullTableName(), "is", "'"
+                                       .concat(column.getComment())
+                                       .concat("'")).toRequest());
     }
 
     protected void appendAddColumnSql(DefaultBatchSqlRequest batch, RDBColumnMetadata column) {
@@ -119,7 +123,8 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
 
     protected void appendDropColumnSql(DefaultBatchSqlRequest batch,
                                        RDBColumnMetadata drop) {
-        batch.addBatch(SqlRequests.of(String.format("alter table %s drop column %s", drop.getOwner().getFullName(), drop.getQuoteName())));
+        batch.addBatch(SqlRequests.of(String.format("alter table %s drop column %s", drop.getOwner().getFullName(), drop
+                .getQuoteName())));
     }
 
     protected void appendAlterColumnSql(DefaultBatchSqlRequest batch,

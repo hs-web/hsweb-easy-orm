@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.metadata.parser;
 
+import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.ObjectMetadataParser;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
@@ -10,11 +11,13 @@ import java.util.List;
 
 public interface IndexMetadataParser extends ObjectMetadataParser {
 
-    String id = "indexMetadataParser";
+    String ID_VALUE = "indexMetadataParser";
+
+    FeatureId<IndexMetadataParser> ID =FeatureId.of(ID_VALUE);
 
     @Override
     default String getId() {
-        return id;
+        return ID_VALUE;
     }
 
     @Override

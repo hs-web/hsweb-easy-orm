@@ -9,7 +9,7 @@ before_install:
   - docker run -d -p 15432:5432 -e TZ=Asia/Shanghai -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=ezorm postgres:11-alpine postgres -c 'max_connections=500'
   - docker run -d -p 15433:5432 -e TZ=Asia/Shanghai -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=ezorm postgres:12-alpine postgres -c 'max_connections=500'
   - docker run -d -p 11521:1521 -e TZ=Asia/Shanghai iatebes/oracle_11g
-  - docker run -d -p 11433:1433 -e TZ=Asia/Shanghai -e SA_PASSWORD=ezorm!PasswOrd -e ACCEPT_EULA=Y -e MSSQL_PID=Enterprise mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+  - docker run -d -p 11433:1433 -e TZ=Asia/Shanghai -e "SA_PASSWORD=ezorm@PasswOrd" -e ACCEPT_EULA=Y -e MSSQL_PID=Enterprise mcr.microsoft.com/mssql/server:2017-latest-ubuntu
 
 services:
   - docker

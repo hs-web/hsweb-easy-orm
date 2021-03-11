@@ -22,7 +22,7 @@ public class MSSQLR2dbcConnectionProvider implements R2dbcConnectionProvider {
     public MSSQLR2dbcConnectionProvider() {
 
         String username = System.getProperty("mssql.username", "sa");
-        String password = System.getProperty("mssql.password", "ezorm!PasswOrd");
+        String password = System.getProperty("mssql.password", "ezorm@PasswOrd");
         String url = System.getProperty("mssql.url", "127.0.0.1:11433");
 
         URL hostUrl = new URL("file://" + url);
