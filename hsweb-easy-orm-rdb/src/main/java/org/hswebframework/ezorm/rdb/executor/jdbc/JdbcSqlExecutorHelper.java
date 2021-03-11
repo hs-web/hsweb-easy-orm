@@ -41,8 +41,10 @@ public class JdbcSqlExecutorHelper {
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
             } else if (object instanceof byte[]) {
                 statement.setBlob(index++, new ByteArrayInputStream((byte[]) object));
-            } else
+            } else{
                 statement.setObject(index++, object);
+            }
+
         }
     }
 

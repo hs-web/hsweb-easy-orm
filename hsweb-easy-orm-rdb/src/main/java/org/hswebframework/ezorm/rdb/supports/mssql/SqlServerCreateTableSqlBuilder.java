@@ -67,7 +67,7 @@ public class SqlServerCreateTableSqlBuilder implements CreateTableSqlBuilder {
             batch.add(SqlServerCommentUtils.createDropAndCreateTableCommentSql(table).toRequest());
         }
         //支持索引解析才处理索引
-        if (table.getFeature(IndexMetadataParser.ID).isPresent()) {
+        if (table.findFeature(IndexMetadataParser.ID).isPresent()) {
             table.findFeature(CreateIndexSqlBuilder.ID)
                  .ifPresent(builder -> {
                      for (RDBIndexMetadata tableIndex : table.getIndexes()) {

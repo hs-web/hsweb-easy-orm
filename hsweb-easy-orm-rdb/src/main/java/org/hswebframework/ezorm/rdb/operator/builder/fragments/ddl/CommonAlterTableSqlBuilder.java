@@ -52,7 +52,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             }
         }
         //支持索引解析才处理索引
-        if (newTable.getFeature(IndexMetadataParser.ID).isPresent()) {
+        if (newTable.findFeature(IndexMetadataParser.ID).isPresent()) {
             //index
             for (RDBIndexMetadata index : newTable.getIndexes()) {
                 if (index.isPrimaryKey()) {

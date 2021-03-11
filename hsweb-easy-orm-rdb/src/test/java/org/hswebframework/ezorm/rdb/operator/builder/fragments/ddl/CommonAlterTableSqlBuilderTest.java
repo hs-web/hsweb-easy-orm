@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
+import org.hswebframework.ezorm.rdb.supports.h2.H2IndexMetadataParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,6 +20,7 @@ public class CommonAlterTableSqlBuilderTest {
     @Test
     public void testIndex() {
         RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        schema.addFeature(new H2IndexMetadataParser(schema));
         CommonAlterTableSqlBuilder builder = new CommonAlterTableSqlBuilder();
 
         RDBTableMetadata old = schema.getTable("test").orElseThrow(NullPointerException::new);
