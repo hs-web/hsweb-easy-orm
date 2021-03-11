@@ -92,11 +92,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Optional<RDBTableMetadata> getTable(String name) {
-        if (name.contains(".")) {
-            return findTableOrView(name)
-                    .map(RDBTableMetadata.class::cast);
-        }
-        return getObject(RDBObjectType.table, name);
+        return getTable(name,true);
     }
 
     public Mono<RDBTableMetadata> getTableReactive(String name) {
@@ -107,9 +103,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         if (name.contains(".")) {
             return this
                     .getDatabase()
-                    .getObjectReactive(name, (schema, _name) -> {
-                        return schema.getTableReactive(_name, autoLoad);
-                    });
+                    .getObjectReactive(name, (schema, _name) -> schema.getTableReactive(_name, autoLoad));
         }
         return getObjectReactive(RDBObjectType.table, name, autoLoad);
     }
