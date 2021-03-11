@@ -84,8 +84,9 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     public Optional<RDBTableMetadata> getTable(String name, boolean autoLoad) {
         if (name.contains(".")) {
-            return findTableOrView(name)
-                    .map(RDBTableMetadata.class::cast);
+            return this.getDatabase()
+                       .getObject(name, (schema, _name) -> schema.getTable(_name, autoLoad))
+                       .map(RDBTableMetadata.class::cast);
         }
         return getObject(RDBObjectType.table, name, autoLoad);
     }
@@ -104,8 +105,11 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     public Mono<RDBTableMetadata> getTableReactive(String name, boolean autoLoad) {
         if (name.contains(".")) {
-            return findTableOrViewReactive(name)
-                    .map(RDBTableMetadata.class::cast);
+            return this
+                    .getDatabase()
+                    .getObjectReactive(name, (schema, _name) -> {
+                        return schema.getTableReactive(_name, autoLoad);
+                    });
         }
         return getObjectReactive(RDBObjectType.table, name, autoLoad);
     }
@@ -143,6 +147,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Mono<TableOrViewMetadata> findTableOrViewReactive(String name) {
+
         return getTableOrViewReactive(name, false)
                 .switchIfEmpty(getDatabase().getTableOrViewReactive(name));
     }

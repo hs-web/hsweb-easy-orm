@@ -1,9 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
@@ -20,6 +17,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = "createTime")
 public class BasicTestEntity implements Serializable {
 
     @Column(length = 32)

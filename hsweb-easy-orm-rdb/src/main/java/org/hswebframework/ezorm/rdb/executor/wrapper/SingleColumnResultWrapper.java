@@ -5,9 +5,9 @@ import org.hswebframework.ezorm.core.Decoder;
 
 public class SingleColumnResultWrapper<R> implements ResultWrapper<R, R> {
 
-    private String column;
+    private final String column;
 
-    private Decoder<R> decoder;
+    private final Decoder<R> decoder;
 
     public SingleColumnResultWrapper(String column, Decoder<R> decoder) {
         this.column = column;

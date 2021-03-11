@@ -24,7 +24,7 @@ import static org.hswebframework.ezorm.rdb.executor.SqlRequests.*;
 public class MysqlR2dbcConnectionProvider implements R2dbcConnectionProvider {
 
 
-    private ConnectionFactory connectionFactory;
+    private final ConnectionFactory connectionFactory;
 
     @SneakyThrows
     public MysqlR2dbcConnectionProvider() {

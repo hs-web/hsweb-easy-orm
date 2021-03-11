@@ -4,9 +4,9 @@ import java.util.function.Function;
 
 public class ConvertResultWrapper<T, R, C> implements ResultWrapper<T, C> {
 
-    private ResultWrapper<T, R> wrapper;
+    private final ResultWrapper<T, R> wrapper;
 
-    private Function<R, C> converter;
+    private final Function<R, C> converter;
 
     public ConvertResultWrapper(ResultWrapper<T, R> wrapper, Function<R, C> converter) {
         this.wrapper = wrapper;

@@ -10,7 +10,7 @@ import java.sql.Connection;
 @AllArgsConstructor
 public class TestJdbcReactiveSqlExecutor extends JdbcReactiveSqlExecutor {
 
-    private ConnectionProvider provider;
+    private final ConnectionProvider provider;
 
     @Override
     public Mono<Connection> getConnection(SqlRequest sqlRequest) {

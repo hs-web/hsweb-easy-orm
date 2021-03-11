@@ -8,9 +8,9 @@ import java.util.List;
 @Getter
 public class DuplicateKeyException extends RuntimeException {
 
-    private boolean primaryKey;
+    private final boolean primaryKey;
 
-    private List<RDBColumnMetadata> columns;
+    private final List<RDBColumnMetadata> columns;
 
     public DuplicateKeyException(boolean primaryKey,
                                  List<RDBColumnMetadata> columns,

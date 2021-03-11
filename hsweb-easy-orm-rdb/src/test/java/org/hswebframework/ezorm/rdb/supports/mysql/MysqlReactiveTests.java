@@ -3,21 +3,31 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.Statement;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
+import org.hswebframework.ezorm.rdb.exception.DuplicateKeyException;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.supports.BasicReactiveTests;
+import org.hswebframework.ezorm.rdb.supports.BasicTestEntity;
+import org.junit.Test;
 import reactor.core.publisher.SignalType;
+import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 
 public class MysqlReactiveTests extends BasicReactiveTests {
+
+    MysqlSchemaMetadata schemaMetadata= new MysqlSchemaMetadata("ezorm");
+
     @Override
     protected RDBSchemaMetadata getSchema() {
-        return new MysqlSchemaMetadata("ezorm");
+        return schemaMetadata;
     }
 
     @Override
@@ -60,4 +70,18 @@ public class MysqlReactiveTests extends BasicReactiveTests {
         };
     }
 
+
+    @Test
+    public void testExceptionTrans() {
+
+        BasicTestEntity entity = new BasicTestEntity();
+        entity.setId("1234");
+        entity.setName("test");
+        entity.setState((byte)1);
+
+        repository.insert(entity)
+                  .then(repository.insert(entity))
+                  .as(StepVerifier::create)
+                  .verifyError(DuplicateKeyException.class);
+    }
 }

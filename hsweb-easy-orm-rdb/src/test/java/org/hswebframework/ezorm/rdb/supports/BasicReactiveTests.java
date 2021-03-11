@@ -32,6 +32,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
@@ -272,7 +273,7 @@ public abstract class BasicReactiveTests {
                 .id("test_id")
                 .balance(1000L)
                 .name("test")
-                .tags(Arrays.asList("a", "b", "c", "d"))
+                .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
                 .createTime(new Date())
                 .state((byte) 1)
                 .addressId("test")
@@ -291,6 +292,10 @@ public abstract class BasicReactiveTests {
 
         Mono.just(entity.getId())
                 .as(repository::findById)
+            .doOnNext(e->{
+                System.out.println(entity);
+                System.out.println(e);
+            })
                 .as(StepVerifier::create)
                 .expectNext(entity)
                 .verifyComplete();

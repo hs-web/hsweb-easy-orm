@@ -63,4 +63,5 @@ public class MysqlTableMetadataParser extends RDBTableMetadataParser {
     public Flux<RDBTableMetadata> parseAllReactive() {
         return super.fastParseAllReactive();
     }
+
 }

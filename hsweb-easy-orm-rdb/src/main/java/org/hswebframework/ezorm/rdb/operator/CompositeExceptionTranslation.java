@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 public class CompositeExceptionTranslation implements ExceptionTranslation {
 
-    private List<ExceptionTranslation> translations = new CopyOnWriteArrayList<>();
+    private final List<ExceptionTranslation> translations = new CopyOnWriteArrayList<>();
 
     @Override
     public Throwable translate(Throwable e) {

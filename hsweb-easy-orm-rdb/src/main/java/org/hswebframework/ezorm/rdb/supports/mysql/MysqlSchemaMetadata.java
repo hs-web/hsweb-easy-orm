@@ -3,6 +3,9 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlR2DBCExceptionTranslation;
+import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 public class MysqlSchemaMetadata extends RDBSchemaMetadata {
 
@@ -16,6 +19,9 @@ public class MysqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new MysqlIndexMetadataParser(this));
         addFeature(new MysqlTableMetadataParser(this));
         addFeature(Dialect.MYSQL);
+        addFeature(new CompositeExceptionTranslation()
+                           .add(FeatureUtils.r2dbcIsAlive(), () -> MysqlR2DBCExceptionTranslation.of(this))
+        );
     }
 
     @Override
