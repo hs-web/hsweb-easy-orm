@@ -34,18 +34,19 @@ public class PostgresqlTableMetaParserTest {
     @Test
     public void testParseAll() {
         executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table2(" +
-                "id varchar(32) primary key," +
-                "name varchar(128) not null" +
-                ")"));
+                                                "id varchar(32) primary key," +
+                                                "name varchar(128) not null," +
+                                                "\"cpuUsage\" varchar(128) not null" +
+                                                ")"));
         try {
             List<RDBTableMetadata> table = parser.parseAll();
 
             Map<String, RDBTableMetadata> mapping = table.stream()
-                    .collect(Collectors.toMap(RDBTableMetadata::getName, Function.identity()));
+                                                         .collect(Collectors.toMap(RDBTableMetadata::getName, Function.identity()));
 
             Assert.assertNotNull(mapping.get("test_table2"));
 
-        }finally {
+        } finally {
             executor.execute(prepare("drop table test_table2"));
         }
     }
@@ -53,12 +54,12 @@ public class PostgresqlTableMetaParserTest {
     @Test
     public void testParse() {
         executor.execute(SqlRequests.of("CREATE TABLE IF NOT EXISTS test_table(" +
-                "id varchar(32) primary key," +
-                "name varchar(128) not null," +
-                "age int4," +
-                "json1 json," +
-                "json2 jsonb" +
-                ")"));
+                                                "id varchar(32) primary key," +
+                                                "name varchar(128) not null," +
+                                                "age int4," +
+                                                "json1 json," +
+                                                "json2 jsonb" +
+                                                ")"));
         try {
             RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 

@@ -47,7 +47,14 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
         index.setTableName(getName());
 
         indexes.add(index);
-
+        for (RDBIndexMetadata.IndexColumn column : index.getColumns()) {
+            getColumn(column.getColumn())
+                    .ifPresent(columnMeta->{
+                        if(index.isPrimaryKey()){
+                            columnMeta.setPrimaryKey(true);
+                        }
+                    });
+        }
     }
 
     @Override
