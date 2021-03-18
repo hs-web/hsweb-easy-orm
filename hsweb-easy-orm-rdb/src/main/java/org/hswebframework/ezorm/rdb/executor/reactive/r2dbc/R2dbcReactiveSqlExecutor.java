@@ -75,7 +75,9 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
-        return this.doExecute(toFlux(request)).then();
+        return this.doExecute(toFlux(request))
+                   .flatMap(Result::getRowsUpdated)
+                   .then();
     }
 
     @Override
