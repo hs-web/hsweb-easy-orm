@@ -279,7 +279,7 @@
             <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
-                <version>7.9.0</version>
+                <version>7.11.0</version>
             </dependency>
 
             <dependency>
