@@ -21,7 +21,7 @@ import static java.util.Optional.*;
 @SuppressWarnings("all")
 public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
-    private RDBTableMetadata table;
+    protected RDBTableMetadata table;
 
     public static BatchInsertSqlBuilder of(RDBTableMetadata table) {
         return new BatchInsertSqlBuilder(table);

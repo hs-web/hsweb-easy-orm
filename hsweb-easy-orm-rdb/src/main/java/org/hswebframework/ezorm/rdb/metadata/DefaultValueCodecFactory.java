@@ -32,7 +32,11 @@ public class DefaultValueCodecFactory implements ValueCodecFactory {
         COMMONS.register(column -> DataTypeUtils.typeIsDate(column.getType()),
                 column -> new DateTimeCodec("yyyy-MM-dd HH:mm:ss", column.getJavaType()));
 
+        COMMONS.register(column -> column.getSqlType() == JDBCType.VARCHAR, column -> ClobValueCodec.INSTANCE);
         COMMONS.register(column -> column.getSqlType() == JDBCType.CLOB, column -> ClobValueCodec.INSTANCE);
+        COMMONS.register(column -> column.getSqlType() == JDBCType.LONGNVARCHAR, column -> ClobValueCodec.INSTANCE);
+        COMMONS.register(column -> column.getSqlType() == JDBCType.LONGVARCHAR, column -> ClobValueCodec.INSTANCE);
+
         COMMONS.register(column -> column.getSqlType() == JDBCType.BLOB, column -> BlobValueCodec.INSTANCE);
 
         // TODO: 2019-09-25 更多编解码器

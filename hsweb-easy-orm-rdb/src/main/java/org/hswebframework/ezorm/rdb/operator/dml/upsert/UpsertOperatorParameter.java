@@ -2,6 +2,8 @@ package org.hswebframework.ezorm.rdb.operator.dml.upsert;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.param.Param;
+import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ public class UpsertOperatorParameter {
     private Set<UpsertColumn> columns = new LinkedHashSet<>();
 
     private List<List<Object>> values = new ArrayList<>();
+
+    private List<Term> where = new ArrayList<>();
 
     private boolean doNothingOnConflict = false;
 

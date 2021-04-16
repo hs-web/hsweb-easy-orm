@@ -25,7 +25,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     private RDBTableMetadata table;
 
-    private PostgresqlUpsertBatchInsertSqlBuilder builder;
+    private MysqlUpsertBatchInsertSqlBuilder builder;
 
     private RDBColumnMetadata idColumn;
 
@@ -33,7 +33,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     public MysqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
-        this.builder = new PostgresqlUpsertBatchInsertSqlBuilder(table);
+        this.builder = new MysqlUpsertBatchInsertSqlBuilder(table);
         this.idColumn = table.getColumns()
                 .stream().filter(RDBColumnMetadata::isPrimaryKey)
                 .findFirst().orElse(null);
@@ -54,7 +54,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
             }
         }
 
-        return new PostgresqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
+        return new MysqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
     }
 
     class MysqlUpsertOperatorParameter extends InsertOperatorParameter {
@@ -70,7 +70,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
     }
 
     @AllArgsConstructor
-    private class PostgresqlSaveResultOperator implements SaveResultOperator {
+    private class MysqlSaveResultOperator implements SaveResultOperator {
 
         Supplier<SqlRequest> sqlRequest;
         int total;
@@ -95,9 +95,9 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         }
     }
 
-    private class PostgresqlUpsertBatchInsertSqlBuilder extends BatchInsertSqlBuilder {
+    private class MysqlUpsertBatchInsertSqlBuilder extends BatchInsertSqlBuilder {
 
-        public PostgresqlUpsertBatchInsertSqlBuilder(RDBTableMetadata table) {
+        public MysqlUpsertBatchInsertSqlBuilder(RDBTableMetadata table) {
             super(table);
         }
 

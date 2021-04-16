@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 
+import io.r2dbc.postgresql.util.ByteBufferUtils;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
@@ -38,22 +39,19 @@ public class ClobValueCodec implements ValueCodec {
             Clob clobData = ((Clob) data);
             data = clobData.getSubString(1, (int) clobData.length());
         } else if (FeatureUtils.r2dbcIsAlive()) {
-            Mono mono = null;
+            Mono<?> mono = null;
             if (data instanceof io.r2dbc.spi.Clob) {
                 mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
-                        .collect(Collectors.joining());
+                           .collect(Collectors.joining());
             }
             if (mono != null) {
                 // TODO: 2019-09-25 更好的方式？
                 return mono.toFuture().get(10, TimeUnit.SECONDS);
             }
-        }else if(data instanceof ByteBuffer){
+        } else if (data instanceof ByteBuffer) {
             ByteBuffer byteBuffer = ((ByteBuffer) data);
 
-            byte[] bytes = new byte[byteBuffer.remaining()];
-
-            byteBuffer.get(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
+            return ByteBufferUtils.decode(byteBuffer);
         }
 
         return data;

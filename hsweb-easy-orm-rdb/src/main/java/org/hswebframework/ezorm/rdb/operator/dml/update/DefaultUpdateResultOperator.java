@@ -13,9 +13,9 @@ import java.util.function.Supplier;
 @AllArgsConstructor(staticName = "of")
 class DefaultUpdateResultOperator implements UpdateResultOperator {
 
-    private RDBTableMetadata table;
+    private final RDBTableMetadata table;
 
-    private Supplier<SqlRequest> sql;
+    private final Supplier<SqlRequest> sql;
 
     @Override
     public Integer sync() {

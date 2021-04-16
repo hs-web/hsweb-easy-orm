@@ -2,9 +2,14 @@ package org.hswebframework.ezorm.rdb.operator.dml.upsert;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.Conditional;
+import org.hswebframework.ezorm.core.dsl.Query;
+import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 @SuppressWarnings("all")
 public class DefaultUpsertOperator extends UpsertOperator {
@@ -67,6 +72,17 @@ public class DefaultUpsertOperator extends UpsertOperator {
                     .map(value::get)
                     .toArray());
         }
+
+        return this;
+    }
+
+    @Override
+    public UpsertOperator where(Consumer<Conditional<?>> dsl) {
+        Query<?, QueryParam> query = Query.of();
+        dsl.accept(query);
+
+        parameter.getWhere()
+                 .addAll(query.getParam().getTerms());
 
         return this;
     }

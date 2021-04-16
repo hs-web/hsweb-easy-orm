@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
-    private RDBTableMetadata table;
+    private final RDBTableMetadata table;
 
     private RDBColumnMetadata idColumn;
 
@@ -90,6 +90,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 V:
                 for (List<Object> value : parameter.getValues()) {
                     UpdateOperatorParameter updateParameter = new UpdateOperatorParameter();
+                    updateParameter.setWhere(parameter.getWhere());
                     int index = 0;
                     for (UpsertColumn column : columns) {
                         if (column.getColumn().equals(id.getColumn())) {

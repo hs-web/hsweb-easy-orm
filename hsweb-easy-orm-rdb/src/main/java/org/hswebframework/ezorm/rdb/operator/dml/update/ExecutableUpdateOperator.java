@@ -8,7 +8,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.update.UpdateSqlB
 @AllArgsConstructor(staticName = "of")
 public class ExecutableUpdateOperator extends BuildParameterUpdateOperator {
 
-    private RDBTableMetadata table;
+    private final RDBTableMetadata table;
 
     @Override
     public SqlRequest getSql() {
@@ -18,6 +18,6 @@ public class ExecutableUpdateOperator extends BuildParameterUpdateOperator {
 
     @Override
     public UpdateResultOperator execute() {
-        return DefaultUpdateResultOperator.of(table,this::getSql);
+        return DefaultUpdateResultOperator.of(table, this::getSql);
     }
 }

@@ -1,13 +1,16 @@
 package org.hswebframework.ezorm.rdb.operator.dml.upsert;
 
+import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * upsert 操作器,用于执行upsert请求
@@ -90,8 +93,8 @@ public abstract class UpsertOperator {
     @SafeVarargs
     public final <T> UpsertOperator columns(StaticMethodReferenceColumn<T>... columns) {
         return columns(Arrays.stream(columns)
-                .map(StaticMethodReferenceColumn::getColumn)
-                .toArray(String[]::new));
+                             .map(StaticMethodReferenceColumn::getColumn)
+                             .toArray(String[]::new));
     }
 
     /**
@@ -130,6 +133,15 @@ public abstract class UpsertOperator {
         values.forEach(this::value);
         return this;
     }
+
+    /**
+     * 指定当执行update时的条件
+     *
+     * @param dsl 条件构造器
+     * @return this
+     * @since 4.0.10
+     */
+    public abstract UpsertOperator where(Consumer<Conditional<?>> dsl);
 
     /**
      * 使用Map来描述列和多个值
