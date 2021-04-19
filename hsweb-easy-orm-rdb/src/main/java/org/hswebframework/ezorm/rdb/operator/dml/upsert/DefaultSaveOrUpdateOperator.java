@@ -49,10 +49,10 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
         }
         if (idColumn == null) {
             this.idColumn = table.getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+                                 .stream()
+                                 .filter(RDBColumnMetadata::isPrimaryKey)
+                                 .findFirst()
+                                 .orElse(null);
             idColumnParsed = true;
         }
 
@@ -73,7 +73,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
     protected Upsert createUpsert(UpsertOperatorParameter parameter) {
         Map<String, InsertColumn> mapping = parameter.getColumns().stream()
-                .collect(Collectors.toMap(InsertColumn::getColumn, Function.identity()));
+                                                     .collect(Collectors.toMap(InsertColumn::getColumn, Function.identity()));
         InsertSqlBuilder insertSqlBuilder = table.findFeatureNow(InsertSqlBuilder.ID);
         List<SqlRequest> insert = new ArrayList<>();
         List<UpdateOrInsert> uoi = new ArrayList<>();
@@ -87,10 +87,13 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 //update
                 UpdateSqlBuilder updateSqlBuilder = table.findFeatureNow(UpdateSqlBuilder.ID);
                 Set<UpsertColumn> columns = parameter.getColumns();
+
+
                 V:
                 for (List<Object> value : parameter.getValues()) {
+                    List<Term> where=new ArrayList<>(parameter.getWhere());
                     UpdateOperatorParameter updateParameter = new UpdateOperatorParameter();
-                    updateParameter.setWhere(parameter.getWhere());
+                    updateParameter.setWhere(where);
                     int index = 0;
                     for (UpsertColumn column : columns) {
                         if (column.getColumn().equals(id.getColumn())) {
@@ -117,12 +120,12 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                         index++;
                     }
                     uoi.add(new UpdateOrInsert(updateSqlBuilder.build(updateParameter),
-                            () -> {
-                                InsertOperatorParameter insertOperatorParameter = new InsertOperatorParameter();
-                                insertOperatorParameter.getColumns().addAll(columns);
-                                insertOperatorParameter.getValues().add(value);
-                                return insertSqlBuilder.build(insertOperatorParameter);
-                            }));
+                                               () -> {
+                                                   InsertOperatorParameter insertOperatorParameter = new InsertOperatorParameter();
+                                                   insertOperatorParameter.getColumns().addAll(columns);
+                                                   insertOperatorParameter.getValues().add(value);
+                                                   return insertSqlBuilder.build(insertOperatorParameter);
+                                               }));
                 }
             } else {
                 insertParameter.getColumns().add(InsertColumn.of(idColumn.getName()));
@@ -182,18 +185,19 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 Upsert upsert = supplier.get();
                 return sqlExecutor
                         .update(Flux.fromIterable(upsert.insert))
-                        .flatMap(inserted ->
-                                Flux.fromIterable(upsert.upserts)
-                                        .flatMap(updateOrInsert ->
-                                                sqlExecutor.update(Mono.just(updateOrInsert.updateSql))
-                                                        .flatMap(updated -> {
-                                                            if (updated == 0) {
-                                                                return sqlExecutor
-                                                                        .update(Mono.just(updateOrInsert.insertSql.get()))
-                                                                        .map(r -> SaveResult.of(r, 0));
-                                                            }
-                                                            return Mono.just(SaveResult.of(0, updated));
-                                                        })).reduce(SaveResult.of(inserted, 0), SaveResult::merge))
+                        .flatMap(inserted -> Flux
+                                .fromIterable(upsert.upserts)
+                                .flatMap(updateOrInsert -> sqlExecutor
+                                        .update(Mono.just(updateOrInsert.updateSql))
+                                        .flatMap(updated -> {
+                                            if (updated == 0) {
+                                                return sqlExecutor
+                                                        .update(Mono.just(updateOrInsert.insertSql.get()))
+                                                        .map(r -> SaveResult.of(r, 0));
+                                            }
+                                            return Mono.just(SaveResult.of(0, updated));
+                                        })).reduce(SaveResult.of(inserted, 0), SaveResult::merge)
+                        )
                         .as(ExceptionUtils.translation(table));
 
             });
