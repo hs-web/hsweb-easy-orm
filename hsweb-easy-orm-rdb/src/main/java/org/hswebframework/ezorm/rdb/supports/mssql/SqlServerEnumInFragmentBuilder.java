@@ -16,6 +16,6 @@ class SqlServerEnumInFragmentBuilder extends EnumInFragmentBuilder {
     @Override
     protected PrepareSqlFragments bitAnd(String column, long value) {
 
-        return PrepareSqlFragments.of().addSql("bitand(",column,",", "?)").addParameter(value);
+        return PrepareSqlFragments.of().addSql(column,"&", String.valueOf(value));
     }
 }

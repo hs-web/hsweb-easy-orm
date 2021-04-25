@@ -202,7 +202,7 @@ public abstract class BasicCommonTests {
         Assert.assertFalse(repository
                                    .createQuery()
                                    .select("id", "stateEnums")
-                                   .where(Terms.enumIn(BasicTestEntity::getStateEnums, StateEnum.enabled))
+                                   .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
                                    .fetchOne()
                                    .isPresent()
         );
@@ -210,7 +210,7 @@ public abstract class BasicCommonTests {
         Assert.assertTrue(repository
                                   .createQuery()
                                   .select("id", "stateEnums")
-                                  .where(Terms.enumIn(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled))
+                                  .in(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled)
                                   .fetchOne()
                                   .isPresent());
 
@@ -218,6 +218,14 @@ public abstract class BasicCommonTests {
                                   .createQuery()
                                   .select("id", "stateEnums")
                                   .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
+                                  .fetchOne()
+                                  .isPresent());
+
+
+        Assert.assertTrue(repository
+                                  .createQuery()
+                                  .select("id", "stateEnums")
+                                  .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
                                   .fetchOne()
                                   .isPresent());
 
