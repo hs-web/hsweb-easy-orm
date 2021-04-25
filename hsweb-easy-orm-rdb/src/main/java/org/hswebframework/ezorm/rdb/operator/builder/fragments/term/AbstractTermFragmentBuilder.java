@@ -44,7 +44,7 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
                     .collect(Collectors.toList());
         }
 
-        return Arrays.asList(value);
+        return Arrays.asList(this.convertValue(column, value));
     }
 
     private Object convertValue(RDBColumnMetadata column, Object val) {

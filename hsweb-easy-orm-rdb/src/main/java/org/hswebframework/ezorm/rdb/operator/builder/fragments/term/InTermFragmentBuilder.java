@@ -10,7 +10,7 @@ import java.util.List;
 
 public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    private String symbol;
+    private final String symbol;
 
     public InTermFragmentBuilder(String termType, String name, boolean isNot) {
         super(termType, name);

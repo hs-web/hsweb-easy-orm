@@ -24,6 +24,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.Terms;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
@@ -93,14 +94,16 @@ public abstract class BasicCommonTests {
         parser.setDatabaseMetadata(metadata);
 
         parser.parseTableMetadata(Address.class)
-                .ifPresent(address -> {
-                    operator.ddl()
-                            .createOrAlter(address)
-                            .commit()
-                            .sync();
-                });
+              .ifPresent(address -> {
+                  operator.ddl()
+                          .createOrAlter(address)
+                          .commit()
+                          .sync();
+              });
 
-        RDBTableMetadata table = parser.parseTableMetadata(BasicTestEntity.class).orElseThrow(NullPointerException::new);
+        RDBTableMetadata table = parser
+                .parseTableMetadata(BasicTestEntity.class)
+                .orElseThrow(NullPointerException::new);
 
         //  table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}", type, context));
 
@@ -109,7 +112,8 @@ public abstract class BasicCommonTests {
                 .commit()
                 .sync();
         EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
-        wrapper.setMapping(table.<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class)).orElseThrow(NullPointerException::new));
+        wrapper.setMapping(table.<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+                                   .orElseThrow(NullPointerException::new));
 
         repository = new DefaultSyncRepository<>(operator, table, BasicTestEntity.class, wrapper);
         addressRepository = operator.dml().createRepository("test_address");
@@ -133,23 +137,25 @@ public abstract class BasicCommonTests {
 
     @Test
     public void testRepositoryInsertBach() {
-        List<BasicTestEntity> entities = Flux.range(0, 100)
+        List<BasicTestEntity> entities = Flux
+                .range(0, 100)
                 .map(integer -> BasicTestEntity.builder()
-                        // .id("test_id_" + integer)
-                        .balance(1000L)
-                        .name("test:" + integer)
-                        .createTime(new Date())
-                        .tags(Arrays.asList("a", "b", "c", "d"))
-                        .state((byte) 1)
-                        // .stateEnum(StateEnum.enabled)
-                        .build())
+                                               // .id("test_id_" + integer)
+                                               .balance(1000L)
+                                               .name("test:" + integer)
+                                               .createTime(new Date())
+                                               .tags(Arrays.asList("a", "b", "c", "d"))
+                                               .state((byte) 1)
+                                               // .stateEnum(StateEnum.enabled)
+                                               .build())
                 .collectList().block();
         Assert.assertEquals(100, repository.insertBatch(entities));
     }
 
     @Test
     public void testRepositorySave() {
-        BasicTestEntity entity = BasicTestEntity.builder()
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
                 .id("test_id_save")
                 .balance(1000L)
                 .name("test")
@@ -165,7 +171,8 @@ public abstract class BasicCommonTests {
         entity.setStateEnum(null);
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
 
-        Assert.assertEquals(StateEnum.enabled, repository.createQuery()
+        Assert.assertEquals(StateEnum.enabled, repository
+                .createQuery()
                 .select("*")
                 .where("id", entity.getId())
                 .fetchOne()
@@ -176,10 +183,52 @@ public abstract class BasicCommonTests {
     }
 
     @Test
+    public void testEnums() {
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
+                .id("enums_id")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("test")
+                .stateEnum(StateEnum.enabled)
+                .stateEnums(new StateEnum[]{StateEnum.enabled, StateEnum.disabled})
+                .build();
+        repository.insert(entity);
+
+
+        Assert.assertFalse(repository
+                                   .createQuery()
+                                   .select("id", "stateEnums")
+                                   .where(Terms.enumIn(BasicTestEntity::getStateEnums, StateEnum.enabled))
+                                   .fetchOne()
+                                   .isPresent()
+        );
+
+        Assert.assertTrue(repository
+                                  .createQuery()
+                                  .select("id", "stateEnums")
+                                  .where(Terms.enumIn(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled))
+                                  .fetchOne()
+                                  .isPresent());
+
+        Assert.assertTrue(repository
+                                  .createQuery()
+                                  .select("id", "stateEnums")
+                                  .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
+                                  .fetchOne()
+                                  .isPresent());
+
+    }
+
+    @Test
     public void testRepositoryCurd() {
 
 
-        BasicTestEntity entity = BasicTestEntity.builder()
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
                 .id("test_id")
                 .balance(1000L)
                 .name("test")
@@ -195,31 +244,31 @@ public abstract class BasicCommonTests {
         Assert.assertEquals(repository.findById("test_id").orElseThrow(NullPointerException::new), entity);
 
         List<BasicTestEntity> list = repository.createQuery()
-                .selectExcludes("address.*")
-                .where(entity::getId)
-                .nest()
-                .is(entity::getId).or().is("address.name", "test")
-                .end()
-                .orderBy(SortOrder.desc("id"))
-                .paging(0, 10)
-                .fetch();
+                                               .selectExcludes("address.*")
+                                               .where(entity::getId)
+                                               .nest()
+                                               .is(entity::getId).or().is("address.name", "test")
+                                               .end()
+                                               .orderBy(SortOrder.desc("id"))
+                                               .paging(0, 10)
+                                               .fetch();
 
         Assert.assertEquals(list.get(0), entity);
 
         Assert.assertEquals(1, repository.createUpdate()
-                .set(entity::getState)
-                .nest()
-                .is(entity::getId).or().is(entity::getId)
-                .end()
-                .where(entity::getId).and().is("address.name", "test_address")
-                .execute());
+                                         .set(entity::getState)
+                                         .nest()
+                                         .is(entity::getId).or().is(entity::getId)
+                                         .end()
+                                         .where(entity::getId).and().is("address.name", "test_address")
+                                         .execute());
 
         Assert.assertEquals(1, repository.createDelete()
-                .where(entity::getId)
-                .nest()
-                .is(entity::getId).or().is(entity::getId)
-                .end().is("address.name", "test_address")
-                .execute());
+                                         .where(entity::getId)
+                                         .nest()
+                                         .is(entity::getId).or().is(entity::getId)
+                                         .end().is("address.name", "test_address")
+                                         .execute());
 
     }
 
@@ -236,8 +285,8 @@ public abstract class BasicCommonTests {
                     .sync();
 
             InsertOperator insert = operator.dml()
-                    .insert("test_pager")
-                    .columns("id");
+                                            .insert("test_pager")
+                                            .columns("id");
 
             for (int i = 0; i < 100; i++) {
                 insert.values(i + 1);
@@ -246,22 +295,25 @@ public abstract class BasicCommonTests {
 
             for (int i = 0; i < 10; i++) {
                 long sum = operator.dml()
-                        .query("test_pager")
-                        .select("id")
+                                   .query("test_pager")
+                                   .select("id")
 //                        .orderBy(desc("id"))
-                        .paging(i, 10)
-                        .fetch(mapStream())
-                        .sync()
-                        .map(map -> map.get("id"))
-                        .map(Number.class::cast)
-                        .mapToInt(Number::intValue)
-                        .sum();
+                                   .paging(i, 10)
+                                   .fetch(mapStream())
+                                   .sync()
+                                   .map(map -> map.get("id"))
+                                   .map(Number.class::cast)
+                                   .mapToInt(Number::intValue)
+                                   .sum();
 
                 Assert.assertEquals(sum, (((i * 10) + 1) + ((i + 1) * 10)) * 10 / 2);
             }
         } finally {
             try {
-                operator.sql().sync().execute(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_pager"));
+                operator
+                        .sql()
+                        .sync()
+                        .execute(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_pager"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -294,33 +346,38 @@ public abstract class BasicCommonTests {
                     .sync();
 
             int updated = operator.dml()
-                    .update("test_dml_crud")
-                    .set("comment", "2")
-                    .where(dsl -> dsl.where("id", "1234"))
-                    .execute()
-                    .sync();
+                                  .update("test_dml_crud")
+                                  .set("comment", "2")
+                                  .where(dsl -> dsl.where("id", "1234"))
+                                  .execute()
+                                  .sync();
 
             Assert.assertEquals(updated, 1);
 
             int sum = operator.dml()
-                    .query("test_dml_crud")
-                    .fetch(lowerCase(mapStream()))
-                    .sync()
-                    .map(map -> map.get("comment"))
-                    .map(String::valueOf)
-                    .mapToInt(Integer::valueOf)
-                    .sum();
+                              .query("test_dml_crud")
+                              .fetch(lowerCase(mapStream()))
+                              .sync()
+                              .map(map -> map.get("comment"))
+                              .map(String::valueOf)
+                              .mapToInt(Integer::valueOf)
+                              .sum();
             Assert.assertEquals(sum, 2);
 
             int deleted = operator.dml().delete("test_dml_crud")
-                    .where(dsl -> dsl.where("comment", "2"))
-                    .execute()
-                    .sync();
+                                  .where(dsl -> dsl.where("comment", "2"))
+                                  .execute()
+                                  .sync();
             Assert.assertEquals(deleted, 1);
 
         } finally {
             try {
-                operator.sql().sync().execute(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_dml_crud"));
+                operator
+                        .sql()
+                        .sync()
+                        .execute(SqlRequests.of("drop table " + database
+                                .getCurrentSchema()
+                                .getName() + ".test_dml_crud"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -373,7 +430,12 @@ public abstract class BasicCommonTests {
 
         } finally {
             try {
-                operator.sql().sync().execute(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_ddl_create"));
+                operator
+                        .sql()
+                        .sync()
+                        .execute(SqlRequests.of("drop table " + database
+                                .getCurrentSchema()
+                                .getName() + ".test_ddl_create"));
             } catch (Exception e) {
                 e.printStackTrace();
             }

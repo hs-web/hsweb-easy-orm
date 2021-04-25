@@ -1,10 +1,10 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
+import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
-import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlR2DBCExceptionTranslation;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 public class MysqlSchemaMetadata extends RDBSchemaMetadata {
@@ -28,6 +28,12 @@ public class MysqlSchemaMetadata extends RDBSchemaMetadata {
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata= super.newTable(name);
         metadata.addFeature(new MysqlBatchUpsertOperator(metadata));
+        metadata.setOnColumnAdded(column->{
+            if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
+                column.addFeature(MysqlEnumInFragmentBuilder.in);
+                column.addFeature(MysqlEnumInFragmentBuilder.notIn);
+            }
+        });
         return metadata;
     }
 

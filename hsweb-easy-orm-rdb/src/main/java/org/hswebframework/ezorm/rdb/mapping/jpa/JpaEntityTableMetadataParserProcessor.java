@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
+import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
@@ -16,6 +17,7 @@ import org.hswebframework.ezorm.rdb.mapping.parser.ValueCodecResolver;
 import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.key.AssociationType;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 import org.hswebframework.utils.ClassUtils;
@@ -291,7 +293,10 @@ public class JpaEntityTableMetadataParserProcessor {
                                 .orElse(null)))
                 .ifPresent(metadata::setValueCodec);
         ;
-
+        if(metadata.getValueCodec() instanceof EnumValueCodec&&((EnumValueCodec) metadata.getValueCodec()).isToMask()){
+            metadata.addFeature(EnumFragmentBuilder.eq);
+            metadata.addFeature(EnumFragmentBuilder.not);
+        }
         tableMetadata.addColumn(metadata);
     }
 

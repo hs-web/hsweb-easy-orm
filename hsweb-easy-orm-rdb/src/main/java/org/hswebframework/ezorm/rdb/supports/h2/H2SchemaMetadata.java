@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
+import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -21,7 +22,18 @@ public class H2SchemaMetadata extends RDBSchemaMetadata {
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata = super.newTable(name);
         metadata.addFeature(BatchInsertSqlBuilder.of(metadata));
+        metadata.setOnColumnAdded(column->{
+            if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
+                column.addFeature(H2EnumInFragmentBuilder.in);
+                column.addFeature(H2EnumInFragmentBuilder.notIn);
+            }
+        });
         return metadata;
     }
 
+    @Override
+    public void addTable(RDBTableMetadata metadata) {
+        metadata.addFeature(BatchInsertSqlBuilder.of(metadata));
+        super.addTable(metadata);
+    }
 }

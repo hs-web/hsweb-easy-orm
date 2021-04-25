@@ -7,7 +7,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 public class SymbolTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    private String symbol;
+    private final String symbol;
 
     public SymbolTermFragmentBuilder(String termType, String name, String symbol) {
         super(termType, name);

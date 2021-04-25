@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
@@ -13,11 +14,13 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.JoinFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SortOrderFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     private String alias;
 
     private RDBSchemaMetadata schema;
+
+    @Setter
+    private Consumer<RDBColumnMetadata> onColumnAdded;
 
     protected Map<String, RDBColumnMetadata> allColumns = new ConcurrentHashMap<String, RDBColumnMetadata>() {
         @Override
@@ -89,17 +95,20 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         column.setOwner(this);
         allColumns.put(column.getName(), column);
         allColumns.put(column.getAlias(), column);
-
+        if (onColumnAdded != null) {
+            onColumnAdded.accept(column);
+        }
     }
 
 
     @Override
     public List<RDBColumnMetadata> getColumns() {
-        return new ArrayList<>(allColumns.values()
-                .stream()
-                .sorted()
-                .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1))
-                .values());
+        return new ArrayList<>(allColumns
+                                       .values()
+                                       .stream()
+                                       .sorted()
+                                       .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1))
+                                       .values());
     }
 
     @Override
@@ -142,8 +151,8 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
             } else if (arr.length == 3) { //schema.table.name
                 return schema.getDatabase()
-                        .getSchema(arr[0])
-                        .flatMap(another -> findColumnFromSchema(another, arr[1], arr[2]));
+                             .getSchema(arr[0])
+                             .flatMap(another -> findColumnFromSchema(another, arr[1], arr[2]));
             }
         }
         return empty();
@@ -165,10 +174,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     private Optional<RDBColumnMetadata> findColumnFromSchema(RDBSchemaMetadata schema, String tableName, String column) {
         return of(schema.getTableOrView(tableName)
-                .flatMap(meta -> meta.getColumn(column)))
+                        .flatMap(meta -> meta.getColumn(column)))
                 .filter(Optional::isPresent)
                 .orElseGet(() -> getForeignKey(tableName) //查找外键关联信息
-                        .flatMap(key -> key.getTarget().getColumn(column)));
+                                                          .flatMap(key -> key.getTarget().getColumn(column)));
     }
 
     @Override

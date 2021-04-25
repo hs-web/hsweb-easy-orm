@@ -4,6 +4,7 @@ import lombok.*;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
+import org.hswebframework.ezorm.rdb.mapping.annotation.EnumCodec;
 import org.hswebframework.ezorm.rdb.mapping.annotation.JsonCodec;
 
 import javax.persistence.*;
@@ -50,6 +51,12 @@ public class BasicTestEntity implements Serializable {
     @ColumnType(javaType = String.class)
     @DefaultValue("disabled")
     private StateEnum stateEnum;
+
+    @Column
+    @ColumnType(javaType = Long.class,jdbcType = JDBCType.BIGINT)
+    @EnumCodec(toMask = true)
+    @DefaultValue("0")
+    private StateEnum[] stateEnums;
 
     @Column(name = "address_id")
     private String addressId;

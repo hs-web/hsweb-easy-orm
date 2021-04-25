@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
+import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -33,6 +34,12 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata = super.newTable(name);
         metadata.addFeature(new PostgresqlBatchUpsertOperator(metadata));
+        metadata.setOnColumnAdded(column->{
+            if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
+                column.addFeature(PostgresqlEnumInFragmentBuilder.in);
+                column.addFeature(PostgresqlEnumInFragmentBuilder.notIn);
+            }
+        });
         return metadata;
     }
 }
