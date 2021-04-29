@@ -17,7 +17,7 @@ public class IndexBuilder {
 
     private RDBTableMetadata table;
 
-    private RDBIndexMetadata index = new RDBIndexMetadata();
+    protected final RDBIndexMetadata index = new RDBIndexMetadata();
 
     public IndexBuilder name(String indexName) {
         index.setName(indexName);

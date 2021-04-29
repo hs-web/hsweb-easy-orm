@@ -13,6 +13,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.ddl.DefaultTableBuilder;
+import org.hswebframework.ezorm.rdb.operator.ddl.LazyTableBuilder;
 import org.hswebframework.ezorm.rdb.operator.ddl.TableBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
@@ -79,70 +80,65 @@ public class DefaultDatabaseOperator
     @Override
     public DeleteOperator delete(String table) {
         return ExecutableDeleteOperator.of(metadata
-                .getTable(table)
-                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+                                                   .getTable(table)
+                                                   .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }
 
     @Override
     public UpsertOperator upsert(String table) {
         return DefaultUpsertOperator.of(metadata
-                .getTable(table)
-                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+                                                .getTable(table)
+                                                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }
 
     @Override
     public QueryOperator query(String tableOrView) {
         return new ExecutableQueryOperator(metadata
-                .getTableOrView(tableOrView)
-                .orElseThrow(() -> new UnsupportedOperationException("table or view [" + tableOrView + "] doesn't exist ")));
+                                                   .getTableOrView(tableOrView)
+                                                   .orElseThrow(() -> new UnsupportedOperationException("table or view [" + tableOrView + "] doesn't exist ")));
     }
 
     @Override
     public UpdateOperator update(String table) {
 
         return ExecutableUpdateOperator.of(metadata
-                .getTable(table)
-                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+                                                   .getTable(table)
+                                                   .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }
 
     @Override
     public InsertOperator insert(String table) {
         return ExecutableInsertOperator.of(metadata
-                .getTable(table)
-                .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+                                                   .getTable(table)
+                                                   .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }
 
     @Override
     public SyncSqlExecutor sync() {
         return metadata.getFeature(SyncSqlExecutor.ID)
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
+                       .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
     }
 
     @Override
     public ReactiveSqlExecutor reactive() {
         return metadata.getFeature(ReactiveSqlExecutor.ID)
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
+                       .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
     }
 
     @Override
     public TableBuilder createOrAlter(String name) {
-        RDBTableMetadata table = metadata.getTable(name)
-                .map(RDBTableMetadata::clone)
-                .orElseGet(() -> {
-                    String tableName = name;
-                    RDBSchemaMetadata schema;
-                    if (name.contains(".")) {
-                        String[] arr = name.split("[.]");
-                        tableName = arr[1];
-                        schema = metadata.getSchema(arr[0]).orElseThrow(() -> new UnsupportedOperationException("schema [" + arr[0] + "] doesn't exist "));
-                    } else {
-                        schema = metadata.getCurrentSchema();
-                    }
-
-                    return schema.newTable(tableName);
-                });
-
-        return new DefaultTableBuilder(table);
+        RDBSchemaMetadata schema;
+        String tableName = name;
+        if (name.contains(".")) {
+            String[] arr = name.split("[.]");
+            tableName = arr[1];
+            schema = metadata
+                    .getSchema(arr[0])
+                    .orElseThrow(() -> new UnsupportedOperationException("schema [" + arr[0] + "] doesn't exist "));
+        } else {
+            schema = metadata.getCurrentSchema();
+        }
+        return new LazyTableBuilder(schema, tableName);
     }
 
     @Override
@@ -153,11 +149,11 @@ public class DefaultDatabaseOperator
 
     @Override
     public <K> ReactiveRepository<Record, K> createReactiveRepository(String tableName) {
-        return  new RecordReactiveRepository<>(this, tableName);
+        return new RecordReactiveRepository<>(this, tableName);
     }
 
     @Override
     public <K> SyncRepository<Record, K> createRepository(String tableName) {
-        return new RecordSyncRepository<>(this,tableName);
+        return new RecordSyncRepository<>(this, tableName);
     }
 }

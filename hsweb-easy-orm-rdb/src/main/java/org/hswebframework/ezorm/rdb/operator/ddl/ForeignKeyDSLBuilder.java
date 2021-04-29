@@ -10,12 +10,14 @@ import java.util.function.Consumer;
 
 public class ForeignKeyDSLBuilder {
 
-    private RDBTableMetadata table;
-    private ForeignKeyBuilder builder = ForeignKeyBuilder.builder().build();
+    private final TableBuilder tableBuilder;
+    private final RDBTableMetadata table;
+    protected final ForeignKeyBuilder builder = ForeignKeyBuilder.builder().build();
 
 
-    public ForeignKeyDSLBuilder(RDBTableMetadata table) {
+    public ForeignKeyDSLBuilder(TableBuilder tableBuilder,RDBTableMetadata table) {
         this.table = table;
+        this.tableBuilder=tableBuilder;
         this.builder.setAutoJoin(true);
     }
 
@@ -59,9 +61,9 @@ public class ForeignKeyDSLBuilder {
         return this;
     }
 
-    public RDBTableMetadata commit() {
+    public TableBuilder commit() {
         table.addForeignKey(builder);
-        return table;
+        return tableBuilder;
     }
 
 }

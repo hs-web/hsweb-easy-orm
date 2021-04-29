@@ -47,7 +47,7 @@ public class DefaultTableBuilder implements TableBuilder {
 
     @Override
     public ForeignKeyDSLBuilder foreignKey() {
-        return new ForeignKeyDSLBuilder(table);
+        return new ForeignKeyDSLBuilder(this,table);
     }
 
     public DefaultTableBuilder custom(Consumer<RDBTableMetadata> consumer) {
@@ -77,6 +77,7 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public DefaultTableBuilder removeColumn(String name) {
         table.removeColumn(name);
+        removed.add(name);
         return this;
     }
 
