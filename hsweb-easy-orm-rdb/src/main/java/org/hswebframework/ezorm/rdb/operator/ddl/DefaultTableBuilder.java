@@ -14,6 +14,10 @@ import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -28,7 +32,8 @@ public class DefaultTableBuilder implements TableBuilder {
     private boolean dropColumn = false;
     private boolean allowAlter = true;
     private boolean autoLoad = true;
-    private boolean merge=true;
+    private boolean merge = true;
+    private final Set<String> removed=new HashSet<>();
 
     public DefaultTableBuilder(RDBTableMetadata table) {
         this.table = table;
@@ -58,12 +63,13 @@ public class DefaultTableBuilder implements TableBuilder {
 
     @Override
     public ColumnBuilder addColumn(String name) {
-        RDBColumnMetadata rdbColumnMetaData = table.getColumn(name)
-                                                   .orElseGet(() -> {
-                                                       RDBColumnMetadata columnMetaData = table.newColumn();
-                                                       columnMetaData.setName(name);
-                                                       return columnMetaData;
-                                                   });
+        RDBColumnMetadata rdbColumnMetaData = table
+                .getColumn(name)
+                .orElseGet(() -> {
+                    RDBColumnMetadata columnMetaData = table.newColumn();
+                    columnMetaData.setName(name);
+                    return columnMetaData;
+                });
 
         return new DefaultColumnBuilder(rdbColumnMetaData, this, table);
     }
@@ -77,6 +83,7 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public DefaultTableBuilder dropColumn(String name) {
         table.removeColumn(name);
+        removed.add(name);
         dropColumn = true;
         return this;
     }
@@ -113,7 +120,7 @@ public class DefaultTableBuilder implements TableBuilder {
 
     @Override
     public TableBuilder merge(boolean merge) {
-        this.merge=merge;
+        this.merge = merge;
         return this;
     }
 
@@ -140,12 +147,14 @@ public class DefaultTableBuilder implements TableBuilder {
                 //alter
                 if (oldTable != null) {
                     sqlRequest = buildAlterSql(oldTable);
-
-                  if(merge){
-                      whenComplete = () -> oldTable.merge(table);
-                  }else {
-                      whenComplete = () -> oldTable.replace(table);
-                  }
+                    if (merge) {
+                        whenComplete = () -> {
+                            oldTable.merge(table);
+                            removed.forEach(oldTable::removeColumn);
+                        };
+                    } else {
+                        whenComplete = () -> oldTable.replace(table);
+                    }
                 } else {
                     //create
                     sqlRequest = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
@@ -160,6 +169,7 @@ public class DefaultTableBuilder implements TableBuilder {
                     return true;
                 }, schema);
                 whenComplete.run();
+
                 return true;
             }
 
@@ -173,15 +183,19 @@ public class DefaultTableBuilder implements TableBuilder {
                         .map(oldTable -> {
                             SqlRequest request = buildAlterSql(oldTable);
                             if (request.isEmpty()) {
-                                if(merge) {
+                                if (merge) {
                                     oldTable.merge(table);
-                                }else {
+                                    removed.forEach(oldTable::removeColumn);
+                                } else {
                                     oldTable.replace(table);
                                 }
                                 return Mono.just(true);
                             }
                             return sqlExecutor.execute(request)
-                                              .doOnSuccess(ignore -> oldTable.merge(table))
+                                              .doOnSuccess(ignore -> {
+                                                  oldTable.merge(table);
+                                                  removed.forEach(oldTable::removeColumn);
+                                              })
                                               .thenReturn(true);
                         })
                         .switchIfEmpty(Mono.fromSupplier(() -> {
@@ -196,7 +210,5 @@ public class DefaultTableBuilder implements TableBuilder {
                         .flatMap(Function.identity());
             }
         };
-
-
     }
 }
