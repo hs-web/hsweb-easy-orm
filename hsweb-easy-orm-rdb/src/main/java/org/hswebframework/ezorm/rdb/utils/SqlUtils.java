@@ -40,7 +40,7 @@ public class SqlUtils {
                 if (hasParameter) {
                     log.debug("==> Parameters: {}", sqlParameterToString(sqlRequest.getParameters()));
                     if (sqlRequest instanceof PrepareSqlRequest) {
-                        log.debug("==>     Native: {}", ((PrepareSqlRequest) sqlRequest).toNativeSql());
+                        log.debug("==>     Native: {}", sqlRequest.toNativeSql());
                     }
                 }
             }

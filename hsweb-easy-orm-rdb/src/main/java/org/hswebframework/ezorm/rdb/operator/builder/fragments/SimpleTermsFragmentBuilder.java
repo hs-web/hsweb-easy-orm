@@ -2,11 +2,12 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.List;
 
 
-public class SimpleTermsFragmentBuilder extends AbstractTermsFragmentBuilder<RDBTableMetadata> {
+public class SimpleTermsFragmentBuilder extends AbstractTermsFragmentBuilder<TableOrViewMetadata> {
 
     private static final SimpleTermsFragmentBuilder INSTANCE = new SimpleTermsFragmentBuilder();
 
@@ -19,12 +20,12 @@ public class SimpleTermsFragmentBuilder extends AbstractTermsFragmentBuilder<RDB
     }
 
     @Override
-    public SqlFragments createTermFragments(RDBTableMetadata parameter, List<Term> terms) {
+    public SqlFragments createTermFragments(TableOrViewMetadata parameter, List<Term> terms) {
         return super.createTermFragments(parameter, terms);
     }
 
     @Override
-    protected SqlFragments createTermFragments(RDBTableMetadata table, Term term) {
+    protected SqlFragments createTermFragments(TableOrViewMetadata table, Term term) {
         if(term.getValue() instanceof NativeSql){
             NativeSql sql= ((NativeSql) term.getValue());
             return PrepareSqlFragments.of(sql.getSql(),sql.getParameters());
