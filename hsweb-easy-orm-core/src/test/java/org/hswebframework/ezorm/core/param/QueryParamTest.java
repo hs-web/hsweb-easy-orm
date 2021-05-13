@@ -36,4 +36,28 @@ public class QueryParamTest {
         Assert.assertEquals(param.getThinkPageIndex(),2);
 
     }
+
+    @Test
+    public void testCustomFirstPage2(){
+        QueryParam param = new QueryParam();
+
+        param.doPaging(4,10);
+
+        param.setFirstPageIndex(1);
+
+        Assert.assertEquals(param.getPageIndex(),3);
+        Assert.assertEquals(param.getThinkPageIndex(),4);
+
+        param.setPageIndex(10);
+        Assert.assertEquals(param.getPageIndex(),9);
+        Assert.assertEquals(param.getThinkPageIndex(),10);
+
+        Assert.assertEquals(param.getFirstPageIndex(),1);
+
+        param.setFirstPageIndex(0);
+
+        Assert.assertEquals(param.getPageIndex(),8);
+        Assert.assertEquals(param.getThinkPageIndex(),8);
+
+    }
 }

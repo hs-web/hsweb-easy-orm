@@ -102,13 +102,14 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     }
 
     public void setPageIndex(int pageIndex) {
-        this.pageIndexTmp = this.pageIndex;
         this.pageIndex = Math.max(pageIndex - firstPageIndex, 0);
+        this.pageIndexTmp = this.pageIndex;
     }
 
     public void setFirstPageIndex(int firstPageIndex) {
+
+        this.pageIndex = this.pageIndexTmp = Math.max(this.pageIndexTmp - this.firstPageIndex-firstPageIndex, 0);
         this.firstPageIndex = firstPageIndex;
-        this.pageIndex = Math.max(this.pageIndexTmp - this.firstPageIndex, 0);
     }
 
     public int getThinkPageIndex() {
