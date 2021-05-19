@@ -21,15 +21,16 @@ public class MysqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(Dialect.MYSQL);
         addFeature(new CompositeExceptionTranslation()
                            .add(FeatureUtils.r2dbcIsAlive(), () -> MysqlR2DBCExceptionTranslation.of(this))
+                           .add(MysqlJDBCExceptionTranslation.of(this))
         );
     }
 
     @Override
     public RDBTableMetadata newTable(String name) {
-        RDBTableMetadata metadata= super.newTable(name);
+        RDBTableMetadata metadata = super.newTable(name);
         metadata.addFeature(new MysqlBatchUpsertOperator(metadata));
-        metadata.setOnColumnAdded(column->{
-            if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
+        metadata.setOnColumnAdded(column -> {
+            if (column.getValueCodec() instanceof EnumValueCodec && ((EnumValueCodec) column.getValueCodec()).isToMask()) {
                 column.addFeature(MysqlEnumInFragmentBuilder.in);
                 column.addFeature(MysqlEnumInFragmentBuilder.notIn);
             }
