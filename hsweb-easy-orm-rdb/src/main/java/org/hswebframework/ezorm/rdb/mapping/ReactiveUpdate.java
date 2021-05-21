@@ -23,7 +23,7 @@ public interface ReactiveUpdate<E> extends DSLUpdate<E, ReactiveUpdate<E>> {
     Mono<Integer> execute();
 
     /**
-     * 在执行更新后做一些响应式操作,在操作是可以获取到Update,比如更新缓存.
+     * 在执行更新后做一些响应式操作,在操作时可以获取到Update,比如更新缓存.
      *
      * <pre>
      *     createUpdate()
@@ -32,11 +32,12 @@ public interface ReactiveUpdate<E> extends DSLUpdate<E, ReactiveUpdate<E>> {
      *      .in("id",idList)
      *      .onExecute((update,result)->{
      *        return result
-     *                .flatMap(i-> createQuery()
-     *                              .setParam(update.toQueryParam())//获取到update的where参数
-     *                              .fetch()
-     *                              .flatMap(this::clearCache)
-     *                              .thenReturn(i);
+     *                .flatMap(i-> this
+     *                  .createQuery()
+     *                  .setParam(update.toQueryParam())//获取到update的where参数
+     *                  .fetch()
+     *                  .flatMap(this::clearCache)
+     *                  .thenReturn(i);
      *      }).execute();
      *
      * </pre>

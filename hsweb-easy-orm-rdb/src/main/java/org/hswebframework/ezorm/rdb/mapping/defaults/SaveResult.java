@@ -16,8 +16,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor(staticName = "of")
 public class SaveResult {
+
+    //新增的数量
     private int added;
 
+    //修改的数量
     private int updated;
 
     public int getTotal() {
