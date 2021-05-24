@@ -27,7 +27,7 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "bytea");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "int8");
-        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
+        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "flat8");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int4");
         addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
