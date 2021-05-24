@@ -28,7 +28,8 @@ public class SqlServerDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "varbinary(max)");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
-        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
+        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "float");
+        addDataTypeBuilder(JDBCType.FLOAT, (meta) -> "float");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int");
         addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
