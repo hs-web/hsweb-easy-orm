@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 
+import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -163,6 +164,8 @@ public abstract class BasicCommonTests {
                 .tags(Arrays.asList("a", "b", "c", "d"))
                 .state((byte) 1)
                 .addressId("test")
+                .doubleVal(1D)
+                .bigDecimal(new BigDecimal("1.2"))
                 .stateEnum(StateEnum.enabled)
                 .build();
 

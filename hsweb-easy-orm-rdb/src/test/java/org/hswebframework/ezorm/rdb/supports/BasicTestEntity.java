@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.mapping.annotation.JsonCodec;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,12 @@ public class BasicTestEntity implements Serializable {
 
     @Column(nullable = false)
     private Byte state;
+
+    @Column
+    private Double doubleVal;
+
+    @Column
+    private BigDecimal bigDecimal;
 
     @Column
 //    @DefaultValue(generator = "random")
