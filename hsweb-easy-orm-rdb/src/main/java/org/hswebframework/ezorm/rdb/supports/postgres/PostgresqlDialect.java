@@ -27,7 +27,7 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "text");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "bytea");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "int8");
-        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "flat8");
+        addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "float8");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int4");
         addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
@@ -51,7 +51,7 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("int2", JdbcDataType.of(JDBCType.SMALLINT, Byte.class));
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
-        registerDataType("flat8", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
+        registerDataType("float8", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
         registerDataType("money", JdbcDataType.of(JDBCType.DECIMAL, BigDecimal.class));
         registerDataType("bool", JdbcDataType.of(JDBCType.BOOLEAN, Boolean.class));
         registerDataType("character", JdbcDataType.of(JDBCType.VARCHAR, String.class));
