@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 public abstract class UpsertOperator {
 
     /**
-     * 设置列,和{@link this#values(Object...)}配合使用,如:
+     * 设置列,和{@link UpsertOperator#values(Object...)}配合使用,如:
      * <pre>
      *     operator.columns("id","name")
      *              .values(id,name);
@@ -33,7 +33,7 @@ public abstract class UpsertOperator {
     public abstract UpsertOperator columns(String... columns);
 
     /**
-     * 设置值列表,与{@link this#columns(String...)}配合使用
+     * 设置值列表,与{@link UpsertOperator#columns(String...)}配合使用
      *
      * @param values 值列表
      * @return this
@@ -50,7 +50,7 @@ public abstract class UpsertOperator {
     public abstract UpsertOperator ignoreUpdate(String... columns);
 
     /**
-     * 与{@link this#value(String, Object, boolean)}相同.默认不忽略更新.
+     * 与{@link UpsertOperator#value(String, Object, boolean)}相同.默认不忽略更新.
      *
      * @param column 列名
      * @param value  值
@@ -59,7 +59,7 @@ public abstract class UpsertOperator {
     public abstract UpsertOperator value(String column, Object value);
 
     /**
-     * 设置列名和值,不能与{@link this#columns(String...)}一起用,同时设置是否忽略更新列.
+     * 设置列名和值,不能与{@link UpsertOperator#columns(String...)}一起用,同时设置是否忽略更新列.
      * 忽略更新的列在更新的时候不会执行更新.
      *
      * @param column       列名
@@ -78,7 +78,7 @@ public abstract class UpsertOperator {
     public abstract UpsertOperator doNothingOnConflict(boolean doNothing);
 
     /**
-     * 使用静态方法引用来描述列名,与{@link this#columns(String...)}一样的效果.
+     * 使用静态方法引用来描述列名,与{@link UpsertOperator#columns(String...)}一样的效果.
      * 例如:
      * <pre>
      *     operator.columns(User::getId,User::getName)

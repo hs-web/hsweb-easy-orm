@@ -90,7 +90,7 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
      *
      * @param metadata ForeignKeyMetadata
      * @see ForeignKeyBuilder
-     * @see this#addForeignKey(ForeignKeyBuilder)
+     * @see TableOrViewMetadata#addForeignKey(ForeignKeyBuilder)
      */
     void addForeignKey(ForeignKeyMetadata metadata);
 
