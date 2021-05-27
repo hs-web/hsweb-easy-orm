@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @SuppressWarnings("all")
-public class DefaultQuery<T, ME extends DSLQuery> implements DSLQuery<ME> {
+public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
 
     protected QueryParam param = new QueryParam();
 

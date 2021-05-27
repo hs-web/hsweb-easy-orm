@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("all")
-public interface Conditional<T extends Conditional> extends LogicalOperation<T>, TermTypeConditionalSupport {
+public interface Conditional<T extends Conditional<?>> extends LogicalOperation<T>, TermTypeConditionalSupport {
     /*
      * 嵌套条件，如: where name = ? or (age > 18 and age <90)
      * */

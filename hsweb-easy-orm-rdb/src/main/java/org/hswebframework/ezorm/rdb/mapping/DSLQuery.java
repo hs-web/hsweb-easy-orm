@@ -18,7 +18,7 @@ import java.util.Arrays;
  * @since 4.0.0
  */
 @SuppressWarnings("all")
-public interface DSLQuery<ME extends DSLQuery> extends Conditional<ME> {
+public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * 查询指定的属性(列)

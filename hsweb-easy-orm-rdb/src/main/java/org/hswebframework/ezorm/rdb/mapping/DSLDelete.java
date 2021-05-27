@@ -11,8 +11,7 @@ import org.hswebframework.ezorm.core.param.QueryParam;
  * @see QueryParam
  * @since 4.0.0
  */
-@SuppressWarnings("all")
-public interface DSLDelete<ME extends DSLDelete> extends Conditional<ME> {
+public interface DSLDelete<ME extends DSLDelete<?>> extends Conditional<ME> {
 
     /**
      * 将删除条件转为查询条件,通常用于在删除前,查询可能被删除的数据

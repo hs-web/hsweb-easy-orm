@@ -1,28 +1,26 @@
 package org.hswebframework.ezorm.core;
 
 import org.hswebframework.ezorm.core.param.TermType;
+import reactor.function.Consumer3;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 /**
  * 常用逻辑操作接口,通过继承或实现此接口,可提供逻辑操作支持如：when，each。
  * 常用操作方法:<br>
  * {@link LogicalOperation#when(boolean, Consumer)} <br>
- * {@link LogicalOperation#when(String, Object, Function, Function)}<br>
+ * {@link LogicalOperation#when(boolean, StaticMethodReferenceColumn, Consumer3, Object)} <br>
  * {@link LogicalOperation#each(Collection, BiConsumer)}<br>
- * {@link LogicalOperation#each(String, Collection, Function)}<br>
+ * {@link LogicalOperation#each(StaticMethodReferenceColumn, Collection, Consumer3, Function)} <br>
  *
  * @author zhouhao
  * @since 3.0
  */
 @SuppressWarnings("unchecked")
-public interface LogicalOperation<T extends LogicalOperation> extends TermTypeConditionalSupport {
+public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTypeConditionalSupport {
 
     /**
      * 遍历一个集合，进行条件追加
@@ -43,7 +41,9 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @see Function
      * @see Conditional
      * @see SimpleAccepter
+     * @see LogicalOperation#each(StaticMethodReferenceColumn, Collection, Consumer3, Function)
      */
+    @Deprecated
     default <E> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, E>> accepterGetter) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, o));
@@ -51,7 +51,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
     }
 
     /**
-     * 功能与{@link this#each(String, Collection, Function)}类似
+     * 功能与{@link LogicalOperation#each(String, Collection, Function)}类似
      * 例如:<br>
      * <pre>
      * query.or().each("name",'like'，["%张三%","%李四%"],(query)->query::or)
@@ -75,7 +75,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
     }
 
     /**
-     * 参照 {@link Conditional#each(String, Collection, Function)}
+     * 参照 {@link LogicalOperation#each(String, Collection, Function)}
      * 提供了一个valueMapper进行值转换如:
      * <br>
      * query.or().each("areaId",[1,2,3],(query)->query::$like$,(value)->","+value+",")<br>
@@ -92,14 +92,70 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @see Conditional
      * @see SimpleAccepter
      */
-    default <E, V> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
+    default <E, V> T each(String column,
+                          Collection<E> list,
+                          Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepterGetter,
+                          Function<E, V> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, valueMapper.apply(o)));
         return (T) this;
     }
 
     /**
-     * 功能与 {@link this#each(String, Collection, Function, Function)}类似，只是多了一个 termType。使用 {@link Accepter}进行操作
+     * 参照 {@link LogicalOperation#each(StaticMethodReferenceColumn, Collection, Consumer3)}
+     * 提供了一个valueMapper进行值转换如:
+     * <br>
+     * query.or().each(User::getAreaId,[1,2,3],Query::$like$,(value)->","+value+",")<br>
+     * 将追加sql<br>
+     * areaId like '%,1,%' or areaId like '%,2,%' or areaId like '%,3,%'
+     *
+     * @param column         要追加到的列名
+     * @param list           集合
+     * @param accepterGetter 追加方式函数
+     * @param <E>            集合中元素类型
+     * @param valueMapper    值转换函数 {@link Function}
+     * @return this {@link T}
+     * @see Function
+     * @see Conditional
+     * @see SimpleAccepter
+     */
+    default <E, V, B> T each(StaticMethodReferenceColumn<B> column,
+                             Collection<E> list,
+                             Consumer3<T, String, V> accepterGetter,
+                             Function<E, V> valueMapper) {
+        if (null != list)
+            list.forEach(o -> accepterGetter.accept((T) this, column.getColumn(), valueMapper.apply(o)));
+        return (T) this;
+    }
+
+    default <E, B> T each(StaticMethodReferenceColumn<B> column,
+                          Collection<E> list,
+                          Consumer3<T, String, E> accepterGetter) {
+        return each(column, list, accepterGetter, Function.identity());
+    }
+
+    /**
+     * <pre>
+     *     query.each(list,String::toLowercase,(query,value)->query.or().is(User::AreaId,value))
+     * </pre>
+     *
+     * @param list        集合
+     * @param valueMapper 集合元素转换
+     * @param consumer    查询条件构造器
+     * @param <E>         集合元素类型
+     * @param <V>         转换后值的类型
+     * @return this
+     */
+    default <E, V> T each(Collection<E> list,
+                          Function<E, V> valueMapper,
+                          BiConsumer<T, V> consumer) {
+        if (null != list)
+            list.forEach(o -> consumer.accept((T) this, valueMapper.apply(o)));
+        return (T) this;
+    }
+
+    /**
+     * 功能与 {@link LogicalOperation#each(String, Collection, Function, Function)}类似，只是多了一个 termType。使用 {@link Accepter}进行操作
      *
      * @param column         要追加到的列名
      * @param termType       条件类型
@@ -109,7 +165,12 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @param <E>            集合中元素类型
      * @return this {@link T}
      */
-    default <E, V> T each(String column, String termType, Collection<E> list, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepterGetter, Function<E, V> valueMapper) {
+    @Deprecated
+    default <E, V> T each(String column,
+                          String termType,
+                          Collection<E> list,
+                          Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepterGetter,
+                          Function<E, V> valueMapper) {
         if (null != list)
             list.forEach(o -> accepterGetter.apply((T) this).accept(column, termType, valueMapper.apply(o)));
         return (T) this;
@@ -164,7 +225,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
     }
 
     /**
-     * 功能与{@link this#each(Map, Function)}类似
+     * 功能与{@link LogicalOperation#each(Map, Function)}类似
      * 例如:
      * <pre>
      *     query.each({name:"test",age:30},'is',(query)->query::or)
@@ -201,7 +262,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
     }
 
     /**
-     * 功能与 {@link  this#when(boolean, Consumer)}类似
+     * 功能与 {@link  LogicalOperation#when(boolean, Consumer)}类似
      * 通过BooleanSupplier获取条件,例如
      * <pre>query.when(()->age>10,query->query.gt("age",10));</pre>
      *
@@ -229,12 +290,80 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @param value     参数
      * @param <V>       参数类型
      * @return this {@link T}
+     * @see LogicalOperation#when(boolean, String, Consumer3, Object)
      */
+    @Deprecated
     default <V> T when(boolean condition, String column, V value, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepter) {
         if (condition) {
             accepter.apply((T) this).accept(column, value);
         }
         return (T) this;
+    }
+
+    /**
+     * 指定前置条件,列名,参数值,条件构造函数。当条件满足的时候，执行构造器添加条件.例如
+     * <pre>
+     *     query.when(age>10,"age",Query::gt,10);
+     * </pre>
+     * 等同于
+     * <pre>
+     *     if(age>10)query.gt(age,10);
+     * </pre>
+     *
+     * @param condition 前置条件
+     * @param column    要查询的列名
+     * @param accepter  条件构造函数
+     * @param value     参数
+     * @param <V>       参数类型
+     * @return this {@link T}
+     */
+    default <V> T when(boolean condition, String column, Consumer3<T, String, V> accepter, V value) {
+        if (condition) {
+            accepter.accept((T) this, column, value);
+        }
+        return (T) this;
+    }
+
+    /**
+     * 指定前置条件,列名,参数值,条件构造函数。当条件满足的时候，执行构造器添加条件.例如
+     * <pre>
+     *     query.when(age>10,User::getAage,Query::gt,10);
+     * </pre>
+     * 等同于
+     * <pre>
+     *     if(age>10)query.gt(age,10);
+     * </pre>
+     *
+     * @param condition 前置条件
+     * @param column    要查询的列名
+     * @param accepter  条件构造函数
+     * @param value     参数
+     * @param <V>       参数类型
+     * @return this {@link T}
+     */
+    default <V, B> T when(boolean condition, StaticMethodReferenceColumn<B> column, Consumer3<T, String, V> accepter, V value) {
+        return when(condition, column.getColumn(), accepter, value);
+    }
+
+    /**
+     * 指定前置条件,列名,参数值,条件构造函数。当条件满足的时候，执行构造器添加条件.例如
+     * <pre>
+     *     query.when(age>10,Query::gt,user::getAage);
+     * </pre>
+     * 等同于
+     * <pre>
+     *     if(age>10)query.gt(age,10);
+     * </pre>
+     *
+     * @param condition 前置条件
+     * @param column    要查询的列名
+     * @param accepter  条件构造函数
+     * @param <V>       参数类型
+     * @return this {@link T}
+     */
+    default <V> T when(boolean condition, Consumer3<T, String, V> accepter, MethodReferenceColumn<V> column) {
+
+        return when(condition, column.getColumn(), accepter, column.get());
     }
 
     /**
@@ -270,6 +399,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @return this {@link T}
      * @see Conditional#when(boolean, String, Object, Function)
      */
+    @Deprecated
     default <V> T when(boolean condition, String column, String termType, V value, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepter) {
         if (condition) {
             accepter.apply((T) this).accept(column, termType, value);
@@ -291,6 +421,7 @@ public interface LogicalOperation<T extends LogicalOperation> extends TermTypeCo
      * @see Conditional#when(boolean, String, Object, Function)
      * @see TermType
      */
+    @Deprecated
     default <V> T when(String column, String termType, V value, Function<V, Boolean> condition, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepter) {
         return when(condition.apply(value), column, termType, value, accepter);
     }

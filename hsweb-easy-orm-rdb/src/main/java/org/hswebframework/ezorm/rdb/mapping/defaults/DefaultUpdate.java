@@ -28,7 +28,7 @@ import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
 
 @SuppressWarnings("all")
-public class DefaultUpdate<E, ME extends DSLUpdate> implements DSLUpdate<E, ME> {
+public class DefaultUpdate<E, ME extends DSLUpdate<?,?>> implements DSLUpdate<E, ME> {
 
     protected List<Term> terms = new ArrayList<>();
     protected Set<String> includes = new HashSet<>();

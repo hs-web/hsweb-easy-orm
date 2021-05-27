@@ -17,7 +17,7 @@ import java.util.function.BiFunction;
  * @since 4.0.0
  */
 @SuppressWarnings("all")
-public interface DSLUpdate<E, ME extends DSLUpdate> extends Conditional<ME> {
+public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME> {
 
     /**
      * 指定只需要更新的属性(列)

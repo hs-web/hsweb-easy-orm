@@ -1,16 +1,12 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
-import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveDelete;
-import org.hswebframework.ezorm.rdb.mapping.ReactiveQuery;
-import org.hswebframework.ezorm.rdb.mapping.SyncDelete;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 import reactor.core.publisher.Mono;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class DefaultReactiveDelete extends DefaultDelete<ReactiveDelete> implements ReactiveDelete {
     public DefaultReactiveDelete(RDBTableMetadata tableMetadata,

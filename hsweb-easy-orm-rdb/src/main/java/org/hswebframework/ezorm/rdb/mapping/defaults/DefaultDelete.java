@@ -23,7 +23,7 @@ import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
 
 @SuppressWarnings("all")
-public class DefaultDelete<ME extends DSLDelete> implements DSLDelete<ME> {
+public class DefaultDelete<ME extends DSLDelete<?>> implements DSLDelete<ME> {
 
     protected List<Term> terms = new ArrayList<>();
 
