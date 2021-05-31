@@ -17,7 +17,7 @@ public class JdbcSqlExecutorHelper {
 
         int count = metaData.getColumnCount();
         //获取到执行sql后返回的列信息
-        List<String> columns = new ArrayList<>();
+        List<String> columns = new ArrayList<>(count);
         for (int i = 1; i <= count; i++) {
             columns.add(metaData.getColumnLabel(i));
         }
