@@ -6,7 +6,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 
 public class EmptyTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    private String symbol;
+    private final String symbol;
 
     public EmptyTermFragmentBuilder(String termType, String name, boolean isNot) {
         super(termType, name);

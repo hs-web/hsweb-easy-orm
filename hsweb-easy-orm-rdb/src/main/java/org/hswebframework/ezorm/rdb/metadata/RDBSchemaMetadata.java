@@ -48,6 +48,8 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFeatures.eq);
             addFeature(RDBFeatures.isNull);
             addFeature(RDBFeatures.notNull);
+            addFeature(RDBFeatures.isEmpty);
+            addFeature(RDBFeatures.notEmpty);
 
 
             //自动关联外键条件
