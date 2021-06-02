@@ -55,7 +55,7 @@ public enum RDBFeatureType implements FeatureType {
         return name();
     }
 
-    private String name;
+    private final String name;
 
     public String getFeatureId(String suffix) {
         return getId().concat(":").concat(suffix);

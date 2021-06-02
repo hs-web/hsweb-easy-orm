@@ -46,16 +46,20 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
             if (metaData.equalsNameOrAlias(arr[0]) || arr[0].equals(parameter.getFromAlias()) || alias.contains(arr[0])) {
                 columnName = arr[1];
             } else {
-                return parameter.findJoin(arr[0]) //先找join的表
-                        .flatMap(join -> metaData.getSchema()
+                return parameter
+                        .findJoin(arr[0]) //先找join的表
+                        .flatMap(join -> metaData
+                                .getSchema()
                                 .getTableOrView(join.getTarget())
                                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
                                 .flatMap(column -> column
                                         .findFeature(createFeatureId((term.getTermType())))
                                         .map(termFragment -> termFragment.createFragments(column.getFullName(join.getAlias()), column, term))))
                         .orElseGet(() -> {//外键关联查询
-                            return metaData.getForeignKey(arr[0])
-                                    .flatMap(key -> key.getSource()
+                            return metaData
+                                    .getForeignKey(arr[0])
+                                    .flatMap(key -> key
+                                            .getSource()
                                             .findFeature(ForeignKeyTermFragmentBuilder.ID)
                                             .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
                                     .orElse(EmptySqlFragments.INSTANCE);

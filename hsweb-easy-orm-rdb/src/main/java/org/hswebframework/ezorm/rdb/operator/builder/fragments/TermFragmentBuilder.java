@@ -16,7 +16,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.Function
 public interface TermFragmentBuilder extends Feature {
 
     static FeatureId<TermFragmentBuilder> createFeatureId(String suffix){
-        return FeatureId.of(RDBFeatureType.termType.getId().concat(":").concat(suffix.toLowerCase()));
+        return FeatureId.of(RDBFeatureType.termType.getFeatureId(suffix.toLowerCase()));
     }
 
     @Override
