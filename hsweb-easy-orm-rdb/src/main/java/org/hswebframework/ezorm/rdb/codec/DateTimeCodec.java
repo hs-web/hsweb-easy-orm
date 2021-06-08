@@ -43,6 +43,9 @@ public class DateTimeCodec implements ValueCodec {
         if (value instanceof Date) {
             return value;
         }
+        if(value instanceof Number){
+            return new Date(((Number) value).longValue());
+        }
         if (value instanceof String) {
             if (((String) value).contains(",")) {
                 return Arrays.stream(((String) value).split(","))
