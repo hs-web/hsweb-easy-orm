@@ -90,7 +90,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     protected <T extends ObjectMetadata> T loadMetadata(ObjectType type, String name) {
         return getParser(type)
                 .flatMap(parser -> {
-                    log.debug("load {} metadata ,use parser:{}", type, parser.getClass().getSimpleName());
+                    log.debug("load {} metadata {} ,use parser:{}", type,name, parser.getClass().getSimpleName());
                     return parser.parseByName(name);
                 })
                 .map(CastUtil::<T>cast)
