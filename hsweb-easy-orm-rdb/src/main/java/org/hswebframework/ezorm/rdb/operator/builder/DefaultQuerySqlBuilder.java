@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -21,26 +22,26 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
     protected Optional<SqlFragments> select(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.getFeature(select)
-                .map(builder -> builder.createFragments(parameter))
-                .filter(SqlFragments::isNotEmpty);
+                       .map(builder -> builder.createFragments(parameter))
+                       .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> where(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.getFeature(where)
-                .map(builder -> builder.createFragments(parameter))
-                .filter(SqlFragments::isNotEmpty);
+                       .map(builder -> builder.createFragments(parameter))
+                       .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> join(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.getFeature(selectJoin)
-                .map(builder -> builder.createFragments(parameter))
-                .filter(SqlFragments::isNotEmpty);
+                       .map(builder -> builder.createFragments(parameter))
+                       .filter(SqlFragments::isNotEmpty);
     }
 
     protected Optional<SqlFragments> orderBy(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.getFeature(orderBy)
-                .map(builder -> builder.createFragments(parameter))
-                .filter(SqlFragments::isNotEmpty);
+                       .map(builder -> builder.createFragments(parameter))
+                       .filter(SqlFragments::isNotEmpty);
     }
 
     protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
@@ -52,9 +53,9 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
                 .orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
 
         fragments.addBlock(FragmentBlock.selectFrom, PrepareSqlFragments.of()
-                .addSql("from")
-                .addSql(metadata.getFullName())
-                .addSql(parameter.getFromAlias()));
+                                                                        .addSql("from")
+                                                                        .addSql(metadata.getFullName())
+                                                                        .addSql(parameter.getFromAlias()));
 
 
         join(parameter, metadata)
@@ -63,17 +64,17 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
         where(parameter, metadata)
                 .ifPresent(where ->
-                        fragments.addBlock(FragmentBlock.where,"where")
-                                .addBlock(FragmentBlock.where, where));
+                                   fragments.addBlock(FragmentBlock.where, "where")
+                                            .addBlock(FragmentBlock.where, where));
 
         //group by
 
         //having
 
         //order by
-        orderBy(parameter,metadata)
-                .ifPresent(order-> fragments.addBlock(FragmentBlock.orderBy,"order by")
-                        .addBlock(FragmentBlock.orderBy, order));
+        orderBy(parameter, metadata)
+                .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, "order by")
+                                             .addBlock(FragmentBlock.orderBy, order));
 
         if (Boolean.TRUE.equals(parameter.getForUpdate())) {
             fragments.addBlock(FragmentBlock.after, PrepareSqlFragments.of().addSql("for update"));
@@ -95,9 +96,23 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         if (from == null || from.isEmpty()) {
             throw new UnsupportedOperationException("from table or view not set");
         }
-        TableOrViewMetadata metadata = schema.findTableOrView(from)
+        TableOrViewMetadata metadata = schema
+                .findTableOrView(from)
                 .orElseThrow(() -> new UnsupportedOperationException("table or view [" + from + "] doesn't exist "));
 
         return build(metadata, parameter);
+    }
+
+    @Override
+    public Mono<SqlRequest> buildAsync(QueryOperatorParameter parameter) {
+        String from = parameter.getFrom();
+        if (from == null || from.isEmpty()) {
+            throw new UnsupportedOperationException("from table or view not set");
+        }
+        return schema
+                .findTableOrViewReactive(from)
+                .switchIfEmpty(Mono.error(() -> new UnsupportedOperationException("table or view [" + from + "] doesn't exist ")))
+                .map(metadata -> this.build(metadata, parameter));
+
     }
 }

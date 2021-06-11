@@ -94,7 +94,7 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
         H2IndexMetadataWrapper wrapper = new H2IndexMetadataWrapper();
 
         return schema.<ReactiveSqlExecutor>findFeatureNow(ReactiveSqlExecutor.ID)
-                .select(sqlRequest, ResultWrappers.map())
+                .select(sqlRequest, ResultWrappers.lowerCase(ResultWrappers.map()))
                 .doOnNext(wrapper::completedWrapRow)
                 .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
                 ;

@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
+import reactor.core.publisher.Mono;
 
 public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
@@ -19,8 +20,12 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
         return metadata.findFeatureNow(QuerySqlBuilder.ID).build(this.getParameter());
     }
 
+    public Mono<SqlRequest> getSqlAsync() {
+        return metadata.findFeatureNow(QuerySqlBuilder.ID).buildAsync(this.getParameter());
+    }
+
     @Override
     public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
-        return new DefaultQueryResultOperator<>(this::getSql, metadata, wrapper);
+        return new DefaultQueryResultOperator<>(this::getSql, getSqlAsync(), metadata, wrapper);
     }
 }
