@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -117,7 +118,6 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 return sql;
             }
             sql.addSql("on duplicate key update");
-
             List<Object> values = parameter.getValues().get(0);
 
             int index = 0;
@@ -146,6 +146,10 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                     continue;
                 }
                 sql.addSql("VALUES(", columnMetadata.getQuoteName(), ")");
+            }
+            if (!more){
+                String primary = table.getPrimaryMetadata().getName();
+                sql.addSql(primary, "=", primary);
             }
 
             return sql;
