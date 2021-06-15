@@ -35,27 +35,23 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
     public MysqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
         this.builder = new MysqlUpsertBatchInsertSqlBuilder(table);
-        this.idColumn = table.getColumns()
-                .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst().orElse(null);
+        this.idColumn = table.getPrimaryMetadata();
         this.fallback = new DefaultSaveOrUpdateOperator(table);
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         if (idColumn == null) {
-            this.idColumn = table.getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+            this.idColumn = table.getPrimaryMetadata();
 
             if (this.idColumn == null) {
                 return fallback.execute(parameter);
             }
         }
 
-        return new MysqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
+        return new MysqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter
+                .getValues()
+                .size());
     }
 
     class MysqlUpsertOperatorParameter extends InsertOperatorParameter {
@@ -89,9 +85,9 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         public Mono<SaveResult> reactive() {
             return Mono.defer(() -> {
                 return Mono.just(sqlRequest.get())
-                        .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
-                        .map(i -> SaveResult.of(0, total))
-                        .as(ExceptionUtils.translation(table));
+                           .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                           .map(i -> SaveResult.of(0, total))
+                           .as(ExceptionUtils.translation(table));
             });
         }
     }
@@ -106,7 +102,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
             if (((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 return fragments.addSql("insert ignore into")
-                        .addSql(table.getFullName());
+                                .addSql(table.getFullName());
             }
             return super.beforeBuild(parameter, fragments);
         }
@@ -147,13 +143,12 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 }
                 sql.addSql("VALUES(", columnMetadata.getQuoteName(), ")");
             }
-            if (!more){
-                String primary = table.getPrimaryMetadata().getName();
+            if (!more) {
+                String primary = idColumn.getName();
                 sql.addSql(primary, "=", primary);
             }
 
             return sql;
         }
-
     }
 }

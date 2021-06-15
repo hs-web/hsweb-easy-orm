@@ -36,21 +36,14 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
     public PostgresqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
         this.builder = new PostgresqlUpsertBatchInsertSqlBuilder(table);
-        this.idColumn = table.getColumns()
-                             .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                             .findFirst().orElse(null);
+        this.idColumn = table.getPrimaryMetadata();
         this.fallback = new DefaultSaveOrUpdateOperator(table);
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         if (idColumn == null) {
-            this.idColumn = table
-                    .getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+            this.idColumn = table.getPrimaryMetadata();
 
             if (this.idColumn == null) {
                 return fallback.execute(parameter);

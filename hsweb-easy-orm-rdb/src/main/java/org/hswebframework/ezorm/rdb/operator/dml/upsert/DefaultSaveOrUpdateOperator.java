@@ -48,11 +48,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
             return idColumn;
         }
         if (idColumn == null) {
-            this.idColumn = table.getColumns()
-                                 .stream()
-                                 .filter(RDBColumnMetadata::isPrimaryKey)
-                                 .findFirst()
-                                 .orElse(null);
+            this.idColumn = table.getPrimaryMetadata();
             idColumnParsed = true;
         }
 

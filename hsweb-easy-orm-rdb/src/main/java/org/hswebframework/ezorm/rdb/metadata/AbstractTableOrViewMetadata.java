@@ -137,7 +137,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                 .stream()
                 .filter(RDBColumnMetadata::isPrimaryKey)
                 .findFirst()
-                .orElseThrow(()-> new RuntimeException("table primary key not found"));
+                .orElse(null);
     }
 
     @Override
