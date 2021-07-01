@@ -207,5 +207,9 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
         return (ME) this;
     }
 
-
+    @Override
+    public ME forUpdate() {
+        param.setForUpdate(true);
+        return (ME) this;
+    }
 }

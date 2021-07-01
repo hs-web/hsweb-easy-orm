@@ -130,4 +130,10 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
      */
     ME setParam(QueryParam param);
 
+    /**
+     * select * from xx for update
+     * @return this
+     * @since 4.0.11
+     */
+    ME forUpdate();
 }
