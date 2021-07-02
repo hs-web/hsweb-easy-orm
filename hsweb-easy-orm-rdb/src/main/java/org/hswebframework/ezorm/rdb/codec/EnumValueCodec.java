@@ -15,6 +15,7 @@ public class EnumValueCodec implements ValueCodec<Object, Object> {
 
     private Class type;
 
+    @Getter
     private boolean isArray;
 
     @Getter

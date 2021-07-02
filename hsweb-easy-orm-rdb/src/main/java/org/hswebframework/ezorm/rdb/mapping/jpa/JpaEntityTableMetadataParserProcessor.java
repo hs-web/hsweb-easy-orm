@@ -59,8 +59,8 @@ public class JpaEntityTableMetadataParserProcessor {
 
     public void process() {
         PropertyDescriptor[] descriptors = BeanUtilsBean.getInstance()
-                .getPropertyUtils()
-                .getPropertyDescriptors(entityType);
+                                                        .getPropertyUtils()
+                                                        .getPropertyDescriptors(entityType);
 
         Table table = ClassUtils.getAnnotation(entityType, Table.class);
         int idx = 0;
@@ -109,9 +109,9 @@ public class JpaEntityTableMetadataParserProcessor {
 
     private <T extends Annotation> Optional<T> getAnnotation(Set<Annotation> annotations, Class<T> type) {
         return annotations.stream()
-                .filter(type::isInstance)
-                .map(type::cast)
-                .findFirst();
+                          .filter(type::isInstance)
+                          .map(type::cast)
+                          .findFirst();
     }
 
     @SneakyThrows
@@ -123,23 +123,23 @@ public class JpaEntityTableMetadataParserProcessor {
     private void handleJoinColumnAnnotation(PropertyDescriptor descriptor, Set<Annotation> annotations, JoinColumn... column) {
 
         Field field = PropertiesUtils.getPropertyField(entityType, descriptor.getName())
-                .orElseThrow(() -> new NoSuchFieldException("no such field " + descriptor.getName() + " in " + entityType));
+                                     .orElseThrow(() -> new NoSuchFieldException("no such field " + descriptor.getName() + " in " + entityType));
         Table join;
         ForeignKeyBuilder builder = ForeignKeyBuilder.builder()
-                .source(tableMetadata.getFullName())
-                .name(descriptor.getName())
-                .alias(descriptor.getName())
-                .build();
+                                                     .source(tableMetadata.getFullName())
+                                                     .name(descriptor.getName())
+                                                     .alias(descriptor.getName())
+                                                     .build();
 
         Type fieldGenericType = field.getGenericType();
         if (fieldGenericType instanceof ParameterizedType) {
             Type[] types = ((ParameterizedType) fieldGenericType).getActualTypeArguments();
             join = Stream.of(types)
-                    .map(Class.class::cast)
-                    .map(t -> AnnotationUtils.getAnnotation(t, Table.class))
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
+                         .map(Class.class::cast)
+                         .map(t -> AnnotationUtils.getAnnotation(t, Table.class))
+                         .filter(Objects::nonNull)
+                         .findFirst()
+                         .orElse(null);
         } else {
             builder.setAutoJoin(true);
             join = AnnotationUtils.getAnnotation(field.getType(), Table.class);
@@ -250,7 +250,7 @@ public class JpaEntityTableMetadataParserProcessor {
         getAnnotation(annotations, GeneratedValue.class)
                 .map(GeneratedValue::generator)
                 .map(gen -> LazyDefaultValueGenerator.of(() ->
-                        tableMetadata.findFeatureNow(DefaultValueGenerator.<RDBColumnMetadata>createId(gen))))
+                                                                 tableMetadata.findFeatureNow(DefaultValueGenerator.<RDBColumnMetadata>createId(gen))))
                 .map(gen -> gen.generate(metadata))
                 .ifPresent(metadata::setDefaultValue);
 
@@ -258,8 +258,8 @@ public class JpaEntityTableMetadataParserProcessor {
                 .map(gen -> {
                     if (gen.value().isEmpty()) {
                         return LazyDefaultValueGenerator.of(() ->
-                                tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
-                                .generate(metadata);
+                                                                    tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
+                                                        .generate(metadata);
                     }
                     return (RuntimeDefaultValue) gen::value;
                 })
@@ -288,14 +288,18 @@ public class JpaEntityTableMetadataParserProcessor {
 
         ofNullable(valueCodecResolver)
                 .map(resolver -> resolver.resolve(propertyDescriptor)
-                        .orElseGet(() -> metadata.findFeature(ValueCodecFactory.ID)
-                                .flatMap(factory -> factory.createValueCodec(metadata))
-                                .orElse(null)))
+                                         .orElseGet(() -> metadata
+                                                 .findFeature(ValueCodecFactory.ID)
+                                                 .flatMap(factory -> factory.createValueCodec(metadata))
+                                                 .orElse(null)))
                 .ifPresent(metadata::setValueCodec);
         ;
-        if(metadata.getValueCodec() instanceof EnumValueCodec&&((EnumValueCodec) metadata.getValueCodec()).isToMask()){
-            metadata.addFeature(EnumFragmentBuilder.eq);
-            metadata.addFeature(EnumFragmentBuilder.not);
+        if (metadata.getValueCodec() instanceof EnumValueCodec) {
+            EnumValueCodec codec = ((EnumValueCodec) metadata.getValueCodec());
+            if (codec.isToMask()) {
+                metadata.addFeature(EnumFragmentBuilder.eq);
+                metadata.addFeature(EnumFragmentBuilder.not);
+            }
         }
         tableMetadata.addColumn(metadata);
     }

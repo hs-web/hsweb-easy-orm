@@ -82,7 +82,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     @Override
     public Mono<Integer> insert(Publisher<E> data) {
         return Flux.from(data)
-                .flatMap(e -> doInsert(e).reactive().flux())
+                .flatMap(e -> doInsert(e).reactive())
                 .reduce(Math::addExact)
                 .defaultIfEmpty(0);
     }
@@ -91,7 +91,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public Mono<Integer> insertBatch(Publisher<? extends Collection<E>> data) {
         return Flux.from(data)
                 .filter(CollectionUtils::isNotEmpty)
-                .flatMap(e -> doInsert(e).reactive().flux())
+                .flatMap(e -> doInsert(e).reactive())
                 .reduce(Math::addExact)
                 .defaultIfEmpty(0);
     }
