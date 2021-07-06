@@ -8,9 +8,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -43,15 +41,15 @@ public class DateTimeCodec implements ValueCodec {
         if (value instanceof Date) {
             return value;
         }
-        if(value instanceof Number){
+        if (value instanceof Number) {
             return new Date(((Number) value).longValue());
         }
         if (value instanceof String) {
             if (((String) value).contains(",")) {
                 return Arrays.stream(((String) value).split(","))
-                        .map(this::doParse)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                             .map(this::doParse)
+                             .filter(Objects::nonNull)
+                             .collect(Collectors.toList());
             }
 
             return doParse(((String) value));
@@ -82,6 +80,22 @@ public class DateTimeCodec implements ValueCodec {
             if (toType == Date.class) {
                 return data;
             }
+            if (toType == Instant.class) {
+                return ((Date) data).toInstant();
+            }
+            if (toType == LocalDateTime.class) {
+                return LocalDateTime.ofInstant(((Date) data).toInstant(), ZoneId.systemDefault());
+            }
+            if (toType == LocalDate.class) {
+                return LocalDateTime
+                        .ofInstant(((Date) data).toInstant(), ZoneId.systemDefault())
+                        .toLocalDate();
+            }
+            if (toType == LocalTime.class) {
+                return LocalDateTime
+                        .ofInstant(((Date) data).toInstant(), ZoneId.systemDefault())
+                        .toLocalTime();
+            }
             if (toType == String.class) {
                 return DateTimeUtils.format(((Date) data), format);
             }
@@ -97,7 +111,8 @@ public class DateTimeCodec implements ValueCodec {
             String stringData = ((String) data);
             if (toType == Date.class) {
                 if ((stringData).contains(",")) {
-                    return Arrays.stream(stringData.split(","))
+                    return Arrays
+                            .stream(stringData.split(","))
                             .map(this::doParse)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toList());
