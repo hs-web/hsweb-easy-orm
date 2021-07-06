@@ -20,6 +20,7 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
     protected RDBSchemaMetadata schema;
 
+
     protected Optional<SqlFragments> select(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.getFeature(select)
                        .map(builder -> builder.createFragments(parameter))
@@ -44,6 +45,14 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
                        .filter(SqlFragments::isNotEmpty);
     }
 
+    protected SqlFragments from(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
+        return PrepareSqlFragments
+                .of()
+                .addSql("from")
+                .addSql(metadata.getFullName())
+                .addSql(parameter.getFromAlias());
+    }
+
     protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
         BlockSqlFragments fragments = BlockSqlFragments.of();
 
@@ -52,10 +61,7 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         fragments.addBlock(FragmentBlock.selectColumn, select(parameter, metadata)
                 .orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
 
-        fragments.addBlock(FragmentBlock.selectFrom, PrepareSqlFragments.of()
-                                                                        .addSql("from")
-                                                                        .addSql(metadata.getFullName())
-                                                                        .addSql(parameter.getFromAlias()));
+        fragments.addBlock(FragmentBlock.selectFrom, from(metadata, parameter));
 
 
         join(parameter, metadata)

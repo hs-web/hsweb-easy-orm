@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.codec;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +49,19 @@ public class DateTimeCodecTest {
 
         Assert.assertArrayEquals(((List) encode).toArray(), Arrays.stream(str.split("[,]")).map(codec::encode).toArray());
     }
+    @Test
+    public void testDecodeInstant() {
+        DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd", Instant.class);
 
+        Date data = new Date();
+
+        Object val = codec.encode(data);
+        assertEquals(data, val);
+
+        Object date = codec.encode("2019-01-01");
+
+      assertTrue(codec.decode(date) instanceof Instant);
+    }
     @Test
     public void testDecodeDate() {
         DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd", Date.class);

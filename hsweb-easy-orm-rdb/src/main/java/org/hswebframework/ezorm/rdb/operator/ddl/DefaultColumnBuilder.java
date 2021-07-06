@@ -12,9 +12,9 @@ import java.util.function.Consumer;
  * @author zhouhao
  */
 public class DefaultColumnBuilder implements ColumnBuilder {
-    private RDBColumnMetadata columnMetaData;
-    private TableBuilder tableBuilder;
-    private RDBTableMetadata tableMetaData;
+    private final RDBColumnMetadata columnMetaData;
+    private final TableBuilder tableBuilder;
+    private final RDBTableMetadata tableMetaData;
 
     public DefaultColumnBuilder(RDBColumnMetadata columnMetaData, TableBuilder tableBuilder, RDBTableMetadata tableMetaData) {
         this.columnMetaData = columnMetaData;
