@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +65,23 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     @Hidden
     private boolean forUpdate = false;
 
+    @Schema(description = "上下文信息")
+    private Map<String, Object> context;
+
+    public Optional<Object> getContext(String key) {
+        if (context == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(context.get(key));
+    }
+
+    public void context(String key, Object value) {
+        if (context == null) {
+            context = new HashMap<>();
+        }
+        context.put(key, value);
+    }
+
     public Sort orderBy(String column) {
         Sort sort = new Sort(column);
         sorts.add(sort);
@@ -108,7 +123,7 @@ public class QueryParam extends Param implements Serializable, Cloneable {
 
     public void setFirstPageIndex(int firstPageIndex) {
 
-        this.pageIndex = this.pageIndexTmp = Math.max(this.pageIndexTmp - this.firstPageIndex-firstPageIndex, 0);
+        this.pageIndex = this.pageIndexTmp = Math.max(this.pageIndexTmp - this.firstPageIndex - firstPageIndex, 0);
         this.firstPageIndex = firstPageIndex;
     }
 
