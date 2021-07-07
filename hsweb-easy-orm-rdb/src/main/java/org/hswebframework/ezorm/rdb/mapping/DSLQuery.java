@@ -141,14 +141,16 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
     /**
      * 设置上下文
      * @param context ctx
-     * @return
+     * @return this
+     * @since 4.0.11
      */
     ME context(Map<String,Object> context);
 
     /**
      * 设置上下文
      * @param context ctx
-     * @return
+     * @return this
+     * @since 4.0.11
      */
     ME context(String key,Object value);
 }
