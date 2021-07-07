@@ -1,28 +1,39 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
-import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
-import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
-import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.*;
+import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId;
 
-@AllArgsConstructor(staticName = "of")
 public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<QueryOperatorParameter> implements QuerySqlFragmentBuilder {
 
     private final TableOrViewMetadata metaData;
 
     private final Set<String> alias;
 
+    protected QueryTermsFragmentBuilder(TableOrViewMetadata metaData, Set<String> alias) {
+        this.metaData = metaData;
+        this.alias = alias;
+    }
+
     public static QueryTermsFragmentBuilder of(TableOrViewMetadata metadata) {
         return of(metadata, Collections.emptySet());
+    }
+
+    public static QueryTermsFragmentBuilder of(TableOrViewMetadata metaData, Set<String> alias) {
+        return new QueryTermsFragmentBuilder(metaData, alias);
     }
 
     @Override
@@ -54,7 +65,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
                                 .flatMap(column -> column
                                         .findFeature(createFeatureId((term.getTermType())))
-                                        .map(termFragment -> termFragment.createFragments(column.getFullName(join.getAlias()), column, term))))
+                                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column,parameter.getFromAlias()), column, term))))
                         .orElseGet(() -> {//外键关联查询
                             return metaData
                                     .getForeignKey(arr[0])
@@ -71,7 +82,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                 .getColumn(columnName)
                 .flatMap(column -> column
                         .findFeature(createFeatureId(term.getTermType()))
-                        .map(termFragment -> termFragment.createFragments(column.getFullName(parameter.getFromAlias()), column, term)))
+                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column,parameter.getFromAlias()), column, term)))
                 .orElse(EmptySqlFragments.INSTANCE);
 
     }
@@ -87,5 +98,9 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
     @Override
     public SqlFragments createFragments(QueryOperatorParameter parameter) {
         return createTermFragments(parameter, parameter.getWhere());
+    }
+
+    protected String createColumnFullName(RDBColumnMetadata column,String fromAlias){
+        return column.getFullName(fromAlias);
     }
 }

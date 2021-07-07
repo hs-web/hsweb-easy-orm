@@ -1,13 +1,13 @@
 package org.hswebframework.ezorm.rdb.operator.builder;
 
-import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BlockSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import reactor.core.publisher.Mono;
 
@@ -15,11 +15,17 @@ import java.util.Optional;
 
 import static org.hswebframework.ezorm.rdb.metadata.RDBFeatures.*;
 
-@AllArgsConstructor(staticName = "of")
 public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
     protected RDBSchemaMetadata schema;
 
+    protected DefaultQuerySqlBuilder(RDBSchemaMetadata schema) {
+        this.schema = schema;
+    }
+
+    public static DefaultQuerySqlBuilder of(RDBSchemaMetadata schema) {
+        return new DefaultQuerySqlBuilder(schema);
+    }
 
     protected Optional<SqlFragments> select(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
         return metadata.getFeature(select)
