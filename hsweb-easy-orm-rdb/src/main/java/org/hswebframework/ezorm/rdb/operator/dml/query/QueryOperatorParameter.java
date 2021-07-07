@@ -35,6 +35,8 @@ public class QueryOperatorParameter {
 
     private Boolean forUpdate;
 
+    private Map<String,Object> context;
+
     public Optional<Join> findJoin(String targetName) {
         return Optional.ofNullable(joins)
                 .flatMap(_joins -> _joins

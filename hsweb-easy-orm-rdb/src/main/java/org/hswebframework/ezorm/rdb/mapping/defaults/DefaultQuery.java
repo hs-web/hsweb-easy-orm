@@ -106,8 +106,8 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
     @Override
     public ME orderBy(SortOrderSupplier... orders) {
         return orderBy(Arrays.stream(orders)
-                .map(SortOrderSupplier::get)
-                .toArray(SortOrder[]::new));
+                             .map(SortOrderSupplier::get)
+                             .toArray(SortOrder[]::new));
     }
 
     @Override
@@ -119,27 +119,29 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
     private boolean isSelectInclude(SelectColumn column) {
         return param.getIncludes().isEmpty() ||
                 param.getIncludes()
-                        .stream()
-                        .anyMatch(s -> s.equals(column.getColumn()) || s.equals(column.getAlias()));
+                     .stream()
+                     .anyMatch(s -> s.equals(column.getColumn()) || s.equals(column.getAlias()));
     }
 
     private boolean isSelectExclude(SelectColumn column) {
         return param.getExcludes()
-                .stream()
-                .anyMatch(s -> s.equals(column.getColumn()) || s.equals(column.getAlias()));
+                    .stream()
+                    .anyMatch(s -> s.equals(column.getColumn()) || s.equals(column.getAlias()));
     }
 
     protected SelectColumn[] getSelectColumn() {
 
-        return Stream.concat(
-                tableMetadata.getForeignKeys().stream()
-                        .map(key -> key.getAlias() == null ? key.getTarget().getName() : key.getAlias())
-                        .map(alias -> alias.concat(".*"))
-                        .map(name -> SelectColumn.of(name))
-                , columnMapping.getColumnPropertyMapping()
-                        .entrySet()
-                        .stream()
-                        .map(entry -> SelectColumn.of(entry.getKey(), entry.getValue())))
+        return Stream
+                .concat(tableMetadata
+                                .getForeignKeys().stream()
+                                .map(key -> key.getAlias() == null ? key.getTarget().getName() : key.getAlias())
+                                .map(alias -> alias.concat(".*"))
+                                .map(name -> SelectColumn.of(name))
+                        , columnMapping
+                                .getColumnPropertyMapping()
+                                .entrySet()
+                                .stream()
+                                .map(entry -> SelectColumn.of(entry.getKey(), entry.getValue())))
                 .filter(this::isSelectInclude)
                 .filter(e -> !isSelectExclude(e))
                 .toArray(SelectColumn[]::new);
@@ -148,10 +150,12 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
     protected SortOrder[] getSortOrder() {
         return Stream.concat(
                 param.getSorts()
-                        .stream()
-                        .map(sort -> sort.getOrder().equalsIgnoreCase("asc") ? SortOrder.asc(sort.getName()) : SortOrder.desc(sort.getName()))
+                     .stream()
+                     .map(sort -> sort
+                             .getOrder()
+                             .equalsIgnoreCase("asc") ? SortOrder.asc(sort.getName()) : SortOrder.desc(sort.getName()))
                 , orders.stream())
-                .toArray(SortOrder[]::new);
+                     .toArray(SortOrder[]::new);
     }
 
 
@@ -210,6 +214,18 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
     @Override
     public ME forUpdate() {
         param.setForUpdate(true);
+        return (ME) this;
+    }
+
+    @Override
+    public ME context(Map<String, Object> context) {
+        param.setContext(context);
+        return (ME) this;
+    }
+
+    @Override
+    public ME context(String key, Object value) {
+        param.context(key, value);
         return (ME) this;
     }
 }

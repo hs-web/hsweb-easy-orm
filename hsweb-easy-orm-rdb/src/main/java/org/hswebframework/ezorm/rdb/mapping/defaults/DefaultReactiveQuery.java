@@ -33,6 +33,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
     public Flux<T> fetch() {
         return operator
                 .query(tableMetadata)
+                .context(param.getContext())
                 .select(getSelectColumn())
                 .where(param.getTerms())
                 .orderBy(getSortOrder())
@@ -55,6 +56,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
     public Mono<T> fetchOne() {
         return  operator
                 .query(tableMetadata)
+                .context(param.getContext())
                 .select(getSelectColumn())
                 .where(param.getTerms())
                 .orderBy(getSortOrder())
@@ -78,6 +80,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
     public Mono<Integer> count() {
         return operator
                 .query(tableMetadata)
+                .context(param.getContext())
                 .select(count1().as("total"))
                 .where(param.getTerms())
                 .accept(queryOperator ->

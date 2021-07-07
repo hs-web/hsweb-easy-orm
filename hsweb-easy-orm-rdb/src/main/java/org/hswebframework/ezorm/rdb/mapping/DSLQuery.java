@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.SortOrderSupplier;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * 动态DSL查询接口,用于通过DSL方式构造动态查询条件
@@ -136,4 +137,18 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
      * @since 4.0.11
      */
     ME forUpdate();
+
+    /**
+     * 设置上下文
+     * @param context ctx
+     * @return
+     */
+    ME context(Map<String,Object> context);
+
+    /**
+     * 设置上下文
+     * @param context ctx
+     * @return
+     */
+    ME context(String key,Object value);
 }

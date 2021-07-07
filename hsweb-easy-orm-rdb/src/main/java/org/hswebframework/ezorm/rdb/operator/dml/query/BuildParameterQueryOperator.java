@@ -16,6 +16,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
@@ -84,6 +85,7 @@ public class BuildParameterQueryOperator extends QueryOperator {
                         asc(sort.getName()) :
                         desc(sort.getName()))
                 .toArray(SortOrder[]::new));
+        context(param.getContext());
         return this;
     }
 
@@ -131,6 +133,12 @@ public class BuildParameterQueryOperator extends QueryOperator {
     @Override
     public QueryOperator forUpdate() {
         parameter.setForUpdate(true);
+        return this;
+    }
+
+    @Override
+    public QueryOperator context(Map<String, Object> context) {
+        parameter.setContext(context);
         return this;
     }
 
