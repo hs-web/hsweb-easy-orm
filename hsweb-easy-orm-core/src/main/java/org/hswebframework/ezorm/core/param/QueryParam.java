@@ -133,6 +133,10 @@ public class QueryParam extends Param implements Serializable, Cloneable {
 
     @Override
     public QueryParam clone() {
-        return ((QueryParam) super.clone());
+        QueryParam queryParam = ((QueryParam) super.clone());
+        if (queryParam.context != null) {
+            queryParam.context = new HashMap<>(queryParam.context);
+        }
+        return queryParam;
     }
 }
