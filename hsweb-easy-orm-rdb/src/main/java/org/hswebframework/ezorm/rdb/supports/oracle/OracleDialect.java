@@ -20,7 +20,7 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "number(2)");
         addDataTypeBuilder(JDBCType.SMALLINT, (meta) -> "number(5)");
-        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "integer");
+        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "number(20)");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "binary_double");
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
@@ -30,6 +30,10 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(38), ",", meta.getScale(), ")"));
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
+        addDataTypeBuilder(JDBCType.BOOLEAN, (meta) -> "number(1)");
+        addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "clob");
+        addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
+
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "clob"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));
 
@@ -41,6 +45,7 @@ public class OracleDialect extends DefaultDialect {
 
         registerDataType("date", JdbcDataType.of(JDBCType.TIMESTAMP, Date.class));
         registerDataType("clob", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
+        registerDataType("blob", JdbcDataType.of(JDBCType.LONGVARBINARY, byte[].class));
 
     }
 

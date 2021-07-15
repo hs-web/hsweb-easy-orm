@@ -12,6 +12,7 @@ public class OracleSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new OraclePaginator());
 
         addFeature(new OracleTableMetadataParser(this));
+        addFeature(new OracleAlterTableSqlBuilder());
 
         addFeature(Dialect.ORACLE);
     }
