@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import lombok.AllArgsConstructor;
-import org.hswebframework.ezorm.rdb.executor.NullValue;
+import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -13,7 +13,10 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
-import org.hswebframework.ezorm.rdb.operator.dml.upsert.*;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveOrUpdateOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperatorParameter;
 import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,7 +41,8 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
 
-        return new MysqlSaveResultOperator(() -> parameter.getValues()
+        return new MysqlSaveResultOperator(() -> parameter
+                .getValues()
                 .stream()
                 .map(value -> {
                     InsertOperatorParameter newParam = new InsertOperatorParameter();
@@ -77,10 +81,10 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             return Mono.defer(() -> {
                 ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
                 return Flux.fromIterable(sqlRequest.get())
-                        .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
-                        .map(i -> SaveResult.of(i > 0 ? 1 : 0, i == 0 ? 1 : 0))
-                        .reduce(SaveResult::merge)
-                        .onErrorMap(err -> ExceptionUtils.translation(table, err));
+                           .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
+                           .map(i -> SaveResult.of(i > 0 ? 1 : 0, i == 0 ? 1 : 0))
+                           .reduce(SaveResult::merge)
+                           .onErrorMap(err -> ExceptionUtils.translation(table, err));
             });
         }
     }
@@ -123,6 +127,10 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 }
 
                 sql.addSql("?").addParameter(columnMetadata.encode(value));
+            }
+            if (!more) {
+                String primary = table.getPrimaryMetadata().getName();
+                sql.addSql(primary, "=", primary);
             }
         }
     }

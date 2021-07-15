@@ -132,6 +132,15 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     }
 
     @Override
+    public RDBColumnMetadata getPrimaryMetadata() {
+        return getColumns()
+                .stream()
+                .filter(RDBColumnMetadata::isPrimaryKey)
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
     public Optional<RDBColumnMetadata> findColumn(String name) {
         return ofNullable(name)
                 .map(this::getColumn)

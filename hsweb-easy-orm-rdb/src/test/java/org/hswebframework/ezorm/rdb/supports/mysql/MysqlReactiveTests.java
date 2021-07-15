@@ -79,7 +79,7 @@ public class MysqlReactiveTests extends BasicReactiveTests {
         entity.setName("test");
         entity.setState((byte)1);
 
-        repository.insert(entity)
+        repository.save(entity)
                   .then(repository.insert(entity))
                   .as(StepVerifier::create)
                   .verifyError(DuplicateKeyException.class);

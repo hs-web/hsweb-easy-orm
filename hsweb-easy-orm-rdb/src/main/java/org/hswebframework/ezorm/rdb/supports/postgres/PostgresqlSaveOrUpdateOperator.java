@@ -1,12 +1,14 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
@@ -18,6 +20,7 @@ import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -37,35 +40,29 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
     public PostgresqlSaveOrUpdateOperator(RDBTableMetadata table) {
         this.table = table;
         this.builder = new PostgresqlUpsertBatchInsertSqlBuilder(table);
-        this.idColumn = table.getColumns()
-                .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst().orElse(null);
+        this.idColumn = table.getPrimaryMetadata();
         this.fallback = new DefaultSaveOrUpdateOperator(table);
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         if (idColumn == null) {
-            this.idColumn = table.getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+            this.idColumn = table.getPrimaryMetadata();
 
             if (this.idColumn == null) {
                 return fallback.execute(parameter);
             }
         }
         return new PostgresqlSaveResultOperator(() -> parameter.getValues()
-                .stream()
-                .map(value -> {
-                    InsertOperatorParameter newParam = new InsertOperatorParameter();
-                    newParam.setColumns(parameter.toInsertColumns());
-                    newParam.getValues().add(value);
-                    return newParam;
-                })
-                .map(builder::build)
-                .collect(Collectors.toList()));
+                                                               .stream()
+                                                               .map(value -> {
+                                                                   InsertOperatorParameter newParam = new InsertOperatorParameter();
+                                                                   newParam.setColumns(parameter.toInsertColumns());
+                                                                   newParam.getValues().add(value);
+                                                                   return newParam;
+                                                               })
+                                                               .map(builder::build)
+                                                               .collect(Collectors.toList()));
     }
 
     @AllArgsConstructor
@@ -94,9 +91,9 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
             return Mono.defer(() -> {
                 ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
                 return Flux.fromIterable(sqlRequest.get())
-                        .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
-                        .map(i -> SaveResult.of(i > 0 ? i : 0, i == 0 ? 1 : 0))
-                        .reduce(SaveResult::merge);
+                           .flatMap(sql -> sqlExecutor.update(Mono.just(sql)))
+                           .map(i -> SaveResult.of(i > 0 ? i : 0, i == 0 ? 1 : 0))
+                           .reduce(SaveResult::merge);
             });
         }
     }
@@ -109,7 +106,10 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
         @Override
         protected void afterValues(Set<InsertColumn> columns, List<Object> values, PrepareSqlFragments sql) {
-            sql.addSql("on conflict (", idColumn.getName(), ") do update set");
+
+            List<String> sqlItem = new ArrayList<>(64);
+            List<Object> parameters = new ArrayList<>(8);
+            sqlItem.add("on conflict (" + idColumn.getName() + ") do update set");
 
             int index = 0;
             boolean more = false;
@@ -128,16 +128,24 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                     continue;
                 }
                 if (more) {
-                    sql.addSql(",");
+                    sqlItem.add(",");
                 }
                 more = true;
-                sql.addSql(columnMetadata.getQuoteName()).addSql("=");
+                sqlItem.add(columnMetadata.getQuoteName());
+                sqlItem.add("=");
                 if (value instanceof NativeSql) {
-                    sql.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters());
+                    sqlItem.add(((NativeSql) value).getSql());
+                    parameters.add(((NativeSql) value).getParameters());
                     continue;
                 }
-                sql.addSql("?").addParameter(columnMetadata.encode(value));
+                sqlItem.add("?");
+                parameters.add(columnMetadata.encode(value));
             }
+            if (!more) {
+                sqlItem.add("on conflict (" + idColumn.getName() + ") do nothing");
+            }
+            sql.addSql(sqlItem);
+            sql.addParameter(parameters);
         }
     }
 }

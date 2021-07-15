@@ -63,6 +63,16 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     Optional<RDBColumnMetadata> getColumn(String name);
 
     /**
+     * 获取当前表主键列
+     *
+     * @return 主键列
+     * @see RDBColumnMetadata#getName()
+     * @see RDBColumnMetadata#getAlias()
+     */
+    RDBColumnMetadata getPrimaryMetadata();
+
+
+    /**
      * 查找列,可查找通过外键关联表对列或者其他表对列
      *
      * @param name 列全名或别名,比如: user.name , schema1.user.name

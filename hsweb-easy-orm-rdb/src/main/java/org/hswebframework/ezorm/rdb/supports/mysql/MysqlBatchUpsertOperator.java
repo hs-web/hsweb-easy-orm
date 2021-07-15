@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -34,27 +35,23 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
     public MysqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
         this.builder = new MysqlUpsertBatchInsertSqlBuilder(table);
-        this.idColumn = table.getColumns()
-                .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst().orElse(null);
+        this.idColumn = table.getPrimaryMetadata();
         this.fallback = new DefaultSaveOrUpdateOperator(table);
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         if (idColumn == null) {
-            this.idColumn = table.getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+            this.idColumn = table.getPrimaryMetadata();
 
             if (this.idColumn == null) {
                 return fallback.execute(parameter);
             }
         }
 
-        return new MysqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
+        return new MysqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter
+                .getValues()
+                .size());
     }
 
     class MysqlUpsertOperatorParameter extends InsertOperatorParameter {
@@ -88,9 +85,9 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         public Mono<SaveResult> reactive() {
             return Mono.defer(() -> {
                 return Mono.just(sqlRequest.get())
-                        .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
-                        .map(i -> SaveResult.of(0, total))
-                        .as(ExceptionUtils.translation(table));
+                           .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                           .map(i -> SaveResult.of(0, total))
+                           .as(ExceptionUtils.translation(table));
             });
         }
     }
@@ -105,7 +102,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
             if (((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 return fragments.addSql("insert ignore into")
-                        .addSql(table.getFullName());
+                                .addSql(table.getFullName());
             }
             return super.beforeBuild(parameter, fragments);
         }
@@ -117,7 +114,6 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 return sql;
             }
             sql.addSql("on duplicate key update");
-
             List<Object> values = parameter.getValues().get(0);
 
             int index = 0;
@@ -147,9 +143,12 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 }
                 sql.addSql("VALUES(", columnMetadata.getQuoteName(), ")");
             }
+            if (!more) {
+                String primary = idColumn.getName();
+                sql.addSql(primary, "=", primary);
+            }
 
             return sql;
         }
-
     }
 }
