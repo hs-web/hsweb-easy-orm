@@ -17,11 +17,12 @@ import java.util.List;
 @AllArgsConstructor(staticName = "of")
 public class PrepareSqlFragments implements SqlFragments {
 
-    public static PrepareSqlFragments of(String sql,Object... parameter){
+    public static PrepareSqlFragments of(String sql, Object... parameter) {
         return PrepareSqlFragments.of()
-                .addSql(sql)
-                .addParameter(parameter);
+                                  .addSql(sql)
+                                  .addParameter(parameter);
     }
+
     @Override
     public boolean isEmpty() {
         return sql.isEmpty();
@@ -29,10 +30,10 @@ public class PrepareSqlFragments implements SqlFragments {
 
     private List<String> sql = new ArrayList<>(64);
 
-    private List<Object> parameters = new ArrayList<>(8);
+    private List<Object> parameters = new ArrayList<>(16);
 
     public void removeLastSql() {
-        if(sql.isEmpty()){
+        if (sql.isEmpty()) {
             return;
         }
         sql.remove(sql.size() - 1);

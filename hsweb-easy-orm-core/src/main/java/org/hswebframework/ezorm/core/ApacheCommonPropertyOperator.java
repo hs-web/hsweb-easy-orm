@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, ObjectConverter {
 
-    private static PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
+    private static final PropertyUtilsBean propertyUtils = BeanUtilsBean.getInstance().getPropertyUtils();
 
     public static final ApacheCommonPropertyOperator INSTANCE = new ApacheCommonPropertyOperator();
 
@@ -28,7 +28,7 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
         } catch (NoSuchMethodException ignore) {
 
         } catch (Exception e) {
-            log.info("无法获取属性:{},对象:{}", name, object, e);
+           log.info("无法获取属性:{},对象:{}", name, object, e);
         }
         return Optional.empty();
     }
