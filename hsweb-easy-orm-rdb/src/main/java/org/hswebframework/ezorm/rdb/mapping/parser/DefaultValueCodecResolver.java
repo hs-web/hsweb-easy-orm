@@ -9,6 +9,8 @@ import org.hswebframework.ezorm.rdb.mapping.annotation.DateTimeCodec;
 import org.hswebframework.ezorm.rdb.mapping.annotation.EnumCodec;
 import org.hswebframework.ezorm.rdb.mapping.annotation.JsonCodec;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,7 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
         COMMONS.register(JsonCodec.class, (field, jsonCodec) -> JsonValueCodec.ofField(field.getField()));
 
         COMMONS.register(EnumCodec.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.toMask()));
+        COMMONS.register(Enumerated.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.value()== EnumType.ORDINAL));
 
         COMMONS.register(Date.class::isAssignableFrom, field -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec("yyyy-MM-dd HH", field.getPropertyType()));
 
