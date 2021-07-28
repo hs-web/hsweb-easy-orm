@@ -13,12 +13,14 @@ public class TestJdbcReactiveSqlExecutor extends JdbcReactiveSqlExecutor {
     private final ConnectionProvider provider;
 
     @Override
-    public Mono<Connection> getConnection(SqlRequest sqlRequest) {
-        return Mono.fromSupplier(provider::getConnection);
+    public Mono<Connection> getConnection() {
+        return Mono
+                .using(
+                        provider::getConnection,
+                        Mono::just,
+                        provider::releaseConnect
+                );
     }
 
-    @Override
-    public void releaseConnection(Connection connection, SqlRequest sqlRequest) {
-        provider.releaseConnect(connection);
-    }
+
 }
