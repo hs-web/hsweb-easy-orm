@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping.events;
 
+import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.rdb.events.ContextKey;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
@@ -36,6 +37,7 @@ public interface MappingContextKeys {
     ContextKey<EntityColumnMapping> columnMapping = ContextKey.of("columnMapping");
 
     ContextKey<QueryOperator> query = ContextKey.of("query");
+    ContextKey<QueryParam> queryOaram = ContextKey.of("queryParam");
     ContextKey<UpdateOperator> update = ContextKey.of("update");
     ContextKey<DeleteOperator> delete = ContextKey.of("delete");
     ContextKey<InsertOperator> insert = ContextKey.of("insert");

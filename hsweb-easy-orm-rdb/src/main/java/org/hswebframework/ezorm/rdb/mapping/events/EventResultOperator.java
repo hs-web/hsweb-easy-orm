@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
+import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.result;
 
 public class EventResultOperator {
 
@@ -35,80 +36,40 @@ public class EventResultOperator {
                         EventResultOperator.class.getClassLoader(),
                         new Class[]{target},
                         ((proxy, method, args) -> {
+
                             ContextKeyValue<Boolean> isReactive = MappingContextKeys
                                     .reactive(Publisher.class.isAssignableFrom(method.getReturnType()));
                             try {
 
-                                List<Function<Object, Mono<Void>>> afters = new ArrayList<>();
-                                List<Mono<Void>> befores = new ArrayList<>();
-                                ReactiveResultHolder holder = new ReactiveResultHolder() {
-                                    @Override
-                                    public void after(Function<Object, Mono<Void>> result) {
-                                        afters.add(result);
-                                    }
+                                DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
 
-                                    @Override
-                                    public void before(Mono<Void> listener) {
-                                        befores.add(listener);
-                                    }
-                                };
                                 tableMetadata.fireEvent(before, ctx -> {
                                     ctx.set(keyValue).set(isReactive, reactiveResult(holder));
                                 });
-                                Object result = method.invoke(operator.get(), args);
 
-                                if (result instanceof Flux) {
-                                    return Flux
-                                            .concat(befores)
-                                            .thenMany(Flux.from((Publisher<?>) result)
-                                                          .concatMap(r -> Flux
-                                                                  .concat(afters.stream()
-                                                                                .map(func -> func
-                                                                                        .apply(r)
-                                                                                        .thenReturn(r))
-                                                                                .collect(Collectors.toList()))
-                                                          )
-                                                          .doOnComplete(() -> {
-                                                              tableMetadata.fireEvent(after, ctx -> ctx
-                                                                      .set(keyValue)
-                                                                      .set(isReactive));
-                                                          })
-                                                          .doOnError(err -> {
-                                                              tableMetadata.fireEvent(after, ctx -> ctx
-                                                                      .set(keyValue)
-                                                                      .set(isReactive, error(err)));
-                                                          }));
-
-
-                                } else if (result instanceof Mono) {
-                                    return Flux
-                                            .concat(befores)
-                                            .then(Mono.from((Publisher<?>) result)
-                                                      .flatMap(r -> Flux
-                                                              .concat(afters.stream()
-                                                                            .map(func -> func.apply(r).thenReturn(r))
-                                                                            .collect(Collectors.toList()))
-                                                              .then(Mono.just(r))
-                                                      )
-                                                      .doOnSuccess(r -> {
-                                                          tableMetadata
-                                                                  .fireEvent(after, ctx -> ctx
-                                                                          .set(keyValue)
-                                                                          .set(isReactive, result(r)));
-                                                      })
-                                                      .doOnError(err -> {
-                                                          tableMetadata.fireEvent(after, ctx -> {
-                                                              ctx
-                                                                      .set(keyValue)
-                                                                      .set(isReactive, error(err));
-                                                          });
-                                                      }));
-                                } else {
-                                    tableMetadata
-                                            .fireEvent(after, ctx -> ctx.set(keyValue)
-                                                                        .set(isReactive, result(result)));
+                                if (!isReactive.getValue()) {
+                                    Object result = method.invoke(operator.get(), args);
+                                    tableMetadata.fireEvent(after, ctx -> {
+                                        ctx.set(keyValue).set(MappingContextKeys.result(result), isReactive);
+                                    });
+                                    return result;
                                 }
-                                return result;
+                                boolean isMono = Mono.class.isAssignableFrom(method.getReturnType());
+                                return  holder
+                                        .doBefore()
+                                        .then(Mono.fromCallable(() -> method.invoke(operator.get(), args)))
+                                        .flatMapMany(result -> {
+                                            return Flux
+                                                    .from((Publisher<Object>) result)
+                                                    //有返回值
+                                                    .map(holder::doAfter)
+                                                    //无返回值
+                                                    .defaultIfEmpty(holder.doAfterNoResult())
+                                                    .flatMap(Function.identity());
+                                        })
+                                        .as(isMono ? Mono::from : flux -> flux)
+                                        ;
+
                             } catch (Throwable e) {
                                 tableMetadata.fireEvent(after, ctx -> {
                                     ctx.set(keyValue).set(MappingContextKeys.error(e), isReactive);

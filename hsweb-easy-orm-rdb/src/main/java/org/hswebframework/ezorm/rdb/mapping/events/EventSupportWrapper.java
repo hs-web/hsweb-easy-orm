@@ -44,8 +44,6 @@ public class EventSupportWrapper<E, R> implements ResultWrapper<E, R> {
 
     @Override
     public R getResult() {
-        R result = wrapper.getResult();
-        metadata.fireEvent(MappingEventTypes.select_done, ctx -> ctx.set(result(result), tableMetadata(metadata)).set(defaultKeyValues));
-        return result;
+        return wrapper.getResult();
     }
 }

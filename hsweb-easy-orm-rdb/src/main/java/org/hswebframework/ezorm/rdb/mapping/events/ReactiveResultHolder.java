@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public interface ReactiveResultHolder {
 
-    void after(Function<Object,Mono<Void>> result);
+    void after(Function<Object,Mono<Void>> listener);
 
     void before(Mono<Void> listener);
 
