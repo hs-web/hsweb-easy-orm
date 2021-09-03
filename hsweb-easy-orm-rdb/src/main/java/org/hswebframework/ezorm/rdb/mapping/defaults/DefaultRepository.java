@@ -85,7 +85,8 @@ public abstract class DefaultRepository<E> {
 
     public String[] getProperties() {
         if (properties == null) {
-            properties = mapping.getColumnPropertyMapping()
+            properties = mapping
+                    .getColumnPropertyMapping()
                     .entrySet()
                     .stream()
                     .filter(kv -> getTable().getColumn(kv.getKey()).isPresent())
@@ -97,7 +98,9 @@ public abstract class DefaultRepository<E> {
 
     protected String getIdColumn() {
         if (idColumn == null) {
-            this.idColumn = getTable().getColumns().stream()
+            this.idColumn = getTable()
+                    .getColumns()
+                    .stream()
                     .filter(RDBColumnMetadata::isPrimaryKey)
                     .findFirst()
                     .map(RDBColumnMetadata::getName)
@@ -117,26 +120,27 @@ public abstract class DefaultRepository<E> {
     protected SaveResultOperator doSave(Collection<E> data) {
         RDBTableMetadata table = getTable();
         UpsertOperator upsert = operator.dml().upsert(table.getFullName());
-        upsert.columns(getProperties());
 
-        List<String> ignore = new ArrayList<>();
-
-        for (E e : data) {
-            upsert.values(Stream.of(getProperties())
-                    .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
-                    .toArray());
-        }
-        upsert.ignoreUpdate(ignore.toArray(new String[0]));
         return EventResultOperator.create(
-                upsert::execute,
+                () -> {
+                    upsert.columns(getProperties());
+                    List<String> ignore = new ArrayList<>();
+                    for (E e : data) {
+                        upsert.values(Stream.of(getProperties())
+                                            .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
+                                            .toArray());
+                    }
+                    upsert.ignoreUpdate(ignore.toArray(new String[0]));
+                    return upsert.execute();
+                },
                 SaveResultOperator.class,
                 table,
                 MappingEventTypes.save_before,
                 MappingEventTypes.save_after,
                 getDefaultContextKeyValue(instance(data),
-                        type("batch"),
-                        tableMetadata(table),
-                        upsert(upsert))
+                                          type("batch"),
+                                          tableMetadata(table),
+                                          upsert(upsert))
         );
     }
 
@@ -144,15 +148,15 @@ public abstract class DefaultRepository<E> {
         RDBTableMetadata table = getTable();
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
-        for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
-            String column = entry.getKey();
-            String property = entry.getValue();
-
-            insert.value(column, getInsertColumnValue(data, property));
-        }
-
         return EventResultOperator.create(
-                insert::execute,
+                () -> {
+                    for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
+                        String column = entry.getKey();
+                        String property = entry.getValue();
+                        insert.value(column, getInsertColumnValue(data, property));
+                    }
+                    return insert.execute();
+                },
                 InsertResultOperator.class,
                 table,
                 MappingEventTypes.insert_before,
@@ -170,8 +174,8 @@ public abstract class DefaultRepository<E> {
         Object value = propertyOperator.getProperty(data, property).orElse(null);
         if (value == null) {
             value = mapping.getColumnByProperty(property)
-                    .flatMap(RDBColumnMetadata::generateDefaultValue)
-                    .orElse(null);
+                           .flatMap(RDBColumnMetadata::generateDefaultValue)
+                           .orElse(null);
             if (value != null) {
                 whenDefaultValue.accept(property, value);
                 //回填
@@ -191,17 +195,17 @@ public abstract class DefaultRepository<E> {
         RDBTableMetadata table = getTable();
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
-        insert.columns(getProperties());
-
-        for (E e : batch) {
-            insert.values(Stream.of(getProperties())
-                    .map(property -> getInsertColumnValue(e, property))
-                    .toArray());
-        }
-
-
         return EventResultOperator.create(
-                insert::execute,
+                () -> {
+                    insert.columns(getProperties());
+
+                    for (E e : batch) {
+                        insert.values(Stream.of(getProperties())
+                                            .map(property -> getInsertColumnValue(e, property))
+                                            .toArray());
+                    }
+                    return insert.execute();
+                },
                 InsertResultOperator.class,
                 table,
                 MappingEventTypes.insert_before,
