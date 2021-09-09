@@ -13,7 +13,7 @@ import java.util.function.Function;
 public class DefaultReactiveResultHolder implements ReactiveResultHolder {
     private List<Function<Object, Mono<Void>>> afterListener;
     private List<Mono<Void>> beforeListener;
-
+    private List<Mono<Void>> invokeListener;
 
     public Mono<Object> doAfterNoResult() {
         return doAfter(null);
@@ -40,6 +40,15 @@ public class DefaultReactiveResultHolder implements ReactiveResultHolder {
         return Mono.empty();
     }
 
+    public Mono<Void> doInvoke() {
+        if (CollectionUtils.isNotEmpty(invokeListener)) {
+            return Flux
+                    .concat(invokeListener)
+                    .then();
+        }
+        return Mono.empty();
+    }
+
     @Override
     public synchronized void after(Function<Object, Mono<Void>> listener) {
         if (afterListener == null) {
@@ -54,5 +63,13 @@ public class DefaultReactiveResultHolder implements ReactiveResultHolder {
             beforeListener = new ArrayList<>();
         }
         beforeListener.add(listener);
+    }
+
+    @Override
+    public synchronized void invoke(Mono<Void> listener) {
+        if (invokeListener == null) {
+            invokeListener = new ArrayList<>();
+        }
+        invokeListener.add(listener);
     }
 }

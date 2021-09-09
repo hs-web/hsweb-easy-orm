@@ -55,12 +55,13 @@ public class EventResultOperator {
                                     return result;
                                 }
                                 boolean isMono = Mono.class.isAssignableFrom(method.getReturnType());
-                                return  holder
+                                return holder
                                         .doBefore()
                                         .then(Mono.fromCallable(() -> method.invoke(operator.get(), args)))
                                         .flatMapMany(result -> {
-                                            return Flux
-                                                    .from((Publisher<Object>) result)
+                                            return holder
+                                                    .doInvoke()
+                                                    .thenMany((Publisher<Object>) result)
                                                     //有返回值
                                                     .map(holder::doAfter)
                                                     //无返回值
