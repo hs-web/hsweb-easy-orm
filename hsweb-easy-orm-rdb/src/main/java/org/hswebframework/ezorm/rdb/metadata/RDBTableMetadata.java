@@ -23,15 +23,11 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
 
     private List<RDBIndexMetadata> indexes = new ArrayList<>();
 
+    private List<ConstraintMetadata> constraints = new ArrayList<>();
+
     public RDBTableMetadata(String name) {
         this();
         setName(name);
-    }
-
-    public Optional<RDBIndexMetadata> getIndex(String indexName) {
-        return indexes.stream()
-                .filter(index -> index.getName().equalsIgnoreCase(indexName))
-                .findFirst();
     }
 
     public RDBTableMetadata() {
@@ -42,6 +38,26 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
         addFeature(DefaultSaveOrUpdateOperator.of(this));
     }
 
+    public Optional<ConstraintMetadata> getConstraint(String name) {
+        return constraints
+                .stream()
+                .filter(metadata -> metadata.getName().equalsIgnoreCase(name))
+                .findFirst();
+    }
+
+    public Optional<RDBIndexMetadata> getIndex(String indexName) {
+        return indexes
+                .stream()
+                .filter(index -> index.getName().equalsIgnoreCase(indexName))
+                .findFirst();
+    }
+
+    public void addConstraint(ConstraintMetadata metadata){
+        Objects.requireNonNull(metadata.getName(), "Constraint name can not be null");
+        metadata.setTableName(this.getName());
+        constraints.add(metadata);
+    }
+
     public void addIndex(RDBIndexMetadata index) {
         Objects.requireNonNull(index.getName(), "index name can not be null");
         index.setTableName(getName());
@@ -49,8 +65,8 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
         indexes.add(index);
         for (RDBIndexMetadata.IndexColumn column : index.getColumns()) {
             getColumn(column.getColumn())
-                    .ifPresent(columnMeta->{
-                        if(index.isPrimaryKey()){
+                    .ifPresent(columnMeta -> {
+                        if (index.isPrimaryKey()) {
                             columnMeta.setPrimaryKey(true);
                         }
                     });
@@ -69,22 +85,22 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
         clone.setAllColumns(new ConcurrentHashMap<>());
 
         this.getColumns()
-                .stream()
-                .map(RDBColumnMetadata::clone)
-                .forEach(clone::addColumn);
+            .stream()
+            .map(RDBColumnMetadata::clone)
+            .forEach(clone::addColumn);
 
         clone.setFeatures(new HashMap<>(getFeatures()));
 
         clone.setIndexes(getIndexes()
-                .stream()
-                .map(RDBIndexMetadata::clone)
-                .collect(Collectors.toList()));
+                                 .stream()
+                                 .map(RDBIndexMetadata::clone)
+                                 .collect(Collectors.toList()));
 
         this.getForeignKey()
-                .stream()
-                .map(ForeignKeyMetadata::clone)
-                .map(CastUtil::<ForeignKeyMetadata>cast)
-                .forEach(clone::addForeignKey);
+            .stream()
+            .map(ForeignKeyMetadata::clone)
+            .map(CastUtil::<ForeignKeyMetadata>cast)
+            .forEach(clone::addForeignKey);
 
         return clone;
     }
