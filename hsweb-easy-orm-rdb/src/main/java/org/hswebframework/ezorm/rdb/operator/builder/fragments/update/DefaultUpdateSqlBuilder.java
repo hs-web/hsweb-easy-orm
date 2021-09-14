@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
@@ -32,7 +33,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
     public SqlRequest build(UpdateOperatorParameter parameter) {
 
         if (CollectionUtils.isEmpty(parameter.getColumns())) {
-            throw new UnsupportedOperationException("no columns are updated");
+           return EmptySqlRequest.INSTANCE;
         }
         if (CollectionUtils.isEmpty(parameter.getWhere())) {
             throw new UnsupportedOperationException("unsupported no conditions update");
