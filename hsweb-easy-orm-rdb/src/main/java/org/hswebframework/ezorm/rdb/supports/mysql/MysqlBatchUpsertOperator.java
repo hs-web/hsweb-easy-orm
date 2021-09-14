@@ -1,11 +1,14 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
+import org.hswebframework.ezorm.rdb.metadata.ConstraintType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
@@ -19,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("all")
 public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
@@ -27,34 +31,51 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     private MysqlUpsertBatchInsertSqlBuilder builder;
 
-    private RDBColumnMetadata idColumn;
-
     private SaveOrUpdateOperator fallback;
+
+    private Boolean fallbacked;
 
     public MysqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
         this.builder = new MysqlUpsertBatchInsertSqlBuilder(table);
-        this.idColumn = table.getColumns()
-                .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst().orElse(null);
         this.fallback = new DefaultSaveOrUpdateOperator(table);
+    }
+
+    protected boolean doFallback() {
+        if (fallbacked != null) {
+            return fallbacked;
+        }
+        RDBColumnMetadata idColumn = table
+                .getColumns()
+                .stream()
+                .filter(RDBColumnMetadata::isPrimaryKey)
+                .findFirst()
+                .orElse(null);
+        //没有ID
+        if (idColumn == null) {
+            return fallbacked = true;
+        }
+        //有指定唯一索引
+        if (table
+                .getIndexes()
+                .stream()
+                .anyMatch(index -> index.isUnique() && !index.isPrimaryKey())) {
+            return fallbacked = true;
+        }
+        //有指定唯一约束
+        if (CollectionUtils.isNotEmpty(table.getConstraints())) {
+            return fallbacked = true;
+        }
+        return fallbacked = false;
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
-        if (idColumn == null) {
-            this.idColumn = table.getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
-
-            if (this.idColumn == null) {
-                return fallback.execute(parameter);
-            }
+        if (doFallback()) {
+            return fallback.execute(parameter);
         }
-
-        return new MysqlSaveResultOperator(() -> builder.build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
+        return new MysqlSaveResultOperator(() -> builder
+                .build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
     }
 
     class MysqlUpsertOperatorParameter extends InsertOperatorParameter {
@@ -88,9 +109,9 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         public Mono<SaveResult> reactive() {
             return Mono.defer(() -> {
                 return Mono.just(sqlRequest.get())
-                        .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
-                        .map(i -> SaveResult.of(0, total))
-                        .as(ExceptionUtils.translation(table));
+                           .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                           .map(i -> SaveResult.of(0, total))
+                           .as(ExceptionUtils.translation(table));
             });
         }
     }
@@ -105,7 +126,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
             if (((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 return fragments.addSql("insert ignore into")
-                        .addSql(table.getFullName());
+                                .addSql(table.getFullName());
             }
             return super.beforeBuild(parameter, fragments);
         }
