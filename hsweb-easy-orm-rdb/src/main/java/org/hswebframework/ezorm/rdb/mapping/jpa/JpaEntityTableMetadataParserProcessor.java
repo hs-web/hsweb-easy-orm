@@ -87,6 +87,19 @@ public class JpaEntityTableMetadataParserProcessor {
             }
             tableMetadata.addIndex(indexMetadata);
         }
+        idx=0;
+        for (UniqueConstraint constraint : table.uniqueConstraints()) {
+            String name = constraint.name();
+            if (name.isEmpty()) {
+                name = tableMetadata.getName().concat("_const_").concat(String.valueOf(idx++));
+            }
+            ConstraintMetadata metadata = new ConstraintMetadata();
+            metadata.setType(ConstraintType.Unique);
+            metadata.setName(name);
+            metadata.setColumns(new HashSet<>(Arrays.asList( constraint.columnNames())));
+            tableMetadata.addConstraint(metadata);
+        }
+
         List<Runnable> afterRun = new ArrayList<>();
 
         for (PropertyDescriptor descriptor : descriptors) {

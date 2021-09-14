@@ -50,6 +50,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFeatures.notNull);
             addFeature(RDBFeatures.isEmpty);
             addFeature(RDBFeatures.notEmpty);
+            addFeature(RDBFeatures.nEmpty);
 
 
             //自动关联外键条件

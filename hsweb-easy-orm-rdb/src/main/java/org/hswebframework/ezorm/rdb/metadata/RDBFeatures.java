@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
 import org.hswebframework.ezorm.core.FeatureId;
+import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
@@ -21,8 +22,8 @@ public interface RDBFeatures {
 
     SymbolTermFragmentBuilder not = new SymbolTermFragmentBuilder("not", "不等于", "!=");
 
-    SymbolTermFragmentBuilder like = new SymbolTermFragmentBuilder("like", "模糊匹配", "like");
-    SymbolTermFragmentBuilder nlike = new SymbolTermFragmentBuilder("nlike", "不模糊匹配", "not like");
+    LikeTermFragmentBuilder like = new LikeTermFragmentBuilder(false);
+    LikeTermFragmentBuilder nlike = new LikeTermFragmentBuilder(true);
 
     SymbolTermFragmentBuilder gt = new SymbolTermFragmentBuilder("gt", "大于", ">");
     SymbolTermFragmentBuilder lt = new SymbolTermFragmentBuilder("lt", "小于", "<");
@@ -38,6 +39,7 @@ public interface RDBFeatures {
 
     EmptyTermFragmentBuilder isEmpty = new EmptyTermFragmentBuilder("empty", "为空字符", false);
     EmptyTermFragmentBuilder notEmpty = new EmptyTermFragmentBuilder("notempty", "不为空字符", true);
+    EmptyTermFragmentBuilder nEmpty = new EmptyTermFragmentBuilder(TermType.nempty, "不为空字符", true);
 
     NullTermFragmentBuilder isNull = new NullTermFragmentBuilder("isnull", "为null", false);
     NullTermFragmentBuilder notNull = new NullTermFragmentBuilder("notnull", "不为null", true);
