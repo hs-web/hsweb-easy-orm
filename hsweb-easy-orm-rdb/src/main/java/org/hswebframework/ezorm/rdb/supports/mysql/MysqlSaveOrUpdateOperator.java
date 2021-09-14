@@ -107,7 +107,8 @@ public class MysqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 if (value == null
                         || columnMetadata == null
                         || columnMetadata.isPrimaryKey()
-                        || !columnMetadata.isUpdatable()) {
+                        || !columnMetadata.isUpdatable()
+                        || !columnMetadata.isSaveable()) {
 
                     continue;
                 }

@@ -22,6 +22,9 @@ public @interface ColumnType {
      */
     String typeId() default "";
 
+    /**
+     * @return type name
+     */
     String name() default "";
 
     /**
@@ -34,7 +37,7 @@ public @interface ColumnType {
      * @return 自定义java类型
      * @see RDBColumnMetadata#getJavaType()
      */
-    Class javaType() default Void.class;
+    Class<?> javaType() default Void.class;
 
     /**
      * @return DataType class

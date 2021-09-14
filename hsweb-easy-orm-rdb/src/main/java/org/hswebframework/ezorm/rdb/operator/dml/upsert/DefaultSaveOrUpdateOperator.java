@@ -91,7 +91,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
 
                 V:
                 for (List<Object> value : parameter.getValues()) {
-                    List<Term> where=new ArrayList<>(parameter.getWhere());
+                    List<Term> where = new ArrayList<>(parameter.getWhere());
                     UpdateOperatorParameter updateParameter = new UpdateOperatorParameter();
                     updateParameter.setWhere(where);
                     int index = 0;
@@ -107,7 +107,12 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                             whereIdIs.setValue(idValue);
                             updateParameter.getWhere().add(whereIdIs);
                         } else {
-                            if (column.isUpdateIgnore()) {
+                            RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
+
+                            if (column.isUpdateIgnore()
+                                    || columnMetadata == null
+                                    || !columnMetadata.isUpdatable()
+                                    || !columnMetadata.isSaveable()) {
                                 index++;
                                 continue;
                             }

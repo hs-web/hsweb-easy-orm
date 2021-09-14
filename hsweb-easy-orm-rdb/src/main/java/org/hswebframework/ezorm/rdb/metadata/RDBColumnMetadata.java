@@ -81,6 +81,12 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     private boolean insertable = true;
 
     /**
+     * 是否可以保存，用于upsert时的更新
+     * @since 4.0.12
+     */
+    private boolean saveable = true;
+
+    /**
      * DataType
      *
      * @since 4.0

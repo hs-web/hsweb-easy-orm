@@ -11,6 +11,7 @@ import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
+import org.hswebframework.ezorm.rdb.mapping.annotation.Upsert;
 import org.hswebframework.ezorm.rdb.mapping.parser.DataTypeResolver;
 import org.hswebframework.ezorm.rdb.mapping.DefaultEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.parser.ValueCodecResolver;
@@ -87,7 +88,7 @@ public class JpaEntityTableMetadataParserProcessor {
             }
             tableMetadata.addIndex(indexMetadata);
         }
-        idx=0;
+        idx = 0;
         for (UniqueConstraint constraint : table.uniqueConstraints()) {
             String name = constraint.name();
             if (name.isEmpty()) {
@@ -96,7 +97,7 @@ public class JpaEntityTableMetadataParserProcessor {
             ConstraintMetadata metadata = new ConstraintMetadata();
             metadata.setType(ConstraintType.Unique);
             metadata.setName(name);
-            metadata.setColumns(new HashSet<>(Arrays.asList( constraint.columnNames())));
+            metadata.setColumns(new HashSet<>(Arrays.asList(constraint.columnNames())));
             tableMetadata.addConstraint(metadata);
         }
 
@@ -194,6 +195,7 @@ public class JpaEntityTableMetadataParserProcessor {
         private boolean nullable;
         private boolean updatable;
         private boolean insertable;
+        private boolean saveable;
 
         private int length;
 
@@ -281,6 +283,10 @@ public class JpaEntityTableMetadataParserProcessor {
         getAnnotation(annotations, Comment.class)
                 .map(Comment::value)
                 .ifPresent(metadata::setComment);
+
+        getAnnotation(annotations, Upsert.class)
+                .map(Upsert::insertOnly)
+                .ifPresent(insertOnly -> metadata.setSaveable(!insertOnly));
 
         getAnnotation(annotations, Id.class).ifPresent(id -> metadata.setPrimaryKey(true));
 
