@@ -59,7 +59,7 @@ public class PrepareSqlFragments implements SqlFragments {
         return this;
     }
 
-    public PrepareSqlFragments addParameter(Collection<Object> parameter) {
+    public PrepareSqlFragments addParameter(Collection<?> parameter) {
         this.parameters.addAll(parameter);
         return this;
     }

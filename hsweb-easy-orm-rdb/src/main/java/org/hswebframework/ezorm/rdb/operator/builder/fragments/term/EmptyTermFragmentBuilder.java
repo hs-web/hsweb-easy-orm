@@ -8,9 +8,9 @@ public class EmptyTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
     private final String symbol;
 
-    public EmptyTermFragmentBuilder(String termType, String name, boolean isNot) {
+    public EmptyTermFragmentBuilder(String termType, String name, boolean not) {
         super(termType, name);
-        symbol = isNot ? "=" : "!=";
+        symbol = not ? "!=" : "=";
     }
 
     @Override
