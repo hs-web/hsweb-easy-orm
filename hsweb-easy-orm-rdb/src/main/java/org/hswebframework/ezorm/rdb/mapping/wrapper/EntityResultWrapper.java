@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
-    private Supplier<E> entityInstanceSupplier;
+    private final Supplier<E> entityInstanceSupplier;
 
     @Getter
     @Setter

@@ -229,6 +229,23 @@ public class JpaEntityTableMetadataParserProcessor {
         }
     }
 
+    public static String camelCase2UnderScoreCase(String str) {
+        StringBuilder sb = new StringBuilder();
+        char[] chars = str.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            if (Character.isUpperCase(c)) {
+                if (i > 0) {
+                    sb.append("_");
+                }
+                sb.append(Character.toLowerCase(c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     private void handleColumnAnnotation(PropertyDescriptor descriptor, Set<Annotation> annotations, ColumnInfo column) {
         //另外一个表
         if (!column.table.isEmpty() && !column.table.equals(tableMetadata.getName())) {
@@ -236,22 +253,30 @@ public class JpaEntityTableMetadataParserProcessor {
             return;
         }
         String columnName;
-
+        Field field = AnnotationUtils
+                .getFiledByDescriptor(entityType, descriptor)
+                .orElse(null);
+        if (null == field) {
+            return;
+        }
         if (!column.name.isEmpty()) {
             columnName = column.name;
         } else {
             //驼峰命名
-            columnName = StringUtils.camelCase2UnderScoreCase(descriptor.getName());
+            columnName = camelCase2UnderScoreCase(field.getName());
         }
         Class<?> javaType = descriptor.getPropertyType();
 
         if (javaType == Object.class) {
             javaType = descriptor.getReadMethod().getReturnType();
         }
-        mapping.addMapping(columnName, descriptor.getName());
+        if (javaType == Object.class) {
+            javaType = descriptor.getWriteMethod().getReturnType();
+        }
+        mapping.addMapping(columnName, field.getName());
         RDBColumnMetadata metadata = tableMetadata.getColumn(columnName).orElseGet(tableMetadata::newColumn);
         metadata.setName(columnName);
-        metadata.setAlias(descriptor.getName());
+        metadata.setAlias(field.getName());
         metadata.setJavaType(javaType);
         metadata.setLength(column.length);
         metadata.setPrecision(column.precision);

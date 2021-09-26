@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.executor.wrapper;
 
 import lombok.AllArgsConstructor;
+import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 
 @AllArgsConstructor(staticName = "of")
 public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
@@ -20,33 +21,17 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
     @Override
     public void wrapColumn(ColumnWrapperContext<E> context) {
 
-        wrapper.wrapColumn(new ColumnWrapperContext<E>() {
-            @Override
-            public int getColumnIndex() {
-                return context.getColumnIndex();
-            }
+        wrapper.wrapColumn(
+                new DefaultColumnWrapperContext<>(
+                        context.getColumnIndex(),
+                        context.getColumnLabel() == null
+                                ? null
+                                : context.getColumnLabel().toLowerCase(),
+                        context.getResult(),
+                        context.getRowInstance()
+                )
+        );
 
-            @Override
-            public String getColumnLabel() {
-                return context.getColumnLabel() == null ? null :
-                        context.getColumnLabel().toLowerCase();
-            }
-
-            @Override
-            public Object getResult() {
-                return context.getResult();
-            }
-
-            @Override
-            public E getRowInstance() {
-                return context.getRowInstance();
-            }
-
-            @Override
-            public void setRowInstance(E instance) {
-                context.setRowInstance(instance);
-            }
-        });
     }
 
     @Override

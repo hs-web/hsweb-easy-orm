@@ -163,6 +163,7 @@ public abstract class BasicCommonTests {
                 .createTime(new Date())
                 .tags(Arrays.asList("a", "b", "c", "d"))
                 .state((byte) 1)
+//                .aTest("test")
                 .addressId("test")
                 .doubleVal(1D)
                 .bigDecimal(new BigDecimal("1.2"))
@@ -170,17 +171,29 @@ public abstract class BasicCommonTests {
                 .build();
 
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
+        {
+            BasicTestEntity inBase = repository
+                    .createQuery()
+                    .select("*")
+                    .where("id", entity.getId())
+                    .fetchOne()
+                    .orElseThrow(UnsupportedOperationException::new);
+
+            Assert.assertEquals(entity,inBase);
+
+        }
 
         entity.setStateEnum(null);
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
 
-        Assert.assertEquals(StateEnum.enabled, repository
+        BasicTestEntity inBase = repository
                 .createQuery()
                 .select("*")
                 .where("id", entity.getId())
                 .fetchOne()
-                .map(BasicTestEntity::getStateEnum)
-                .orElse(null));
+                .orElseThrow(UnsupportedOperationException::new);
+
+        Assert.assertEquals(StateEnum.enabled,inBase.getStateEnum());
 
 
     }

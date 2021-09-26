@@ -45,6 +45,8 @@ public class JpaEntityTableMetadataParserTest {
 
         Assert.assertEquals(table.getColumn("create_time").orElseThrow(NullPointerException::new).getAlias(), "createTime");
 
+        Assert.assertEquals(table.getColumn("aTest").orElseThrow(NullPointerException::new).getAlias(), "aTest");
+
     }
 
     public interface InterfaceEntity<ID> {
@@ -108,6 +110,9 @@ public class JpaEntityTableMetadataParserTest {
 
         @Column
         private String addressId;
+
+        @Column
+        private String aTest;
 
         @JoinColumn(name = "address_id")
         private Address address;

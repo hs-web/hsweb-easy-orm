@@ -39,7 +39,7 @@ public class BasicTestEntity implements Serializable {
     @Column
     private Double doubleVal;
 
-    @Column
+    @Column(scale = 1)
     private BigDecimal bigDecimal;
 
     @Column
@@ -64,6 +64,9 @@ public class BasicTestEntity implements Serializable {
     @EnumCodec(toMask = true)
     @DefaultValue("0")
     private StateEnum[] stateEnums;
+
+    @Column
+    private String aTest;
 
     @Column(name = "address_id")
     private String addressId;
