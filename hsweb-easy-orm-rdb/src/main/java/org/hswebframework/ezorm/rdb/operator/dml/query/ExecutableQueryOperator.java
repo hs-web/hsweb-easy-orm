@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import reactor.core.publisher.Mono;
@@ -26,6 +27,10 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
     @Override
     public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
-        return new DefaultQueryResultOperator<>(this::getSql, getSqlAsync(), metadata, wrapper);
+
+        return new DefaultQueryResultOperator<>(this::getSql,
+                                                getSqlAsync(),
+                                                metadata,
+                                                ValueConverterResultWrapper.of(wrapper, metadata));
     }
 }

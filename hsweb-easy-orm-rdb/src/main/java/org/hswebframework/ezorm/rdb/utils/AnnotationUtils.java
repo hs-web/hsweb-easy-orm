@@ -6,18 +6,48 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public class AnnotationUtils {
 
-    public static Set<Annotation> getAnnotations(Class entityClass, PropertyDescriptor descriptor) {
+    public static Optional<Field> getFiledByDescriptor(Class<?> type, PropertyDescriptor descriptor) {
+        String name = descriptor.getName();
+        //获取属性
+        while (true) {
+            try {
+                try {
+                    return Optional
+                            .of(
+                                    type.getDeclaredField(name)
+                            );
+                } catch (NoSuchFieldException e1) {
+                    char[] arr = name.toCharArray();
+                    if (Character.isUpperCase(arr[0])) {
+                        arr[0] = Character.toLowerCase(arr[0]);
+                        name = new String(arr);
+                        continue;
+                    }
+                    throw e1;
+                }
+            } catch (NoSuchFieldException e) {
+                type = type.getSuperclass();
+                if (type == null || type == Object.class) {
+                    break;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Set<Annotation> getAnnotations(Class<?> entityClass, PropertyDescriptor descriptor) {
         Set<Annotation> annotations = new HashSet<>();
         Set<Class<? extends Annotation>> types = new HashSet<>();
 
-        Consumer<Annotation[]> annoConsumer =(ann)->{
+        Consumer<Annotation[]> annoConsumer = (ann) -> {
             for (Annotation annotation : ann) {
-                if(!types.contains(annotation.getClass())){
+                if (!types.contains(annotation.getClass())) {
                     annotations.add(annotation);
                 }
                 types.add(annotation.annotationType());
@@ -34,25 +64,14 @@ public class AnnotationUtils {
             annoConsumer.accept(write.getAnnotations());
         }
 
-        //获取属性
-        while (true) {
-            try {
-                Field field = entityClass.getDeclaredField(descriptor.getName());
-                annoConsumer.accept(field.getAnnotations());
-                break;
-            } catch (NoSuchFieldException e) {
-                entityClass = entityClass.getSuperclass();
-                if (entityClass == null || entityClass == Object.class) {
-                    break;
-                }
-            }
-        }
-
+        getFiledByDescriptor(entityClass, descriptor)
+                .map(Field::getAnnotations)
+                .ifPresent(annoConsumer);
 
         return annotations;
     }
 
-    public static <T extends Annotation> T getAnnotation(Class entityClass, PropertyDescriptor descriptor, Class<T> type) {
+    public static <T extends Annotation> T getAnnotation(Class<?> entityClass, PropertyDescriptor descriptor, Class<T> type) {
         T ann = null;
         if (descriptor == null) {
             return null;
@@ -67,17 +86,10 @@ public class AnnotationUtils {
             ann = getAnnotation(write, type);
         }
         //获取属性
-        while (ann == null) {
-            try {
-                Field field = entityClass.getDeclaredField(descriptor.getName());
-                ann = field.getAnnotation(type);
-                break;
-            } catch (NoSuchFieldException e) {
-                entityClass = entityClass.getSuperclass();
-                if (entityClass == null || entityClass == Object.class) {
-                    break;
-                }
-            }
+        if (ann == null) {
+            ann = getFiledByDescriptor(entityClass, descriptor)
+                    .map(f -> f.getAnnotation(type))
+                    .orElse(null);
         }
 
         return ann;
