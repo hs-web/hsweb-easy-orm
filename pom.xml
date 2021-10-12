@@ -14,13 +14,13 @@
     </modules>
 
     <name>${artifactId}</name>
-    <url>http://www.hswebframework.org</url>
+    <url>https://www.hswebframework.org</url>
     <description>一个简单的orm工具</description>
 
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -323,7 +323,7 @@
         <repository>
             <id>aliyun-nexus</id>
             <name>aliyun</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
         </repository>
 
         <repository>
@@ -344,7 +344,7 @@
         <repository>
             <id>hsweb-nexus</id>
             <name>Nexus Release Repository</name>
-            <url>http://nexus.hsweb.me/content/groups/public/</url>
+            <url>https://nexus.hsweb.me/content/groups/public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -359,12 +359,12 @@
         <repository>
             <id>releases</id>
             <name>Nexus Release Repository</name>
-            <url>http://nexus.hsweb.me/content/repositories/releases/</url>
+            <url>https://nexus.hsweb.me/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
             <name>Nexus Snapshot Repository</name>
-            <url>http://nexus.hsweb.me/content/repositories/snapshots/</url>
+            <url>https://nexus.hsweb.me/content/repositories/snapshots/</url>
         </snapshotRepository>
 
     </distributionManagement>
