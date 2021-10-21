@@ -36,20 +36,24 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
         int index = 0;
         Set<InsertColumn> columns = parameter.getColumns();
-
+        int primaryIndex = -1;
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
                     .flatMap(table::getColumn)
                     .orElse(null);
 
             if (columnMetadata != null && columnMetadata.isInsertable()) {
+                if (columnMetadata.isPrimaryKey()) {
+                    primaryIndex = index;
+                }
                 if (indexMapping.size() != 0) {
                     fragments.addSql(",");
                 }
                 fragments.addSql(columnMetadata.getQuoteName());
                 indexMapping.put(index, columnMetadata);
                 //列为函数
-                SqlFragments functionFragments = Optional.of(column)
+                SqlFragments functionFragments = Optional
+                        .of(column)
                         .flatMap(insertColumn -> ofNullable(insertColumn.getFunction())
                                 .flatMap(function -> columnMetadata.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
                                 .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn.getOpts())))
@@ -66,7 +70,14 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         }
         fragments.addSql(") values ");
         index = 0;
+        Set<Object> duplicatePrimary = new HashSet<>();
         for (List<Object> values : parameter.getValues()) {
+            if (primaryIndex >= 0) {
+                //重复的id 则不进行处理
+                if (!duplicatePrimary.add(values.get(primaryIndex))) {
+                    continue;
+                }
+            }
             if (index++ != 0) {
                 fragments.addSql(",");
             }
@@ -112,7 +123,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
     protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
         return fragments.addSql("insert into")
-                .addSql(table.getFullName());
+                        .addSql(table.getFullName());
     }
 
     protected PrepareSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, PrepareSqlFragments fragments) {

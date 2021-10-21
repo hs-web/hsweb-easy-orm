@@ -21,7 +21,10 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     public DefaultReactiveRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         this(operator,
-                () -> operator.getMetadata().getTable(table).orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
+             () -> operator
+                     .getMetadata()
+                     .getTable(table)
+                     .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
     }
 
     public DefaultReactiveRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
@@ -47,17 +50,17 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     @Override
     public Flux<E> findById(Flux<K> key) {
         return key.collectList()
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMapMany(idList -> createQuery().where().in(getIdColumn(), idList).fetch());
+                  .filter(CollectionUtils::isNotEmpty)
+                  .flatMapMany(idList -> createQuery().where().in(getIdColumn(), idList).fetch());
     }
 
     @Override
     public Mono<Integer> deleteById(Publisher<K> key) {
         return Flux.from(key)
-                .collectList()
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMap(list -> createDelete().where().in(getIdColumn(), list).execute())
-                .defaultIfEmpty(0);
+                   .collectList()
+                   .filter(CollectionUtils::isNotEmpty)
+                   .flatMap(list -> createDelete().where().in(getIdColumn(), list).execute())
+                   .defaultIfEmpty(0);
     }
 
     @Override
@@ -81,7 +84,8 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public Mono<Integer> insert(Publisher<E> data) {
-        return Flux.from(data)
+        return Flux
+                .from(data)
                 .flatMap(e -> doInsert(e).reactive())
                 .reduce(Math::addExact)
                 .defaultIfEmpty(0);
@@ -89,7 +93,8 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public Mono<Integer> insertBatch(Publisher<? extends Collection<E>> data) {
-        return Flux.from(data)
+        return Flux
+                .from(data)
                 .filter(CollectionUtils::isNotEmpty)
                 .flatMap(e -> doInsert(e).reactive())
                 .reduce(Math::addExact)

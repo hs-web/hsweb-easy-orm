@@ -32,6 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -41,6 +42,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
@@ -113,7 +116,8 @@ public abstract class BasicCommonTests {
                 .commit()
                 .sync();
         EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
-        wrapper.setMapping(table.<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+        wrapper.setMapping(table
+                                   .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
                                    .orElseThrow(NullPointerException::new));
 
         repository = new DefaultSyncRepository<>(operator, table, BasicTestEntity.class, wrapper);
@@ -154,6 +158,32 @@ public abstract class BasicCommonTests {
     }
 
     @Test
+    public void testInsertDuplicate() {
+        //10次insert
+        Assert.assertEquals(3, repository.insertBatch(
+                Stream
+                        .of(1, 2, 2, 3, 1, 3)
+                        .map(integer -> BasicTestEntity
+                                .builder()
+                                .id("test_dup_" + integer)
+                                .balance(1000L)
+                                .name("test2:" + integer)
+                                .createTime(new Date())
+                                .tags(Arrays.asList("a", "b", "c", "d"))
+                                .state((byte) 1)
+                                .stateEnum(StateEnum.enabled)
+                                .build())
+                        .collect(Collectors.toList())
+        ));
+        ;
+
+        Assert.assertEquals(3,
+                            repository.createDelete()
+                                      .like$(BasicTestEntity::getId, "test_dup_")
+                                      .execute());
+    }
+
+    @Test
     public void testRepositorySave() {
         BasicTestEntity entity = BasicTestEntity
                 .builder()
@@ -179,7 +209,7 @@ public abstract class BasicCommonTests {
                     .fetchOne()
                     .orElseThrow(UnsupportedOperationException::new);
 
-            Assert.assertEquals(entity,inBase);
+            Assert.assertEquals(entity, inBase);
 
         }
 
@@ -193,7 +223,7 @@ public abstract class BasicCommonTests {
                 .fetchOne()
                 .orElseThrow(UnsupportedOperationException::new);
 
-        Assert.assertEquals(StateEnum.enabled,inBase.getStateEnum());
+        Assert.assertEquals(StateEnum.enabled, inBase.getStateEnum());
 
 
     }

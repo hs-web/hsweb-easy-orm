@@ -109,15 +109,17 @@ public abstract class BasicReactiveTests {
         JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
         parser.setDatabaseMetadata(metadata);
         parser.parseTableMetadata(Address.class)
-                .ifPresent(address -> {
-                    operator.ddl()
-                            .createOrAlter(address)
-                            .commit()
-                            .reactive()
-                            .block();
-                });
+              .ifPresent(address -> {
+                  operator.ddl()
+                          .createOrAlter(address)
+                          .commit()
+                          .reactive()
+                          .block();
+              });
 
-        RDBTableMetadata table = parser.parseTableMetadata(BasicTestEntity.class).orElseThrow(NullPointerException::new);
+        RDBTableMetadata table = parser
+                .parseTableMetadata(BasicTestEntity.class)
+                .orElseThrow(NullPointerException::new);
 
         operator.ddl()
                 .createOrAlter(table)
@@ -125,7 +127,9 @@ public abstract class BasicReactiveTests {
                 .reactive()
                 .block();
         EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
-        wrapper.setMapping(table.<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class)).orElseThrow(NullPointerException::new));
+        wrapper.setMapping(table
+                                   .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+                                   .orElseThrow(NullPointerException::new));
 
 
         repository = new DefaultReactiveRepository<>(operator, table, BasicTestEntity.class, wrapper);
@@ -147,35 +151,37 @@ public abstract class BasicReactiveTests {
                     .block();
 
             InsertOperator insert = operator.dml()
-                    .insert("test_reactive_pager")
-                    .columns("id", "id2");
+                                            .insert("test_reactive_pager")
+                                            .columns("id", "id2");
 
             for (int i = 0; i < 100; i++) {
                 insert.values(String.valueOf(i + 1), null);
             }
 
             StepVerifier.create(insert.execute().reactive())
-                    .expectNext(100)
-                    .verifyComplete();
+                        .expectNext(100)
+                        .verifyComplete();
 
             for (int i = 0; i < 10; i++) {
                 StepVerifier.create(operator.dml()
-                        .query("test_reactive_pager")
-                        .select("id")
-                        .paging(i, 10)
-                        .fetch(map())
-                        .reactive()
-                        .log(getClass().getName())
-                        .map(map -> map.get("id"))
-                        .map(Number.class::cast)
-                        .collect(Collectors.summingInt(Number::intValue)))
-                        .expectNext((((i * 10) + 1) + ((i + 1) * 10)) * 10 / 2)
-                        .verifyComplete();
+                                            .query("test_reactive_pager")
+                                            .select("id")
+                                            .paging(i, 10)
+                                            .fetch(map())
+                                            .reactive()
+                                            .log(getClass().getName())
+                                            .map(map -> map.get("id"))
+                                            .map(Number.class::cast)
+                                            .collect(Collectors.summingInt(Number::intValue)))
+                            .expectNext((((i * 10) + 1) + ((i + 1) * 10)) * 10 / 2)
+                            .verifyComplete();
             }
         } finally {
             try {
                 operator.sql().reactive()
-                        .execute(Mono.just(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_reactive_pager")))
+                        .execute(Mono.just(SqlRequests.of("drop table " + database
+                                .getCurrentSchema()
+                                .getName() + ".test_reactive_pager")))
                         .block();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -185,32 +191,62 @@ public abstract class BasicReactiveTests {
     }
 
     @Test
+    public void testInsertDuplicate() {
+        //10次insert
+        Flux.just(1, 2, 2, 3, 3, 1)
+            .map(integer -> BasicTestEntity
+                    .builder()
+                    .id("test_dup_" + integer)
+                    .balance(1000L)
+                    .name("test2:" + integer)
+                    .createTime(new Date())
+                    .tags(Arrays.asList("a", "b", "c", "d"))
+                    .state((byte) 1)
+                    .stateEnum(StateEnum.enabled)
+                    .build())
+            .collectList()
+            .as(repository::insertBatch)
+            .as(StepVerifier::create)
+            .expectNext(3)
+            .verifyComplete();
+
+        repository.createDelete()
+                  .like$(BasicTestEntity::getId, "test_dup_")
+                  .execute()
+                  .as(StepVerifier::create)
+                  .expectNext(3)
+                  .verifyComplete();
+    }
+
+    @Test
     public void testRepositoryInsertBach() {
         //10次insert
-        StepVerifier.create(repository.insert(Flux.range(0, 10)
-                .map(integer -> BasicTestEntity.builder()
-                        .id("test_id_2_" + integer)
-                        .balance(1000L)
-                        .name("test2:" + integer)
-                        .createTime(new Date())
-                        .tags(Arrays.asList("a", "b", "c", "d"))
-                        .state((byte) 1)
-                        .stateEnum(StateEnum.enabled)
-                        .build())))
-                .expectNext(10)
-                .verifyComplete();
+        StepVerifier.create(repository
+                                    .insert(Flux.range(0, 10)
+                                                .map(integer -> BasicTestEntity
+                                                        .builder()
+                                                        .id("test_id_2_" + integer)
+                                                        .balance(1000L)
+                                                        .name("test2:" + integer)
+                                                        .createTime(new Date())
+                                                        .tags(Arrays.asList("a", "b", "c", "d"))
+                                                        .state((byte) 1)
+                                                        .stateEnum(StateEnum.enabled)
+                                                        .build())))
+                    .expectNext(10)
+                    .verifyComplete();
 
         //每30条数据批量insert
         StepVerifier
                 .create(repository.insertBatch(Flux.range(0, 100)
-                        .map(integer -> BasicTestEntity.builder()
-                                .id("test_id_" + integer)
-                                .balance(1000L)
-                                .name("test:" + integer)
-                                .createTime(new Date())
-                                .state((byte) 1)
-                                .build())
-                        .buffer(10).delayElements(Duration.ofMillis(100))))
+                                                   .map(integer -> BasicTestEntity.builder()
+                                                                                  .id("test_id_" + integer)
+                                                                                  .balance(1000L)
+                                                                                  .name("test:" + integer)
+                                                                                  .createTime(new Date())
+                                                                                  .state((byte) 1)
+                                                                                  .build())
+                                                   .buffer(10).delayElements(Duration.ofMillis(100))))
                 .expectNext(100)
                 .verifyComplete();
 
@@ -220,49 +256,49 @@ public abstract class BasicReactiveTests {
     @Test
     public void testReactiveRepositorySave() {
         BasicTestEntity entity = BasicTestEntity.builder()
-                .id("test_id_save")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("test")
-                .stateEnum(StateEnum.enabled)
-                .build();
+                                                .id("test_id_save")
+                                                .balance(1000L)
+                                                .name("test")
+                                                .createTime(new Date())
+                                                .tags(Arrays.asList("a", "b", "c", "d"))
+                                                .state((byte) 1)
+                                                .addressId("test")
+                                                .stateEnum(StateEnum.enabled)
+                                                .build();
 
         repository.save(Mono.just(entity))
-                .map(SaveResult::getTotal)
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+                  .map(SaveResult::getTotal)
+                  .as(StepVerifier::create)
+                  .expectNext(1)
+                  .verifyComplete();
 
         BasicTestEntity entity2 = BasicTestEntity.builder()
-                .id("test_id_save2")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("test")
-                .stateEnum(StateEnum.enabled)
-                .build();
+                                                 .id("test_id_save2")
+                                                 .balance(1000L)
+                                                 .name("test")
+                                                 .createTime(new Date())
+                                                 .tags(Arrays.asList("a", "b", "c", "d"))
+                                                 .state((byte) 1)
+                                                 .addressId("test")
+                                                 .stateEnum(StateEnum.enabled)
+                                                 .build();
 
         entity.setName("test2");
 
         repository.createQuery()
-                .select("*")
-                .where("id", "test_id_save")
-                .fetch()
-                .map(BasicTestEntity::getName)
-                .as(StepVerifier::create)
-                .expectNext("test")
-                .verifyComplete();
+                  .select("*")
+                  .where("id", "test_id_save")
+                  .fetch()
+                  .map(BasicTestEntity::getName)
+                  .as(StepVerifier::create)
+                  .expectNext("test")
+                  .verifyComplete();
 
         repository.save(Flux.just(entity2, entity))
-                .map(SaveResult::getTotal)
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+                  .map(SaveResult::getTotal)
+                  .as(StepVerifier::create)
+                  .expectNext(2)
+                  .verifyComplete();
 
     }
 
@@ -270,65 +306,65 @@ public abstract class BasicReactiveTests {
     @Test
     public void testRepositoryCurd() {
         BasicTestEntity entity = BasicTestEntity.builder()
-                .id("test_id")
-                .balance(1000L)
-                .name("test")
-                .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
-                .createTime(new Date())
-                .state((byte) 1)
-                .addressId("test")
-                .build();
+                                                .id("test_id")
+                                                .balance(1000L)
+                                                .name("test")
+                                                .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
+                                                .createTime(new Date())
+                                                .state((byte) 1)
+                                                .addressId("test")
+                                                .build();
 
         addressRepository.insert(Mono.just(Record.newRecord().putValue("id", "test").putValue("name", "test_address")))
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+                         .as(StepVerifier::create)
+                         .expectNext(1)
+                         .verifyComplete();
 
         Mono.just(entity)
-                .as(repository::insert)
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+            .as(repository::insert)
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
 
         Mono.just(entity.getId())
-                .as(repository::findById)
-            .doOnNext(e->{
+            .as(repository::findById)
+            .doOnNext(e -> {
                 System.out.println(entity);
                 System.out.println(e);
             })
-                .as(StepVerifier::create)
-                .expectNext(entity)
-                .verifyComplete();
+            .as(StepVerifier::create)
+            .expectNext(entity)
+            .verifyComplete();
 
         repository.createQuery()
-                .count()
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+                  .count()
+                  .as(StepVerifier::create)
+                  .expectNext(1)
+                  .verifyComplete();
 
         repository.createQuery()
-                .where(entity::getId)
-                .orderBy(desc(entity::getId))
-                .fetch()
-                .as(StepVerifier::create)
-                .expectNext(entity)
-                .verifyComplete();
+                  .where(entity::getId)
+                  .orderBy(desc(entity::getId))
+                  .fetch()
+                  .as(StepVerifier::create)
+                  .expectNext(entity)
+                  .verifyComplete();
 
         entity.setBalance(100000L);
         repository.createUpdate()
-                .set(entity::getBalance)
-                .where(entity::getId)
-                .execute()
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+                  .set(entity::getBalance)
+                  .where(entity::getId)
+                  .execute()
+                  .as(StepVerifier::create)
+                  .expectNext(1)
+                  .verifyComplete();
 
         repository.createDelete()
-                .where(entity::getId)
-                .execute()
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+                  .where(entity::getId)
+                  .execute()
+                  .as(StepVerifier::create)
+                  .expectNext(1)
+                  .verifyComplete();
 
     }
 
