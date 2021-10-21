@@ -35,6 +35,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
         Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
 
         int index = 0;
+        int primaryIndex = -1;
         Set<InsertColumn> columns = parameter.getColumns();
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
@@ -42,6 +43,9 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                     .orElse(null);
 
             if (columnMetadata != null && columnMetadata.isInsertable()) {
+                if (columnMetadata.isPrimaryKey()) {
+                    primaryIndex = index;
+                }
                 indexMapping.put(index, columnMetadata);
                 //列为函数
                 SqlFragments functionFragments = Optional.of(column)
@@ -79,9 +83,17 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
             valuesSql.addSql("values (");
             int valueLen = values.size();
             int vIndex = 0;
+            Set<Object> duplicatePrimary = new HashSet<>();
+
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
                 int valueIndex = entry.getKey();
+                if (primaryIndex >= 0) {
+                    //重复的id 则不进行处理
+                    if (values.size()>primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
+                        continue;
+                    }
+                }
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");

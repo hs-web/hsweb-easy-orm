@@ -35,8 +35,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
 
         int index = 0;
-        Set<InsertColumn> columns = parameter.getColumns();
         int primaryIndex = -1;
+        Set<InsertColumn> columns = parameter.getColumns();
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
                     .flatMap(table::getColumn)
@@ -74,7 +74,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         for (List<Object> values : parameter.getValues()) {
             if (primaryIndex >= 0) {
                 //重复的id 则不进行处理
-                if (!duplicatePrimary.add(values.get(primaryIndex))) {
+                if (values.size()>primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
                     continue;
                 }
             }
