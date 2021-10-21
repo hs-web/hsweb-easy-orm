@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
@@ -34,7 +35,7 @@ public class DefaultDatabaseOperatorTest {
 
         SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new H2ConnectionProvider());
         database.addFeature(sqlExecutor);
-
+        database.addFeature(new TestJdbcReactiveSqlExecutor(new H2ConnectionProvider()));
         H2SchemaMetadata schema = new H2SchemaMetadata("PUBLIC");
 
 
@@ -77,6 +78,56 @@ public class DefaultDatabaseOperatorTest {
                 .mapToInt(Integer::valueOf)
                 .sum();
         Assert.assertEquals(sum, 1);
+    }
+
+    @Test
+    public void testDropColumn(){
+        operator.ddl()
+                .createOrAlter("test_ddl_drop")
+                .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
+                .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
+                .addColumn().name("comment").columnDef("varchar(32) not null default '1'").commit()
+                .commit()
+                .sync();
+
+        operator.ddl()
+                .createOrAlter("test_ddl_drop")
+                .dropColumn("comment")
+                .commit()
+                .sync();
+
+       Assert.assertFalse(
+               operator.getMetadata()
+                       .getTable("test_ddl_drop")
+                       .flatMap(table->table.getColumn("comment"))
+                       .isPresent()
+       );
+    }
+
+    @Test
+    public void testDropColumnReactive(){
+        operator.ddl()
+                .createOrAlter("test_ddl_drop")
+                .addColumn().name("id").varchar(32).primaryKey().comment("ID").commit()
+                .addColumn().name("name").varchar(64).notNull().comment("名称").commit()
+                .addColumn().name("comment").columnDef("varchar(32) not null default '1'").commit()
+                .commit()
+                .reactive()
+                .block();
+
+        operator.ddl()
+                .createOrAlter("test_ddl_drop")
+                .dropColumn("comment")
+                .commit()
+                .reactive()
+                .block();
+
+        Assert.assertFalse(
+                operator.getMetadata()
+                        .getTable("test_ddl_drop")
+                        .flatMap(table->table.getColumn("comment"))
+                        .isPresent()
+        );
     }
 
     @Getter

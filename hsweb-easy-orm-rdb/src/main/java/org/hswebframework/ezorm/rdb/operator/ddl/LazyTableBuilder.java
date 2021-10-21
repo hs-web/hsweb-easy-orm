@@ -137,6 +137,7 @@ public class LazyTableBuilder implements TableBuilder {
                 RDBTableMetadata newTable;
                 if (oldTable != null) {
                     newTable = oldTable.clone();
+                    removed.forEach(newTable::removeColumn);
                 } else {
                     newTable = schema.newTable(tableName);
                 }
@@ -184,6 +185,7 @@ public class LazyTableBuilder implements TableBuilder {
                         .map(oldTable -> {
                             RDBTableMetadata newTable = oldTable.clone();
                             accept(newTable);
+                            removed.forEach(newTable::removeColumn);
                             SqlRequest request = buildAlterSql(newTable, oldTable);
                             if (request.isEmpty()) {
                                 if (merge) {
