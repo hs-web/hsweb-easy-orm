@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
 import org.hswebframework.ezorm.core.FeatureId;
-import org.hswebframework.ezorm.core.meta.Feature;
-import org.hswebframework.ezorm.core.meta.FeatureSupportedMetadata;
-import org.hswebframework.ezorm.core.meta.ObjectMetadata;
-import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.core.meta.*;
 import org.hswebframework.ezorm.rdb.events.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
@@ -15,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,33 +118,36 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
      * @param contextConsumer 上下文消费者
      */
     default void fireEvent(EventType eventType, Consumer<EventContext> contextConsumer) {
-        this.findFeature(EventListener.ID)
-                .ifPresent(eventListener -> {
-                    EventContext context = EventContext.create();
-                    context.set(ContextKeys.table, this);
-                    contextConsumer.accept(context);
-                    eventListener.onEvent(eventType, context);
-                });
+        EventListener eventListener = this.findFeatureOrElse(EventListener.ID, null);
+        if (eventListener != null) {
+            EventContext context = EventContext.create();
+            context.set(ContextKeys.table, this);
+            contextConsumer.accept(context);
+            eventListener.onEvent(eventType, context);
+        }
     }
 
     default String getFullName() {
         return getSchema().getName().concat(".").concat(getName());
     }
 
-    default <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
-        return findFeature(id.getId());
-    }
-
-    default <T extends Feature> Optional<T> findFeature(String id) {
-        return of(this.<T>getFeature(id))
-                .filter(Optional::isPresent)
-                .orElseGet(() -> getSchema().findFeature(id));
+    @Override
+    default <T extends Feature> T findFeatureOrElse(String id, Supplier<T> orElse) {
+        T current = getFeatureOrElse(id, null);
+        if (null != current) {
+            return current;
+        }
+        RDBSchemaMetadata schema = getSchema();
+        if (schema != null) {
+            return schema.findFeatureOrElse(id, null);
+        }
+        return orElse == null ? null : orElse.get();
     }
 
     default List<Feature> findFeatures(Predicate<Feature> predicate) {
         return Stream.concat(getSchema().getFeatureList().stream(), getFeatureList().stream())
-                .filter(predicate)
-                .collect(Collectors.toList());
+                     .filter(predicate)
+                     .collect(Collectors.toList());
 
     }
 

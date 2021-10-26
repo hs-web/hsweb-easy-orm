@@ -19,7 +19,7 @@ public class DefaultBatchSqlRequest extends PrepareSqlRequest implements BatchSq
 
     @Getter
     @Setter
-    private List<SqlRequest> batch = new ArrayList<>();
+    private List<SqlRequest> batch = new ArrayList<>(16);
 
     @Override
     public boolean isEmpty() {

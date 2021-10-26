@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(staticName = "of")
 public class BlockSqlFragments implements SqlFragments {
 
-    private Map<FragmentBlock, LinkedList<SqlFragments>> blocks = new TreeMap<>(FragmentBlock::compareTo);
+    private final Map<FragmentBlock, LinkedList<SqlFragments>> blocks = new TreeMap<>(FragmentBlock::compareTo);
 
     @Override
     public boolean isEmpty() {

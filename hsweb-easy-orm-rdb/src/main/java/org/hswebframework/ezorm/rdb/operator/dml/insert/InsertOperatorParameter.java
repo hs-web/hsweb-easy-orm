@@ -12,8 +12,8 @@ import java.util.Set;
 @Setter
 public class InsertOperatorParameter {
 
-    private Set<InsertColumn> columns = new LinkedHashSet<>();
+    private Set<InsertColumn> columns = new LinkedHashSet<>(64);
 
-    private List<List<Object>> values = new ArrayList<>();
+    private List<List<Object>> values = new ArrayList<>(32);
 
 }

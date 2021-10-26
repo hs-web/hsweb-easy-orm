@@ -16,6 +16,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColum
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SortOrderFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
+import org.hswebframework.utils.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -127,8 +128,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     @Override
     public Optional<RDBColumnMetadata> getColumn(String name) {
-        return ofNullable(name)
-                .map(allColumns::get);
+        if(StringUtils.isNullOrEmpty(name)){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(allColumns.get(name));
     }
 
     @Override

@@ -3,10 +3,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 import lombok.*;
 import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
-import org.hswebframework.ezorm.core.meta.AbstractColumnMetadata;
-import org.hswebframework.ezorm.core.meta.ColumnMetadata;
-import org.hswebframework.ezorm.core.meta.Feature;
-import org.hswebframework.ezorm.core.meta.ObjectType;
+import org.hswebframework.ezorm.core.meta.*;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
@@ -14,6 +11,7 @@ import java.sql.JDBCType;
 import java.sql.SQLType;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -203,14 +201,16 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return RDBObjectType.column;
     }
 
-    public <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
-        return findFeature(id.getId());
-    }
-
-    public <T extends Feature> Optional<T> findFeature(String id) {
-        return of(this.<T>getFeature(id))
-                .filter(Optional::isPresent)
-                .orElseGet(() -> owner.findFeature(id));
+    @Override
+    public <T extends Feature> T findFeatureOrElse(String id, Supplier<T> orElse) {
+        T current = getFeatureOrElse(id, null);
+        if (null != current) {
+            return current;
+        }
+        if (owner != null) {
+            return owner.findFeatureOrElse(id, null);
+        }
+        return orElse == null ? null : orElse.get();
     }
 
     public List<Feature> findFeatures(Predicate<Feature> predicate) {

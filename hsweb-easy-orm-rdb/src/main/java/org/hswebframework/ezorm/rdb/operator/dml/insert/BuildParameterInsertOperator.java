@@ -9,7 +9,7 @@ import java.util.*;
 public class BuildParameterInsertOperator extends InsertOperator {
 
     @Getter
-    private InsertOperatorParameter parameter = new InsertOperatorParameter();
+    private final InsertOperatorParameter parameter = new InsertOperatorParameter();
 
     private boolean columnValueModel = false;
 

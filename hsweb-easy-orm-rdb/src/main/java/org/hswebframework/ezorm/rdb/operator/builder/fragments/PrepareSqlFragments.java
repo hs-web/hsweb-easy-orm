@@ -54,18 +54,28 @@ public class PrepareSqlFragments implements SqlFragments {
         return this;
     }
 
+    @SuppressWarnings("all")
     public PrepareSqlFragments addSql(Collection<String> sql) {
-        this.sql.addAll(sql);
+        for (String s : sql) {
+            this.sql.add(s);
+        }
         return this;
     }
 
+    @SuppressWarnings("all")
     public PrepareSqlFragments addParameter(Collection<?> parameter) {
-        this.parameters.addAll(parameter);
+        for (Object o : parameter) {
+            this.parameters.add(o);
+        }
         return this;
     }
 
+    @SuppressWarnings("all")
     public PrepareSqlFragments addParameter(Object... parameter) {
-        return this.addParameter(Arrays.asList(parameter));
+        for (Object o : parameter) {
+            this.parameters.add(o);
+        }
+        return this;
     }
 
     @Override

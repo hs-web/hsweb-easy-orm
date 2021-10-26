@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.Optional.*;
 import static java.util.stream.Collectors.*;
@@ -90,7 +91,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     protected <T extends ObjectMetadata> T loadMetadata(ObjectType type, String name) {
         return getParser(type)
                 .flatMap(parser -> {
-                    log.debug("load {} metadata {} ,use parser:{}", type,name, parser.getClass().getSimpleName());
+                    log.debug("load {} metadata {} ,use parser:{}", type, name, parser.getClass().getSimpleName());
                     return parser.parseByName(name);
                 })
                 .map(CastUtil::<T>cast)
@@ -179,16 +180,17 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         features.put(feature.getId(), feature);
     }
 
-    public <T extends Feature> Optional<T> findFeature(FeatureId<T> id) {
-        return findFeature(id.getId());
-    }
-
-    public <T extends Feature> Optional<T> findFeature(String id) {
-        return of(this.<T>getFeature(id))
-                .filter(Optional::isPresent)
-                .orElseGet(() -> Optional
-                        .ofNullable(getDatabase())
-                        .flatMap(database -> database.getFeature(id)));
+    @Override
+    public <T extends Feature> T findFeatureOrElse(String id, Supplier<T> orElse) {
+        T current = getFeatureOrElse(id, null);
+        if (null != current) {
+            return current;
+        }
+        DatabaseMetadata<?> db = getDatabase();
+        if (db != null) {
+            return db.findFeatureOrElse(id, null);
+        }
+        return orElse == null ? null : orElse.get();
     }
 
     @Override

@@ -31,8 +31,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
     public SqlRequest build(InsertOperatorParameter parameter) {
         PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
 
-        Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>();
-        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
+        Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>(64);
+        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>(64);
 
         int index = 0;
         int primaryIndex = -1;
@@ -70,7 +70,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         }
         fragments.addSql(") values ");
         index = 0;
-        Set<Object> duplicatePrimary = new HashSet<>();
+        Set<Object> duplicatePrimary = new HashSet<>(32);
         for (List<Object> values : parameter.getValues()) {
             if (primaryIndex >= 0) {
                 //重复的id 则不进行处理
