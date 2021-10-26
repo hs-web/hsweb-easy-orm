@@ -71,29 +71,28 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
         } else {
             fragments.addSql("insert");
         }
-
+        Set<Object> duplicatePrimary = new HashSet<>();
         for (List<Object> values : parameter.getValues()) {
             PrepareSqlFragments intoSql = PrepareSqlFragments.of();
             PrepareSqlFragments valuesSql = PrepareSqlFragments.of();
 
-            intoSql.addSql("into")
-                    .addSql(table.getFullName())
-                    .addSql("(");
-
-            valuesSql.addSql("values (");
             int valueLen = values.size();
             int vIndex = 0;
-            Set<Object> duplicatePrimary = new HashSet<>();
 
+            if (primaryIndex >= 0) {
+                //重复的id 则不进行处理
+                if (values.size() > primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
+                    continue;
+                }
+            }
+            intoSql.addSql("into")
+                   .addSql(table.getFullName())
+                   .addSql("(");
+
+            valuesSql.addSql("values (");
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
                 int valueIndex = entry.getKey();
-                if (primaryIndex >= 0) {
-                    //重复的id 则不进行处理
-                    if (values.size()>primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
-                        continue;
-                    }
-                }
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
