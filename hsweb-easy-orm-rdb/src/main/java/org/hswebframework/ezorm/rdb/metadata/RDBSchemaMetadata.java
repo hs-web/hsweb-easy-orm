@@ -32,6 +32,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
             /* 通用查询条件 */
             addFeature(RDBFeatures.eq);
+            addFeature(RDBFeatures.is);
             addFeature(RDBFeatures.not);
             addFeature(RDBFeatures.gt);
             addFeature(RDBFeatures.gte);
@@ -44,8 +45,6 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFeatures.notIn);
             addFeature(RDBFeatures.between);
             addFeature(RDBFeatures.notBetween);
-
-            addFeature(RDBFeatures.eq);
             addFeature(RDBFeatures.isNull);
             addFeature(RDBFeatures.notNull);
             addFeature(RDBFeatures.isEmpty);

@@ -19,6 +19,7 @@ public interface RDBFeatures {
 
     /*通用查询条件*/
     SymbolTermFragmentBuilder eq = new SymbolTermFragmentBuilder("eq", "等于", "=");
+    SymbolTermFragmentBuilder is = new SymbolTermFragmentBuilder("is", "等于", "=");
 
     SymbolTermFragmentBuilder not = new SymbolTermFragmentBuilder("not", "不等于", "!=");
 
