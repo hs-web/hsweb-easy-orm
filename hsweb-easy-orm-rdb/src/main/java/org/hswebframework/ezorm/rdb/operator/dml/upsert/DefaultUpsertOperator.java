@@ -63,14 +63,18 @@ public class DefaultUpsertOperator extends UpsertOperator {
             return this;
         }
 
-        Set<String> keys = values.get(0).keySet();
+        Set<String> keys = new LinkedHashSet<>();
+
+        for (Map<String, Object> value : values) {
+            keys.addAll(value.keySet());
+        }
+
         columns(keys.toArray(new String[0]));
 
         for (Map<String, Object> value : values) {
-            values(keys
-                    .stream()
-                    .map(value::get)
-                    .toArray());
+            values(keys.stream()
+                       .map(value::get)
+                       .toArray());
         }
 
         return this;

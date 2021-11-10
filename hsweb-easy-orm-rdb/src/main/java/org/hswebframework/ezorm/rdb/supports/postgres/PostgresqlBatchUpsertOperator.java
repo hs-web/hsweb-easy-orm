@@ -114,19 +114,17 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 return sql;
             }
 
-            List<Object> values = parameter.getValues().get(0);
 
             int index = 0;
             boolean more = false;
             for (InsertColumn column : columns) {
-                Object value = index >= values.size() ? null : values.get(index);
+
                 index++;
                 if (column instanceof UpsertColumn && ((UpsertColumn) column).isUpdateIgnore()) {
                     continue;
                 }
                 RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
-                if (value == null
-                        || columnMetadata == null
+                if ( columnMetadata == null
                         || columnMetadata.isPrimaryKey()
                         || !columnMetadata.isUpdatable()
                         || !columnMetadata.isSaveable()) {
@@ -140,11 +138,11 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 }
                 more = true;
                 sql.addSql(columnMetadata.getQuoteName()).addSql("=");
-                if (value instanceof NativeSql) {
-                    sql.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters());
-                    continue;
-                }
-                sql.addSql(columnMetadata.getFullName("excluded"));
+
+                sql.addSql(
+                        "coalesce(", columnMetadata.getFullName("excluded"), ",", columnMetadata.getFullName(),")"
+                );
+               // sql.addSql(columnMetadata.getFullName("excluded"));
             }
             if (!more) {
                 sql.addSql("nothing");

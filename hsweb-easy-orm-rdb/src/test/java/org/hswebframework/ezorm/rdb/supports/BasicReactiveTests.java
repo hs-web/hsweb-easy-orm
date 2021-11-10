@@ -368,4 +368,48 @@ public abstract class BasicReactiveTests {
 
     }
 
+    @Test
+    public void testSaveNull() {
+        repository
+                .insert(Mono.just(BasicTestEntity
+                                          .builder()
+                                          .name("test")
+                                          .id("test_null")
+                                          .state((byte) 1)
+                                          .doubleVal(1D)
+                                          .build()))
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
+
+        repository
+                .save(Flux.just(
+                        BasicTestEntity
+                                .builder()
+                                .name("test")
+                                .id("test_null2")
+                                .state((byte) 1)
+                                .doubleVal(1D)
+                                .build(),
+                        BasicTestEntity
+                                .builder()
+                                .name("test")
+                                .id("test_null")
+                                .state((byte) 1)
+                                .build())
+                )
+                .map(SaveResult::getTotal)
+                .as(StepVerifier::create)
+                .expectNext(2)
+                .verifyComplete();
+
+        repository.createQuery()
+                  .select("doubleVal","id")
+                  .where("id","test_null")
+                  .fetch()
+                  .as(StepVerifier::create)
+                  .expectNextMatches(e -> e.getDoubleVal() != null)
+                  .verifyComplete();
+    }
+
 }
