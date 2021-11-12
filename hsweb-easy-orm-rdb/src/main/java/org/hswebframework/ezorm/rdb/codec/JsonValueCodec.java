@@ -157,55 +157,59 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
     @Override
     @SneakyThrows
     public Object decode(Object data) {
+        try {
+            Object target = data;
 
-        Object target = data;
+            if (data instanceof Clob) {
+                target = mapper.readValue(((Clob) data).getCharacterStream(), jacksonType);
+            } else if (data instanceof Blob) {
+                target = mapper.readValue(((Blob) data).getBinaryStream(), jacksonType);
+            } else if (data instanceof InputStream) {
+                target = mapper.readValue((InputStream) data, jacksonType);
+            } else if (data instanceof byte[]) {
+                target = mapper.readValue((byte[]) data, jacksonType);
+            } else if (data instanceof String) {
+                target = mapper.readValue(((String) data), jacksonType);
+            } else if (data instanceof ByteBuffer) {
+                return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
+            } else if (FeatureUtils.r2dbcIsAlive()) {
+                Mono mono = null;
+                if (data instanceof io.r2dbc.spi.Clob) {
+                    mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
+                               .collect(Collectors.joining())
+                               .map(this::doRead);
 
-        if (data instanceof Clob) {
-            target = mapper.readValue(((Clob) data).getCharacterStream(), jacksonType);
-        } else if (data instanceof Blob) {
-            target = mapper.readValue(((Blob) data).getBinaryStream(), jacksonType);
-        } else if (data instanceof InputStream) {
-            target = mapper.readValue((InputStream) data, jacksonType);
-        } else if (data instanceof byte[]) {
-            target = mapper.readValue((byte[]) data, jacksonType);
-        } else if (data instanceof String) {
-            target = mapper.readValue(((String) data), jacksonType);
-        } else if (data instanceof ByteBuffer) {
-            return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
-        } else if (FeatureUtils.r2dbcIsAlive()) {
-            Mono mono = null;
-            if (data instanceof io.r2dbc.spi.Clob) {
-                mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
-                           .collect(Collectors.joining())
-                           .map(this::doRead);
-
-            } else if (data instanceof io.r2dbc.spi.Blob) {
-                mono = Mono.from(((io.r2dbc.spi.Blob) data).stream())
-                           .map(ByteBufferBackedInputStream::new)
-                           .map(this::doRead);
-            }
-            if (mono != null) {
-                if (targetType == Mono.class || targetType == Publisher.class) {
-                    return mono;
+                } else if (data instanceof io.r2dbc.spi.Blob) {
+                    mono = Mono.from(((io.r2dbc.spi.Blob) data).stream())
+                               .map(ByteBufferBackedInputStream::new)
+                               .map(this::doRead);
                 }
-                if (targetType == Flux.class) {
-                    return mono.flux();
+                if (mono != null) {
+                    if (targetType == Mono.class || targetType == Publisher.class) {
+                        return mono;
+                    }
+                    if (targetType == Flux.class) {
+                        return mono.flux();
+                    }
+                    // TODO: 2019-09-25 更好的方式？
+                    target = mono.toFuture().get(10, TimeUnit.SECONDS);
                 }
-                // TODO: 2019-09-25 更好的方式？
-                target = mono.toFuture().get(10, TimeUnit.SECONDS);
             }
-        }
 
-        if (targetType.isInstance(target)) {
+            if (targetType.isInstance(target)) {
+                return target;
+            }
+            if (targetType == Mono.class || targetType == Publisher.class) {
+                return target == null ? Mono.empty() : Mono.just(target);
+            }
+            if (targetType == Flux.class) {
+                return target == null ? Flux.empty() : Flux.just(target);
+            }
+            log.warn("unsupported json format:{}", data);
             return target;
+        }catch (Throwable e){
+            log.error("decode json error {}",data,e);
+            return null;
         }
-        if (targetType == Mono.class || targetType == Publisher.class) {
-            return target == null ? Mono.empty() : Mono.just(target);
-        }
-        if (targetType == Flux.class) {
-            return target == null ? Flux.empty() : Flux.just(target);
-        }
-        log.warn("unsupported json format:{}", data);
-        return target;
     }
 }
