@@ -367,7 +367,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         public void doWrap(RDBColumnMetadata instance, String attr, Object value) {
             String stringValue;
             if (value instanceof String) {
-                stringValue = ((String) value).toLowerCase();
+                stringValue = ((String) value);
             } else {
                 stringValue = value == null ? "" : value.toString();
             }
