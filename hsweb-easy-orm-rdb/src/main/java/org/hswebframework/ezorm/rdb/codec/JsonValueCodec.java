@@ -1,9 +1,11 @@
 package org.hswebframework.ezorm.rdb.codec;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
+import jdk.nashorn.api.scripting.JSObject;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -35,25 +37,27 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
         defaultMapper.setTimeZone(TimeZone.getDefault());
     }
 
-    private JavaType jacksonType;
+    private final JavaType jacksonType;
 
-    private Class targetType;
+    private final Class<?> targetType;
 
     @Setter
     private ObjectMapper mapper = defaultMapper;
 
-    public static JsonValueCodec of(Class targetType) {
+    public static JsonValueCodec of(Class<?> targetType) {
         return new JsonValueCodec(targetType, defaultMapper.getTypeFactory().constructType(targetType));
     }
 
     public static JsonValueCodec ofCollection(Class<? extends Collection> targetType
-            , Class elementType) {
-        return new JsonValueCodec(targetType, defaultMapper.getTypeFactory().constructCollectionType(targetType, elementType));
+            , Class<?> elementType) {
+        return new JsonValueCodec(targetType, defaultMapper
+                .getTypeFactory()
+                .constructCollectionType(targetType, elementType));
     }
 
-    public static JsonValueCodec ofMap(Class<? extends Map> targetType, Class keyType, Class valueType) {
+    public static JsonValueCodec ofMap(Class<? extends Map> targetType, Class<?> keyType, Class<?> valueType) {
         return new JsonValueCodec(targetType, defaultMapper.getTypeFactory()
-                .constructMapType(targetType, keyType, valueType));
+                                                           .constructMapType(targetType, keyType, valueType));
     }
 
     public static JsonValueCodec ofField(Field field) {
@@ -93,7 +97,7 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
     }
 
 
-    public JsonValueCodec(Class targetType, JavaType type) {
+    public JsonValueCodec(Class<?> targetType, JavaType type) {
         this.jacksonType = type;
         this.targetType = targetType;
     }
@@ -107,7 +111,37 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
         if (value instanceof String) {
             return value;
         }
+        //适配nashorn
+        if (value instanceof JSObject) {
+            value = convertJSObject(((JSObject) value));
+        }
         return mapper.writeValueAsString(value);
+    }
+
+    private Object convertJSObject(JSObject jsObject) {
+        if (jsObject.isArray()) {
+            return jsObject
+                    .values()
+                    .stream()
+                    .map(obj -> {
+                        if (obj instanceof JSObject) {
+                            return convertJSObject(((JSObject) obj));
+                        }
+                        return obj;
+                    }).collect(Collectors.toList());
+        }
+        if (jsObject instanceof Map) {
+            Map<Object, Object> newMap = new HashMap<>(((Map<?, ?>) jsObject).size());
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) jsObject).entrySet()) {
+                Object val = entry.getValue();
+                if (val instanceof JSObject) {
+                    val = convertJSObject(((JSObject) val));
+                }
+                newMap.put(entry.getKey(), val);
+            }
+            return newMap;
+        }
+        return JSON.toJSON(jsObject);
     }
 
     @SneakyThrows
@@ -136,20 +170,19 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             target = mapper.readValue((byte[]) data, jacksonType);
         } else if (data instanceof String) {
             target = mapper.readValue(((String) data), jacksonType);
-        }else if(data instanceof ByteBuffer){
+        } else if (data instanceof ByteBuffer) {
             return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
-        }
-        else if (FeatureUtils.r2dbcIsAlive()) {
+        } else if (FeatureUtils.r2dbcIsAlive()) {
             Mono mono = null;
             if (data instanceof io.r2dbc.spi.Clob) {
                 mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
-                        .collect(Collectors.joining())
-                        .map(this::doRead);
+                           .collect(Collectors.joining())
+                           .map(this::doRead);
 
             } else if (data instanceof io.r2dbc.spi.Blob) {
                 mono = Mono.from(((io.r2dbc.spi.Blob) data).stream())
-                        .map(ByteBufferBackedInputStream::new)
-                        .map(this::doRead);
+                           .map(ByteBufferBackedInputStream::new)
+                           .map(this::doRead);
             }
             if (mono != null) {
                 if (targetType == Mono.class || targetType == Publisher.class) {
