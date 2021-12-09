@@ -108,7 +108,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                                        .values()
                                        .stream()
                                        .sorted()
-                                       .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1))
+                                       .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1,LinkedHashMap::new))
                                        .values());
     }
 
