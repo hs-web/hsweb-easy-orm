@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.h2.H2ConnectionProvider;
@@ -20,8 +21,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.of;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.mapStream;
-import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.singleMap;
+import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
 public class DefaultDatabaseOperatorTest {
 
@@ -176,7 +176,7 @@ public class DefaultDatabaseOperatorTest {
                 .query("test_dm_crud")
                 .select("id", "name")
                 .where(dsl -> dsl.is("id", "test"))
-                .fetch(singleMap())
+                .fetch(lowerCase(ResultWrappers.singleMap()))
                 .sync();
         Assert.assertEquals(data.get("id"), "test");
         Assert.assertEquals(data.get("name"), "new_name");
