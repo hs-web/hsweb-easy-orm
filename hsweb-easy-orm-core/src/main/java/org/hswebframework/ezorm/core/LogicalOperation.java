@@ -2,8 +2,10 @@ package org.hswebframework.ezorm.core;
 
 import org.hswebframework.ezorm.core.param.TermType;
 import reactor.function.Consumer3;
+import reactor.function.Function3;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.*;
@@ -46,8 +48,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
     @Deprecated
     default <E> T each(String column, Collection<E> list, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, E>> accepterGetter) {
         if (null != list)
-            list.forEach(o -> accepterGetter.apply((T) this).accept(column, o));
-        return (T) this;
+            list.forEach(o -> accepterGetter.apply(castSelf()).accept(column, o));
+        return castSelf();
     }
 
     /**
@@ -70,8 +72,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
      */
     default <E> T each(String column, String termType, Collection<E> list, Function<T, TermTypeConditionalSupport.Accepter<T, E>> accepterGetter) {
         if (null != list)
-            list.forEach(o -> accepterGetter.apply((T) this).accept(column, termType, o));
-        return (T) this;
+            list.forEach(o -> accepterGetter.apply(castSelf()).accept(column, termType, o));
+        return castSelf();
     }
 
     /**
@@ -97,8 +99,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
                           Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepterGetter,
                           Function<E, V> valueMapper) {
         if (null != list)
-            list.forEach(o -> accepterGetter.apply((T) this).accept(column, valueMapper.apply(o)));
-        return (T) this;
+            list.forEach(o -> accepterGetter.apply(castSelf()).accept(column, valueMapper.apply(o)));
+        return castSelf();
     }
 
     /**
@@ -124,8 +126,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
                              Consumer3<T, String, V> accepterGetter,
                              Function<E, V> valueMapper) {
         if (null != list)
-            list.forEach(o -> accepterGetter.accept((T) this, column.getColumn(), valueMapper.apply(o)));
-        return (T) this;
+            list.forEach(o -> accepterGetter.accept(castSelf(), column.getColumn(), valueMapper.apply(o)));
+        return castSelf();
     }
 
     default <E, B> T each(StaticMethodReferenceColumn<B> column,
@@ -150,8 +152,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
                           Function<E, V> valueMapper,
                           BiConsumer<T, V> consumer) {
         if (null != list)
-            list.forEach(o -> consumer.accept((T) this, valueMapper.apply(o)));
-        return (T) this;
+            list.forEach(o -> consumer.accept(castSelf(), valueMapper.apply(o)));
+        return castSelf();
     }
 
     /**
@@ -172,8 +174,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
                           Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepterGetter,
                           Function<E, V> valueMapper) {
         if (null != list)
-            list.forEach(o -> accepterGetter.apply((T) this).accept(column, termType, valueMapper.apply(o)));
-        return (T) this;
+            list.forEach(o -> accepterGetter.apply(castSelf()).accept(column, termType, valueMapper.apply(o)));
+        return castSelf();
     }
 
     /**
@@ -195,8 +197,8 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
      */
     default <E> T each(Collection<E> list, BiConsumer<T, E> consumer) {
         if (null != list)
-            list.forEach(o -> consumer.accept((T) this, o));
-        return (T) this;
+            list.forEach(o -> consumer.accept(castSelf(), o));
+        return castSelf();
     }
 
 
@@ -218,10 +220,39 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
      * @see Conditional
      * @see SimpleAccepter
      */
+    @Deprecated
     default T each(Map<String, Object> mapParam, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, Object>> accepter) {
         if (null != mapParam)
-            mapParam.forEach((k, v) -> accepter.apply((T) this).accept(k, v));
-        return (T) this;
+            mapParam.forEach((k, v) -> accepter.apply(castSelf()).accept(k, v));
+        return castSelf();
+    }
+
+    /**
+     * 遍历一个Map,进行条件追加
+     * 例如:
+     * <pre>
+     *      query.each({name:"test"},Query::like)
+     *  </pre>
+     * 生成条件如下:
+     * <pre>
+     *      where name like '%test%'
+     * </pre>
+     *
+     * @param mapParam map参数
+     * @param accepter 追加方式函数
+     * @return this {@link T}
+     * @see Function
+     * @see Conditional
+     * @see SimpleAccepter
+     */
+    default <K, V> T each(Map<K, V> mapParam, Function3<T, K, V, T> accepter) {
+        T self = castSelf();
+        if (null != mapParam) {
+            for (Map.Entry<K, V> kvEntry : mapParam.entrySet()) {
+                self = accepter.apply(self, kvEntry.getKey(), kvEntry.getValue());
+            }
+        }
+        return self;
     }
 
     /**
@@ -240,10 +271,11 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
      * @param accepter 拼接类型函数
      * @return this {@link T}
      */
+    @Deprecated
     default T each(Map<String, Object> mapParam, String termType, Function<T, TermTypeConditionalSupport.Accepter<T, Object>> accepter) {
         if (null != mapParam)
-            mapParam.forEach((k, v) -> accepter.apply((T) this).accept(k, termType, v));
-        return (T) this;
+            mapParam.forEach((k, v) -> accepter.apply(castSelf()).accept(k, termType, v));
+        return castSelf();
     }
 
     /**
@@ -256,9 +288,9 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
      */
     default T when(boolean condition, Consumer<T> consumer) {
         if (condition) {
-            consumer.accept((T) this);
+            consumer.accept(castSelf());
         }
-        return (T) this;
+        return castSelf();
     }
 
     /**
@@ -295,9 +327,9 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
     @Deprecated
     default <V> T when(boolean condition, String column, V value, Function<T, TermTypeConditionalSupport.SimpleAccepter<T, V>> accepter) {
         if (condition) {
-            accepter.apply((T) this).accept(column, value);
+            accepter.apply(castSelf()).accept(column, value);
         }
-        return (T) this;
+        return castSelf();
     }
 
     /**
@@ -319,9 +351,9 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
      */
     default <V> T when(boolean condition, String column, Consumer3<T, String, V> accepter, V value) {
         if (condition) {
-            accepter.accept((T) this, column, value);
+            accepter.accept(castSelf(), column, value);
         }
-        return (T) this;
+        return castSelf();
     }
 
     /**
@@ -402,9 +434,9 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
     @Deprecated
     default <V> T when(boolean condition, String column, String termType, V value, Function<T, TermTypeConditionalSupport.Accepter<T, V>> accepter) {
         if (condition) {
-            accepter.apply((T) this).accept(column, termType, value);
+            accepter.apply(castSelf()).accept(column, termType, value);
         }
-        return (T) this;
+        return castSelf();
     }
 
     /**
@@ -428,29 +460,33 @@ public interface LogicalOperation<T extends LogicalOperation<?>> extends TermTyp
 
     @SuppressWarnings("all")
     default <V> T when(Optional<V> value, BiConsumer<T, V> consumer) {
-        value.ifPresent(v -> consumer.accept((T) this, v));
-        return (T) this;
+        value.ifPresent(v -> consumer.accept(castSelf(), v));
+        return castSelf();
     }
 
     default <R> R as(Function<T, R> function) {
-        return function.apply((T) this);
+        return function.apply(castSelf());
     }
 
     default T accept(Consumer<T> consumer) {
-        consumer.accept((T) this);
-        return (T) this;
+        consumer.accept(castSelf());
+        return castSelf();
     }
 
     default <V> T accept(V v, BiConsumer<T, V> consumer) {
-        consumer.accept((T) this, v);
-        return (T) this;
+        consumer.accept(castSelf(), v);
+        return castSelf();
     }
 
     default <V> T accept(MethodReferenceColumn<V> column, BiConsumer<T, V> consumer) {
         V v = column.get();
         if (v != null) {
-            consumer.accept((T) this, v);
+            consumer.accept(castSelf(), v);
         }
+        return castSelf();
+    }
+
+    default T castSelf() {
         return (T) this;
     }
 }

@@ -16,7 +16,7 @@ import java.util.Collection;
  * </ul>
  *
  * @author zhouhao
- * @see 4.0
+ * @since  4.0
  */
 public interface DictionaryCodec {
 

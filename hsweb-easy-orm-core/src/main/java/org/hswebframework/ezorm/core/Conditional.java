@@ -56,12 +56,12 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
 
     default T and(Consumer<T> consumer) {
         consumer.accept(this.and());
-        return (T) this;
+        return castSelf();
     }
 
     default T or(Consumer<T> consumer) {
         consumer.accept(this.or());
-        return (T) this;
+        return castSelf();
     }
 
     /*
@@ -92,26 +92,26 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
     }
 
     default T where() {
-        return (T) this;
+        return castSelf();
     }
 
     default T where(Consumer<Conditional<T>> consumer) {
         consumer.accept(this);
-        return (T) this;
+        return castSelf();
     }
 
     default T and(Supplier<Term> termSupplier) {
         Term term = termSupplier.get();
         term.setType(Term.Type.and);
         accept(term);
-        return (T) this;
+        return castSelf();
     }
 
     default T or(Supplier<Term> termSupplier) {
         Term term = termSupplier.get();
         term.setType(Term.Type.or);
         accept(term);
-        return (T) this;
+        return castSelf();
     }
 
     default T and(String column, Object value) {
