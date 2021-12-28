@@ -22,10 +22,17 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.hswebframework.ezorm.rdb.utils.SqlUtils.*;
 
+/**
+ * 基于r2dbc的响应式sql执行器
+ *
+ * @author zhouhao
+ * @since 4.0
+ */
 @Slf4j
 public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
@@ -33,8 +40,19 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     @Setter
     private Logger logger = R2dbcReactiveSqlExecutor.log;
 
+    /**
+     * 获取连接
+     *
+     * @return r2dbc Connection
+     */
     protected abstract Mono<Connection> getConnection();
 
+    /**
+     * 释放连接，不建议实现此方法，推荐在getConnection里使用{@link Mono#usingWhen(Publisher, Function, Function)}来处理.
+     *
+     * @param type       type
+     * @param connection connection
+     */
     protected abstract void releaseConnection(SignalType type, Connection connection);
 
     enum Interrupted {
@@ -45,17 +63,30 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         }
     }
 
+    /**
+     * 使用指定的Connection执行SQL并返回执行结果
+     *
+     * @param connection Connection
+     * @param request    SQL
+     * @return 执行结果
+     */
     protected Flux<Result> doExecute(Connection connection,
                                      SqlRequest request) {
 
         return Flux
-                .just(prepareStatement(connection.createStatement(request.getSql()), request))
-                .flatMap(Statement::execute)
+                .from(this.prepareStatement(connection.createStatement(request.getSql()), request)
+                          .execute())
                 .map(Result.class::cast)
                 .doOnSubscribe(subscription -> printSql(logger, request));
     }
 
-    protected Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
+    /**
+     * 执行SQL并返回执行结果,多个SQL将使用同一个Connection执行
+     *
+     * @param sqlRequestFlux SQL流
+     * @return 执行结果
+     */
+    private Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
         return this
                 .getConnection()
                 .flatMapMany(connection -> sqlRequestFlux
@@ -85,8 +116,9 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return this
                 .toFlux(request)
                 .as(this::doExecute)
-                .flatMap(result ->
-                        result.map((row, meta) -> {
+                .flatMap(result -> result
+                        .map((row, meta) -> {
+                            //查询结果的列名
                             List<String> columns = new ArrayList<>(meta.getColumnNames());
                             wrapper.beforeWrap(() -> columns);
                             E e = wrapper.newRowInstance();
@@ -98,6 +130,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                 wrapper.wrapColumn(context);
                                 e = context.getRowInstance();
                             }
+                            //中断转换
                             if (!wrapper.completedWrapRow(e)) {
                                 return Interrupted.instance;
                             }
@@ -109,29 +142,49 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .doOnComplete(wrapper::completedWrap);
     }
 
+    /**
+     * 将SQL流转为Flux
+     *
+     * @param request
+     * @return
+     */
     @SuppressWarnings("all")
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
 
         return Flux
                 .from(request)
                 .flatMap(sql -> {
+                    //批量SQL
                     if (sql instanceof BatchSqlRequest) {
                         return Flux.concat(Flux.just(sql), Flux.fromIterable(((BatchSqlRequest) sql).getBatch()));
                     }
                     return Flux.just(sql);
                 })
+                //忽略空SQL
                 .filter(SqlRequest::isNotEmpty)
                 .map(this::convertRequest);
     }
 
+    /**
+     * 转换SQL为R2dbcSqlRequest,由于不同数据库的预编译占位符不同,需要进行转换
+     *
+     * @param sqlRequest SqlRequest
+     * @return SqlRequest
+     */
     protected SqlRequest convertRequest(SqlRequest sqlRequest) {
         return R2dbcSqlRequest.of(getBindFirstIndex(), getBindSymbol(), sqlRequest);
     }
 
+    /**
+     * @return 预编译参数绑定占位符
+     */
     protected String getBindSymbol() {
         return "$";
     }
 
+    /**
+     * @return 预编译参数绑定起始索引
+     */
     protected int getBindFirstIndex() {
         return 1;
     }
@@ -144,6 +197,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     }
 
     protected void bind(Statement statement, int index, Object value) {
+        //时间需要转换为LocalDateTime
         if (value instanceof Date) {
             value = ((Date) value)
                     .toInstant()

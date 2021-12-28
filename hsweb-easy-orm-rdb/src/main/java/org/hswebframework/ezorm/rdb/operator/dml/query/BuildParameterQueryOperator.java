@@ -24,7 +24,7 @@ import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
 public class BuildParameterQueryOperator extends QueryOperator {
 
     @Getter
-    private QueryOperatorParameter parameter = new QueryOperatorParameter();
+    private final QueryOperatorParameter parameter = new QueryOperatorParameter();
 
     public BuildParameterQueryOperator(String from) {
         parameter.setFrom(from);
@@ -34,8 +34,8 @@ public class BuildParameterQueryOperator extends QueryOperator {
     public QueryOperator select(Collection<String> columns) {
 
         columns.stream()
-                .map(SelectColumn::of)
-                .forEach(parameter.getSelect()::add);
+               .map(SelectColumn::of)
+               .forEach(parameter.getSelect()::add);
         return this;
     }
 
@@ -74,19 +74,20 @@ public class BuildParameterQueryOperator extends QueryOperator {
 
     @Override
     public QueryOperator setParam(QueryParam param) {
+        QueryOperator operator = this;
         if (param.isPaging()) {
-            paging(param.getPageIndex(), param.getPageSize());
+            operator = operator.paging(param.getPageIndex(), param.getPageSize());
         }
-        where(param.getTerms());
-        select(param.getIncludes().toArray(new String[0]));
-        selectExcludes(param.getExcludes().toArray(new String[0]));
-        orderBy(param.getSorts().stream()
-                .map(sort -> "asc".equals(sort.getOrder()) ?
-                        asc(sort.getName()) :
-                        desc(sort.getName()))
-                .toArray(SortOrder[]::new));
-        context(param.getContext());
-        return this;
+        return operator
+                .where(param.getTerms())
+                .select(param.getIncludes().toArray(new String[0]))
+                .selectExcludes(param.getExcludes().toArray(new String[0]))
+                .orderBy(param.getSorts().stream()
+                              .map(sort -> "asc".equals(sort.getOrder()) ?
+                                      asc(sort.getName()) :
+                                      desc(sort.getName()))
+                              .toArray(SortOrder[]::new))
+                .context(param.getContext());
     }
 
     @Override
@@ -104,7 +105,7 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
-    public  QueryOperator groupBy(Operator<?>... operators) {
+    public QueryOperator groupBy(Operator<?>... operators) {
         return this;
     }
 

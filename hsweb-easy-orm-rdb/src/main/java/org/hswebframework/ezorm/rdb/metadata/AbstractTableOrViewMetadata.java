@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.*;
 
+/**
+ * 抽象表或视图元数据,
+ */
 @Getter
 @Setter
 public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata {
@@ -54,6 +57,8 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
             return metadata;
         }
     };
+
+    protected List<RDBColumnMetadata> columnView;
 
     protected List<ForeignKeyMetadata> foreignKey = new CopyOnWriteArrayList<>();
 
@@ -108,7 +113,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
                                        .values()
                                        .stream()
                                        .sorted()
-                                       .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1,LinkedHashMap::new))
+                                       .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
                                        .values());
     }
 
@@ -128,7 +133,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     @Override
     public Optional<RDBColumnMetadata> getColumn(String name) {
-        if(StringUtils.isNullOrEmpty(name)){
+        if (StringUtils.isNullOrEmpty(name)) {
             return Optional.empty();
         }
         return Optional.ofNullable(allColumns.get(name));

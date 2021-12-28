@@ -27,11 +27,12 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
         int len = value.size();
 
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        //参数数量大于 500时,使用(column in (?,?,?) or column in(?,?,?))
         if (len > 500) {
             fragments.addSql("(");
         }
         fragments.addSql(columnFullName)
-                .addSql(symbol);
+                 .addSql(symbol);
 
         int flag = 0;
         for (int i = 0; i < len; i++) {
@@ -42,8 +43,8 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
             if (flag > 500 && i != len - 1) {
                 flag = 0;
                 fragments.addSql(") or")
-                        .addSql(columnFullName)
-                        .addSql(symbol);
+                         .addSql(columnFullName)
+                         .addSql(symbol);
             }
         }
         if (len > 500) {

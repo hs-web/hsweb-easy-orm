@@ -21,6 +21,9 @@ public enum RDBFeatureType implements FeatureType {
 
     query("查询"),
 
+    /**
+     * @see org.hswebframework.ezorm.rdb.operator.builder.Paginator
+     */
     paginator("分页器"),
 
     sqlBuilder("SQL构造器"),

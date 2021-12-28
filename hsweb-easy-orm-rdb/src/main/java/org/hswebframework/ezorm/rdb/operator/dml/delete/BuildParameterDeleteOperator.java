@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 @Getter
 public class BuildParameterDeleteOperator extends DeleteOperator {
 
-    private DeleteOperatorParameter parameter = new DeleteOperatorParameter();
+    private final DeleteOperatorParameter parameter = new DeleteOperatorParameter();
 
 
     @Override
