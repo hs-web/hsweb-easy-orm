@@ -25,9 +25,9 @@ public class QueryOperatorParameter {
 
     private List<SortOrder> orderBy = new ArrayList<>();
 
-    private List<FunctionColumn> groupBy = new ArrayList<>();
+    private List<SelectColumn> groupBy = new ArrayList<>();
 
-    private List<FunctionTerm> having = new ArrayList<>();
+    private List<Term> having = new ArrayList<>();
 
     private Integer pageIndex;
 

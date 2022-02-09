@@ -2,14 +2,11 @@ package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import lombok.Getter;
 import org.hswebframework.ezorm.core.Conditional;
-import org.hswebframework.ezorm.core.MethodReferenceColumn;
-import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
-import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.Operator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
@@ -19,7 +16,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.*;
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.asc;
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.desc;
 
 public class BuildParameterQueryOperator extends QueryOperator {
 
@@ -105,7 +103,10 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
-    public QueryOperator groupBy(Operator<?>... operators) {
+    public QueryOperator groupBy(Operator<SelectColumn>... operators) {
+        for (Operator<SelectColumn> operator : operators) {
+            parameter.getGroupBy().add(operator.get());
+        }
         return this;
     }
 
