@@ -18,6 +18,7 @@ import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
 import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
+import org.hswebframework.ezorm.rdb.mapping.wrapper.NestedEntityResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -115,10 +116,11 @@ public abstract class BasicCommonTests {
                 .createOrAlter(table)
                 .commit()
                 .sync();
-        EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
-        wrapper.setMapping(table
-                                   .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
-                                   .orElseThrow(NullPointerException::new));
+        NestedEntityResultWrapper wrapper =
+                table
+                        .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+                        .map(mapping->new NestedEntityResultWrapper(mapping))
+                        .orElseThrow(NullPointerException::new);
 
         repository = new DefaultSyncRepository<>(operator, table, BasicTestEntity.class, wrapper);
         addressRepository = operator.dml().createRepository("test_address");
@@ -274,6 +276,31 @@ public abstract class BasicCommonTests {
                                   .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
                                   .fetchOne()
                                   .isPresent());
+
+    }
+
+
+    @Test
+    public void testJoin() {
+
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
+                .id("joinTest")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("joinTest")
+                .stateEnum(StateEnum.enabled)
+                .build();
+        addressRepository.insert(Record.newRecord().putValue("id", "joinTest").putValue("name", "joinTest"));
+        repository.insert(entity);
+
+        BasicTestEntity e = repository.findById(entity.getId()).orElse(null);
+        Assert.assertNotNull(e);
+        Assert.assertNotNull(e.getAddress());
+        Assert.assertEquals(e.getAddress().getName(),"joinTest");
 
     }
 

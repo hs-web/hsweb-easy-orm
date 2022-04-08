@@ -49,6 +49,11 @@ public class SimpleColumnMapping implements EntityColumnMapping {
     }
 
     @Override
+    public TableOrViewMetadata getTable() {
+        return metadata.get();
+    }
+
+    @Override
     public String getId() {
         return "SimpleColumnMapping";
     }

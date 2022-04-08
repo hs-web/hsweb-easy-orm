@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +21,11 @@ public abstract class LazyEntityColumnMapping implements EntityColumnMapping {
             }
 
         };
+    }
+
+    @Override
+    public TableOrViewMetadata getTable() {
+        return getMapping().getTable();
     }
 
     @Override

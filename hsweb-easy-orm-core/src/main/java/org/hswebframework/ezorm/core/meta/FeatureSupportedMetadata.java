@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.core.meta;
 
+import org.apache.commons.collections.MapUtils;
 import org.hswebframework.ezorm.core.CastUtil;
 import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.FeatureType;
@@ -21,6 +22,19 @@ public interface FeatureSupportedMetadata {
                        .map(Map::values)
                        .<List<Feature>>map(ArrayList::new)
                        .orElseGet(Collections::emptyList);
+    }
+
+    default <T extends Feature> Optional<T> getFeature(FeatureType type) {
+        Map<String, Feature> features = getFeatures();
+        if (MapUtils.isEmpty(features)) {
+            return Optional.empty();
+        }
+        for (Feature value : features.values()) {
+            if (value.getType().getId().equals(type.getId())) {
+                return Optional.of((T) value);
+            }
+        }
+        return Optional.empty();
     }
 
     default <T extends Feature> List<T> getFeatures(FeatureType type) {
