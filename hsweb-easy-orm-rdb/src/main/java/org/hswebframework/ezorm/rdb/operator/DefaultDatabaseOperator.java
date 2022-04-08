@@ -26,6 +26,17 @@ import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.DefaultUpsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
 
+
+/**
+ * 默认的数据库操作实现
+ *
+ * @author zhouhao
+ * @see DatabaseOperator
+ * @see DMLOperator
+ * @see SQLOperator
+ * @see DDLOperator
+ * @since 4.0
+ */
 @AllArgsConstructor(staticName = "of")
 public class DefaultDatabaseOperator
         implements DatabaseOperator, DMLOperator, SQLOperator, DDLOperator {
@@ -79,9 +90,10 @@ public class DefaultDatabaseOperator
 
     @Override
     public DeleteOperator delete(String table) {
-        return ExecutableDeleteOperator.of(metadata
-                                                   .getTable(table)
-                                                   .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
+        return ExecutableDeleteOperator
+                .of(metadata
+                            .getTable(table)
+                            .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist ")));
     }
 
     @Override
@@ -115,20 +127,23 @@ public class DefaultDatabaseOperator
 
     @Override
     public SyncSqlExecutor sync() {
-        return metadata.getFeature(SyncSqlExecutor.ID)
-                       .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
+        return metadata
+                .getFeature(SyncSqlExecutor.ID)
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported SyncSqlExecutor"));
     }
 
     @Override
     public ReactiveSqlExecutor reactive() {
-        return metadata.getFeature(ReactiveSqlExecutor.ID)
-                       .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
+        return metadata
+                .getFeature(ReactiveSqlExecutor.ID)
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported ReactiveSqlExecutor"));
     }
 
     @Override
     public TableBuilder createOrAlter(String name) {
         RDBSchemaMetadata schema;
         String tableName = name;
+        //处理表明包含 . ,说明是指定schema
         if (name.contains(".")) {
             String[] arr = name.split("[.]");
             tableName = arr[1];

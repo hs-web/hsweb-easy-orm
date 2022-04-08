@@ -345,8 +345,12 @@ public class JpaEntityTableMetadataParserProcessor {
                 metadata.addFeature(EnumFragmentBuilder.not);
             }
         }
+        customColumn(descriptor, field, metadata,annotations);
         tableMetadata.addColumn(metadata);
     }
 
+    protected void customColumn(PropertyDescriptor descriptor, Field field, RDBColumnMetadata column,Set<Annotation> annotations) {
+
+    }
 
 }

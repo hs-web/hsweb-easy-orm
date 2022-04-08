@@ -13,6 +13,9 @@ import java.util.Map;
 
 /**
  * 同步sql执行器,用于执行sql,并同步获取执行结果
+ *
+ * @author zhouhao
+ * @since 4.0
  */
 public interface SyncSqlExecutor extends Feature {
 

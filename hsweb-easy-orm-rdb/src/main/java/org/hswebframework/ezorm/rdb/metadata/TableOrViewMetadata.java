@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
-import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.meta.*;
 import org.hswebframework.ezorm.rdb.events.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -155,7 +154,17 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
         return findFeatures((feature -> true));
     }
 
+    /**
+     * 合并表结构,与指定的表结构进行合并
+     *
+     * @param metadata 表结构
+     */
     void merge(TableOrViewMetadata metadata);
 
+    /**
+     * 替换表结构
+     *
+     * @param metadata 表结构
+     */
     void replace(TableOrViewMetadata metadata);
 }

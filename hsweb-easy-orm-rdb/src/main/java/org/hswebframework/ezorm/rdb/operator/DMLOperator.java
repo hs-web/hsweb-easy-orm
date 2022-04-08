@@ -11,9 +11,20 @@ import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
 
+/**
+ * DML操作接口,提供增删改查操作
+ *
+ * @author zhouhao
+ * @since 4.0
+ */
 public interface DMLOperator {
 
-
+    /**
+     * 根据表结构来进行查询
+     *
+     * @param tableOrView TableOrViewMetadata
+     * @return QueryOperator
+     */
     QueryOperator query(TableOrViewMetadata tableOrView);
 
     DeleteOperator delete(RDBTableMetadata table);

@@ -13,6 +13,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+/**
+ * 响应式SQL执行器,用于响应式执行SQL操作
+ *
+ * @author zhouhao
+ * @since 4.0
+ */
 public interface ReactiveSqlExecutor extends Feature {
 
     String ID_VALUE = "reactiveSqlExecutor";

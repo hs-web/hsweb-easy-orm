@@ -9,6 +9,18 @@ import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
 import java.util.List;
 
+/**
+ * 抽象查询条件构造器,用于将{@link Term}构造为SQL的where条件，支持嵌套条件.
+ *
+ * <pre>{@code
+ * {column:"id","value":"data-id"} => where id = ?
+ *
+ * {column:"id","value":"data-id",terms:[{column:"name",value:"test"}]} => where id = ? and (name = ?)
+ * }</pre>
+ *
+ * @param <T> 参数类型
+ * @author zhouhao
+ */
 @SuppressWarnings("all")
 public abstract class AbstractTermsFragmentBuilder<T> {
 
@@ -16,6 +28,14 @@ public abstract class AbstractTermsFragmentBuilder<T> {
     @Getter
     private boolean useBlock = false;
 
+    /**
+     * 构造{@link BlockSqlFragments},通常用于分页的场景,可以获取到SQL的每一个组成部分.
+     *
+     * @param parameter parameter
+     * @param terms     terms
+     * @return BlockSqlFragments
+     * @see BlockSqlFragments
+     */
     private BlockSqlFragments createBlockFragments(T parameter, List<Term> terms) {
         BlockSqlFragments fragments = BlockSqlFragments.of();
 
@@ -26,7 +46,8 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             index++;
             SqlFragments termFragments;
             if (term instanceof SqlTerm) {
-                termFragments = PrepareSqlFragments.of()
+                termFragments = PrepareSqlFragments
+                        .of()
                         .addSql(((SqlTerm) term).getSql())
                         .addParameter(PropertiesUtils.convertList(term.getValue()));
             } else {
@@ -73,6 +94,14 @@ public abstract class AbstractTermsFragmentBuilder<T> {
         return fragments;
     }
 
+    /**
+     * 构造{@link PrepareSqlFragments}.
+     *
+     * @param parameter parameter
+     * @param terms     terms
+     * @return BlockSqlFragments
+     * @see PrepareSqlFragments
+     */
     private PrepareSqlFragments createPrepareFragments(T parameter, List<Term> terms) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
@@ -82,11 +111,14 @@ public abstract class AbstractTermsFragmentBuilder<T> {
         for (Term term : terms) {
             index++;
             SqlFragments termFragments;
+            //原生SQL
             if (term instanceof SqlTerm) {
-                termFragments = PrepareSqlFragments.of()
+                termFragments = PrepareSqlFragments
+                        .of()
                         .addSql(((SqlTerm) term).getSql())
                         .addParameter(PropertiesUtils.convertList(term.getValue()));
             } else {
+                //值为null时忽略条件
                 termFragments = term.getValue() == null ? EmptySqlFragments.INSTANCE : createTermFragments(parameter, term);
             }
 
@@ -127,6 +159,15 @@ public abstract class AbstractTermsFragmentBuilder<T> {
         return isUseBlock() ? createBlockFragments(parameter, terms) : createPrepareFragments(parameter, terms);
     }
 
+    /**
+     * 构造单个条件的SQL片段,方法无需处理{@link Term#getTerms()}.
+     * <p>
+     * 如果{@link Term#getValue()}为{@code null},此方法不会被调用.
+     *
+     * @param parameter 参数
+     * @param term      条件
+     * @return SqlFragments
+     */
     protected abstract SqlFragments createTermFragments(T parameter, Term term);
 
 }

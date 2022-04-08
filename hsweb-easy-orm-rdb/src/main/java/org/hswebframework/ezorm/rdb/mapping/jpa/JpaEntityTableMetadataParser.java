@@ -36,7 +36,8 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
         if (table == null) {
             return Optional.empty();
         }
-        RDBSchemaMetadata schema = databaseMetadata.getSchema(table.schema())
+        RDBSchemaMetadata schema = databaseMetadata
+                .getSchema(table.schema())
                 .orElseGet(databaseMetadata::getCurrentSchema);
 
 
@@ -47,15 +48,17 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
                 .map(Comment::value)
                 .ifPresent(tableMetadata::setComment);
 
-        JpaEntityTableMetadataParserProcessor parserProcessor = new JpaEntityTableMetadataParserProcessor(tableMetadata, entityType);
+        JpaEntityTableMetadataParserProcessor parserProcessor = createProcessor(tableMetadata, entityType);
         parserProcessor.setDataTypeResolver(dataTypeResolver);
         parserProcessor.setValueCodecResolver(valueCodecResolver);
         parserProcessor.process();
 
 
         return Optional.of(tableMetadata);
-
     }
 
+    protected JpaEntityTableMetadataParserProcessor createProcessor(RDBTableMetadata table, Class<?> type) {
+        return new JpaEntityTableMetadataParserProcessor(table, type);
+    }
 
 }

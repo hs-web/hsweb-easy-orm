@@ -15,14 +15,26 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * 数据库表结构元数据定义信息,用于定义表字段,索引等信息.
+ *
+ * @author zhouhao
+ * @see AbstractTableOrViewMetadata
+ * @see RDBIndexMetadata
+ * @see ConstraintMetadata
+ * @since 4.0
+ */
 @Getter
 @Setter
 public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Cloneable {
 
+    //表注释
     private String comment;
 
+    //索引
     private List<RDBIndexMetadata> indexes = new ArrayList<>();
 
+    //外键
     private List<ConstraintMetadata> constraints = new ArrayList<>();
 
     public RDBTableMetadata(String name) {
@@ -32,12 +44,19 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
 
     public RDBTableMetadata() {
         super();
+        //默认的增删改查SQL支持
         addFeature(BatchInsertSqlBuilder.of(this));
         addFeature(DefaultUpdateSqlBuilder.of(this));
         addFeature(DefaultDeleteSqlBuilder.of(this));
         addFeature(DefaultSaveOrUpdateOperator.of(this));
     }
 
+    /**
+     * 获取外键约束
+     *
+     * @param name 约束名称
+     * @return ConstraintMetadata
+     */
     public Optional<ConstraintMetadata> getConstraint(String name) {
         return constraints
                 .stream()
@@ -45,6 +64,12 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
                 .findFirst();
     }
 
+    /**
+     * 获取索引
+     *
+     * @param indexName 索引名称
+     * @return RDBIndexMetadata
+     */
     public Optional<RDBIndexMetadata> getIndex(String indexName) {
         return indexes
                 .stream()
@@ -52,12 +77,24 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
                 .findFirst();
     }
 
-    public void addConstraint(ConstraintMetadata metadata){
+    /**
+     * 添加约束
+     *
+     * @param metadata ConstraintMetadata
+     * @see ConstraintMetadata
+     */
+    public void addConstraint(ConstraintMetadata metadata) {
         Objects.requireNonNull(metadata.getName(), "Constraint name can not be null");
         metadata.setTableName(this.getName());
         constraints.add(metadata);
     }
 
+    /**
+     * 添加索引
+     *
+     * @param index RDBIndexMetadata
+     * @see RDBIndexMetadata
+     */
     public void addIndex(RDBIndexMetadata index) {
         Objects.requireNonNull(index.getName(), "index name can not be null");
         index.setTableName(getName());
@@ -66,6 +103,7 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
         for (RDBIndexMetadata.IndexColumn column : index.getColumns()) {
             getColumn(column.getColumn())
                     .ifPresent(columnMeta -> {
+                        //获取列并设置为主键
                         if (index.isPrimaryKey()) {
                             columnMeta.setPrimaryKey(true);
                         }
@@ -89,7 +127,7 @@ public class RDBTableMetadata extends AbstractTableOrViewMetadata implements Clo
             .map(RDBColumnMetadata::clone)
             .forEach(clone::addColumn);
 
-        clone.setFeatures(new HashMap<>(getFeatures()));
+        clone.setFeatures(new ConcurrentHashMap<>(getFeatures()));
 
         clone.setIndexes(getIndexes()
                                  .stream()

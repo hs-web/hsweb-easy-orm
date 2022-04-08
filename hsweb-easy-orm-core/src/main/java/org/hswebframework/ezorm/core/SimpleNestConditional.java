@@ -4,8 +4,8 @@ import org.hswebframework.ezorm.core.param.Term;
 
 public class SimpleNestConditional<T extends TermTypeConditionalSupport>
         implements NestConditional<T> {
-    private Term term;
-    private T target;
+    private final Term term;
+    private final T target;
     private Accepter<NestConditional<T>, Object> accepter = this::and;
 
     public SimpleNestConditional(T target, Term term) {

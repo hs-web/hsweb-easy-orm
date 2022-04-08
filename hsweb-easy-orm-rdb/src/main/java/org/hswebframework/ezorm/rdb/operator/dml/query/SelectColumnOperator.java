@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class SelectColumnOperator implements SelectColumnSupplier {
-    private SelectColumn column = new SelectColumn();
+    private final SelectColumn column = new SelectColumn();
 
     public SelectColumnOperator(String name){
         column.setColumn(name);

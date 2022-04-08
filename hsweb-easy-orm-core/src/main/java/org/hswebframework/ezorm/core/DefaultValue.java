@@ -5,5 +5,9 @@ package org.hswebframework.ezorm.core;
  * @author zhouhao
  */
 public interface DefaultValue {
-     Object get();
+    Object get();
+
+    static DefaultValue runtime(Object value) {
+        return (RuntimeDefaultValue) () -> value;
+    }
 }
