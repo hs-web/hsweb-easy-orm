@@ -65,7 +65,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
                                 .flatMap(column -> column
                                         .findFeature(createFeatureId((term.getTermType())))
-                                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column,parameter.getFromAlias()), column, term))))
+                                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column, join.getAlias()), column, term))))
                         .orElseGet(() -> {//外键关联查询
                             return metaData
                                     .getForeignKey(arr[0])
@@ -82,7 +82,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                 .getColumn(columnName)
                 .flatMap(column -> column
                         .findFeature(createFeatureId(term.getTermType()))
-                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column,parameter.getFromAlias()), column, term)))
+                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column, parameter.getFromAlias()), column, term)))
                 .orElse(EmptySqlFragments.INSTANCE);
 
     }
@@ -100,7 +100,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
         return createTermFragments(parameter, parameter.getWhere());
     }
 
-    protected String createColumnFullName(RDBColumnMetadata column,String fromAlias){
+    protected String createColumnFullName(RDBColumnMetadata column, String fromAlias) {
         return column.getFullName(fromAlias);
     }
 }
