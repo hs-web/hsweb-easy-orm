@@ -48,9 +48,13 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
                 if (column.isPrimaryKey()) {
                     createTable.addSql("primary key");
                 }
-                DefaultValue defaultValue = column.getDefaultValue();
-                if (defaultValue instanceof NativeSql) {
-                    createTable.addSql("default", ((NativeSql) defaultValue).getSql());
+                if(column.isAutoIncrement()){
+                    createTable.addSql("auto_increment");
+                }else {
+                    DefaultValue defaultValue = column.getDefaultValue();
+                    if (defaultValue instanceof NativeSql) {
+                        createTable.addSql("default", ((NativeSql) defaultValue).getSql());
+                    }
                 }
                 if (column.getComment() != null) {
                     createTable.addSql(" comment '".concat(column.getComment().concat("'")));

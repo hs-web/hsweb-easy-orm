@@ -19,6 +19,7 @@ import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveOrUpdateOperator;
@@ -179,7 +180,9 @@ public abstract class DefaultRepository<E> {
             if (value != null) {
                 whenDefaultValue.accept(property, value);
                 //回填
-                propertyOperator.setProperty(data, property, value);
+                if(!(value instanceof NativeSql)){
+                    propertyOperator.setProperty(data, property, value);
+                }
             }
         }
         return value;

@@ -36,6 +36,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
         int index = 0;
         int primaryIndex = -1;
+        //如果只有一条数据则忽略null的列
+        boolean ignoreNullColumn = parameter.getValues().size() == 1;
         Set<InsertColumn> columns = parameter.getColumns();
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
@@ -45,6 +47,16 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             if (columnMetadata != null && columnMetadata.isInsertable()) {
                 if (columnMetadata.isPrimaryKey()) {
                     primaryIndex = index;
+                }
+                //忽略null的列
+                if (ignoreNullColumn) {
+                    List<Object> values = parameter.getValues().get(0);
+                    if (index >= values.size()
+                            || values.get(index) == null
+                            || values.get(index) instanceof NullValue) {
+                        index++;
+                        continue;
+                    }
                 }
                 if (indexMapping.size() != 0) {
                     fragments.addSql(",");
@@ -74,7 +86,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         for (List<Object> values : parameter.getValues()) {
             if (primaryIndex >= 0) {
                 //重复的id 则不进行处理
-                if (values.size()>primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
+                if (values.size() > primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
                     continue;
                 }
             }
@@ -92,26 +104,27 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 SqlFragments function = functionValues.get(valueIndex);
                 if (null != function) {
                     fragments.addFragments(function);
-                    continue;
-                }
-                RDBColumnMetadata column = entry.getValue();
+                } else {
+                    RDBColumnMetadata column = entry.getValue();
 
-                Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
+                    Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
 
-                if ((value == null || value instanceof NullValue)
-                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
-                    value = column.getDefaultValue().get();
+                    if ((value == null || value instanceof NullValue)
+                            && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                        value = column.getDefaultValue().get();
+                    }
+                    if (value instanceof NativeSql) {
+                        fragments
+                                .addSql(((NativeSql) value).getSql())
+                                .addParameter(((NativeSql) value).getParameters());
+
+                    } else {
+                        if (value == null) {
+                            value = NullValue.of(column.getType());
+                        }
+                        fragments.addSql("?").addParameter(column.encode(value));
+                    }
                 }
-                if (value instanceof NativeSql) {
-                    fragments
-                            .addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
-                    continue;
-                }
-                if (value == null) {
-                    value = NullValue.of(column.getType());
-                }
-                fragments.addSql("?").addParameter(column.encode(value));
             }
 
             fragments.addSql(")");

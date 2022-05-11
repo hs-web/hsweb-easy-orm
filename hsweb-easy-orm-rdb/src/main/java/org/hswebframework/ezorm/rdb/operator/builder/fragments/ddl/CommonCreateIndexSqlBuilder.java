@@ -23,7 +23,7 @@ public class CommonCreateIndexSqlBuilder implements CreateIndexSqlBuilder {
         for (RDBIndexMetadata.IndexColumn column : index.getColumns()) {
             RDBColumnMetadata columnMetadata = table
                     .getColumn(column.getColumn())
-                    .orElseThrow(() -> new UnsupportedOperationException("为定义的索引列:" + column.getColumn()));
+                    .orElseThrow(() -> new UnsupportedOperationException("未定义的索引列:" + column.getColumn()));
 
             if (i++ != 0) {
                 fragments.addSql(",");

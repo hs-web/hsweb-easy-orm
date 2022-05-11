@@ -80,9 +80,17 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     /**
      * 是否可以保存，用于upsert时的更新
+     *
      * @since 4.0.12
      */
     private boolean saveable = true;
+
+    /**
+     * 是否自增
+     *
+     * @since 4.0.14
+     */
+    private boolean autoIncrement = false;
 
     /**
      * DataType
@@ -105,6 +113,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
      * 曾经的名字
      */
     private String previousName;
+
 
     public Dialect getDialect() {
         return getOwner().getDialect();
@@ -145,8 +154,8 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     public SQLType getSqlType() {
         return Optional.ofNullable(type)
-                .map(DataType::getSqlType)
-                .orElse(null);
+                       .map(DataType::getSqlType)
+                       .orElse(null);
     }
 
     public String getPreviousName() {
@@ -215,8 +224,8 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     public List<Feature> findFeatures(Predicate<Feature> predicate) {
         return Stream.concat(owner.findFeatures().stream(), getFeatureList().stream())
-                .filter(predicate)
-                .collect(Collectors.toList());
+                     .filter(predicate)
+                     .collect(Collectors.toList());
     }
 
     public String getFullName(String ownerName) {
@@ -266,9 +275,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     public Optional<Object> generateDefaultValue() {
         return Optional.ofNullable(defaultValue)
-                .filter(RuntimeDefaultValue.class::isInstance)
-                .map(RuntimeDefaultValue.class::cast)
-                .map(defaultValue -> decode(defaultValue.get()));
+                       .filter(RuntimeDefaultValue.class::isInstance)
+                       .map(RuntimeDefaultValue.class::cast)
+                       .map(defaultValue -> decode(defaultValue.get()));
     }
 
     @Override

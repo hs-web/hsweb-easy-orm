@@ -56,11 +56,7 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
                 propertyOperator.setProperty(nestInstance, column, value);
             }
         } else {
-            Object value = mapping
-                    .getColumnByName(label)
-                    .map(m -> m.decode(context.getResult()))
-                    .orElseGet(context::getResult);
-            propertyOperator.setProperty(context.getRowInstance(), label, value);
+            propertyOperator.setProperty(context.getRowInstance(), label, context.getResult());
         }
     }
 

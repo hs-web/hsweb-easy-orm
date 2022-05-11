@@ -121,7 +121,7 @@ public class JpaEntityTableMetadataParserProcessor {
         afterRun.forEach(Runnable::run);
     }
 
-    private <T extends Annotation> Optional<T> getAnnotation(Set<Annotation> annotations, Class<T> type) {
+    protected <T extends Annotation> Optional<T> getAnnotation(Set<Annotation> annotations, Class<T> type) {
         return annotations.stream()
                           .filter(type::isInstance)
                           .map(type::cast)
@@ -288,22 +288,30 @@ public class JpaEntityTableMetadataParserProcessor {
             metadata.setColumnDefinition(column.columnDefinition);
         }
         getAnnotation(annotations, GeneratedValue.class)
-                .map(GeneratedValue::generator)
-                .map(gen -> LazyDefaultValueGenerator.of(() ->
-                                                                 tableMetadata.findFeatureNow(DefaultValueGenerator.<RDBColumnMetadata>createId(gen))))
-                .map(gen -> gen.generate(metadata))
+                .map(gen -> {
+                    if(gen.strategy() == GenerationType.SEQUENCE){
+                        metadata.setAutoIncrement(true);
+                        metadata.setProperty("seq_name",gen.generator());
+                        return null;
+                    }else {
+                        DefaultValueGenerator<RDBColumnMetadata> generator = LazyDefaultValueGenerator
+                                .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())));
+                        return generator.generate(metadata);
+                    }
+                })
                 .ifPresent(metadata::setDefaultValue);
 
         getAnnotation(annotations, DefaultValue.class)
                 .map(gen -> {
                     if (gen.value().isEmpty()) {
-                        return LazyDefaultValueGenerator.of(() ->
-                                                                    tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
-                                                        .generate(metadata);
+                        return LazyDefaultValueGenerator
+                                .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
+                                .generate(metadata);
                     }
                     return (RuntimeDefaultValue) gen::value;
                 })
                 .ifPresent(metadata::setDefaultValue);
+
 
         getAnnotation(annotations, Comment.class)
                 .map(Comment::value)
@@ -345,11 +353,11 @@ public class JpaEntityTableMetadataParserProcessor {
                 metadata.addFeature(EnumFragmentBuilder.not);
             }
         }
-        customColumn(descriptor, field, metadata,annotations);
+        customColumn(descriptor, field, metadata, annotations);
         tableMetadata.addColumn(metadata);
     }
 
-    protected void customColumn(PropertyDescriptor descriptor, Field field, RDBColumnMetadata column,Set<Annotation> annotations) {
+    protected void customColumn(PropertyDescriptor descriptor, Field field, RDBColumnMetadata column, Set<Annotation> annotations) {
 
     }
 
