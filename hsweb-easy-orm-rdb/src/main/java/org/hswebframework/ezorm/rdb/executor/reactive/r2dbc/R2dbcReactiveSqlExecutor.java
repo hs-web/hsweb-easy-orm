@@ -77,7 +77,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .from(this.prepareStatement(connection.createStatement(request.getSql()), request)
                           .execute())
                 .map(Result.class::cast)
-                .doOnSubscribe(subscription -> printSql(logger, request));
+                .doOnSubscribe(subscription -> printSql(logger, request))
+                .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
     }
 
     /**
