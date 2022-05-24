@@ -4,8 +4,17 @@ import lombok.Getter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
+import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerEnumInFragmentBuilder;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlEnumInFragmentBuilder;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleEnumInFragmentBuilder;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDialect;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlEnumInFragmentBuilder;
 
 import java.util.List;
 
@@ -45,5 +54,22 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
         return sql;
     }
 
-    protected abstract PrepareSqlFragments bitAnd(String column, long value);
+    public abstract PrepareSqlFragments bitAnd(String column, long value);
+
+    public static EnumInFragmentBuilder of(Dialect dialect) {
+        if (dialect instanceof MysqlDialect) {
+            return MysqlEnumInFragmentBuilder.in;
+        }
+        if (dialect instanceof PostgresqlDialect) {
+            return PostgresqlEnumInFragmentBuilder.in;
+        }
+        if (dialect instanceof SqlServerDialect) {
+            return SqlServerEnumInFragmentBuilder.in;
+        }
+        if (dialect instanceof OracleDialect) {
+            return OracleEnumInFragmentBuilder.in;
+        }
+
+        throw new UnsupportedOperationException("unsupported db type :" + dialect.getType());
+    }
 }

@@ -3,10 +3,10 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 
-class MysqlEnumInFragmentBuilder extends EnumInFragmentBuilder {
+public class MysqlEnumInFragmentBuilder extends EnumInFragmentBuilder {
 
-    static MysqlEnumInFragmentBuilder notIn = new MysqlEnumInFragmentBuilder(true);
-    static MysqlEnumInFragmentBuilder in = new MysqlEnumInFragmentBuilder(false);
+    public static MysqlEnumInFragmentBuilder notIn = new MysqlEnumInFragmentBuilder(true);
+    public static MysqlEnumInFragmentBuilder in = new MysqlEnumInFragmentBuilder(false);
 
 
     MysqlEnumInFragmentBuilder(boolean not) {
@@ -14,7 +14,7 @@ class MysqlEnumInFragmentBuilder extends EnumInFragmentBuilder {
     }
 
     @Override
-    protected PrepareSqlFragments bitAnd(String column, long value) {
+    public PrepareSqlFragments bitAnd(String column, long value) {
 
         return PrepareSqlFragments.of().addSql(column,"&", String.valueOf(value));
     }

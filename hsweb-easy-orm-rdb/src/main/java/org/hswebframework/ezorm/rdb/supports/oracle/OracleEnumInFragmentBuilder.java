@@ -3,10 +3,10 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 
-class OracleEnumInFragmentBuilder extends EnumInFragmentBuilder {
+public class OracleEnumInFragmentBuilder extends EnumInFragmentBuilder {
 
-    static OracleEnumInFragmentBuilder notIn = new OracleEnumInFragmentBuilder(true);
-    static OracleEnumInFragmentBuilder in = new OracleEnumInFragmentBuilder(false);
+    public static OracleEnumInFragmentBuilder notIn = new OracleEnumInFragmentBuilder(true);
+    public static OracleEnumInFragmentBuilder in = new OracleEnumInFragmentBuilder(false);
 
 
     OracleEnumInFragmentBuilder(boolean not) {
@@ -14,7 +14,7 @@ class OracleEnumInFragmentBuilder extends EnumInFragmentBuilder {
     }
 
     @Override
-    protected PrepareSqlFragments bitAnd(String column, long value) {
+    public PrepareSqlFragments bitAnd(String column, long value) {
 
         return PrepareSqlFragments.of().addSql("BITAND(",column,",", "?)").addParameter(value);
     }

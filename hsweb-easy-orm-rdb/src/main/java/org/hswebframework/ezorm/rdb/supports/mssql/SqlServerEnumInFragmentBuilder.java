@@ -3,10 +3,10 @@ package org.hswebframework.ezorm.rdb.supports.mssql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 
-class SqlServerEnumInFragmentBuilder extends EnumInFragmentBuilder {
+public class SqlServerEnumInFragmentBuilder extends EnumInFragmentBuilder {
 
-    static SqlServerEnumInFragmentBuilder notIn = new SqlServerEnumInFragmentBuilder(true);
-    static SqlServerEnumInFragmentBuilder in = new SqlServerEnumInFragmentBuilder(false);
+    public static SqlServerEnumInFragmentBuilder notIn = new SqlServerEnumInFragmentBuilder(true);
+    public static SqlServerEnumInFragmentBuilder in = new SqlServerEnumInFragmentBuilder(false);
 
 
     SqlServerEnumInFragmentBuilder(boolean not) {
@@ -14,8 +14,8 @@ class SqlServerEnumInFragmentBuilder extends EnumInFragmentBuilder {
     }
 
     @Override
-    protected PrepareSqlFragments bitAnd(String column, long value) {
+    public PrepareSqlFragments bitAnd(String column, long value) {
 
-        return PrepareSqlFragments.of().addSql(column,"&", String.valueOf(value));
+        return PrepareSqlFragments.of().addSql(column, "&", String.valueOf(value));
     }
 }
