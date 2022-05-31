@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 public class JoinOperator implements Supplier<Join> {
 
-    private Join join = new Join();
+    private final Join join = new Join();
 
     public JoinOperator(String target, JoinType type) {
         join.setTarget(target);

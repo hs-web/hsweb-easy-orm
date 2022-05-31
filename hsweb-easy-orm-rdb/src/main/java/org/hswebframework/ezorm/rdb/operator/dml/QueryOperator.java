@@ -8,12 +8,16 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordResultWrapper;
 import org.hswebframework.ezorm.rdb.operator.ResultOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.*;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -27,7 +31,7 @@ import java.util.stream.Collectors;
  * .query()
  * .select(count("id","total"))
  * .from("user")
- * .where(dsl->dsl.is("name","1"))
+ * .where(dsl-> dsl.is("name","1"))
  * .execute()
  * .reactive(map())
  * .subscribe(data-> );
@@ -70,7 +74,7 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
      * @return QueryOperator
      * @see Selects
      */
-    public QueryOperator select(SelectColumnSupplier... operators) {
+    public final QueryOperator select(SelectColumnSupplier... operators) {
         for (SelectColumnSupplier operator : operators) {
             select(operator.get());
         }
@@ -192,7 +196,7 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
      * @param condition TermSupplier
      * @return QueryOperator
      */
-    public QueryOperator where(TermSupplier... condition) {
+    public final QueryOperator where(TermSupplier... condition) {
         for (TermSupplier operator : condition) {
             where(operator.get());
         }
@@ -268,8 +272,22 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
 
     public abstract QueryOperator context(Map<String, Object> context);
 
+    /**
+     * 获取SQL请求
+     *
+     * @return 获取SQL请求
+     */
     public abstract SqlRequest getSql();
 
+    /**
+     * 执行查询操作
+     *
+     * @param wrapper 查询结果包装器
+     * @param <E>     行类型
+     * @param <R>     结果类型
+     * @return 查询结果
+     * @see org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers
+     */
     public abstract <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper);
 
 

@@ -22,13 +22,14 @@ import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
 
 import java.sql.JDBCType;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
 import static org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys.*;
 
 @SuppressWarnings("all")
-public class DefaultUpdate<E, ME extends DSLUpdate<?,?>> implements DSLUpdate<E, ME> {
+public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E, ME> {
 
     protected List<Term> terms = new ArrayList<>();
     protected Set<String> includes = new HashSet<>();
@@ -62,7 +63,12 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?,?>> implements DSLUpdate<E,
     }
 
     public QueryParam toQueryParam() {
-        QueryParam param = new QueryParam();
+        return toQueryParam(QueryParam::new);
+    }
+
+    @Override
+    public <T extends QueryParam> T toQueryParam(Supplier<T> template) {
+        T param = template.get();
         param.setTerms(terms);
         param.setPaging(false);
         return param;
@@ -100,11 +106,13 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?,?>> implements DSLUpdate<E,
         contextKeyValues.add(MappingContextKeys.instance(entity));
 
         mapping.getColumnPropertyMapping()
-                .entrySet()
-                .stream()
-                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
-                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-                .forEach(e -> propertyOperator.getProperty(entity, e.getValue()).ifPresent(val -> this.set(e.getKey(), val)));
+               .entrySet()
+               .stream()
+               .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
+               .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
+               .forEach(e -> propertyOperator
+                       .getProperty(entity, e.getValue())
+                       .ifPresent(val -> this.set(e.getKey(), val)));
         return (ME) this;
     }
 
@@ -112,7 +120,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?,?>> implements DSLUpdate<E,
     public ME set(String column, Object value) {
         if (value != null) {
             operator.set(column, value);
-            tempInstance.put(column,value);
+            tempInstance.put(column, value);
         }
         return (ME) this;
     }
@@ -120,8 +128,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?,?>> implements DSLUpdate<E,
     @Override
     public ME setNull(String column) {
         NullValue nullValue = table.getColumn(column)
-                .map(columnMetadata -> NullValue.of(columnMetadata.getType()))
-                .orElseGet(() -> NullValue.of(JdbcDataType.of(JDBCType.VARCHAR, String.class)));
+                                   .map(columnMetadata -> NullValue.of(columnMetadata.getType()))
+                                   .orElseGet(() -> NullValue.of(JdbcDataType.of(JDBCType.VARCHAR, String.class)));
         set(column, nullValue);
         return (ME) this;
     }

@@ -17,6 +17,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.tableMetadata;
@@ -59,7 +60,12 @@ public class DefaultDelete<ME extends DSLDelete<?>> implements DSLDelete<ME> {
     }
 
     public QueryParam toQueryParam() {
-        QueryParam param = new QueryParam();
+        return toQueryParam(QueryParam::new);
+    }
+
+    @Override
+    public <T extends QueryParam> T toQueryParam(Supplier<T> template) {
+        T param = template.get();
         param.setTerms(terms);
         param.setPaging(false);
         return param;

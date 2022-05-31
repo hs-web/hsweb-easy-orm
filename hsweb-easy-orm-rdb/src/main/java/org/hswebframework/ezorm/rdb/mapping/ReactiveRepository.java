@@ -1,10 +1,10 @@
 package org.hswebframework.ezorm.rdb.mapping;
 
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
+import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.util.Collection;
 
@@ -205,4 +205,10 @@ public interface ReactiveRepository<T, K> {
      */
     ReactiveDelete createDelete();
 
+    /**
+     * 获取原始查询操作
+     *
+     * @return 原始查询操作
+     */
+    QueryOperator nativeQuery();
 }

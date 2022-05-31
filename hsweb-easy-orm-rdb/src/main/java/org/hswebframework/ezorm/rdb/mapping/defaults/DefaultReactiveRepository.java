@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,7 +39,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public Mono<E> newInstance() {
-        return Mono.just(wrapper.newRowInstance());
+        return Mono.fromSupplier(wrapper::newRowInstance);
     }
 
     @Override
@@ -123,5 +124,12 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
                 , operator.dml().delete(getTable().getFullName())
                 , getDefaultContextKeyValue()
         );
+    }
+
+    @Override
+    public QueryOperator nativeQuery() {
+        return operator
+                .dml()
+                .query(getTable());
     }
 }

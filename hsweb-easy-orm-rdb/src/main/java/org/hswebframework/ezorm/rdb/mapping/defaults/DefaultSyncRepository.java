@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.SyncUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -16,7 +17,10 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     public DefaultSyncRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         this(operator,
-                () -> operator.getMetadata().getTable(table).orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
+             () -> operator
+                     .getMetadata()
+                     .getTable(table)
+                     .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
     }
 
 
@@ -64,7 +68,7 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
     @Override
     public Optional<E> findById(K primaryKey) {
         return Optional.ofNullable(primaryKey)
-                .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
+                       .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
     }
 
     @Override
@@ -101,5 +105,12 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
     @Override
     public SyncDelete createDelete() {
         return new DefaultSyncDelete(getTable(), operator.dml().delete(getTable().getFullName()));
+    }
+
+    @Override
+    public QueryOperator nativeQuery() {
+        return operator
+                .dml()
+                .query(getTable());
     }
 }

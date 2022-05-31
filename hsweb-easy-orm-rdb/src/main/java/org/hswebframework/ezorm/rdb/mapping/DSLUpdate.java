@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
@@ -7,6 +8,7 @@ import org.hswebframework.ezorm.core.param.QueryParam;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * DSL动态更新条件
@@ -16,7 +18,6 @@ import java.util.function.BiFunction;
  * @author zhouhao
  * @since 4.0.0
  */
-@SuppressWarnings("all")
 public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME> {
 
     /**
@@ -49,6 +50,7 @@ public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME>
      * @param columns 静态方法引用
      * @return this
      */
+    @SuppressWarnings("all")
     default ME includes(StaticMethodReferenceColumn<E>... columns) {
         return includes(Arrays.stream(columns)
                               .map(StaticMethodReferenceColumn::getColumn)
@@ -69,6 +71,7 @@ public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME>
      * @param columns 静态方法引用
      * @return this
      */
+    @SuppressWarnings("all")
     default ME excludes(StaticMethodReferenceColumn<E>... columns) {
         return excludes(Arrays.stream(columns)
                               .map(StaticMethodReferenceColumn::getColumn)
@@ -89,6 +92,7 @@ public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME>
      * @param columns 静态方法引用
      * @return this
      */
+    @SuppressWarnings("all")
     default ME includes(MethodReferenceColumn<E>... columns) {
         return includes(Arrays.stream(columns)
                               .map(MethodReferenceColumn::getColumn)
@@ -109,6 +113,7 @@ public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME>
      * @param columns 静态方法引用
      * @return this
      */
+    @SuppressWarnings("all")
     default ME excludes(MethodReferenceColumn<E>... columns) {
         return excludes(Arrays.stream(columns)
                               .map(MethodReferenceColumn::getColumn)
@@ -213,6 +218,13 @@ public interface DSLUpdate<E, ME extends DSLUpdate<?,?>> extends Conditional<ME>
      *
      * @return 动态查询条件
      */
-    public QueryParam toQueryParam();
+    QueryParam toQueryParam();
+
+    /**
+     * 将更新条件转为查询条件,通常用于根据更新来查询可能被更新的数据
+     *
+     * @return 动态查询条件
+     */
+    <T extends QueryParam> T toQueryParam(Supplier<T> template);
 
 }
