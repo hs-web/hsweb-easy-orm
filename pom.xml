@@ -129,6 +129,16 @@
             </distributionManagement>
         </profile>
         <profile>
+            <id>java8</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <project.build.jdk>1.8</project.build.jdk>
+            </properties>
+        </profile>
+
+        <profile>
             <id>java11</id>
             <activation>
                 <jdk>[11,)</jdk>
