@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.executor.reactive.r2dbc;
 
+import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Statement;
@@ -91,7 +92,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return this
                 .getConnection()
                 .flatMapMany(connection -> sqlRequestFlux
-                        .flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
+                        .concatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
                         .doFinally(type -> releaseConnection(type, connection)));
     }
 
@@ -120,7 +121,11 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .flatMap(result -> result
                         .map((row, meta) -> {
                             //查询结果的列名
-                            List<String> columns = new ArrayList<>(meta.getColumnNames());
+                            List<String> columns = meta.getColumnMetadatas()
+                                    .stream()
+                                    .map(ColumnMetadata::getName)
+                                    .collect(Collectors.toList());
+
                             wrapper.beforeWrap(() -> columns);
                             E e = wrapper.newRowInstance();
                             for (int i = 0, len = columns.size(); i < len; i++) {

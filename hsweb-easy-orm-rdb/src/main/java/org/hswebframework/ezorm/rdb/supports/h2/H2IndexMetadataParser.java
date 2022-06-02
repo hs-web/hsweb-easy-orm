@@ -28,11 +28,11 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
             "index_name," +
             "table_name," +
             "column_name," +
-            "primary_key," +
-            "asc_or_desc," +
+            //"primary_key," +
+            "ordering_specification," +
             "ordinal_position," +
-            "non_unique " +
-            "from information_schema.indexes " +
+            "is_unique " +
+            "from information_schema.index_columns " +
             "where table_name=? and table_schema=?";
 
     private static final String byName = "select " +
@@ -56,6 +56,10 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
             "non_unique " +
             "from information_schema.indexes " +
             "where table_schema=?";
+
+    static {
+
+    }
 
     @Override
     public List<RDBIndexMetadata> parseTableIndex(String tableName) {
@@ -124,11 +128,11 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
             RDBIndexMetadata index = group.computeIfAbsent(name, __ -> new RDBIndexMetadata());
             index.setName(name.toLowerCase());
             index.setTableName(((String) result.get("table_name")).toLowerCase());
-            index.setPrimaryKey(Boolean.TRUE.equals(result.get("primary_key")));
-            index.setUnique(Boolean.FALSE.equals(result.get("non_unique")));
+            index.setPrimaryKey(name.startsWith("PRIMARY_KEY"));
+            index.setUnique(Boolean.TRUE.equals(result.get("is_unique")));
             RDBIndexMetadata.IndexColumn indexColumn = new RDBIndexMetadata.IndexColumn();
             indexColumn.setColumn(((String) result.get("column_name")).toLowerCase());
-            indexColumn.setSort("A".equals(result.get("asc_or_desc")) ?
+            indexColumn.setSort("ASC".equals(result.get("ordering_specification")) ?
                     RDBIndexMetadata.IndexSort.asc : RDBIndexMetadata.IndexSort.desc);
             indexColumn.setSortIndex(((Number) result.get("ordinal_position")).intValue());
             index.getColumns().add(indexColumn);

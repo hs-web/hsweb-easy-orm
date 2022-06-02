@@ -28,7 +28,7 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
         } catch (NoSuchMethodException ignore) {
 
         } catch (Exception e) {
-           log.info("无法获取属性:{},对象:{}", name, object, e);
+            ApacheCommonPropertyOperator.log.info("无法获取属性:{},对象:{}", name, object, e);
         }
         return Optional.empty();
     }
@@ -46,7 +46,7 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     @Override
     @SneakyThrows
     public <T> T convert(Object from, Class<T> to) {
-        T newInstance = to.newInstance();
+        T newInstance = to.getConstructor().newInstance();
         try {
             BeanUtils.copyProperties(newInstance, from);
         } catch (Exception err) {

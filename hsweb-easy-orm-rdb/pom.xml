@@ -6,12 +6,45 @@
         <artifactId>hsweb-easy-orm</artifactId>
         <groupId>org.hswebframework</groupId>
         <version>4.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hsweb-easy-orm-rdb</artifactId>
     <description>easyorm关系型数据库实现,支持h2,Oracle,Mysql,PostgreSQL</description>
 
+    <profiles>
+        <profile>
+            <id>java8</id>
+            <activation>
+                <jdk>(,1.8]</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle.database.jdbc</groupId>
+                    <artifactId>ojdbc8</artifactId>
+                    <version>12.2.0.1</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>java11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle.database.r2dbc</groupId>
+                    <artifactId>oracle-r2dbc</artifactId>
+                    <version>0.4.0</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.hswebframework</groupId>
@@ -27,20 +60,9 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.2.2</version>
+            <version>2.13.3</version>
             <optional>true</optional>
         </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.graphql-java</groupId>-->
-        <!--            <artifactId>graphql-java</artifactId>-->
-        <!--            <version>13.0</version>-->
-        <!--            <optional>true</optional>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.hswebframework</groupId>-->
-        <!--            <artifactId>hsweb-expands-script</artifactId>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>io.projectreactor</groupId>
@@ -71,11 +93,12 @@
         <dependency>
             <groupId>dev.miku</groupId>
             <artifactId>r2dbc-mysql</artifactId>
+            <version>0.8.2.RELEASE</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
-            <groupId>io.r2dbc</groupId>
+            <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
             <optional>true</optional>
         </dependency>
@@ -100,12 +123,12 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc8 -->
-        <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
-            <version>12.2.0.1</version>
-            <scope>test</scope>
-        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>com.oracle.database.jdbc</groupId>-->
+        <!--            <artifactId>ojdbc11</artifactId>-->
+        <!--            <version>12.2.0.1</version>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
 
 
         <dependency>
@@ -121,6 +144,14 @@
             <version>4.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.17.1</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <repositories>

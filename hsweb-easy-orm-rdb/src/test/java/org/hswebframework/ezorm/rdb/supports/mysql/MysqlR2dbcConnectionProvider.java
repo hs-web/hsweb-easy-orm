@@ -31,19 +31,22 @@ public class MysqlR2dbcConnectionProvider implements R2dbcConnectionProvider {
 
         String username = System.getProperty("mysql.username", "root");
         String password = System.getProperty("mysql.password", "root");
-        String url = System.getProperty("mysql.url", "127.0.0.1:13306");
+        String url = System.getProperty("mysql.url", "127.0.0.1:" + Mysql57ConnectionProvider.port);
         String db = System.getProperty("mysql.db", "ezorm");
 
         URL hostUrl = new URL("file://" + url);
 
-        connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-                .option(DRIVER, "mysql")
-                .option(HOST, hostUrl.getHost())
-                .option(PORT, hostUrl.getPort())
-                .option(USER, username)
-                .option(PASSWORD, password)
-                .option(DATABASE, db)
-                .build());
+        connectionFactory = ConnectionFactories.get(
+                ConnectionFactoryOptions
+                        .builder()
+                        .option(DRIVER, "mysql")
+                        .option(HOST, hostUrl.getHost())
+                        .option(PORT, hostUrl.getPort())
+                        .option(SSL, false)
+                        .option(USER, username)
+                        .option(PASSWORD, password)
+                        .option(DATABASE, db)
+                        .build());
 
     }
 

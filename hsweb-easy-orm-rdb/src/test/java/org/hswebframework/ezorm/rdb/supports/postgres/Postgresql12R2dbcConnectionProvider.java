@@ -5,7 +5,12 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.Containers;
 import org.hswebframework.ezorm.rdb.R2dbcConnectionProvider;
+import org.junit.Assert;
+import org.postgresql.Driver;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -21,13 +26,22 @@ public class Postgresql12R2dbcConnectionProvider implements R2dbcConnectionProvi
 
 
     Supplier<Mono<Connection>> connectionSupplier;
+    static int port;
+
+    static {
+        Assert.assertTrue(Driver.isRegistered());
+        GenericContainer<?> container = Containers.newPostgresql("12");
+
+        container.start();
+        port = container.getMappedPort(5432);
+    }
 
     @SneakyThrows
     public Postgresql12R2dbcConnectionProvider() {
 
         String username = System.getProperty("postgres.username", "postgres");
         String password = System.getProperty("postgres.password", "admin");
-        String url = System.getProperty("postgres.url", "127.0.0.1:15433");
+        String url = System.getProperty("postgres.url", "127.0.0.1:"+port);
         String db = System.getProperty("postgres.db", "ezorm");
 
         URL hostUrl = new URL("file://" + url);

@@ -22,7 +22,7 @@ jobs:
         path: ~/.m2
         key: hsweb-easy-orm-maven-repository
     - name: Build with Maven
-      run: mvn test
+      run: mvn test -Pjava11
     - name: Codecov
       uses: codecov/codecov-action@v2.1.0
       with:

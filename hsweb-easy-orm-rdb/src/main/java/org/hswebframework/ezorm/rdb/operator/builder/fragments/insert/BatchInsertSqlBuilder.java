@@ -36,6 +36,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
         int index = 0;
         int primaryIndex = -1;
+
         //如果只有一条数据则忽略null的列
         boolean ignoreNullColumn = parameter.getValues().size() == 1;
         Set<InsertColumn> columns = parameter.getColumns();
@@ -52,8 +53,9 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 if (ignoreNullColumn) {
                     List<Object> values = parameter.getValues().get(0);
                     if (index >= values.size()
-                            || values.get(index) == null
-                            || values.get(index) instanceof NullValue) {
+                            || values.get(index) instanceof NullValue
+                            //为空并且没有默认值
+                            || (values.get(index) == null && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue))) {
                         index++;
                         continue;
                     }
