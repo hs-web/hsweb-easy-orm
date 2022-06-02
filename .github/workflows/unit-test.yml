@@ -23,3 +23,8 @@ jobs:
         key: hsweb-easy-orm-maven-repository
     - name: Build with Maven
       run: mvn test
+    - name: Codecov
+      uses: codecov/codecov-action@v2.1.0
+      with:
+        # Repository upload token - get it from codecov.io. Required only for private repositories
+        token: ${{ secrets.CODECOV_TOKEN }}
