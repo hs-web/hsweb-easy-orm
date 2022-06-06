@@ -142,7 +142,6 @@
             <id>java11</id>
             <activation>
                 <jdk>[11,)</jdk>
-                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <project.build.jdk>11</project.build.jdk>

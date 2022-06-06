@@ -33,7 +33,6 @@
             <id>java11</id>
             <activation>
                 <jdk>[11,)</jdk>
-                <activeByDefault>true</activeByDefault>
             </activation>
             <dependencies>
                 <dependency>
