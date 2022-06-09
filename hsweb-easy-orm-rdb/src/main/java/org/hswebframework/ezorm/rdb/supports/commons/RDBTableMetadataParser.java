@@ -1,12 +1,9 @@
 package org.hswebframework.ezorm.rdb.supports.commons;
 
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.*;
@@ -71,8 +68,17 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         param.put("schema", schema.getName());
 
         //列
-        List<RDBColumnMetadata> metaDataList = getSqlExecutor().select(template(getTableMetaSql(name), param),
-                list(new RDBColumnMetaDataWrapper(metaData)));
+        List<RDBColumnMetadata> metaDataList = getSqlExecutor()
+                .select(template(getTableMetaSql(name), param),
+                list(new RecordResultWrapper()))
+                .stream()
+                .map(record->{
+                    RDBColumnMetadata column = metaData.newColumn();
+                    applyColumnInfo(column, record);
+                    return column;
+                })
+                .collect(Collectors.toList());
+
         metaDataList.forEach(metaData::addColumn);
         //说明
         Map<String, Object> comment = getSqlExecutor().select(template(getTableCommentSql(name), param), singleMap());
@@ -99,11 +105,15 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                     param.put("table", name);
                     param.put("schema", schema.getName());
                     ReactiveSqlExecutor reactiveSqlExecutor = getReactiveSqlExecutor();
-
                     //列
                     Mono<List<RDBColumnMetadata>> columns = reactiveSqlExecutor
-                            .select(template(getTableMetaSql(name), param), new RDBColumnMetaDataWrapper(metaData))
-                            .doOnNext(metaData::addColumn)
+                            .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
+                            .map(record -> {
+                                RDBColumnMetadata column = metaData.newColumn();
+                                applyColumnInfo(column, record);
+                                metaData.addColumn(column);
+                               return column;
+                            })
                             .collectList();
                     //注释
                     Mono<Map<String, Object>> comments = reactiveSqlExecutor
@@ -317,75 +327,5 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
-    }
-
-    @SuppressWarnings("all")
-    @AllArgsConstructor
-    class RDBColumnMetaDataWrapper implements ResultWrapper<RDBColumnMetadata, RDBColumnMetadata> {
-        private RDBTableMetadata tableMetadata;
-
-        public Class<RDBColumnMetadata> getType() {
-            return RDBColumnMetadata.class;
-        }
-
-        @Override
-        public RDBColumnMetadata newRowInstance() {
-            return tableMetadata.newColumn();
-        }
-
-        @Override
-        public RDBColumnMetadata getResult() {
-            return null;
-        }
-
-        @Override
-        public boolean completedWrapRow(RDBColumnMetadata instance) {
-            String data_type = instance.getProperty("data_type").toString().toLowerCase();
-            int len = instance.getProperty("data_length").toInt();
-            int data_precision = instance.getProperty("data_precision").toInt();
-            int data_scale = instance.getProperty("data_scale").toInt();
-            instance.setLength(len);
-            instance.setPrecision(data_precision);
-            instance.setScale(data_scale);
-
-            DataType dataType = getDialect().convertDataType(data_type);
-
-            instance.setType(dataType);
-            // instance.setDataType(getDialect().buildColumnDataType(instance));
-
-            instance.findFeature(ValueCodecFactory.ID)
-                    .flatMap(factory -> factory.createValueCodec(instance))
-                    .ifPresent(instance::setValueCodec);
-            return true;
-        }
-
-        @Override
-        public void wrapColumn(ColumnWrapperContext<RDBColumnMetadata> context) {
-            doWrap(context.getRowInstance(), context.getColumnLabel(), context.getResult());
-        }
-
-        public void doWrap(RDBColumnMetadata instance, String attr, Object value) {
-            String stringValue;
-            if (value instanceof String) {
-                stringValue = ((String) value);
-            } else {
-                stringValue = value == null ? "" : value.toString();
-            }
-            if (attr.equalsIgnoreCase("name")) {
-                instance.setName(stringValue);
-                instance.setProperty("old-name", stringValue);
-            }
-            if (attr.equalsIgnoreCase("table-name")) {
-                instance.setProperty("tableName", stringValue);
-            } else if (attr.equalsIgnoreCase("comment")) {
-                instance.setComment(stringValue);
-            } else {
-                if (attr.toLowerCase().equals("not_null")) {
-                    value = "1".equals(stringValue);
-                    instance.setNotNull((boolean) value);
-                }
-                instance.setProperty(attr.toLowerCase(), value);
-            }
-        }
     }
 }
