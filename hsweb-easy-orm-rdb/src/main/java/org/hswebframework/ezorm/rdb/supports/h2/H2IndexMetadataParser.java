@@ -39,22 +39,22 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
             "index_name," +
             "table_name," +
             "column_name," +
-            "primary_key," +
-            "asc_or_desc," +
+//            "primary_key," +
+            "ordering_specification," +
             "ordinal_position," +
-            "non_unique " +
-            "from information_schema.indexes " +
+            "is_unique " +
+            "from information_schema.index_columns " +
             "where index_name=? and table_schema=?";
 
     private static final String all = "select " +
             "index_name," +
             "table_name," +
             "column_name," +
-            "primary_key," +
-            "asc_or_desc," +
+           // "primary_key," +
+            "ordering_specification," +
             "ordinal_position," +
-            "non_unique " +
-            "from information_schema.indexes " +
+            "is_unique " +
+            "from information_schema.index_columns " +
             "where table_schema=?";
 
     static {
