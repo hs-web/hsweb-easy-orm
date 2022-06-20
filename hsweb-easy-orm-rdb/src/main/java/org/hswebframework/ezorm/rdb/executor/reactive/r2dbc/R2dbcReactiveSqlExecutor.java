@@ -91,7 +91,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return this
                 .getConnection()
                 .flatMapMany(connection -> sqlRequestFlux
-                        .flatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
+                        .concatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
                         .doFinally(type -> releaseConnection(type, connection)));
     }
 

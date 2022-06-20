@@ -30,6 +30,10 @@ public class H2Dialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
 
+        registerDataType("character varying",
+                         DataType.builder(JdbcDataType.of(JDBCType.VARCHAR, String.class), column -> {
+                             return "varchar(" + column.getLength() + ")";
+                         }));
     }
 
     @Override

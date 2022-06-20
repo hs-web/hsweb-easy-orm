@@ -24,19 +24,21 @@ public class PostgresqlR2dbcConnectionProvider implements R2dbcConnectionProvide
 
         String username = System.getProperty("postgres.username", "postgres");
         String password = System.getProperty("postgres.password", "admin");
-        String url = System.getProperty("postgres.url", "127.0.0.1:15432");
+        String url = System.getProperty("postgres.url", "127.0.0.1:" + PostgresqlConnectionProvider.port);
         String db = System.getProperty("postgres.db", "ezorm");
 
         URL hostUrl = new URL("file://" + url);
 
-        PostgresqlConnectionFactory connectionFactory = (PostgresqlConnectionFactory) ConnectionFactories.get(ConnectionFactoryOptions.builder()
-                .option(DRIVER, "postgresql")
-                .option(HOST, hostUrl.getHost())  // file, mem
-                .option(PORT, hostUrl.getPort())  // file, mem
-                .option(USER, username)
-                .option(PASSWORD, password)
-                .option(DATABASE, db)
-                .build());
+        PostgresqlConnectionFactory connectionFactory = (PostgresqlConnectionFactory) ConnectionFactories
+                .get(ConnectionFactoryOptions
+                             .builder()
+                             .option(DRIVER, "postgresql")
+                             .option(HOST, hostUrl.getHost())  // file, mem
+                             .option(PORT, hostUrl.getPort())  // file, mem
+                             .option(USER, username)
+                             .option(PASSWORD, password)
+                             .option(DATABASE, db)
+                             .build());
         connectionSupplier = () -> connectionFactory.create().map(Connection.class::cast);
 
     }

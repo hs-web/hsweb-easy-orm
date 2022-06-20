@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = "createTime")
+@EqualsAndHashCode(exclude = {"createTime","address"})
 public class BasicTestEntity implements Serializable {
 
     @Column(length = 32)
