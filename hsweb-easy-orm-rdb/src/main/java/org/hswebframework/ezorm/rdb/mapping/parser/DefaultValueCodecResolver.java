@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 public class DefaultValueCodecResolver implements ValueCodecResolver {
 
-    private Map<Class<? extends Annotation>, BiFunction<EntityPropertyDescriptor, Annotation, ValueCodec>> annotationStrategies = new ConcurrentHashMap<>();
+    private final Map<Class<? extends Annotation>, BiFunction<EntityPropertyDescriptor, Annotation, ValueCodec>> annotationStrategies = new ConcurrentHashMap<>();
 
-    private Map<Class, Function<EntityPropertyDescriptor, ValueCodec>> typeStrategies = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Function<EntityPropertyDescriptor, ValueCodec>> typeStrategies = new ConcurrentHashMap<>();
 
-    private Map<Predicate<Class>, Function<EntityPropertyDescriptor, ValueCodec>> predicateStrategies = new ConcurrentHashMap<>();
+    private final Map<Predicate<Class<?>>, Function<EntityPropertyDescriptor, ValueCodec>> predicateStrategies = new ConcurrentHashMap<>();
 
 
     public static final DefaultValueCodecResolver COMMONS = new DefaultValueCodecResolver();
@@ -38,20 +38,15 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
         COMMONS.register(EnumCodec.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.toMask()));
         COMMONS.register(Enumerated.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.value()== EnumType.ORDINAL));
 
-        COMMONS.register(Date.class::isAssignableFrom, field -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec("yyyy-MM-dd HH", field.getPropertyType()));
+        COMMONS.register(Date.class::isAssignableFrom, field -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec("yyyy-MM-dd HH:mm:dd", field.getPropertyType()));
 
         COMMONS.register(Number.class::isAssignableFrom, field -> new NumberValueCodec(field.getPropertyType()));
 
         COMMONS.register(Boolean.class::isAssignableFrom, field -> new BooleanValueCodec(field.getColumn().getSqlType()));
+        COMMONS.register(boolean.class::isAssignableFrom, field -> new BooleanValueCodec(field.getColumn().getSqlType()));
 
-        COMMONS.register(type ->
-                type.isPrimitive()
-                        && type == Byte.TYPE
-                        && type == Boolean.TYPE
-                        && type == Short.TYPE
-                        && type == Float.TYPE
-                        && type == Double.TYPE
-                        && type == Long.TYPE, field -> new NumberValueCodec(field.getPropertyType()));
+        COMMONS.register(type -> type.isPrimitive() && type != Character.TYPE, field -> new NumberValueCodec(field.getPropertyType()));
+
         COMMONS.register(Enum.class::isAssignableFrom, field -> new EnumValueCodec(field.getPropertyType()));
 
         COMMONS.register(Enum[].class::isAssignableFrom, field -> new EnumValueCodec(field.getPropertyType()));
@@ -64,11 +59,11 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
         annotationStrategies.put(ann, (BiFunction) codecFunction);
     }
 
-    public void register(Class ann, Function<EntityPropertyDescriptor, ValueCodec> codecFunction) {
+    public void register(Class<?> ann, Function<EntityPropertyDescriptor, ValueCodec> codecFunction) {
         typeStrategies.put(ann, codecFunction);
     }
 
-    public void register(Predicate<Class> ann, Function<EntityPropertyDescriptor, ValueCodec> codecFunction) {
+    public void register(Predicate<Class<?>> ann, Function<EntityPropertyDescriptor, ValueCodec> codecFunction) {
         predicateStrategies.put(ann, codecFunction);
     }
 

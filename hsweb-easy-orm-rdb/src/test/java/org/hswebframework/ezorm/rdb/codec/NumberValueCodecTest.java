@@ -65,7 +65,7 @@ public class NumberValueCodecTest {
             NumberValueCodec codec = new NumberValueCodec(Date.class);
             long time = System.currentTimeMillis();
 
-            Assert.assertEquals(codec.encode(new Date(time)), time);
+            Assert.assertEquals(codec.encode(new Date(time)), new Date(time));
 
             Assert.assertEquals(codec.decode(time), new Date(time));
         }
@@ -81,4 +81,10 @@ public class NumberValueCodecTest {
 
     }
 
+    @Test
+    public void testFloat(){
+        NumberValueCodec codec = new NumberValueCodec(Float.class);
+
+        assertEquals(0.0000F, (codec.decode("0.00000e+00")));
+    }
 }
