@@ -247,6 +247,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         if (!this.getName().equals(this.getPreviousName())) {
             return true;
         }
+        if (!this.isNotNull() == after.isNotNull()) {
+            return true;
+        }
         DataType type = getType();
         if (type != null) {
             if (getDialect().buildColumnDataType(this).equals(getDialect().buildColumnDataType(after))) {
