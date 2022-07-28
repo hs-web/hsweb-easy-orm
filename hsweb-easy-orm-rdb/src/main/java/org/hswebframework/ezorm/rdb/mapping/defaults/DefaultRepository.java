@@ -58,10 +58,6 @@ public abstract class DefaultRepository<E> {
 
     protected final List<ContextKeyValue> defaultContextKeyValue = new ArrayList<>();
 
-    @Getter
-    @Setter
-    private ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
-
     public DefaultRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> supplier, ResultWrapper<E, ?> wrapper) {
         this.operator = operator;
         this.wrapper = wrapper;
@@ -172,7 +168,7 @@ public abstract class DefaultRepository<E> {
     }
 
     private Object getInsertColumnValue(E data, String property, BiConsumer<String, Object> whenDefaultValue) {
-        Object value = propertyOperator.getProperty(data, property).orElse(null);
+        Object value = GlobalConfig.getPropertyOperator().getProperty(data, property).orElse(null);
         if (value == null) {
             value = mapping.getColumnByProperty(property)
                            .flatMap(RDBColumnMetadata::generateDefaultValue)
@@ -181,7 +177,7 @@ public abstract class DefaultRepository<E> {
                 whenDefaultValue.accept(property, value);
                 //回填
                 if(!(value instanceof NativeSql)){
-                    propertyOperator.setProperty(data, property, value);
+                    GlobalConfig.getPropertyOperator().setProperty(data, property, value);
                 }
             }
         }
