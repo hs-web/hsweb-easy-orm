@@ -40,8 +40,6 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
 
     protected UpdateOperator operator;
 
-    protected ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
-
     protected EntityColumnMapping mapping;
 
     protected Set<ContextKeyValue<?>> contextKeyValues = new HashSet<>();
@@ -110,7 +108,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
                .stream()
                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-               .forEach(e -> propertyOperator
+               .forEach(e -> GlobalConfig.getPropertyOperator()
                        .getProperty(entity, e.getValue())
                        .ifPresent(val -> this.set(e.getKey(), val)));
         return (ME) this;

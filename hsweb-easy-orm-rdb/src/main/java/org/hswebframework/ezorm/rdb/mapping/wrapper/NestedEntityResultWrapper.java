@@ -1,24 +1,13 @@
 package org.hswebframework.ezorm.rdb.mapping.wrapper;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.hswebframework.ezorm.core.GlobalConfig;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
 
-    @Getter
-    @Setter
-    private ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
 
     private final EntityColumnMapping mapping;
 
@@ -42,7 +31,7 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
             String[] nest = label.split("[.]", 2);
             String table = nest[0];
             String column = nest[1];
-            Object nestInstance = propertyOperator.getPropertyOrNew(instance, table);
+            Object nestInstance = GlobalConfig.getPropertyOperator().getPropertyOrNew(instance, table);
             if (null == nestInstance) {
                 return;
             }
@@ -53,10 +42,10 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
                         .getColumn(column)
                         .map(m -> m.decode(context.getResult()))
                         .orElseGet(context::getResult);
-                propertyOperator.setProperty(nestInstance, column, value);
+                GlobalConfig.getPropertyOperator().setProperty(nestInstance, column, value);
             }
         } else {
-            propertyOperator.setProperty(context.getRowInstance(), label, context.getResult());
+            GlobalConfig.getPropertyOperator().setProperty(context.getRowInstance(), label, context.getResult());
         }
     }
 

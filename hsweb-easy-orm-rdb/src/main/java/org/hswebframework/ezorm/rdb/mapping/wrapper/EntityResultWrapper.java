@@ -19,10 +19,6 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
     @Getter
     @Setter
-    private ObjectPropertyOperator propertyOperator = GlobalConfig.getPropertyOperator();
-
-    @Getter
-    @Setter
     private EntityColumnMapping mapping;
 
     public EntityResultWrapper(Supplier<E> supplier) {
@@ -50,7 +46,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
                 .map(columnMetadata -> columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
         if (value != null) {
-            propertyOperator.setProperty(context.getRowInstance(), property, value);
+            GlobalConfig.getPropertyOperator().setProperty(context.getRowInstance(), property, value);
         }
     }
 
