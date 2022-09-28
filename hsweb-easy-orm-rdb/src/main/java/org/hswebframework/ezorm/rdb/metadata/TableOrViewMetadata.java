@@ -130,6 +130,13 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
         return getSchema().getName().concat(".").concat(getName());
     }
 
+    default String getQuoteName() {
+
+        return getDialect().quote(getSchema().getName(), false)
+                + "."
+                + getDialect().quote(getName(), false);
+    }
+
     @Override
     default <T extends Feature> T findFeatureOrElse(String id, Supplier<T> orElse) {
         T current = getFeatureOrElse(id, null);
