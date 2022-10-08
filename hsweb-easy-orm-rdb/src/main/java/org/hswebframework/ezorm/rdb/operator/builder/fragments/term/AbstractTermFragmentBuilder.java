@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 
 import java.util.Arrays;
@@ -62,6 +63,18 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         }
         //单个值
         return Arrays.asList(this.convertValue(column, value));
+    }
+
+    protected TableOrViewMetadata getTable(String tableName, RDBColumnMetadata baseOn) {
+        return baseOn
+                .getOwner()
+                .getSchema()
+                .getTableOrView(tableName)
+                .orElseThrow(() -> new UnsupportedOperationException("table " + tableName + " does not exist"));
+    }
+
+    protected String getTableName(String tableName, RDBColumnMetadata baseOn) {
+        return getTable(tableName, baseOn).getQuoteName();
     }
 
     private Object convertValue(RDBColumnMetadata column, Object val) {
