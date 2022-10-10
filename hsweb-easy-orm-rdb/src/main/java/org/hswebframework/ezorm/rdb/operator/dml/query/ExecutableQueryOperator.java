@@ -1,7 +1,10 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ConvertResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.SingleColumnResultWrapper;
+import org.hswebframework.ezorm.rdb.executor.wrapper.SingleResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import reactor.core.publisher.Mono;
@@ -30,6 +33,13 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
         return new DefaultQueryResultOperator<>(this::getSql,
                                                 getSqlAsync(),
                                                 metadata,
-                                                ValueConverterResultWrapper.of(wrapper, metadata));
+                                                wrapWrapper(wrapper));
+    }
+
+    private <E, R> ResultWrapper<E, R> wrapWrapper(ResultWrapper<E, R> wrapper) {
+        if (wrapper instanceof SingleColumnResultWrapper) {
+            return wrapper;
+        }
+        return ValueConverterResultWrapper.of(wrapper, metadata);
     }
 }

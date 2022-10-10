@@ -8,6 +8,8 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapperContext;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
+import java.util.Objects;
+
 @AllArgsConstructor(staticName = "of")
 public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
 
@@ -34,13 +36,24 @@ public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
     public void wrapColumn(ColumnWrapperContext<E> context) {
         RDBColumnMetadata column = metadata.getColumn(context.getColumnLabel()).orElse(null);
         if (column != null) {
-            Object result = column.decode(context.getResult());
-            wrapper.wrapColumn(new DefaultColumnWrapperContext<>(
+            Object origin = context.getResult();
+            Object result = column.decode(origin);
+
+            //值相同则不需要转换
+            if (Objects.equals(origin, result)) {
+                wrapper.wrapColumn(context);
+                return;
+            }
+
+            DefaultColumnWrapperContext<E> ctx = new DefaultColumnWrapperContext<>(
                     context.getColumnIndex(),
                     context.getColumnLabel(),
                     result,
                     context.getRowInstance()
-            ));
+            );
+
+            wrapper.wrapColumn(ctx);
+            context.setRowInstance(ctx.getRowInstance());
         } else {
             wrapper.wrapColumn(context);
         }
