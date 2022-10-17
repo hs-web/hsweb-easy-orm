@@ -77,16 +77,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
         return EventResultOperator.create(
                 () -> {
                     if (null != instance) {
-                        mapping
-                                .getColumnPropertyMapping()
-                                .entrySet()
-                                .stream()
-                                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
-                                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-                                .forEach(e -> GlobalConfig
-                                        .getPropertyOperator()
-                                        .getProperty(instance, e.getValue())
-                                        .ifPresent(val -> this.set(e.getKey(), val)));
+                        applyColumns(instance);
                     }
                     return operator
                             .where(dsl -> terms.forEach(dsl::accept))
@@ -98,6 +89,19 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
                 MappingEventTypes.update_after,
                 contextKeyValues.toArray(new ContextKeyValue[0])
         );
+    }
+
+    private void applyColumns(E instance){
+        mapping
+                .getColumnPropertyMapping()
+                .entrySet()
+                .stream()
+                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
+                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
+                .forEach(e -> GlobalConfig
+                        .getPropertyOperator()
+                        .getProperty(instance, e.getValue())
+                        .ifPresent(val -> this.set(e.getKey(), val)));
     }
 
     @Override
@@ -115,6 +119,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     @Override
     public ME set(E entity) {
         contextKeyValues.add(MappingContextKeys.instance(entity));
+        applyColumns(entity);
         this.instance = entity;
         return (ME) this;
     }

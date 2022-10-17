@@ -15,8 +15,10 @@ public class BuildParameterUpdateOperatorTest {
 
         UpdateOperatorParameter parameter=update.getParameter();
 
-        assertEquals(parameter.getColumns().get(0).getColumn(),"name");
-        assertEquals(parameter.getColumns().get(0).getValue(),"1234");
+        UpdateColumn column = new UpdateColumn();
+        column.setColumn("name");
+
+        assertTrue(parameter.getColumns().contains(column));
 
         assertEquals(parameter.getWhere().get(0).getValue(),"1");
         assertEquals(parameter.getWhere().get(0).getColumn(),"id");

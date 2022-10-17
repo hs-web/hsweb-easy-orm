@@ -5,13 +5,15 @@ import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
 public class UpdateOperatorParameter {
 
-    List<UpdateColumn> columns = new ArrayList<>();
+    Set<UpdateColumn> columns = new LinkedHashSet<>();
 
     List<Term> where = new ArrayList<>();
 
