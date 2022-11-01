@@ -124,6 +124,9 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
         @Override
         protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
+
+            ((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict |= isDoNoThing(parameter.getColumns());
+
             if (((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 return fragments.addSql("insert ignore into")
                                 .addSql(table.getFullName());
@@ -162,12 +165,31 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 more = true;
                 sql.addSql(columnMetadata.getQuoteName()).addSql("=");
                 sql.addSql(
-                        "coalesce(","VALUES(", columnMetadata.getQuoteName(), ")", ",", columnMetadata.getFullName(),")"
+                        "coalesce(", "VALUES(", columnMetadata.getQuoteName(), ")", ",", columnMetadata.getFullName(), ")"
                 );
-//                sql.addSql("VALUES(", columnMetadata.getQuoteName(), ")");
             }
 
             return sql;
+        }
+
+        private boolean isDoNoThing(Set<InsertColumn> columns) {
+            for (InsertColumn column : columns) {
+
+                if (column instanceof UpsertColumn && ((UpsertColumn) column).isUpdateIgnore()) {
+                    continue;
+                }
+                RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
+                if (columnMetadata == null
+                        || columnMetadata.isPrimaryKey()
+                        || !columnMetadata.isUpdatable()
+                        || !columnMetadata.isSaveable()) {
+
+                    continue;
+                }
+                return true;
+            }
+
+            return false;
         }
 
     }
