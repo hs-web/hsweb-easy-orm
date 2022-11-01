@@ -34,14 +34,18 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
 
+        registerDataType("number", DataType
+                .builder(DataType.jdbc(JDBCType.NUMERIC, String.class),
+                         column -> StringUtils.concat("number(", column.getPrecision(38), ",", column.getScale(), ")")));
+
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "clob"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));
 
         registerDataType("varchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
-                column -> "varchar2(" + column.getLength() + ")"));
+                                                      column -> "varchar2(" + column.getLength() + ")"));
 
         registerDataType("nvarchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
-                column -> "nvarchar2(" + column.getLength() + ")"));
+                                                       column -> "nvarchar2(" + column.getLength() + ")"));
 
         registerDataType("date", JdbcDataType.of(JDBCType.TIMESTAMP, Date.class));
         registerDataType("clob", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
