@@ -186,10 +186,10 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
                     continue;
                 }
-                return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
     }
