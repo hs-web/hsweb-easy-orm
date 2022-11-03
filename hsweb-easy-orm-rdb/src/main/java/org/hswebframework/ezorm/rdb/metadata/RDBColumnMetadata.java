@@ -264,7 +264,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             if (type.isScaleSupport()) {
                 return getScale() < after.getScale();
             }
-            return !getSqlType().equals(after.getSqlType());
+            return false;
         }
         return false;
     }
