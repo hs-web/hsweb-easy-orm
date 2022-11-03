@@ -118,10 +118,6 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
             int index = 0;
             for (InsertColumn column : columns) {
 
-                if (column instanceof UpsertColumn && ((UpsertColumn) column).isUpdateIgnore()) {
-                    index++;
-                    continue;
-                }
                 RDBColumnMetadata metadata = table.getColumn(column.getColumn()).orElse(null);
                 if (metadata == null) {
                     index++;
