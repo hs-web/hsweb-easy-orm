@@ -200,6 +200,7 @@ public abstract class BasicCommonTests {
                 .doubleVal(1D)
                 .bigDecimal(new BigDecimal("1.2"))
                 .stateEnum(StateEnum.enabled)
+                .stateEnums(new StateEnum[]{StateEnum.enabled})
                 .build();
 
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
