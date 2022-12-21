@@ -80,10 +80,11 @@ public class BuildParameterQueryOperator extends QueryOperator {
                 .where(param.getTerms())
                 .select(param.getIncludes().toArray(new String[0]))
                 .selectExcludes(param.getExcludes().toArray(new String[0]))
-                .orderBy(param.getSorts().stream()
+                .orderBy(param.getSorts()
+                              .stream()
                               .map(sort -> "asc".equals(sort.getOrder()) ?
-                                      asc(sort.getName()) :
-                                      desc(sort.getName()))
+                                      asc(sort.getName()).value(sort.getValue()) :
+                                      desc(sort.getName()).value(sort.getValue()))
                               .toArray(SortOrder[]::new))
                 .context(param.getContext());
     }

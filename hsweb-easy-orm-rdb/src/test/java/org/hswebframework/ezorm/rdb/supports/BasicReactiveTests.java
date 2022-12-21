@@ -25,6 +25,7 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.Terms;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -291,6 +292,10 @@ public abstract class BasicReactiveTests {
         repository.createQuery()
                   .select("*")
                   .where("id", "test_id_save")
+                  .orderBy(SortOrder.desc("id").value("test_id_save"),
+                           SortOrder.desc("id").value("test_id_save2"),
+                           SortOrder.desc("createTime"),
+                           SortOrder.desc("state"))
                   .fetch()
                   .map(BasicTestEntity::getName)
                   .as(StepVerifier::create)
