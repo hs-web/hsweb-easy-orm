@@ -153,7 +153,9 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
                      .stream()
                      .map(sort -> sort
                              .getOrder()
-                             .equalsIgnoreCase("asc") ? SortOrder.asc(sort.getName()) : SortOrder.desc(sort.getName()))
+                             .equalsIgnoreCase("asc")
+                             ? SortOrder.asc(sort.getName()).value(sort.getValue())
+                             : SortOrder.desc(sort.getName()).value(sort.getValue()))
                 , orders.stream())
                      .toArray(SortOrder[]::new);
     }
