@@ -13,7 +13,14 @@ import java.util.stream.Stream;
 
 public class EnumValueCodec implements ValueCodec<Object, Object> {
 
-    private Class type;
+    private static final Collector collector = Collectors.joining(",");
+
+    private static final Function<String, String[]> splitter = str -> str.split("[,]");
+
+    @SuppressWarnings("all")
+    private final Class type;
+    @SuppressWarnings("all")
+    private final Object[] values;
 
     @Getter
     private boolean isArray;
@@ -21,24 +28,23 @@ public class EnumValueCodec implements ValueCodec<Object, Object> {
     @Getter
     private boolean toMask;
 
-    public EnumValueCodec(Class type) {
+    public EnumValueCodec(Class<?> type) {
         if (type.isArray()) {
             this.type = type.getComponentType();
             this.isArray = true;
         } else {
             this.type = type;
         }
-
+        values = this.type.getEnumConstants();
+        if (values == null) {
+            throw new IllegalArgumentException(type + " must be enum");
+        }
     }
 
-    public EnumValueCodec(Class type, boolean toMask) {
+    public EnumValueCodec(Class<?> type, boolean toMask) {
         this(type);
         this.toMask = toMask;
     }
-
-    private Collector collector = Collectors.joining(",");
-
-    private Function<String, String[]> splitter = str -> str.split("[,]");
 
     @Override
     @SuppressWarnings("all")
@@ -74,25 +80,28 @@ public class EnumValueCodec implements ValueCodec<Object, Object> {
     public Object decode(Object data) {
         if (data instanceof String) {
             if (!isArray) {
-                return Stream.of(type.getEnumConstants())
-                             .map(Enum.class::cast)
-                             .filter(e -> e.name().equalsIgnoreCase(String.valueOf(data)))
-                             .findFirst()
-                             .orElse(null);
+                for (Object value : values) {
+                    if (((Enum<?>) value).name().equalsIgnoreCase(String.valueOf(data))) {
+                        return value;
+                    }
+                }
+                return null;
             } else {
                 List<String> arr = Arrays.asList(splitter.apply(((String) data)));
-                return Stream.of(type.getEnumConstants())
-                             .map(Enum.class::cast)
-                             .filter(e -> arr.contains(e.name()))
-                             .toArray(l -> (Enum[]) Array.newInstance(type, l));
+                return Stream
+                        .of(type.getEnumConstants())
+                        .map(Enum.class::cast)
+                        .filter(e -> arr.contains(e.name()))
+                        .toArray(l -> (Enum[]) Array.newInstance(type, l));
             }
         }
         if (data instanceof Number) {
             long val = ((Number) data).longValue();
 
-            Stream<Enum> stream = Stream.of(type.getEnumConstants())
-                                        .map(Enum.class::cast)
-                                        .filter(e -> toMask ? enumInMask(val, e) : e.ordinal() == val);
+            Stream<Enum> stream = Stream
+                    .of(type.getEnumConstants())
+                    .map(Enum.class::cast)
+                    .filter(e -> toMask ? enumInMask(val, e) : e.ordinal() == val);
 
             if (isArray) {
                 return stream.toArray(l -> (Enum[]) Array.newInstance(type, l));
