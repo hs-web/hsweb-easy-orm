@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
+import io.r2dbc.spi.Statement;
+import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -8,6 +10,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -16,6 +19,8 @@ import static org.hswebframework.ezorm.rdb.executor.SqlRequests.prepare;
 
 public class OracleTableMetaParserTest {
 
+    OracleSchemaMetadata schema;
+
     private SyncSqlExecutor executor;
 
     private OracleTableMetadataParser parser;
@@ -23,10 +28,31 @@ public class OracleTableMetaParserTest {
     @Before
     public void init() {
         executor = new TestSyncSqlExecutor(new OracleConnectionProvider());
-        OracleSchemaMetadata schema = new OracleSchemaMetadata("SYSTEM");
+        schema = new OracleSchemaMetadata("SYSTEM");
         schema.addFeature(executor);
+        schema.addFeature(new TestReactiveSqlExecutor(":",new OracleR2dbcConnectionProvider()){
+            @Override
+            protected void bind(Statement statement, int index, Object value) {
+                statement.bind(index ,value);
+            }
+
+            @Override
+            protected void bindNull(Statement statement, int index, Class<?> type) {
+                statement.bindNull(index ,type);
+            }
+        });
 
         parser = new OracleTableMetadataParser(schema);
+    }
+
+    @Test
+    public void testParseReactive() {
+        schema.loadAllTableReactive()
+              .as(StepVerifier::create)
+              .expectComplete()
+              .verify();
+
+        System.out.println(1);
     }
 
     @Test
@@ -34,10 +60,10 @@ public class OracleTableMetaParserTest {
 
         try {
             executor.execute(SqlRequests.of("CREATE TABLE test_table(" +
-                    "id varchar2(32) primary key," +
-                    "name varchar2(128) not null," +
-                    "age number(10)" +
-                    ")"));
+                                                    "id varchar2(32) primary key," +
+                                                    "name varchar2(128) not null," +
+                                                    "age number(10)" +
+                                                    ")"));
             RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id

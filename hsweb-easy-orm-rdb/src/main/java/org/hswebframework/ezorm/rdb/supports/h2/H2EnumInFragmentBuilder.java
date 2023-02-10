@@ -16,6 +16,6 @@ public class H2EnumInFragmentBuilder extends EnumInFragmentBuilder {
     @Override
     public PrepareSqlFragments bitAnd(String column, long value) {
 
-        return PrepareSqlFragments.of().addSql("BITAND(", column, ",", "? )").addParameter(value);
+        return PrepareSqlFragments.of().addSql("BITAND(", column, ",CAST(? AS BIGINT)",")").addParameter(value);
     }
 }

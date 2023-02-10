@@ -91,12 +91,12 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
     public Mono<Integer> count() {
         QueryOperator queryOperator = operator
                 .query(tableMetadata)
-                .select(count1().as("total"));
+                .select(count1().as("_total"));
         return this
                 .doFetch(queryOperator, "count", _opt -> _opt
                         .context(param.getContext())
                         .where(param.getTerms())
-                        .fetch(column("total", Number.class::cast))
+                        .fetch(column("_total", Number.class::cast))
                         .reactive()
                         .map(Number::intValue)
                         .reduce(Math::addExact)

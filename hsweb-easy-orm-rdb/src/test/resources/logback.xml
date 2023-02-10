@@ -5,7 +5,7 @@
     <logger name="reactor" level="warn"/>
     <logger name="com.github" level="warn"/>
     <logger name="dev.miku" level="warn"/>
-    <logger name="org.hswebframework" level="warn"/>
+    <logger name="org.hswebframework" level="debug"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

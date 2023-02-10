@@ -27,6 +27,7 @@ public class OracleSchemaMetadata extends RDBSchemaMetadata {
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata = super.newTable(name);
         metadata.addFeature(OracleInsertSqlBuilder.of(metadata));
+        metadata.addFeature(new OracleBatchUpsertOperator(metadata));
         metadata.setOnColumnAdded(column->{
             if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
                 column.addFeature(OracleEnumInFragmentBuilder.in);

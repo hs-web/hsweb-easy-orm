@@ -79,6 +79,16 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         return this;
     }
 
+    public <B> Query<T, Q> orderByAsc(MethodReferenceColumn<B> column) {
+        param.orderBy(column.getColumn()).value(column.get()).asc();
+        return this;
+    }
+
+    public <B> Query<T, Q> orderByDesc(MethodReferenceColumn<B> column) {
+        param.orderBy(column.getColumn()).value(column.get()).desc();
+        return this;
+    }
+
     public Query<T, Q> orderByAsc(String column) {
         param.orderBy(column).asc();
         return this;

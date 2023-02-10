@@ -23,8 +23,11 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.Terms;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -272,22 +275,27 @@ public abstract class BasicReactiveTests {
                   .expectNext(1)
                   .verifyComplete();
 
-        BasicTestEntity entity2 = BasicTestEntity.builder()
-                                                 .id("test_id_save2")
-                                                 .balance(1000L)
-                                                 .name("test")
-                                                 .createTime(new Date())
-                                                 .tags(Arrays.asList("a", "b", "c", "d"))
-                                                 .state((byte) 1)
-                                                 .addressId("test")
-                                                 .stateEnum(StateEnum.enabled)
-                                                 .build();
+        BasicTestEntity entity2 = BasicTestEntity
+                .builder()
+                .id("test_id_save2")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("test")
+                .stateEnum(StateEnum.enabled)
+                .build();
 
         entity.setName("test2");
 
         repository.createQuery()
                   .select("*")
                   .where("id", "test_id_save")
+                  .orderBy(SortOrder.desc("id").value("test_id_save"),
+                           SortOrder.desc("id").value("test_id_save2"),
+                           SortOrder.desc("createTime"),
+                           SortOrder.desc("state"))
                   .fetch()
                   .map(BasicTestEntity::getName)
                   .as(StepVerifier::create)
@@ -404,12 +412,71 @@ public abstract class BasicReactiveTests {
                 .verifyComplete();
 
         repository.createQuery()
-                  .select("doubleVal","id")
-                  .where("id","test_null")
+                  .select("doubleVal", "id")
+                  .where("id", "test_null")
                   .fetch()
                   .as(StepVerifier::create)
                   .expectNextMatches(e -> e.getDoubleVal() != null)
                   .verifyComplete();
+    }
+
+
+    @Test
+    public void testEnums() {
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
+                .id("enums_id")
+                .balance(1000L)
+                .name("test")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .addressId("test")
+                .stateEnum(StateEnum.enabled)
+                .stateEnums(new StateEnum[]{StateEnum.enabled, StateEnum.disabled})
+                .build();
+        repository.insert(entity)
+                  .as(StepVerifier::create)
+                  .expectNext(1)
+                  .verifyComplete();
+
+
+        repository
+                .createQuery()
+                .select("id", "stateEnums")
+                .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
+                .fetch()
+                .as(StepVerifier::create)
+                .expectNextCount(0)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .select("id", "stateEnums")
+                .in(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled)
+                .fetchOne()
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .select("id", "stateEnums")
+                .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
+                .fetchOne()
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .select("id", "stateEnums")
+                .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
+                .fetchOne()
+                .as(StepVerifier::create)
+                .expectNextCount(1)
+                .verifyComplete();
+
     }
 
 }

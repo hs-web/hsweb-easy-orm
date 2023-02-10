@@ -4,8 +4,9 @@ import org.hswebframework.ezorm.core.CastUtil;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
-class DefaultEventContext extends HashMap<String, Object> implements EventContext {
+class DefaultEventContext extends ConcurrentHashMap<String, Object> implements EventContext {
 
     @Override
     public Object get(String key) {

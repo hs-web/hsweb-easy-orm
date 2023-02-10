@@ -1,9 +1,11 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import jdk.nashorn.api.scripting.JSObject;
 import lombok.Setter;
@@ -30,11 +32,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JsonValueCodec implements ValueCodec<Object, Object> {
 
-    public static final ObjectMapper defaultMapper = new ObjectMapper();
+    public static final ObjectMapper defaultMapper;
 
     static {
-        defaultMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        defaultMapper.setTimeZone(TimeZone.getDefault());
+        defaultMapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+                .setTimeZone(TimeZone.getDefault());
     }
 
     private final JavaType jacksonType;
@@ -207,8 +211,8 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             }
             log.warn("unsupported json format:{}", data);
             return target;
-        }catch (Throwable e){
-            log.error("decode json error {}",data,e);
+        } catch (Throwable e) {
+            log.error("decode json error {}", data, e);
             return null;
         }
     }

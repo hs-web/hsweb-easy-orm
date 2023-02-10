@@ -72,7 +72,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
         return operator
                 .query(tableMetadata)
                 .context(param.getContext())
-                .select(count1().as("total"))
+                .select(count1().as("_total"))
                 .where(param.getTerms())
                 .accept(queryOperator ->
                         tableMetadata.fireEvent(
@@ -83,7 +83,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
                                 executorType("sync"),
                                 type("count")
                         ))
-                .fetch(optional(single(column("total", Number.class::cast))))
+                .fetch(optional(single(column("_total", Number.class::cast))))
                 .sync()
                 .map(Number::intValue)
                 .orElse(0);

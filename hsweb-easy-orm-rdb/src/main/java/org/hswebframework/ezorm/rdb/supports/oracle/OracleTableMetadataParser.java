@@ -21,7 +21,7 @@ public class OracleTableMetadataParser extends RDBTableMetadataParser {
             ",cols.table_name as \"table_name\"",
             ",cols.column_id from all_tab_cols cols ",
             "left join all_col_comments acc on acc.OWNER = #{schema} and acc.column_name=cols.column_name and acc.table_name=cols.table_name ",
-            "where cols.owner=#{schema} and cols.table_name like upper(#{table}) and cols.virtual_column='NO' ",
+            "where cols.owner=#{schema} and cols.table_name like upper(#{table}) and (cols.virtual_column='NO' or cols.virtual_column is null) ",
             "order by cols.column_id ");
 
     private final static String TABLE_COMMENT_SQL = String.join(" ",

@@ -13,7 +13,7 @@ public class H2TableMetadataParser extends RDBTableMetadataParser {
             String.join(" ",
                     "SELECT",
                     "column_name AS \"name\",",
-                    "type_name AS \"data_type\",",
+                    "data_type AS \"data_type\",",
                     "table_name AS \"table_name\",",
                     "character_maximum_length as \"data_length\",",
                     "numeric_precision as \"data_precision\",",

@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 @Getter
 public class BuildParameterUpdateOperator extends UpdateOperator {
 
-    private UpdateOperatorParameter parameter = new UpdateOperatorParameter();
+    private final UpdateOperatorParameter parameter = new UpdateOperatorParameter();
 
     @Override
     public UpdateOperator set(String column, Object value) {
@@ -25,8 +25,7 @@ public class BuildParameterUpdateOperator extends UpdateOperator {
 
     @Override
     public UpdateOperator set(Object entity) {
-        // TODO: 2019-09-04
-        return this;
+       throw new UnsupportedOperationException();
     }
 
     @Override

@@ -19,6 +19,9 @@ public class Sort extends Column {
     @Schema(description = "排序方式", allowableValues = {"asc", "desc"}, minLength = 3, maxLength = 4)
     private String order = "asc";
 
+    @Schema(description = "指定值排序")
+    private Object value;
+
     public Sort() {
     }
 
@@ -42,4 +45,8 @@ public class Sort extends Column {
         this.order = "desc";
     }
 
+    public Sort value(Object value) {
+        this.value = value;
+        return this;
+    }
 }

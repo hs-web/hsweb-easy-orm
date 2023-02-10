@@ -119,7 +119,7 @@ public abstract class BasicCommonTests {
         NestedEntityResultWrapper wrapper =
                 table
                         .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
-                        .map(mapping->new NestedEntityResultWrapper(mapping))
+                        .map(mapping -> new NestedEntityResultWrapper(mapping))
                         .orElseThrow(NullPointerException::new);
 
         repository = new DefaultSyncRepository<>(operator, table, BasicTestEntity.class, wrapper);
@@ -200,6 +200,7 @@ public abstract class BasicCommonTests {
                 .doubleVal(1D)
                 .bigDecimal(new BigDecimal("1.2"))
                 .stateEnum(StateEnum.enabled)
+                .stateEnums(new StateEnum[]{StateEnum.enabled})
                 .build();
 
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
@@ -252,8 +253,7 @@ public abstract class BasicCommonTests {
                                    .select("id", "stateEnums")
                                    .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
                                    .fetchOne()
-                                   .isPresent()
-        );
+                                   .isPresent());
 
         Assert.assertTrue(repository
                                   .createQuery()
@@ -300,7 +300,7 @@ public abstract class BasicCommonTests {
         BasicTestEntity e = repository.findById(entity.getId()).orElse(null);
         Assert.assertNotNull(e);
         Assert.assertNotNull(e.getAddress());
-        Assert.assertEquals(e.getAddress().getName(),"joinTest");
+        Assert.assertEquals(e.getAddress().getName(), "joinTest");
 
     }
 

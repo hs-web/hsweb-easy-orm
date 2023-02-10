@@ -6,14 +6,13 @@
     <groupId>org.hswebframework</groupId>
     <artifactId>hsweb-easy-orm</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.15</version>
+    <version>4.1.0</version>
     <modules>
         <module>hsweb-easy-orm-core</module>
         <module>hsweb-easy-orm-rdb</module>
-        <module>hsweb-easy-orm-elasticsearch</module>
     </modules>
 
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
     <url>https://www.hswebframework.org</url>
     <description>一个简单的orm工具</description>
 
@@ -54,10 +53,9 @@
         <logback.version>1.2.9</logback.version>
         <fastjson.version>1.2.83</fastjson.version>
         <hsweb.expands.version>3.0.2</hsweb.expands.version>
-        <reactor.version>Dysprosium-SR23</reactor.version>
-        <r2dbc.version>Arabba-SR10</r2dbc.version>
+        <reactor.version>2020.0.19</reactor.version>
+        <r2dbc.version>Borca-SR1</r2dbc.version>
     </properties>
-
 
     <profiles>
         <profile>
@@ -130,8 +128,26 @@
                 </snapshotRepository>
             </distributionManagement>
         </profile>
-    </profiles>
+        <profile>
+            <id>java8</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <project.build.jdk>1.8</project.build.jdk>
+            </properties>
+        </profile>
 
+        <profile>
+            <id>java11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <properties>
+                <project.build.jdk>11</project.build.jdk>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -139,7 +155,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.0</version>
+                <version>0.8.8</version>
                 <executions>
                     <execution>
                         <goals>
@@ -184,11 +200,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${project.build.jdk}</source>
                     <target>${project.build.jdk}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.8</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
@@ -219,6 +242,7 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
@@ -227,6 +251,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -250,13 +275,15 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.16.18</version>
+                <version>1.18.24</version>
             </dependency>
+
             <dependency>
                 <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-utils</artifactId>
                 <version>3.0.2</version>
             </dependency>
+
             <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-bom</artifactId>
@@ -264,6 +291,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-expands-script</artifactId>
@@ -281,6 +309,7 @@
                 <artifactId>hsweb-easy-orm-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-easy-orm-rdb</artifactId>
@@ -299,11 +328,13 @@
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>1.9.4</version>
             </dependency>
+
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
@@ -344,8 +375,6 @@
             </snapshots>
 
         </repository>
-
-
 
 
     </repositories>

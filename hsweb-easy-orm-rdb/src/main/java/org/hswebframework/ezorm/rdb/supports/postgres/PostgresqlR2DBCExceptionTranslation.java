@@ -20,7 +20,7 @@ public class PostgresqlR2DBCExceptionTranslation implements ExceptionTranslation
     public Throwable translate(Throwable e) {
         if (e instanceof PostgresqlException) {
             ErrorDetails details = ((PostgresqlException) e).getErrorDetails();
-            if (details.getMessage().startsWith("duplicate key") && details.getTableName().isPresent() && details.getConstraintName().isPresent()) {
+            if (Objects.equals(details.getCode(),"23505") && details.getTableName().isPresent() && details.getConstraintName().isPresent()) {
                 String tableName = details.getTableName().get();
                 String constraintName = details.getConstraintName().get();
                 return schema.getTable(tableName)

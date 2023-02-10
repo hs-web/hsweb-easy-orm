@@ -45,6 +45,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     protected Set<ContextKeyValue<?>> contextKeyValues = new HashSet<>();
 
     protected Map<String, Object> tempInstance = new HashMap<>();
+    protected E instance;
 
     public DefaultUpdate(RDBTableMetadata table,
                          UpdateOperator operator,
@@ -75,6 +76,9 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     protected UpdateResultOperator doExecute() {
         return EventResultOperator.create(
                 () -> {
+                    if (null != instance) {
+                        applyColumns(instance);
+                    }
                     return operator
                             .where(dsl -> terms.forEach(dsl::accept))
                             .execute();
@@ -85,6 +89,19 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
                 MappingEventTypes.update_after,
                 contextKeyValues.toArray(new ContextKeyValue[0])
         );
+    }
+
+    private void applyColumns(E instance){
+        mapping
+                .getColumnPropertyMapping()
+                .entrySet()
+                .stream()
+                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
+                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
+                .forEach(e -> GlobalConfig
+                        .getPropertyOperator()
+                        .getProperty(instance, e.getValue())
+                        .ifPresent(val -> this.set(e.getKey(), val)));
     }
 
     @Override
@@ -102,15 +119,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     @Override
     public ME set(E entity) {
         contextKeyValues.add(MappingContextKeys.instance(entity));
-
-        mapping.getColumnPropertyMapping()
-               .entrySet()
-               .stream()
-               .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
-               .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-               .forEach(e -> GlobalConfig.getPropertyOperator()
-                       .getProperty(entity, e.getValue())
-                       .ifPresent(val -> this.set(e.getKey(), val)));
+        applyColumns(entity);
+        this.instance = entity;
         return (ME) this;
     }
 

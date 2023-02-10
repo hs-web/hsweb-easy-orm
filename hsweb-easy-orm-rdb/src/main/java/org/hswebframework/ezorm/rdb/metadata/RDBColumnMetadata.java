@@ -255,9 +255,6 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             if (getDialect().buildColumnDataType(this).equals(getDialect().buildColumnDataType(after))) {
                 return false;
             }
-            if (!getSqlType().equals(after.getSqlType())) {
-                return true;
-            }
             if (type.isLengthSupport()) {
                 return type.isNumber()
                         ? getPrecision() < after.getPrecision() || getScale() < after.getScale()
@@ -267,6 +264,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             if (type.isScaleSupport()) {
                 return getScale() < after.getScale();
             }
+            return false;
         }
         return false;
     }

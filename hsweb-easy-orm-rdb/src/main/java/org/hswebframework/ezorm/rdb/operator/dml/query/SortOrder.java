@@ -12,6 +12,8 @@ public class SortOrder extends FunctionColumn {
 
     private Order order = SortOrder.Order.asc;
 
+    private Object value;
+
     public static <T> SortOrder desc(StaticMethodReferenceColumn<T> column) {
         return desc(column.getColumn());
     }
@@ -42,6 +44,11 @@ public class SortOrder extends FunctionColumn {
         order.setOrder(Order.asc);
 
         return order;
+    }
+
+    public SortOrder value(Object value){
+        this.value = value;
+        return this;
     }
 
     public enum Order {

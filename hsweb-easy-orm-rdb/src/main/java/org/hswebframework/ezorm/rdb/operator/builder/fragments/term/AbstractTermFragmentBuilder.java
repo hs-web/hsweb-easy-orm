@@ -74,7 +74,7 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
     }
 
     protected String getTableName(String tableName, RDBColumnMetadata baseOn) {
-        return getTable(tableName, baseOn).getQuoteName();
+        return getTable(tableName, baseOn).getFullName();
     }
 
     private Object convertValue(RDBColumnMetadata column, Object val) {
