@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
@@ -22,6 +23,12 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new CompositeExceptionTranslation()
                 .add(FeatureUtils.r2dbcIsAlive(), () -> PostgresqlR2DBCExceptionTranslation.of(this))
         );
+
+        // 覆盖通用的基本条件
+        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.not));
+        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.notIn));
+        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.nlike));
+        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.notBetween));
     }
 
     @Override
