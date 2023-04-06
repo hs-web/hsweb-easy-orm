@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.Serializable;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class StaticMethodReferenceColumnConvertTest {
 
@@ -16,6 +18,8 @@ public class StaticMethodReferenceColumnConvertTest {
 
         TestClass testClass = new TestClass();
 
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(TestClass::setEnabled), "enabled");
+
 
         Assert.assertEquals(MethodReferenceConverter.convertToColumn(TestClass::getName), "name");
 
@@ -24,6 +28,7 @@ public class StaticMethodReferenceColumnConvertTest {
         Assert.assertEquals(MethodReferenceConverter.convertToColumn(testClass::getName), "name");
 
         Assert.assertEquals(MethodReferenceConverter.convertToColumn(testClass::isEnabled), "enabled");
+
 
     }
 

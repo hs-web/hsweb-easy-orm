@@ -9,17 +9,26 @@ import java.io.*;
 @Getter
 @Slf4j
 public class SerializedLambda implements Serializable {
-    private static final long     serialVersionUID = 8025925345765570181L;
-    private              Class<?> capturingClass;
-    private              String   functionalInterfaceClass;
-    private              String   functionalInterfaceMethodName;
-    private              String   functionalInterfaceMethodSignature;
-    private              String   implClass;
-    private              String   implMethodName;
-    private              String   implMethodSignature;
-    private              int      implMethodKind;
-    private              String   instantiatedMethodType;
-    private              Object[] capturedArgs;
+    private static final long serialVersionUID = 8025925345765570181L;
+    private Class<?> capturingClass;
+    private String functionalInterfaceClass;
+    private String functionalInterfaceMethodName;
+    private String functionalInterfaceMethodSignature;
+    private String implClass;
+    private String implMethodName;
+    private String implMethodSignature;
+    private int implMethodKind;
+    private String instantiatedMethodType;
+    private Object[] capturedArgs;
+
+    private Class<?> implClassResolved;
+
+    @SneakyThrows
+    public Class<?> getImplClass() {
+        return implClassResolved == null ?
+                implClassResolved = Class.forName(implClass.replace('/', '.')) :
+                implClassResolved;
+    }
 
     public String getMethodName() {
         return implMethodName;
