@@ -17,10 +17,10 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Cache Maven Repository
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/.m2
-        key: hsweb-easy-orm-maven-repository
+        key: ${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
     - name: Build with Maven
       run: mvn -Duser.timezone="Asia/Shanghai" test -Pjava11
     - name: Codecov
