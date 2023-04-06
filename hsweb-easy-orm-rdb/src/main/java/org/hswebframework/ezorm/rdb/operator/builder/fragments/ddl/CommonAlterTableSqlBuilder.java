@@ -64,7 +64,7 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
                     appendAddIndexSql(batch, newTable, index);
                     continue;
                 }
-                if (index.isChanged(oldIndex)) {
+                if (index.isChanged(newTable, oldIndex)) {
                     appendDropIndexSql(batch, newTable, index);
                     appendAddIndexSql(batch, newTable, index);
 

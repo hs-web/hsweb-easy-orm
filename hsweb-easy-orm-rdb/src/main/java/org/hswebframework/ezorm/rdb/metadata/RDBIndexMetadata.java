@@ -35,8 +35,8 @@ public class RDBIndexMetadata implements ObjectMetadata {
 
     private boolean primaryKey;
 
-    public RDBIndexMetadata(String name){
-        this.name=name;
+    public RDBIndexMetadata(String name) {
+        this.name = name;
     }
 
     @Override
@@ -53,8 +53,8 @@ public class RDBIndexMetadata implements ObjectMetadata {
                 builder.append(",");
             }
             builder.append(column.getColumn())
-                    .append(" ")
-                    .append(column.getSort().name());
+                   .append(" ")
+                   .append(column.getSort().name());
         }
         builder.append(")");
 
@@ -78,8 +78,8 @@ public class RDBIndexMetadata implements ObjectMetadata {
         metadata.columns.clear();
 
         columns.stream()
-                .map(IndexColumn::clone)
-                .forEach(metadata.columns::add);
+               .map(IndexColumn::clone)
+               .forEach(metadata.columns::add);
 
         return metadata;
     }
@@ -88,20 +88,26 @@ public class RDBIndexMetadata implements ObjectMetadata {
         asc, desc
     }
 
-    public boolean isChanged(RDBIndexMetadata old) {
+    public boolean isChanged(RDBTableMetadata metadata, RDBIndexMetadata old) {
         if (old.getColumns().size() != getColumns().size()) {
             return true;
         }
 
         Map<String, IndexColumn> nameMapping = getColumns()
                 .stream()
-                .collect(Collectors.toMap(IndexColumn::getColumn, Function.identity()));
+                .collect(Collectors.toMap(c -> metadata
+                        .getColumn(c.column)
+                        .map(RDBColumnMetadata::getName)
+                        .orElseGet(RDBIndexMetadata.class::getName), Function.identity()));
 
         for (IndexColumn oldColumn : old.getColumns()) {
-            IndexColumn column = nameMapping.get(oldColumn.column);
-            if (column == null
-                   // || column.getSort() != oldColumn.getSort()
-            ) {
+            String columnName = metadata
+                    .getColumn(oldColumn.column)
+                    .map(RDBColumnMetadata::getName)
+                    .orElse(null);
+
+
+            if (columnName == null || !nameMapping.containsKey(columnName)) {
                 return true;
             }
         }
