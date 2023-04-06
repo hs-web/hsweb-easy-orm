@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.utils.StringUtils;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
 
@@ -35,7 +36,7 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
 
         registerDataType("number", DataType
-                .builder(DataType.jdbc(JDBCType.NUMERIC, String.class),
+                .builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
                          column -> StringUtils.concat("number(", column.getPrecision(38), ",", column.getScale(), ")")));
 
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "clob"));
