@@ -314,7 +314,7 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
         return accept(column, TermType.lt, value);
     }
 
-    default <B> T lt(MethodReferenceColumn<B> column, Object value) {
+    default <B> T lt(MethodReferenceColumn<B> column) {
         return accept(column, TermType.lt);
     }
 
@@ -346,7 +346,7 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
         return accept(column, TermType.in, values);
     }
 
-    default <B> T in(StaticMethodReferenceColumn<B> column, Collection values) {
+    default <B> T in(StaticMethodReferenceColumn<B> column, Collection<?> values) {
         return accept(column, TermType.in, values);
     }
 
@@ -362,7 +362,7 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
         return accept(column, TermType.nin, value);
     }
 
-    default <B> T notIn(StaticMethodReferenceColumn<B> column, Collection values) {
+    default <B> T notIn(StaticMethodReferenceColumn<B> column, Collection<?> values) {
         return accept(column, TermType.nin, values);
     }
 
