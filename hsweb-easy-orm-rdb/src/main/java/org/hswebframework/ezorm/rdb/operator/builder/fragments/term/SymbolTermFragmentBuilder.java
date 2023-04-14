@@ -16,8 +16,12 @@ public class SymbolTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
     @Override
     public SqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
-        return PrepareSqlFragments.of()
-                .addSql(columnFullName, symbol, "?")
-                .addParameter(convertValue(column, term));
+
+
+        return appendPrepareOrNative(
+                PrepareSqlFragments
+                        .of()
+                        .addSql(columnFullName, symbol),
+                convertValue(column, term));
     }
 }

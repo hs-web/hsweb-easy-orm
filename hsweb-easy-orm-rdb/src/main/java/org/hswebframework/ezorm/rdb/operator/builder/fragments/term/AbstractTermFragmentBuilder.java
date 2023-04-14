@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 
 import java.util.Arrays;
@@ -92,7 +94,21 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
      * @return 转换后的值
      */
     protected Object convertValue(RDBColumnMetadata column, Term term) {
-
+        if (term.getValue() instanceof NativeSql) {
+            return term.getValue();
+        }
         return convertValue(column, term.getValue());
+    }
+
+    protected PrepareSqlFragments appendPrepareOrNative(PrepareSqlFragments sql, Object value) {
+        if (value instanceof NativeSql) {
+            NativeSql nativeSql = ((NativeSql) value);
+            sql.addSql(nativeSql.getSql())
+               .addParameter(nativeSql.getParameters());
+        } else {
+            sql.addSql("?")
+               .addParameter(value);
+        }
+        return sql;
     }
 }
