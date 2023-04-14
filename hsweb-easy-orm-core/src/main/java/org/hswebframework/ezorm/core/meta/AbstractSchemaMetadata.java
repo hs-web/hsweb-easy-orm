@@ -188,7 +188,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         }
         DatabaseMetadata<?> db = getDatabase();
         if (db != null) {
-            return db.findFeatureOrElse(id, null);
+            return db.findFeatureOrElse(id, orElse);
         }
         return orElse == null ? null : orElse.get();
     }
