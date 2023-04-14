@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.Conditional;
 import org.hswebframework.ezorm.core.dsl.Query;
 import org.hswebframework.ezorm.core.param.QueryParam;
@@ -22,9 +23,14 @@ import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.desc;
 public class BuildParameterQueryOperator extends QueryOperator {
 
     @Getter
-    private final QueryOperatorParameter parameter = new QueryOperatorParameter();
+    protected QueryOperatorParameter parameter;
+
+    public BuildParameterQueryOperator(QueryOperatorParameter parameter) {
+        this.parameter = parameter;
+    }
 
     public BuildParameterQueryOperator(String from) {
+        parameter = new QueryOperatorParameter();
         parameter.setFrom(from);
     }
 
@@ -153,5 +159,13 @@ public class BuildParameterQueryOperator extends QueryOperator {
     @Override
     public <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    @SneakyThrows
+    public QueryOperator clone() {
+
+        return new BuildParameterQueryOperator(parameter.clone());
     }
 }

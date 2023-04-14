@@ -7,11 +7,20 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.SingleColumnResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.SingleResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import reactor.core.publisher.Mono;
 
 public class ExecutableQueryOperator extends BuildParameterQueryOperator {
 
     private final TableOrViewMetadata metadata;
+
+    private ExecutableQueryOperator(QueryOperatorParameter parameter,
+                                    TableOrViewMetadata metadata) {
+        super(parameter);
+        this.metadata = metadata;
+        parameter.setFrom(metadata.getName());
+
+    }
 
     public ExecutableQueryOperator(TableOrViewMetadata metadata) {
         super(metadata.getName());
@@ -41,5 +50,11 @@ public class ExecutableQueryOperator extends BuildParameterQueryOperator {
             return wrapper;
         }
         return ValueConverterResultWrapper.of(wrapper, metadata);
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public QueryOperator clone() {
+        return new ExecutableQueryOperator(parameter.clone(), metadata);
     }
 }

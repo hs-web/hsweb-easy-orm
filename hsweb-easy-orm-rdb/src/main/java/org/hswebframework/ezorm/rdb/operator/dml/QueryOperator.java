@@ -291,4 +291,5 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
     public abstract <E, R> QueryResultOperator<E, R> fetch(ResultWrapper<E, R> wrapper);
 
 
+    public abstract QueryOperator clone();
 }
