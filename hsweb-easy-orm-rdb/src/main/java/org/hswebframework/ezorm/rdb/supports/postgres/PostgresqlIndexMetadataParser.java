@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.codec.JdbcResultDecoder;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -38,9 +39,9 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
             " B.AMNAME::varchar," +
             " C.INDNATTS::varchar," +
             " C.INDISUNIQUE::boolean," +
-            " C.INDISPRIMARY::boolean,"+
+            " C.INDISPRIMARY::boolean," +
             " C.INDISCLUSTERED::boolean," +
-            " D.DESCRIPTION::varchar"+
+            " D.DESCRIPTION::varchar" +
             " from PG_AM B" +
             " left join PG_CLASS F on B.OID = F.RELAM" +
             " left join PG_STAT_ALL_INDEXES E on F.OID = E.INDEXRELID" +
@@ -55,7 +56,7 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
             " and E.SCHEMANAME = ?";
 
 
-    private static final String sql = all +" and E.RELNAME = ?";
+    private static final String sql = all + " and E.RELNAME = ?";
 
     private static final String byName = all + " and A.INDEXNAME = ?";
 
@@ -79,15 +80,15 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
 
     protected List<RDBIndexMetadata> doSelect(SqlRequest sqlRequest) {
         return schema.<SyncSqlExecutor>findFeatureNow(SyncSqlExecutor.ID)
-                .select(sqlRequest, new PostgresqlIndexMetadataWrapper());
+                     .select(sqlRequest, new PostgresqlIndexMetadataWrapper());
     }
 
     protected Flux<RDBIndexMetadata> doSelectReactive(SqlRequest sqlRequest) {
-        PostgresqlIndexMetadataWrapper wrapper = new  PostgresqlIndexMetadataWrapper();
+        PostgresqlIndexMetadataWrapper wrapper = new PostgresqlIndexMetadataWrapper();
 
         return schema.findFeatureNow(ReactiveSqlExecutor.ID)
-                .select(sqlRequest, ResultWrappers.lowerCase(wrapper))
-                .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
+                     .select(sqlRequest, ResultWrappers.lowerCase(wrapper))
+                     .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
                 ;
     }
 
@@ -116,7 +117,9 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
 
         @Override
         public void wrapColumn(ColumnWrapperContext<Map<String, Object>> context) {
-            context.getRowInstance().put(context.getColumnLabel().toLowerCase(), context.getResult());
+            context.getRowInstance().put(
+                    context.getColumnLabel().toLowerCase(),
+                    JdbcResultDecoder.INSTANCE.decode(context.getResult()));
         }
 
         @Override
@@ -130,7 +133,7 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
             RDBIndexMetadata.IndexColumn indexColumn = new RDBIndexMetadata.IndexColumn();
             indexColumn.setColumn(((String) result.get("attname")).toLowerCase());
             // TODO: 2019-10-22 咋获取排序...
-            indexColumn.setSort(  RDBIndexMetadata.IndexSort.asc );
+            indexColumn.setSort(RDBIndexMetadata.IndexSort.asc);
             indexColumn.setSortIndex(((Number) result.get("attnum")).intValue());
             index.getColumns().add(indexColumn);
             return true;

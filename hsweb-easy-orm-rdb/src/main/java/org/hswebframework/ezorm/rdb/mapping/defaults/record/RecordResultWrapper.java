@@ -2,12 +2,7 @@ package org.hswebframework.ezorm.rdb.mapping.defaults.record;
 
 import org.hswebframework.ezorm.rdb.executor.wrapper.AbstractMapResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class RecordResultWrapper extends AbstractMapResultWrapper<Record> {
 
@@ -29,17 +24,24 @@ public class RecordResultWrapper extends AbstractMapResultWrapper<Record> {
     @Override
     public void wrapColumn(ColumnWrapperContext<Record> context) {
 
-        String property = Optional.ofNullable(mapping)
-                .flatMap(mapping -> mapping.getPropertyByColumnName(context.getColumnLabel()))
-                .orElse(context.getColumnLabel());
+        if (mapping != null) {
+            Record record = context.getRowInstance();
 
-        Object value = Optional.ofNullable(mapping)
-                .flatMap(mapping -> mapping.getColumnByProperty(property))
-                .map(columnMetadata -> columnMetadata.decode(context.getResult()))
-                .orElseGet(context::getResult);
-        Record record = context.getRowInstance();
+            String property = mapping
+                    .getPropertyByColumnName(context.getColumnLabel())
+                    .orElse(context.getColumnLabel());
 
-        super.doWrap(record, property, value);
+            Object value = mapping
+                    .getColumnByProperty(property)
+                    .map(columnMetadata -> columnMetadata.decode(context.getResult()))
+                    .orElseGet(context::getResult);
+
+            super.doWrap(record, property, value);
+            return;
+        }
+
+        super.wrapColumn(context);
+
     }
 
     @Override

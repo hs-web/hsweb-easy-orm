@@ -1,7 +1,7 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 
-import io.r2dbc.postgresql.util.ByteBufferUtils;
+import io.netty.buffer.ByteBuf;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
@@ -23,11 +23,20 @@ public class ClobValueCodec implements ValueCodec {
     public Object encode(Object value) {
 
         if (value instanceof Clob) {
-            return (value);
+            return value;
         }
         if (value instanceof String) {
             return value;
         }
+
+        if (value instanceof ByteBuffer) {
+            return value;
+        }
+
+        if (value instanceof ByteBuf) {
+            return ((ByteBuf) value).nioBuffer();
+        }
+
 
         return value.toString();
     }
@@ -35,10 +44,15 @@ public class ClobValueCodec implements ValueCodec {
     @Override
     @SneakyThrows
     public Object decode(Object data) {
+        if (data instanceof ByteBuffer) {
+            ByteBuffer byteBuffer = ((ByteBuffer) data);
+            return StandardCharsets.UTF_8.decode(byteBuffer).toString();
+        }
         if (data instanceof Clob) {
             Clob clobData = ((Clob) data);
-            data = clobData.getSubString(1, (int) clobData.length());
-        } else if (FeatureUtils.r2dbcIsAlive()) {
+            return clobData.getSubString(1, (int) clobData.length());
+        }
+        if (FeatureUtils.r2dbcIsAlive()) {
             Mono<?> mono = null;
             if (data instanceof io.r2dbc.spi.Clob) {
                 mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
@@ -48,12 +62,7 @@ public class ClobValueCodec implements ValueCodec {
                 // TODO: 2019-09-25 更好的方式？
                 return mono.toFuture().get(10, TimeUnit.SECONDS);
             }
-        } else if (data instanceof ByteBuffer) {
-            ByteBuffer byteBuffer = ((ByteBuffer) data);
-
-            return ByteBufferUtils.decode(byteBuffer);
         }
-
         return data;
     }
 }

@@ -8,6 +8,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import java.sql.Connection;
 
@@ -45,14 +46,15 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
         return Flux
                 .create(sink -> {
+                    @SuppressWarnings("all")
                     Disposable disposable = getConnection()
                             .flatMap(connection -> toFlux(request)
                                     .doOnNext(sql -> doSelect(connection, sql, consumer(wrapper, sink::next)))
                                     .then())
-                            .doOnError(sink::error)
-                            .subscriberContext(sink.currentContext())
-                            .doOnSuccess(ignore -> sink.complete())
-                            .subscribe();
+                            .subscribe((ignore) -> sink.complete(),
+                                       sink::error,
+                                       sink::complete,
+                                       Context.of(sink.contextView()));
 
                     sink.onCancel(disposable)
                         .onDispose(disposable);

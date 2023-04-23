@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.rdb.codec.JdbcResultDecoder;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -29,43 +30,43 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
     private final RDBSchemaMetadata schema;
 
     static String selectIndexSql = String.join(" ",
-            "SELECT",
-            "*",
-            "FROM",
-            "INFORMATION_SCHEMA.STATISTICS",
-            "WHERE",
-            "TABLE_SCHEMA = ? and TABLE_NAME like ?");
+                                               "SELECT",
+                                               "*",
+                                               "FROM",
+                                               "INFORMATION_SCHEMA.STATISTICS",
+                                               "WHERE",
+                                               "TABLE_SCHEMA = ? and TABLE_NAME like ?");
 
     static String selectIndexSqlByName = String.join(" ",
-            "SELECT",
-            "*",
-            "FROM",
-            "INFORMATION_SCHEMA.STATISTICS",
-            "WHERE",
-            "TABLE_SCHEMA = ? and INDEX_NAME=?");
+                                                     "SELECT",
+                                                     "*",
+                                                     "FROM",
+                                                     "INFORMATION_SCHEMA.STATISTICS",
+                                                     "WHERE",
+                                                     "TABLE_SCHEMA = ? and INDEX_NAME=?");
 
     @Override
     public List<RDBIndexMetadata> parseTableIndex(String tableName) {
         return schema.findFeatureNow(SyncSqlExecutor.ID)
-                .select(SqlRequests.of(selectIndexSql, schema.getName(), tableName),
-                        ResultWrappers.lowerCase(new MysqlIndexWrapper()));
+                     .select(SqlRequests.of(selectIndexSql, schema.getName(), tableName),
+                             ResultWrappers.lowerCase(new MysqlIndexWrapper()));
     }
 
     @Override
     public Optional<RDBIndexMetadata> parseByName(String name) {
         return schema.findFeatureNow(SyncSqlExecutor.ID)
-                .select(SqlRequests.of(selectIndexSqlByName, schema.getName(), name),
-                        new MysqlIndexWrapper())
-                .stream()
-                .findAny()
+                     .select(SqlRequests.of(selectIndexSqlByName, schema.getName(), name),
+                             new MysqlIndexWrapper())
+                     .stream()
+                     .findAny()
                 ;
     }
 
     @Override
     public List<RDBIndexMetadata> parseAll() {
         return schema.findFeatureNow(SyncSqlExecutor.ID)
-                .select(SqlRequests.of(selectIndexSql, schema.getName(), "%%"),
-                        ResultWrappers.lowerCase(new MysqlIndexWrapper()));
+                     .select(SqlRequests.of(selectIndexSql, schema.getName(), "%%"),
+                             ResultWrappers.lowerCase(new MysqlIndexWrapper()));
     }
 
     @Override
@@ -77,8 +78,8 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
         MysqlIndexWrapper wrapper = new MysqlIndexWrapper();
 
         return schema.findFeatureNow(ReactiveSqlExecutor.ID)
-                .select(sqlRequest,ResultWrappers.lowerCase(wrapper))
-                .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
+                     .select(sqlRequest, ResultWrappers.lowerCase(wrapper))
+                     .thenMany(Flux.defer(() -> Flux.fromIterable(wrapper.getResult())))
                 ;
     }
 
@@ -104,7 +105,9 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
         @Override
         public void wrapColumn(ColumnWrapperContext<Map<String, String>> context) {
             if (context.getResult() != null) {
-                context.getRowInstance().put(context.getColumnLabel().toLowerCase(), String.valueOf(context.getResult()));
+                context.getRowInstance().put(
+                        context.getColumnLabel().toLowerCase(),
+                        String.valueOf(JdbcResultDecoder.INSTANCE.decode(context.getResult())));
             }
         }
 

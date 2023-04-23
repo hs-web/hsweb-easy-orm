@@ -70,7 +70,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         //列
         List<RDBColumnMetadata> metaDataList = getSqlExecutor()
                 .select(template(getTableMetaSql(name), param),
-                list(new RecordResultWrapper()))
+                list(RecordResultWrapper.INSTANCE))
                 .stream()
                 .map(record->{
                     RDBColumnMetadata column = metaData.newColumn();
