@@ -25,6 +25,8 @@ public class SimpleFunctionFragmentBuilder implements FunctionFragmentBuilder {
             String arg = String.valueOf(opts.get("arg"));
             if ("1".equals(arg)) {
                 columnFullName = arg;
+            } else if (Boolean.TRUE.equals(opts.get("distinct"))) {
+                columnFullName = "distinct " + columnFullName;
             }
         }
         if (columnFullName == null) {

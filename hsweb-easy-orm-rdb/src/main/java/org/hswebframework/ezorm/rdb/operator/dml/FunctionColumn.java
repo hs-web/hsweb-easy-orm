@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Getter
@@ -19,5 +20,13 @@ public class FunctionColumn {
     @Override
     public String toString() {
         return function + "(" + column + ")";
+    }
+
+    public FunctionColumn option(String opt, Object value) {
+        if (opts == null) {
+            opts = new LinkedHashMap<>();
+        }
+        opts.put(opt, value);
+        return this;
     }
 }
