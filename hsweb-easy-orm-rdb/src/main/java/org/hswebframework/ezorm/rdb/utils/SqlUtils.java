@@ -57,7 +57,8 @@ public class SqlUtils {
         int len = 0;
         for (int i = 0; i < parameters.length; i++) {
             Object parameter = parameters[i];
-            if (parameter instanceof Number) {
+            if (parameter instanceof Number
+                    || parameter instanceof Boolean) {
                 stringParameter[i] = parameter.toString();
             } else if (parameter instanceof Date) {
                 stringParameter[i] = "'" + DateFormatter.toString(((Date) parameter), "yyyy-MM-dd HH:mm:ss") + "'";
