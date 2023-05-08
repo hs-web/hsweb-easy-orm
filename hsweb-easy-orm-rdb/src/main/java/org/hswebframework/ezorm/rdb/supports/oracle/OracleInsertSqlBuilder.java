@@ -51,7 +51,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                 SqlFragments functionFragments = Optional.of(column)
                         .flatMap(insertColumn -> Optional.ofNullable(insertColumn.getFunction())
                                 .flatMap(function -> columnMetadata.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
-                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn.getOpts())))
+                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn)))
                         .orElse(EmptySqlFragments.INSTANCE);
                 if (functionFragments.isNotEmpty()) {
                     functionValues.put(index, functionFragments);

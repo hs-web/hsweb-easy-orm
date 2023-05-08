@@ -73,7 +73,7 @@ public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {
 
         SqlFragments fragments = ofNullable(order.getFunction())
                 .flatMap(function -> column.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
-                .map(builder -> builder.create(fullName, column, order.getOpts()))
+                .map(builder -> builder.create(fullName, column, order))
                 .orElseGet(() -> PrepareSqlFragments.of().addSql(fullName));
 
         return PrepareSqlFragments

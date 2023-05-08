@@ -70,7 +70,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                         .of(column)
                         .flatMap(insertColumn -> ofNullable(insertColumn.getFunction())
                                 .flatMap(function -> columnMetadata.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
-                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn.getOpts())))
+                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn)))
                         .orElse(EmptySqlFragments.INSTANCE);
                 if (functionFragments.isNotEmpty()) {
                     functionValues.put(index, functionFragments);

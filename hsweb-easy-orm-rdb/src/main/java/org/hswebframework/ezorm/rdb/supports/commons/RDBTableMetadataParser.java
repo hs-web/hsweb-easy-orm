@@ -70,9 +70,9 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         //列
         List<RDBColumnMetadata> metaDataList = getSqlExecutor()
                 .select(template(getTableMetaSql(name), param),
-                list(RecordResultWrapper.INSTANCE))
+                        list(RecordResultWrapper.INSTANCE))
                 .stream()
-                .map(record->{
+                .map(record -> {
                     RDBColumnMetadata column = metaData.newColumn();
                     applyColumnInfo(column, record);
                     return column;
@@ -87,8 +87,8 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         }
         //加载索引
         schema.findFeature(IndexMetadataParser.ID)
-                .map(parser -> parser.parseTableIndex(name))
-                .ifPresent(indexes -> indexes.forEach(metaData::addIndex));
+              .map(parser -> parser.parseTableIndex(name))
+              .ifPresent(indexes -> indexes.forEach(metaData::addIndex));
 
         return Optional.of(metaData);
     }
@@ -112,7 +112,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                                 RDBColumnMetadata column = metaData.newColumn();
                                 applyColumnInfo(column, record);
                                 metaData.addColumn(column);
-                               return column;
+                                return column;
                             })
                             .collectList();
                     //注释
@@ -123,9 +123,9 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
                     //加载索引
                     Flux<RDBIndexMetadata> index = schema.findFeature(IndexMetadataParser.ID)
-                            .map(parser -> parser.parseTableIndexReactive(name))
-                            .orElseGet(Flux::empty)
-                            .doOnNext(metaData::addIndex);
+                                                         .map(parser -> parser.parseTableIndexReactive(name))
+                                                         .orElseGet(Flux::empty)
+                                                         .doOnNext(metaData::addIndex);
 
                     return Flux
                             .merge(columns, comments, index)
@@ -222,21 +222,23 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                         , new RecordResultWrapper())
                 .doOnNext(record -> {
                     record.getString("table_name")
-                            .map(String::toLowerCase)
-                            .map(metadata::get)
-                            .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
+                          .map(String::toLowerCase)
+                          .map(metadata::get)
+                          .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
                 });
 
         //索引
-        Flux<RDBIndexMetadata> indexes = schema.findFeature(IndexMetadataParser.ID)
+        Flux<RDBIndexMetadata> indexes = schema
+                .findFeature(IndexMetadataParser.ID)
                 .map(IndexMetadataParser::parseAllReactive)
                 .orElseGet(Flux::empty)
-                .doOnNext(index -> Optional.ofNullable(metadata.get(index.getTableName())).ifPresent(table -> table.addIndex(index)));
+                .doOnNext(index -> Optional
+                        .ofNullable(metadata.get(index.getTableName()))
+                        .ifPresent(table -> table.addIndex(index)));
 
 
-        return columns
-                .thenMany(Flux.merge(comments, indexes))
-                .thenMany(Flux.defer(() -> Flux.fromIterable(metadata.values())));
+        return Flux.concat(columns, comments, indexes)
+                   .thenMany(Flux.defer(() -> Flux.fromIterable(metadata.values())));
 
     }
 
@@ -273,18 +275,18 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                         , consumer(new RecordResultWrapper(), record -> {
 
                             record.getString("table_name")
-                                    .map(String::toLowerCase)
-                                    .map(metadata::get)
-                                    .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
+                                  .map(String::toLowerCase)
+                                  .map(metadata::get)
+                                  .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
                         }));
 
         //索引
         schema.<IndexMetadataParser>findFeature(IndexMetadataParser.ID_VALUE)
-                .map(IndexMetadataParser::parseAll)
-                .ifPresent(indexes -> indexes.forEach(index -> {
-                    Optional.ofNullable(metadata.get(index.getTableName()))
-                            .ifPresent(table -> table.addIndex(index));
-                }));
+              .map(IndexMetadataParser::parseAll)
+              .ifPresent(indexes -> indexes.forEach(index -> {
+                  Optional.ofNullable(metadata.get(index.getTableName()))
+                          .ifPresent(table -> table.addIndex(index));
+              }));
 
 
         return new ArrayList<>(metadata.values());
@@ -293,10 +295,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     protected void applyColumnInfo(RDBColumnMetadata column, Record record) {
         record.getString("name")
 //                .map(String::toLowerCase)
-                .ifPresent(name -> {
-                    column.setName(name);
-                    column.setProperty("old-name", name);
-                });
+              .ifPresent(name -> {
+                  column.setName(name);
+                  column.setProperty("old-name", name);
+              });
         record.getString("comment").ifPresent(column::setComment);
 
         record.getString("not_null").ifPresent(value -> {
@@ -308,13 +310,13 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         record.getInteger("data_scale").ifPresent(column::setScale);
 
         record.getString("data_type")
-                .map(String::toLowerCase)
-                .map(getDialect()::convertDataType)
-                .ifPresent(column::setType);
+              .map(String::toLowerCase)
+              .map(getDialect()::convertDataType)
+              .ifPresent(column::setType);
 
         column.findFeature(ValueCodecFactory.ID)
-                .flatMap(factory -> factory.createValueCodec(column))
-                .ifPresent(column::setValueCodec);
+              .flatMap(factory -> factory.createValueCodec(column))
+              .ifPresent(column::setValueCodec);
     }
 
     @Override

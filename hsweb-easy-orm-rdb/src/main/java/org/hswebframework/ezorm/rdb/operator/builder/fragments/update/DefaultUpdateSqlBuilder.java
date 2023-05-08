@@ -69,7 +69,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
 
                         sqlFragments.addFragments(ofNullable(column.getFunction())
                                 .flatMap(function -> columnMetadata.findFeature(createFeatureId(function)))
-                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, column.getOpts()))
+                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, column))
                                 .orElseGet(() -> PrepareSqlFragments.of()
                                         .addSql("?")
                                         .addParameter(columnMetadata.encode(value))));

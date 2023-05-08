@@ -6,12 +6,13 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.delete.DeleteSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 
 import java.util.Map;
 
 public interface FunctionFragmentBuilder extends Feature {
 
-    static FeatureId<FunctionFragmentBuilder> createFeatureId(String suffix){
+    static FeatureId<FunctionFragmentBuilder> createFeatureId(String suffix) {
         return FeatureId.of(RDBFeatureType.function.getId().concat(":").concat(suffix));
     }
 
@@ -29,4 +30,7 @@ public interface FunctionFragmentBuilder extends Feature {
 
     SqlFragments create(String columnFullName, RDBColumnMetadata metadata, Map<String, Object> opts);
 
+    default SqlFragments create(String columnFullName, RDBColumnMetadata metadata, FunctionColumn column) {
+        return create(columnFullName, metadata, column.getOpts());
+    }
 }
