@@ -217,7 +217,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 .then();
 
         //说明
-        Flux<Record> comments = getReactiveSqlExecutor()
+        Mono<Void> comments = getReactiveSqlExecutor()
                 .select(template(getTableCommentSql(null), param)
                         , new RecordResultWrapper())
                 .doOnNext(record -> {
@@ -225,16 +225,18 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                           .map(String::toLowerCase)
                           .map(metadata::get)
                           .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
-                });
+                })
+                .then();
 
         //索引
-        Flux<RDBIndexMetadata> indexes = schema
+        Mono<Void> indexes = schema
                 .findFeature(IndexMetadataParser.ID)
                 .map(IndexMetadataParser::parseAllReactive)
                 .orElseGet(Flux::empty)
                 .doOnNext(index -> Optional
                         .ofNullable(metadata.get(index.getTableName()))
-                        .ifPresent(table -> table.addIndex(index)));
+                        .ifPresent(table -> table.addIndex(index)))
+                .then();
 
 
         return Flux.concat(columns, comments, indexes)
