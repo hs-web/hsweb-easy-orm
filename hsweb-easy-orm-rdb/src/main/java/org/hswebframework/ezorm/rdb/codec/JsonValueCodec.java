@@ -1,13 +1,10 @@
 package org.hswebframework.ezorm.rdb.codec;
 
-import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
-import jdk.nashorn.api.scripting.JSObject;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +19,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -115,37 +113,7 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
         if (value instanceof String) {
             return value;
         }
-        //适配nashorn
-        if (value instanceof JSObject) {
-            value = convertJSObject(((JSObject) value));
-        }
         return mapper.writeValueAsString(value);
-    }
-
-    private Object convertJSObject(JSObject jsObject) {
-        if (jsObject.isArray()) {
-            return jsObject
-                    .values()
-                    .stream()
-                    .map(obj -> {
-                        if (obj instanceof JSObject) {
-                            return convertJSObject(((JSObject) obj));
-                        }
-                        return obj;
-                    }).collect(Collectors.toList());
-        }
-        if (jsObject instanceof Map) {
-            Map<Object, Object> newMap = new HashMap<>(((Map<?, ?>) jsObject).size());
-            for (Map.Entry<?, ?> entry : ((Map<?, ?>) jsObject).entrySet()) {
-                Object val = entry.getValue();
-                if (val instanceof JSObject) {
-                    val = convertJSObject(((JSObject) val));
-                }
-                newMap.put(entry.getKey(), val);
-            }
-            return newMap;
-        }
-        return JSON.toJSON(jsObject);
     }
 
     @SneakyThrows

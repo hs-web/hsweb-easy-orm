@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.commons;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -10,8 +11,11 @@ import org.hswebframework.ezorm.rdb.metadata.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
+import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
+import reactor.util.context.ContextView;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +24,10 @@ import java.util.stream.Collectors;
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.template;
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 
+@Slf4j
 public abstract class RDBTableMetadataParser implements TableMetadataParser {
+
+    static ContextView logContext = Context.of(Logger.class,log).readOnly();
 
     protected RDBSchemaMetadata schema;
 
@@ -130,13 +137,15 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                     return Flux
                             .merge(columns, comments, index)
                             .then(Mono.just(metaData));
-                });
+                })
+                .contextWrite(logContext);
     }
 
     @Override
     public Flux<RDBTableMetadata> parseAllReactive() {
         return parseAllTableNameReactive()
-                .flatMap(this::parseByNameReactive);
+                .flatMap(this::parseByNameReactive)
+                .contextWrite(logContext);
     }
 
     @Override
@@ -172,7 +181,8 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                         column("total", Number.class::cast))
                 .map(number -> number.intValue() > 0)
                 .singleOrEmpty()
-                .defaultIfEmpty(false);
+                .defaultIfEmpty(false)
+                .contextWrite(logContext);
     }
 
     @Override
@@ -185,7 +195,8 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     @Override
     public Flux<String> parseAllTableNameReactive() {
         return getReactiveSqlExecutor()
-                .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)));
+                .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)))
+                .contextWrite(logContext);
 
     }
 
@@ -240,7 +251,8 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
 
         return Flux.concat(columns, comments, indexes)
-                   .thenMany(Flux.defer(() -> Flux.fromIterable(metadata.values())));
+                   .thenMany(Flux.defer(() -> Flux.fromIterable(metadata.values())))
+                   .contextWrite(logContext);
 
     }
 
