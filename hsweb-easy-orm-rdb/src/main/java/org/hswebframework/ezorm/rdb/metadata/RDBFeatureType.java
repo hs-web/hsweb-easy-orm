@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hswebframework.ezorm.core.FeatureType;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 @Getter
 @AllArgsConstructor
@@ -61,6 +62,6 @@ public enum RDBFeatureType implements FeatureType {
     private final String name;
 
     public String getFeatureId(String suffix) {
-        return getId().concat(":").concat(suffix);
+        return StringUtils.concat(getId(),":",suffix);
     }
 }

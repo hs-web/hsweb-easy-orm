@@ -1,21 +1,22 @@
 package org.hswebframework.ezorm.core;
 
 import com.alibaba.fastjson.JSON;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.utils.DateTimeUtils;
 import org.hswebframework.utils.time.DateFormatter;
-import org.hswebframework.utils.StringUtils;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @since 1.0
  */
 public class SimplePropertyWrapper implements PropertyWrapper {
 
-    private Object value;
+    private final Object value;
 
     public SimplePropertyWrapper(Object value) {
         this.value = value;
@@ -28,17 +29,31 @@ public class SimplePropertyWrapper implements PropertyWrapper {
 
     @Override
     public int toInt() {
-        return StringUtils.toInt(value);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return Integer.parseInt(String.valueOf(value));
     }
 
     @Override
     public double toDouble() {
-        return StringUtils.toDouble(value);
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        return Double.parseDouble(String.valueOf(value));
     }
 
     @Override
     public boolean isTrue() {
-        return StringUtils.isTrue(value);
+        if (value instanceof Boolean) {
+            return ((Boolean) value);
+        }
+
+        return Objects.equals(1, value) ||
+                Objects.equals("true", value) ||
+                Objects.equals("y", value) ||
+                Objects.equals("yes", value)||
+                Objects.equals("1", value);
     }
 
     @Override

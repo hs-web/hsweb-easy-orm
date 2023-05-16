@@ -16,7 +16,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColum
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SortOrderFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

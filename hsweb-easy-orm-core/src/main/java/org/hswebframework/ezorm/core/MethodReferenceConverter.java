@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.core;
 
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

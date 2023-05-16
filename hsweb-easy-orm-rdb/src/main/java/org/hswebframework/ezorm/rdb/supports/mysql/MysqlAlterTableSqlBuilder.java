@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
@@ -12,7 +13,8 @@ public class MysqlAlterTableSqlBuilder extends CommonAlterTableSqlBuilder {
 
         if (newColumn.getComment() != null) {
             return super.createAlterColumnFragments(oldColumn, newColumn)
-                    .addSql("comment", "'".concat(newColumn.getComment()).concat("'"));
+                    .addSql("comment",
+                            StringUtils.concat("'",newColumn.getComment(),"'"));
         }
         return super.createAlterColumnFragments(oldColumn, newColumn);
     }
@@ -21,7 +23,7 @@ public class MysqlAlterTableSqlBuilder extends CommonAlterTableSqlBuilder {
     protected PrepareSqlFragments createAddColumnFragments(RDBColumnMetadata column) {
         if (column.getComment() != null) {
             return super.createAddColumnFragments(column)
-                    .addSql("comment", "'".concat(column.getComment()).concat("'"));
+                    .addSql("comment",  StringUtils.concat("'",column.getComment(),"'"));
         }
         return super.createAddColumnFragments(column);
     }

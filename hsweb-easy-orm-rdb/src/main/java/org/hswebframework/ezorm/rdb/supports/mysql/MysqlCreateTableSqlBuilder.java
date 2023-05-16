@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.core.DefaultValue;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
@@ -57,7 +58,8 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
                     }
                 }
                 if (column.getComment() != null) {
-                    createTable.addSql(" comment '".concat(column.getComment().concat("'")));
+                    createTable.addSql(" comment ",
+                                       StringUtils.concat("'", column.getComment(), "'"));
                 }
             }
 
@@ -65,7 +67,7 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
         createTable.addSql(") ENGINE=", engine, "DEFAULT CHARSET=", charset);
 
         if (table.getComment() != null) {
-            createTable.addSql("COMMENT=", "'".concat(table.getComment()).concat("'"));
+            createTable.addSql("COMMENT=", StringUtils.concat("'",table.getComment(),"'"));
         }
 
         table.findFeature(CreateIndexSqlBuilder.ID)

@@ -1,18 +1,19 @@
 package org.hswebframework.ezorm.rdb.codec;
 
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
-import org.hswebframework.utils.ClassUtils;
-import org.hswebframework.utils.StringUtils;
 import org.hswebframework.utils.time.DateFormatter;
 
+import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.function.Function;
 
-public class NumberValueCodec implements ValueCodec {
+public class NumberValueCodec implements ValueCodec<Object, Object> {
 
     private final Function<Number, Object> converter;
 
@@ -20,7 +21,8 @@ public class NumberValueCodec implements ValueCodec {
         this.converter = converter;
     }
 
-    public NumberValueCodec(Class javaType) {
+    @SneakyThrows
+    public NumberValueCodec(Class<?> javaType) {
         if (javaType == int.class || javaType == Integer.class) {
             converter = Number::intValue;
         } else if (javaType == double.class || javaType == Double.class) {
@@ -35,10 +37,11 @@ public class NumberValueCodec implements ValueCodec {
             converter = Number::shortValue;
         } else if (javaType == boolean.class || javaType == Boolean.class) {
             converter = num -> num.byteValue() != 0;
-        } else if (ClassUtils.instanceOf(javaType, Date.class)) {
+        } else if (javaType.isAssignableFrom(Date.class)) {
+            Constructor<?> constructor = javaType.getConstructor();
             converter = num -> {
                 try {
-                    Date date = (Date) javaType.newInstance();
+                    Date date = (Date) constructor.newInstance();
                     date.setTime(num.longValue());
                     return date;
                 } catch (Exception e) {

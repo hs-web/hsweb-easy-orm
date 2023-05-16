@@ -9,7 +9,7 @@ import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDialect;
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.sql.SQLType;
 import java.util.Optional;
@@ -51,7 +51,11 @@ public interface Dialect extends Feature {
         if (keyword.startsWith(getQuoteStart()) && keyword.endsWith(getQuoteEnd())) {
             return keyword;
         }
-        return getQuoteStart().concat(isColumnToUpperCase() && changeCase ? keyword.toUpperCase() : keyword).concat(getQuoteEnd());
+        return StringUtils.concat(
+                getQuoteStart(),
+                isColumnToUpperCase() && changeCase ? keyword.toUpperCase() : keyword,
+                getQuoteEnd()
+        );
     }
 
     default String quote(String keyword) {

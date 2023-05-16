@@ -11,9 +11,9 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.createFeatureId;
@@ -41,16 +41,37 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     }
 
     private Set<SelectColumn> getAllSelectColumn(String ownerAlias, Set<String> excludes, TableOrViewMetadata metadata) {
-        return metadata
-                .getColumns()
-                .stream()
-                .map(columnMetadata -> ofNullable(ownerAlias)
-                        .map(alias -> SelectColumn.of(alias.concat(".")
-                                                           .concat(columnMetadata.getName()), alias.concat(".")
-                                                              .concat(columnMetadata.getAlias())))
-                        .orElseGet(() -> SelectColumn.of(columnMetadata.getName(), columnMetadata.getAlias())))
-                .filter(column -> !excludes.contains(column.getColumn()) && !excludes.contains(column.getAlias()))
-                .collect(Collectors.toSet());
+        List<RDBColumnMetadata> metadataList = metadata.getColumns();
+
+        Set<SelectColumn> columns = new HashSet<>(metadataList.size());
+
+        for (RDBColumnMetadata column : metadata.getColumns()) {
+            SelectColumn selectColumn;
+            if (ownerAlias == null) {
+                selectColumn = SelectColumn.of(column.getName(), column.getAlias());
+            } else {
+                selectColumn = SelectColumn.of(
+                        StringUtils.concat(ownerAlias, ".", column.getName()),
+                        StringUtils.concat(ownerAlias, ".", column.getAlias()));
+            }
+            if (excludes.contains(selectColumn.getColumn()) || excludes.contains(selectColumn.getAlias())) {
+                continue;
+            }
+            columns.add(selectColumn);
+        }
+
+        return columns;
+
+//        return metadata
+//                .getColumns()
+//                .stream()
+//                .map(columnMetadata -> ofNullable(ownerAlias)
+//                        .map(alias -> SelectColumn.of(alias.concat(".")
+//                                                           .concat(columnMetadata.getName()), alias.concat(".")
+//                                                                                                   .concat(columnMetadata.getAlias())))
+//                        .orElseGet(() -> SelectColumn.of(columnMetadata.getName(), columnMetadata.getAlias())))
+//                .filter(column -> !excludes.contains(column.getColumn()) && !excludes.contains(column.getAlias()))
+//                .collect(Collectors.toSet());
     }
 
     private Set<SelectColumn> createSelectColumns(QueryOperatorParameter parameter) {
@@ -84,7 +105,8 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                                                    .filter(ForeignKeyMetadata::isAutoJoin)
                                                    .map(ForeignKeyMetadata::getTarget)
                                                    .map(tar -> getAllSelectColumn(arr[0], excludes, tar));
-                                }).ifPresent(realColumns::addAll);
+                                })
+                                .ifPresent(realColumns::addAll);
                     }
 
                     continue;
@@ -101,17 +123,20 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
         Set<SelectColumn> columns = createSelectColumns(parameter);
 
-        PrepareSqlFragments fragments = columns
-                .stream()
-                .map(column -> this.createFragments(parameter, column))
-                .filter(Objects::nonNull)
-                .reduce(PrepareSqlFragments.of(), (main, source) -> main
-                        .addFragments(source)
-                        .addSql(","));
+        PrepareSqlFragments main = PrepareSqlFragments.of();
 
-        fragments.removeLastSql();
+        PrepareSqlFragments sql = null;
+        for (SelectColumn column : columns) {
+            if (sql != null) {
+                main.addSql(",");
+            }
+            sql = this.createFragments(parameter, column);
+            if (sql != null) {
+                main.addFragments(sql);
+            }
+        }
 
-        return fragments;
+        return main;
     }
 
     private String getAlias(String owner, RDBColumnMetadata metadata, SelectColumn column) {
@@ -129,7 +154,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
             return alias;
         }
         if (owner != null) {
-            alias = owner.concat(".").concat(alias);
+            alias = StringUtils.concat(owner, ".", alias);
         }
         return metadata.getDialect().quote(alias, false);
 

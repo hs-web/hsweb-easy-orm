@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +24,7 @@ public interface SqlFragments {
         if (isEmpty()) {
             return EmptySqlRequest.INSTANCE;
         }
-        return SqlRequests.prepare(String.join(" ", getSql()), getParameters().toArray());
+        return SqlRequests.prepare(StringUtils.join(" ", getSql()), getParameters().toArray());
     }
 
     static SqlFragments single(String sql) {

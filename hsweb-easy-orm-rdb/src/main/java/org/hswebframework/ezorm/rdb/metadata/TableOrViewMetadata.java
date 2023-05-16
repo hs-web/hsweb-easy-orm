@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
 import org.hswebframework.ezorm.core.meta.*;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.events.*;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
@@ -127,7 +128,11 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     }
 
     default String getFullName() {
-        return getSchema().getName().concat(".").concat(getName());
+        return StringUtils.concat(
+                getSchema().getName(),
+                ".",
+                getName()
+        );
     }
 
     default String getQuoteName() {

@@ -10,10 +10,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -58,10 +55,14 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
 
         //集合
         if (value instanceof Collection) {
-            return ((Collection<Object>) value)
-                    .stream()
-                    .map(val -> this.convertValue(column, val))
-                    .collect(Collectors.toList());
+            Collection<Object> listValue = ((Collection<Object>) value);
+            List<Object> list = new ArrayList<>(listValue.size());
+
+            for (Object val : listValue) {
+                list.add(this.convertValue(column, val));
+            }
+
+            return list;
         }
         //单个值
         return Arrays.asList(this.convertValue(column, value));

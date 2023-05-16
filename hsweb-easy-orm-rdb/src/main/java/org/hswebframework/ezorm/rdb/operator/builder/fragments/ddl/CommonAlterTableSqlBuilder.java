@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl;
 
 import org.hswebframework.ezorm.core.DefaultValue;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
@@ -91,9 +92,11 @@ public class CommonAlterTableSqlBuilder implements AlterTableSqlBuilder {
             return;
         }
         batch.addBatch(of()
-                               .addSql("comment on column", column.getFullTableName(), "is", "'"
-                                       .concat(column.getComment())
-                                       .concat("'")).toRequest());
+                               .addSql("comment on column",
+                                       column.getFullTableName(),
+                                       "is",
+                                       StringUtils.concat("'", column.getComment(), "'"))
+                               .toRequest());
     }
 
     protected void appendAddColumnSql(DefaultBatchSqlRequest batch, RDBColumnMetadata column) {

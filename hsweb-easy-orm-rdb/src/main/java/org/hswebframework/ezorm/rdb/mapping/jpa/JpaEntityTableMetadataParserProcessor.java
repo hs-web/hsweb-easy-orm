@@ -22,7 +22,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumFragment
 import org.hswebframework.ezorm.rdb.utils.AnnotationUtils;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 import org.hswebframework.utils.ClassUtils;
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import javax.persistence.*;
 import java.beans.PropertyDescriptor;

@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.mysql;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.sql.Date;
 import java.sql.JDBCType;

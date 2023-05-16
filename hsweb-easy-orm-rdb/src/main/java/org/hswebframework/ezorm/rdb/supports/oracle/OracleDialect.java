@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
-import org.hswebframework.utils.StringUtils;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.math.BigDecimal;
 import java.sql.Date;

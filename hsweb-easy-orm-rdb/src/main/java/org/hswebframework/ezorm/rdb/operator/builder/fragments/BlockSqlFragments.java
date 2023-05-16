@@ -18,23 +18,30 @@ public class BlockSqlFragments implements SqlFragments {
 
     @Override
     public List<String> getSql() {
-        return blocks
-                .values()
-                .stream()
-                .flatMap(Collection::stream)
-                .map(SqlFragments::getSql)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+
+        List<String> sql = new ArrayList<>(blocks.size() * 5);
+
+        for (LinkedList<SqlFragments> value : blocks.values()) {
+            for (SqlFragments fragments : value) {
+                sql.addAll(fragments.getSql());
+            }
+        }
+
+        return sql;
     }
 
     @Override
     public List<Object> getParameters() {
-        return blocks.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .map(SqlFragments::getParameters)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        List<Object> sql = new ArrayList<>(blocks.size() * 5);
+
+        for (LinkedList<SqlFragments> value : blocks.values()) {
+            for (SqlFragments fragments : value) {
+                sql.addAll(fragments.getParameters());
+            }
+        }
+
+        return sql;
+
     }
 
 
