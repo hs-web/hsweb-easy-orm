@@ -12,6 +12,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -19,6 +20,8 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implements ReactiveRepository<E, K> {
+
+    private final Logger logger;
 
     public DefaultReactiveRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         this(operator,
@@ -35,6 +38,11 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public DefaultReactiveRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         super(operator, table, wrapper);
         initMapping(type);
+        this.logger = getLogger(type);
+    }
+
+    private static Logger getLogger(Class<?> type) {
+        return org.slf4j.LoggerFactory.getLogger(type);
     }
 
     @Override
@@ -79,7 +87,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
                 .from(data)
                 .collectList()
                 .filter(CollectionUtils::isNotEmpty)
-                .flatMap(list -> doSave(list).reactive())
+                .flatMap(list -> doSave(list).reactive().as(this::setupLogger))
                 .defaultIfEmpty(SaveResult.of(0, 0));
     }
 
@@ -87,7 +95,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public Mono<Integer> insert(Publisher<E> data) {
         return Flux
                 .from(data)
-                .flatMap(e -> doInsert(e).reactive())
+                .flatMap(e -> doInsert(e).reactive().as(this::setupLogger))
                 .reduce(Math::addExact)
                 .defaultIfEmpty(0);
     }
@@ -99,7 +107,8 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
                 .filter(CollectionUtils::isNotEmpty)
                 .flatMap(e -> doInsert(e).reactive())
                 .reduce(Math::addExact)
-                .defaultIfEmpty(0);
+                .defaultIfEmpty(0)
+                .as(this::setupLogger);
     }
 
     @Override
@@ -108,23 +117,38 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
                 , mapping
                 , operator.dml()
                 , wrapper
+                , logger
                 , getDefaultContextKeyValue());
     }
 
     @Override
     public ReactiveUpdate<E> createUpdate() {
-        return new DefaultReactiveUpdate<>(getTable()
+        return new DefaultReactiveUpdate<>(
+                getTable()
                 , operator.dml().update(getTable().getFullName())
-                , mapping, getDefaultContextKeyValue());
+                , mapping
+                , logger
+                , getDefaultContextKeyValue());
     }
 
     @Override
     public ReactiveDelete createDelete() {
         return new DefaultReactiveDelete(getTable()
                 , operator.dml().delete(getTable().getFullName())
+                , logger
                 , getDefaultContextKeyValue()
         );
     }
+
+
+    private <T> Mono<T> setupLogger(Mono<T> async) {
+        return async.contextWrite(ctx -> ctx.put(Logger.class, logger));
+    }
+
+    private <T> Flux<T> setupLogger(Flux<T> async) {
+        return async.contextWrite(ctx -> ctx.put(Logger.class, logger));
+    }
+
 
     @Override
     public QueryOperator nativeQuery() {

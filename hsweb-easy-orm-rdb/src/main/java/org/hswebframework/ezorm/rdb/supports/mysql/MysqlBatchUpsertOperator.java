@@ -107,12 +107,11 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
         @Override
         public Mono<SaveResult> reactive() {
-            return Mono.defer(() -> {
-                return Mono.just(sqlRequest.get())
-                           .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
-                           .map(i -> SaveResult.of(0, total))
-                           .as(ExceptionUtils.translation(table));
-            });
+            return Mono
+                    .fromSupplier(sqlRequest)
+                    .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                    .map(i -> SaveResult.of(0, total))
+                    .as(ExceptionUtils.translation(table));
         }
     }
 

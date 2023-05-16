@@ -12,6 +12,7 @@ import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.DMLOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,12 +29,16 @@ import static org.hswebframework.ezorm.rdb.operator.dml.query.Selects.count1;
 
 public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> implements ReactiveQuery<T> {
 
+    private final Logger logger;
+
     public DefaultReactiveQuery(TableOrViewMetadata tableMetadata,
                                 EntityColumnMapping mapping,
                                 DMLOperator operator,
                                 ResultWrapper<T, ?> wrapper,
+                                Logger logger,
                                 ContextKeyValue<?>... keyValues) {
         super(tableMetadata, mapping, operator, wrapper, keyValues);
+        this.logger = logger;
     }
 
     @Override
@@ -48,7 +53,8 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                  .orderBy(getSortOrder())
                                  .when(param.isPaging(), query -> query.paging(param.getPageIndex(), param.getPageSize()))
                                  .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetch")))
-                                 .reactive());
+                                 .reactive())
+                .contextWrite(ctx->ctx.put(Logger.class,logger));
     }
 
     @Override
@@ -64,7 +70,8 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                  .paging(0, 1)
                                  .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetchOne")))
                                  .reactive())
-                .as(Mono::from);
+                .contextWrite(ctx-> ctx.put(Logger.class,logger))
+                .singleOrEmpty();
     }
 
     private <O> Flux<O> doFetch(QueryOperator queryOperator, String type, Function<QueryOperator, Publisher<O>> executor) {
@@ -101,7 +108,8 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                         .map(Number::intValue)
                         .reduce(Math::addExact)
                         .switchIfEmpty(Mono.just(0)))
-                .as(Mono::from);
+                .contextWrite(ctx-> ctx.put(Logger.class,logger))
+                .singleOrEmpty();
     }
 
 }

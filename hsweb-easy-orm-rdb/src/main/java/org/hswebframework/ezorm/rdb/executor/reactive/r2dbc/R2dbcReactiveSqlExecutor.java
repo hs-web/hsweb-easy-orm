@@ -64,6 +64,24 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         }
     }
 
+    protected enum Operation {
+        select,
+        execute
+    }
+
+    @SuppressWarnings("all")
+    protected <T> Flux<T> doExecute(Operation operation,
+                                    Logger logger,
+                                    Connection connection,
+                                    SqlRequest request,
+                                    Function<Result, Publisher<T>> mapper) {
+        return Flux
+                .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
+                .flatMap(mapper)
+                .doOnSubscribe(subscription -> printSql(logger, request))
+                .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
+    }
+
     /**
      * 使用指定的Connection执行SQL并返回执行结果
      *
@@ -71,15 +89,18 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
      * @param request    SQL
      * @return 执行结果
      */
-    protected Flux<Result> doExecute(Connection connection,
-                                     SqlRequest request) {
-
-        return Flux
-                .from(this.prepareStatement(connection.createStatement(request.getSql()), request)
-                          .execute())
-                .map(Result.class::cast)
-                .doOnSubscribe(subscription -> printSql(logger, request))
-                .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
+    @SuppressWarnings("all")
+    protected <T> Flux<T> doExecute(Operation operation,
+                                    Connection connection,
+                                    SqlRequest request,
+                                    Function<Result, Publisher<T>> mapper) {
+        return Flux.deferContextual(ctx -> {
+            return doExecute(operation,
+                             ctx.getOrDefault(Logger.class, this.logger),
+                             connection,
+                             request,
+                             mapper);
+        });
     }
 
     /**
@@ -88,65 +109,71 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
      * @param sqlRequestFlux SQL流
      * @return 执行结果
      */
-    private Flux<Result> doExecute(Flux<SqlRequest> sqlRequestFlux) {
+    private <T> Flux<T> doExecute(Operation operation, Logger logger, Flux<SqlRequest> sqlRequestFlux, Function<Result, Publisher<T>> mapper) {
         return this
                 .getConnection()
                 .flatMapMany(connection -> sqlRequestFlux
-                        .concatMap(sqlRequest -> this.doExecute(connection, sqlRequest))
+                        .concatMap(sqlRequest -> this.doExecute(operation, logger, connection, sqlRequest, mapper))
                         .doFinally(type -> releaseConnection(type, connection)));
+    }
+
+    private <T> Flux<T> doExecute(Operation operation, Flux<SqlRequest> sqlRequestFlux, Function<Result, Publisher<T>> mapper) {
+        return Flux.deferContextual(ctx -> doExecute(operation, ctx.getOrDefault(Logger.class, logger), sqlRequestFlux, mapper));
     }
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-        return this
-                .doExecute(toFlux(request))
-                .flatMap(result -> Mono.from(result.getRowsUpdated()).defaultIfEmpty(0))
-                .doOnNext(count -> logger.debug("==>    Updated: {}", count))
-                .collect(Collectors.summingInt(Integer::intValue))
-                .defaultIfEmpty(0);
+        return Mono.deferContextual(ctx -> {
+            Logger _logger = ctx.getOrDefault(Logger.class, logger);
+            return this
+                    .doExecute(Operation.execute, _logger, toFlux(request), Result::getRowsUpdated)
+                    .doOnNext(count -> _logger.debug("==>    Updated: {}", count))
+                    .reduce(0, Math::addExact);
+        });
     }
 
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
-        return this.doExecute(toFlux(request))
-                   .flatMap(Result::getRowsUpdated)
-                   .then();
+        return this.doExecute(Operation.execute, toFlux(request), Result::getRowsUpdated).then();
+    }
+
+    private <E> Flux<E> wrapResult(Result result, ResultWrapper<E, ?> wrapper) {
+        return Flux
+                .from(result.map((row, meta) -> {
+                          //查询结果的列名
+                          List<String> columns = meta
+                                  .getColumnMetadatas()
+                                  .stream()
+                                  .map(ColumnMetadata::getName)
+                                  .collect(Collectors.toList());
+
+                          wrapper.beforeWrap(() -> columns);
+                          E e = wrapper.newRowInstance();
+                          for (int i = 0, len = columns.size(); i < len; i++) {
+                              String column = columns.get(i);
+                              Object value = row.get(i);
+
+                              DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, value, e);
+
+                              wrapper.wrapColumn(context);
+                              e = context.getRowInstance();
+                          }
+                          //中断转换
+                          if (!wrapper.completedWrapRow(e)) {
+                              return Interrupted.instance;
+                          }
+                          return e;
+                      })
+                )
+                .takeWhile(Interrupted::nonInterrupted)
+                .map(CastUtil::<E>cast);
     }
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
         return this
-                .toFlux(request)
-                .as(this::doExecute)
-                .flatMap(result -> result
-                        .map((row, meta) -> {
-                            //查询结果的列名
-                            List<String> columns = meta.getColumnMetadatas()
-                                    .stream()
-                                    .map(ColumnMetadata::getName)
-                                    .collect(Collectors.toList());
-
-                            wrapper.beforeWrap(() -> columns);
-                            E e = wrapper.newRowInstance();
-                            for (int i = 0, len = columns.size(); i < len; i++) {
-                                String column = columns.get(i);
-                                Object value = row.get(i);
-
-                                DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, value, e);
-
-                                wrapper.wrapColumn(context);
-                                e = context.getRowInstance();
-                            }
-                            //中断转换
-                            if (!wrapper.completedWrapRow(e)) {
-                                return Interrupted.instance;
-                            }
-                            return e;
-                        }))
-                .takeWhile(Interrupted::nonInterrupted)
-                .map(CastUtil::<E>cast)
-                .doOnCancel(wrapper::completedWrap)
-                .doOnComplete(wrapper::completedWrap);
+                .doExecute(Operation.select, this.toFlux(request), result -> this.wrapResult(result, wrapper))
+                .doAfterTerminate(wrapper::completedWrap);
     }
 
     /**

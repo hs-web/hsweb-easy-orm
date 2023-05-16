@@ -56,7 +56,7 @@ public abstract class DefaultRepository<E> {
 
     protected Supplier<RDBTableMetadata> tableSupplier;
 
-    protected final List<ContextKeyValue> defaultContextKeyValue = new ArrayList<>();
+    protected final List<ContextKeyValue<?>> defaultContextKeyValue = new ArrayList<>();
 
     public DefaultRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> supplier, ResultWrapper<E, ?> wrapper) {
         this.operator = operator;
@@ -71,11 +71,11 @@ public abstract class DefaultRepository<E> {
         return tableSupplier.get();
     }
 
-    protected ContextKeyValue[] getDefaultContextKeyValue(ContextKeyValue... kv) {
+    protected ContextKeyValue<?>[] getDefaultContextKeyValue(ContextKeyValue<?>... kv) {
         if (kv.length == 0) {
             return defaultContextKeyValue.toArray(new ContextKeyValue[0]);
         }
-        List<ContextKeyValue> keyValues = new ArrayList<>(defaultContextKeyValue);
+        List<ContextKeyValue<?>> keyValues = new ArrayList<>(defaultContextKeyValue);
         keyValues.addAll(Arrays.asList(kv));
         return keyValues.toArray(new ContextKeyValue[0]);
     }

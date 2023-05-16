@@ -5,17 +5,22 @@ import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
+import org.slf4j.Logger;
 import reactor.core.publisher.Mono;
 
 import java.util.function.BiFunction;
 
 public class DefaultReactiveUpdate<E> extends DefaultUpdate<E, ReactiveUpdate<E>> implements ReactiveUpdate<E> {
 
+    private final Logger logger;
+
     public DefaultReactiveUpdate(RDBTableMetadata table,
                                  UpdateOperator operator,
                                  EntityColumnMapping mapping,
+                                 Logger logger,
                                  ContextKeyValue<?>... keyValues) {
         super(table, operator, mapping, keyValues);
+        this.logger = logger;
     }
 
 
@@ -23,7 +28,9 @@ public class DefaultReactiveUpdate<E> extends DefaultUpdate<E, ReactiveUpdate<E>
 
     @Override
     public Mono<Integer> execute() {
-        return mapper.apply(this, doExecute().reactive());
+        return mapper.apply(this, doExecute()
+                .reactive()
+                .contextWrite(ctx->ctx.put(Logger.class,logger)));
     }
 
     @Override
