@@ -32,13 +32,37 @@ public class StaticMethodReferenceColumnConvertTest {
 
     }
 
+    @Test
+    public void testSuper() {
+
+        TestClass clazz = new TestClass();
+        Object[] refs = new Object[]{
+                (StaticMethodReferenceColumn<TestClass>) TestClass::getId,
+                (SetterMethodReferenceColumn<TestClass, String>) TestClass::setId,
+               // (MethodReferenceColumn<String>) (clazz::getId),
+        };
+        {
+            for (Object ref : refs) {
+                MethodReferenceInfo info = MethodReferenceConverter.parse(ref);
+                Assert.assertEquals(info.getOwner(), TestClass.class);
+            }
+        }
+
+    }
+
     @Getter
     @Setter
 
-    public static class TestClass implements Serializable {
+    public static class TestClass extends SuperClass {
         private String name;
 
         private boolean enabled;
     }
 
+    @Getter
+    @Setter
+    public static class SuperClass implements Serializable {
+        private String id;
+
+    }
 }

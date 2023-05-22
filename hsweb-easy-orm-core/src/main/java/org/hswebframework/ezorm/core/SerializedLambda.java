@@ -25,9 +25,20 @@ public class SerializedLambda implements Serializable {
 
     @SneakyThrows
     public Class<?> getImplClass() {
-        return implClassResolved == null ?
-                implClassResolved = Class.forName(implClass.replace('/', '.')) :
-                implClassResolved;
+        if (implClassResolved == null) {
+            String className = implClass;
+            try {
+                String type = getInstantiatedMethodType();
+                type = type.substring(2, type.indexOf(";"));
+                if (!type.startsWith("L")) {
+                    className = type;
+                }
+            } catch (Throwable ignore) {
+
+            }
+            implClassResolved = Class.forName(className.replace('/', '.'));
+        }
+        return implClassResolved;
     }
 
     public String getMethodName() {

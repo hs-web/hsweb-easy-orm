@@ -17,7 +17,7 @@ public class MethodReferenceConverter {
         return convertToColumn((Object) column);
     }
 
-    public static <T,O> String convertToColumn(SetterMethodReferenceColumn<T,O> column){
+    public static <T, O> String convertToColumn(SetterMethodReferenceColumn<T, O> column) {
         return convertToColumn((Object) column);
     }
 
