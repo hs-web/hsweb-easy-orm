@@ -17,6 +17,16 @@ public class DefaultBatchSqlRequest extends PrepareSqlRequest implements BatchSq
         return sqlRequest;
     }
 
+    @Override
+    public void setSql(String sql) {
+        super.setSql(sql);
+    }
+
+    @Override
+    public void setParameters(Object[] parameters) {
+        super.setParameters(parameters);
+    }
+
     @Getter
     @Setter
     private List<SqlRequest> batch = new ArrayList<>(16);

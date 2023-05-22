@@ -70,6 +70,8 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
             createTable.addSql("COMMENT=", StringUtils.concat("'",table.getComment(),"'"));
         }
 
+        sql.setSql(createTable.toRequest().getSql());
+
         table.findFeature(CreateIndexSqlBuilder.ID)
                 .ifPresent(builder -> {
                     for (RDBIndexMetadata tableIndex : table.getIndexes()) {
@@ -77,7 +79,6 @@ public class MysqlCreateTableSqlBuilder implements CreateTableSqlBuilder {
                     }
                 });
 
-        sql.setSql(createTable.toRequest().getSql());
 
         return sql;
     }
