@@ -89,8 +89,15 @@ public class BuildParameterQueryOperator extends QueryOperator {
                 .orderBy(param.getSorts()
                               .stream()
                               .map(sort -> "asc".equals(sort.getOrder()) ?
-                                      asc(sort.getName()).value(sort.getValue()) :
-                                      desc(sort.getName()).value(sort.getValue()))
+                                      asc(sort.getName())
+                                              .value(sort.getValue())
+                                              .function(sort.getType())
+                                              .options(sort.getOpts()) :
+                                      desc(sort.getName())
+                                              .value(sort.getValue())
+                                              .function(sort.getType())
+                                              .options(sort.getOpts())
+                              )
                               .toArray(SortOrder[]::new))
                 .context(param.getContext());
     }

@@ -6,6 +6,8 @@ import org.hswebframework.ezorm.core.MethodReferenceColumn;
 import org.hswebframework.ezorm.core.StaticMethodReferenceColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.FunctionColumn;
 
+import java.util.Map;
+
 @Getter
 @Setter
 public class SortOrder extends FunctionColumn {
@@ -46,8 +48,18 @@ public class SortOrder extends FunctionColumn {
         return order;
     }
 
-    public SortOrder value(Object value){
+    public SortOrder value(Object value) {
         this.value = value;
+        return this;
+    }
+
+    public SortOrder function(String function) {
+        setFunction(function);
+        return this;
+    }
+
+    public SortOrder options(Map<String, Object> opts) {
+        setOpts(opts);
         return this;
     }
 

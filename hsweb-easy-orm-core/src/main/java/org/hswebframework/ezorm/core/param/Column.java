@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author zhouhao
@@ -21,4 +22,7 @@ public class Column implements Serializable {
 
     @Hidden
     private String type;
+
+    @Hidden
+    private Map<String, Object> opts;
 }
