@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -25,4 +26,12 @@ public class Column implements Serializable {
 
     @Hidden
     private Map<String, Object> opts;
+
+    public Column option(String key, Object value) {
+        if (opts == null) {
+            opts = new LinkedHashMap<>();
+        }
+        opts.put(key, value);
+        return this;
+    }
 }

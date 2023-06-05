@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 /**
  * 排序
  *
@@ -19,7 +21,7 @@ public class Sort extends Column {
     @Schema(description = "排序方式", allowableValues = {"asc", "desc"}, minLength = 3, maxLength = 4)
     private String order = "asc";
 
-    @Schema(description = "指定值排序")
+    @Schema(description = "指定的值优先排序")
     private Object value;
 
     public Sort() {
@@ -37,12 +39,29 @@ public class Sort extends Column {
         }
     }
 
-    public void asc() {
+    public Sort asc() {
         this.order = "asc";
+        return this;
     }
 
-    public void desc() {
+    public Sort desc() {
         this.order = "desc";
+        return this;
+    }
+
+    public Sort function(String function) {
+        this.setType(function);
+        return this;
+    }
+
+    public Sort options(Map<String, Object> options) {
+        this.setOpts(options);
+        return this;
+    }
+
+    public Sort option(String key, Object value) {
+        super.option(key, value);
+        return this;
     }
 
     public Sort value(Object value) {

@@ -2,13 +2,12 @@ package org.hswebframework.ezorm.core.dsl;
 
 import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.QueryParam;
-import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.param.Sort;
 import org.hswebframework.ezorm.core.param.Term;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * 查询条件构造器,用于构造{@link QueryParam} 以及设置执行器进行执行
@@ -96,6 +95,15 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
 
     public Query<T, Q> orderByDesc(String column) {
         param.orderBy(column).desc();
+        return this;
+    }
+
+    public <B> Query<T, Q> orderBy(StaticMethodReferenceColumn<B> column, Consumer<Sort> sortConsumer) {
+        return orderBy(column.getColumn(), sortConsumer);
+    }
+
+    public Query<T, Q> orderBy(String column, Consumer<Sort> sortConsumer) {
+        sortConsumer.accept(param.orderBy(column));
         return this;
     }
 
