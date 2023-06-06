@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.asc;
+import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.desc;
+
 @SuppressWarnings("all")
 public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
 
@@ -148,16 +151,22 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
     }
 
     protected SortOrder[] getSortOrder() {
-        return Stream.concat(
-                param.getSorts()
-                     .stream()
-                     .map(sort -> sort
-                             .getOrder()
-                             .equalsIgnoreCase("asc")
-                             ? SortOrder.asc(sort.getName()).value(sort.getValue())
-                             : SortOrder.desc(sort.getName()).value(sort.getValue()))
-                , orders.stream())
-                     .toArray(SortOrder[]::new);
+        return Stream
+                .concat(param.getSorts()
+                             .stream()
+                             .map(sort -> sort
+                                     .getOrder()
+                                     .equalsIgnoreCase("asc")
+                                     ? asc(sort.getName())
+                                     .value(sort.getValue())
+                                     .function(sort.getType())
+                                     .options(sort.getOpts())
+                                     : desc(sort.getName())
+                                     .value(sort.getValue())
+                                     .function(sort.getType())
+                                     .options(sort.getOpts()))
+                        , orders.stream())
+                .toArray(SortOrder[]::new);
     }
 
 
