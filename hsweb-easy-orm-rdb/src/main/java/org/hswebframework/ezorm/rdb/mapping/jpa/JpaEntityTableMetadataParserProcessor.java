@@ -25,6 +25,7 @@ import org.hswebframework.utils.ClassUtils;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import javax.persistence.*;
+import java.beans.IndexedPropertyDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -60,29 +61,9 @@ public class JpaEntityTableMetadataParserProcessor {
     }
 
 
-    private Stream<PropertyDescriptor> getDescriptors(Class<?> clazz) {
-        if (clazz == Object.class) {
-            return Stream.empty();
-        }
-
-        return Stream.concat(
-                getDescriptors(clazz.getSuperclass()),
-                Arrays.stream(entityType.getDeclaredFields())
-                      .map(field -> {
-                          try {
-                              return new PropertyDescriptor(field.getName(),clazz);
-                          } catch (Throwable e) {
-                              return null;
-                          }
-                      })
-                      .filter(Objects::nonNull)
-        );
-
-    }
-
     public void process() {
 
-        PropertyDescriptor[] descriptors = getDescriptors(entityType).toArray(PropertyDescriptor[]::new);
+        PropertyDescriptor[] descriptors = PropertiesUtils.getDescriptors(entityType);
 
         Table table = ClassUtils.getAnnotation(entityType, Table.class);
         int idx = 0;
