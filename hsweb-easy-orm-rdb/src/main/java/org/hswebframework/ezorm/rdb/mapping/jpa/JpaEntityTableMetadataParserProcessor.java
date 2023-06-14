@@ -28,6 +28,7 @@ import javax.persistence.*;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -58,10 +59,30 @@ public class JpaEntityTableMetadataParserProcessor {
         tableMetadata.addFeature(this.mapping);
     }
 
+
+    private Stream<PropertyDescriptor> getDescriptors(Class<?> clazz) {
+        if (clazz == Object.class) {
+            return Stream.empty();
+        }
+
+        return Stream.concat(
+                getDescriptors(clazz.getSuperclass()),
+                Arrays.stream(entityType.getDeclaredFields())
+                      .map(field -> {
+                          try {
+                              return new PropertyDescriptor(field.getName(),clazz);
+                          } catch (Throwable e) {
+                              return null;
+                          }
+                      })
+                      .filter(Objects::nonNull)
+        );
+
+    }
+
     public void process() {
-        PropertyDescriptor[] descriptors = BeanUtilsBean.getInstance()
-                                                        .getPropertyUtils()
-                                                        .getPropertyDescriptors(entityType);
+
+        PropertyDescriptor[] descriptors = getDescriptors(entityType).toArray(PropertyDescriptor[]::new);
 
         Table table = ClassUtils.getAnnotation(entityType, Table.class);
         int idx = 0;
@@ -289,11 +310,11 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         getAnnotation(annotations, GeneratedValue.class)
                 .map(gen -> {
-                    if(gen.strategy() == GenerationType.SEQUENCE){
+                    if (gen.strategy() == GenerationType.SEQUENCE) {
                         metadata.setAutoIncrement(true);
-                        metadata.setProperty("seq_name",gen.generator());
+                        metadata.setProperty("seq_name", gen.generator());
                         return null;
-                    }else {
+                    } else {
                         DefaultValueGenerator<RDBColumnMetadata> generator = LazyDefaultValueGenerator
                                 .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())));
                         return generator.generate(metadata);
