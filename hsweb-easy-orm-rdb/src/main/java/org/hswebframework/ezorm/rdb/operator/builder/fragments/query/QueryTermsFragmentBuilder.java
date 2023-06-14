@@ -8,12 +8,11 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFrag
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId;
 
@@ -46,6 +45,37 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
         return "查询条件";
     }
 
+
+    protected SqlFragments createByColumn(RDBColumnMetadata column, String owner, Term term) {
+        if (column != null) {
+            return column
+                    .findFeature(createFeatureId(term.getTermType()))
+                    .map(termFragment -> termFragment.createFragments(createColumnFullName(column, owner), column, term))
+                    .orElse(EmptySqlFragments.INSTANCE);
+        }
+        return EmptySqlFragments.INSTANCE;
+    }
+
+
+    private SqlFragments createByJoin(String[] arr, QueryOperatorParameter parameter, Term term) {
+        return parameter
+                .findJoin(arr[0]) //先找join的表
+                .flatMap(join -> metaData
+                        .getSchema()
+                        .getTableOrView(join.getTarget())
+                        .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
+                        .map(column -> createByColumn(column, join.getAlias(), term)))
+                .orElseGet(() -> {//外键关联查询
+                    return metaData
+                            .getForeignKey(arr[0])
+                            .flatMap(key -> key
+                                    .getSource()
+                                    .findFeature(ForeignKeyTermFragmentBuilder.ID)
+                                    .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
+                            .orElse(EmptySqlFragments.INSTANCE);
+                });
+    }
+
     protected SqlFragments createTermFragments(QueryOperatorParameter parameter, Term term) {
         String columnName = term.getColumn();
         if (columnName == null) {
@@ -57,33 +87,44 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
             if (metaData.equalsNameOrAlias(arr[0]) || arr[0].equals(parameter.getFromAlias()) || alias.contains(arr[0])) {
                 columnName = arr[1];
             } else {
-                return parameter
-                        .findJoin(arr[0]) //先找join的表
-                        .flatMap(join -> metaData
-                                .getSchema()
-                                .getTableOrView(join.getTarget())
-                                .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
-                                .flatMap(column -> column
-                                        .findFeature(createFeatureId((term.getTermType())))
-                                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column, join.getAlias()), column, term))))
-                        .orElseGet(() -> {//外键关联查询
-                            return metaData
-                                    .getForeignKey(arr[0])
-                                    .flatMap(key -> key
-                                            .getSource()
-                                            .findFeature(ForeignKeyTermFragmentBuilder.ID)
-                                            .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
-                                    .orElse(EmptySqlFragments.INSTANCE);
-                        });
+                return createByJoin(arr, parameter, term);
             }
         }
 
-        return metaData
-                .getColumn(columnName)
-                .flatMap(column -> column
-                        .findFeature(createFeatureId(term.getTermType()))
-                        .map(termFragment -> termFragment.createFragments(createColumnFullName(column, parameter.getFromAlias()), column, term)))
-                .orElse(EmptySqlFragments.INSTANCE);
+        RDBColumnMetadata column = metaData.getColumn(columnName).orElse(null);
+        if (column != null) {
+            return createByColumn(column, parameter.getFromAlias(), term);
+        }
+        String cname = columnName;
+
+        //匹配查询的列别名
+        for (SelectColumn selectColumn : parameter.getSelect()) {
+            if (Objects.equals(selectColumn.getAlias(), columnName)) {
+                String selectColumnName = selectColumn.getColumn();
+                //join
+                if (selectColumnName.contains(".")) {
+                    return createByJoin(selectColumnName.split("[.]"), parameter, term);
+                }
+                column = metaData.getColumn(columnName).orElse(null);
+                if (column != null) {
+                    return createByColumn(column, parameter.getFromAlias(), term);
+                }
+            }
+        }
+
+        //匹配join
+        for (Join join : parameter.getJoins()) {
+            RDBColumnMetadata joinColumn = metaData
+                    .getSchema()
+                    .getTableOrView(join.getTarget())
+                    .flatMap(joinTable -> joinTable.getColumn(cname))
+                    .orElse(null);
+            if (joinColumn != null) {
+                return createByColumn(joinColumn, join.getAlias(), term);
+            }
+        }
+
+        return EmptySqlFragments.INSTANCE;
 
     }
 
@@ -100,7 +141,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
         return createTermFragments(parameter, parameter.getWhere());
     }
 
-    protected String createColumnFullName(RDBColumnMetadata column, String fromAlias) {
-        return column.getFullName(fromAlias);
+    protected String createColumnFullName(RDBColumnMetadata column, String owner) {
+        return column.getFullName(owner);
     }
 }
