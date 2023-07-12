@@ -91,7 +91,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                         ));
         return holder
                 .doBefore()
-                .thenMany(Flux.defer(() -> executor.apply(queryOperator)));
+                .thenMany(Flux.defer(() -> executor.apply(queryOperator.clone())));
     }
 
     @Override

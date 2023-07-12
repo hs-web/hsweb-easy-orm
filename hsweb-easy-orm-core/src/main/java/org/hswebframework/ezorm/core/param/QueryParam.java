@@ -139,4 +139,9 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         }
         return queryParam;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

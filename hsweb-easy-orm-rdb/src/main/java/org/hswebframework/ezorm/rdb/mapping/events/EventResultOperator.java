@@ -57,7 +57,7 @@ public class EventResultOperator {
                                 boolean isMono = Mono.class.isAssignableFrom(method.getReturnType());
                                 return holder
                                         .doBefore()
-                                        .then(Mono.fromCallable(() -> method.invoke(operator.get(), args)))
+                                        .then(Mono.fromCallable(() -> method.invoke(operator.get(), args)).cache())
                                         .flatMapMany(result -> {
                                             return holder
                                                     .doInvoke()
