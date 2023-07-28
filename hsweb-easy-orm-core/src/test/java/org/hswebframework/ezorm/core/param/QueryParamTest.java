@@ -35,6 +35,18 @@ public class QueryParamTest {
 
         Assert.assertEquals(param.getThinkPageIndex(),2);
 
+        param.rePaging(0);
+
+        Assert.assertEquals(param.getPageIndex(),0);
+
+        Assert.assertEquals(param.getThinkPageIndex(),1);
+
+        param.setPageIndex(2);
+        param.rePaging(12);
+
+        Assert.assertEquals(param.getPageIndex(),1);
+
+        Assert.assertEquals(param.getThinkPageIndex(),2);
     }
 
     @Test
