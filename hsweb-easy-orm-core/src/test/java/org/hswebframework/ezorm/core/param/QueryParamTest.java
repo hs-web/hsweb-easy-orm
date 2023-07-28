@@ -41,12 +41,25 @@ public class QueryParamTest {
 
         Assert.assertEquals(param.getThinkPageIndex(),1);
 
-        param.setPageIndex(2);
-        param.rePaging(12);
+        for (int i = 3; i < 100; i++) {
+            param.setPageIndex(i);
+            param.rePaging(12);
 
-        Assert.assertEquals(param.getPageIndex(),1);
+            Assert.assertEquals(param.getPageIndex(),1);
 
-        Assert.assertEquals(param.getThinkPageIndex(),2);
+            Assert.assertEquals(param.getThinkPageIndex(),2);
+        }
+
+        param.setFirstPageIndex(2);
+
+        for (int i = 4; i < 100; i++) {
+            param.setPageIndex(i);
+            param.rePaging(21);
+
+            Assert.assertEquals(param.getPageIndex(),2);
+
+            Assert.assertEquals(param.getThinkPageIndex(),4);
+        }
     }
 
     @Test

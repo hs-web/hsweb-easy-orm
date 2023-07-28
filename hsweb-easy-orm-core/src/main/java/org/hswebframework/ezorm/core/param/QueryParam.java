@@ -111,7 +111,7 @@ public class QueryParam extends Param implements Serializable, Cloneable {
         // 当前页没有数据后跳转到最后一页
         if (pageIndex != 0 && (pageIndex * pageSize) >= total) {
             int tmp = total / this.getPageSize();
-            pageIndex = (total % this.getPageSize() == 0 ? tmp - 1 : tmp) + firstPageIndex;
+            pageIndex = (total % this.getPageSize() == 0 ? Math.max(0, tmp - 1) : tmp);
         }
         return (Q) this;
     }
