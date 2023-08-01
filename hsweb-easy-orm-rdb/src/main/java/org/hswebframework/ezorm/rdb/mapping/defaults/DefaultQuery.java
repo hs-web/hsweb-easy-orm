@@ -239,4 +239,9 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
         param.context(key, value);
         return (ME) this;
     }
+
+    @Override
+    public QueryParam getParam() {
+        return param;
+    }
 }

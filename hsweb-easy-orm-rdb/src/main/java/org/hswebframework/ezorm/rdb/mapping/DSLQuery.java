@@ -39,11 +39,11 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * 使用getter静态方法引用来指定查询的属性
-     * <pre>
+     * <pre>{@code
      * createQuery()
      * .select(User::getName)
      * .fetch()
-     * </pre>
+     * }</pre>
      *
      * @param column 列
      * @param <T>    type
@@ -53,11 +53,11 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * 使用getter方法引用来指定查询的属性
-     * <pre>
+     * <pre>{@code
      * createQuery()
      * .select(user::getName)
      * .fetch()
-     * </pre>
+     * }</pre>
      *
      * @param column 列
      * @param <T>    type
@@ -67,11 +67,11 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * 使用getter静态方法引用来指定不查询的属性
-     * <pre>
+     * <pre>{@code
      * createQuery()
      * .selectExcludes(User::getName)
      * .fetch()
-     * </pre>
+     * }</pre>
      *
      * @param column 列
      * @param <T>    type
@@ -81,11 +81,11 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * 使用getter方法引用来指定不查询的属性
-     * <pre>
+     * <pre>{@code
      * createQuery()
      * .selectExcludes(user::getName)
      * .fetch()
-     * </pre>
+     * }</pre>
      *
      * @param column 列
      * @param <T>    type
@@ -133,6 +133,7 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * select * from xx for update
+     *
      * @return this
      * @since 4.0.11
      */
@@ -140,17 +141,24 @@ public interface DSLQuery<ME extends DSLQuery<?>> extends Conditional<ME> {
 
     /**
      * 设置上下文
+     *
      * @param context ctx
      * @return this
      * @since 4.0.11
      */
-    ME context(Map<String,Object> context);
+    ME context(Map<String, Object> context);
 
     /**
      * 设置上下文
+     *
      * @param context ctx
      * @return this
      * @since 4.0.11
      */
-    ME context(String key,Object value);
+    ME context(String key, Object value);
+
+    /**
+     * @return 动态查询参数
+     */
+    QueryParam getParam();
 }
