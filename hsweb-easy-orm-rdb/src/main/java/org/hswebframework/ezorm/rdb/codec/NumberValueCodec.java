@@ -37,7 +37,7 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
             converter = Number::shortValue;
         } else if (javaType == boolean.class || javaType == Boolean.class) {
             converter = num -> num.byteValue() != 0;
-        } else if (javaType.isAssignableFrom(Date.class)) {
+        } else if (Date.class.isAssignableFrom(javaType)) {
             Constructor<?> constructor = javaType.getConstructor();
             converter = num -> {
                 try {
