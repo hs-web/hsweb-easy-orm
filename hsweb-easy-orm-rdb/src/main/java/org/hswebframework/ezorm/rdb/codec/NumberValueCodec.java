@@ -10,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -66,6 +67,8 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
             value = ((Date) value).getTime();
         } else if (value instanceof LocalDateTime) {
             value = ((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (value instanceof ZonedDateTime) {
+            value = ((ZonedDateTime) value).toInstant().toEpochMilli();
         } else if (value instanceof String) {
             //尝试转换字符格式的日期
             Date date = DateFormatter.fromString(String.valueOf(value));
