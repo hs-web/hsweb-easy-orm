@@ -52,6 +52,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                  .where(param.getTerms())
                                  .orderBy(getSortOrder())
                                  .when(param.isPaging(), query -> query.paging(param.getPageIndex(), param.getPageSize()))
+                                 .when(param.isForUpdate(), QueryOperator::forUpdate)
                                  .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetch")))
                                  .reactive())
                 .contextWrite(ctx->ctx.put(Logger.class,logger));
@@ -67,9 +68,11 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                  .select(getSelectColumn())
                                  .where(param.getTerms())
                                  .orderBy(getSortOrder())
-                                 .paging(0, 1)
+                                 //.paging(0, 1)
+                                 .when(param.isForUpdate(), QueryOperator::forUpdate)
                                  .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetchOne")))
-                                 .reactive())
+                                 .reactive()
+                                 .take(1))
                 .contextWrite(ctx-> ctx.put(Logger.class,logger))
                 .singleOrEmpty();
     }
