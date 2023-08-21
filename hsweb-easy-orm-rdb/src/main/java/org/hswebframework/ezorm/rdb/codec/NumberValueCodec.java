@@ -8,6 +8,7 @@ import org.hswebframework.utils.time.DateFormatter;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -38,7 +39,25 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
             converter = Number::shortValue;
         } else if (javaType == boolean.class || javaType == Boolean.class) {
             converter = num -> num.byteValue() != 0;
-        } else if (Date.class.isAssignableFrom(javaType)) {
+        } else if (javaType == BigDecimal.class  ) {
+            converter = num -> {
+                if (num instanceof BigDecimal) {
+                    return (BigDecimal) num;
+                } else {
+                    return new BigDecimal(num.toString());
+                }
+            };
+        } else if (javaType == BigInteger.class  ) {
+            converter = num -> {
+                if (num instanceof BigInteger) {
+                    return (BigInteger) num;
+                } else if (num instanceof BigDecimal) {
+                    return ((BigDecimal) num).toBigInteger();
+                } else {
+                    return new BigInteger(num.toString());
+                }
+            };
+        }else if (Date.class.isAssignableFrom(javaType)) {
             Constructor<?> constructor = javaType.getConstructor();
             converter = num -> {
                 try {
