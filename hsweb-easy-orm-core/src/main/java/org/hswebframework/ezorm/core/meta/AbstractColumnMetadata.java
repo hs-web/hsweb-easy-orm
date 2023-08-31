@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
@@ -13,15 +14,15 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     protected String name;
     protected String alias;
     protected String comment;
-    protected Class javaType;
+    protected Class<?> javaType;
     protected boolean updatable;
     protected boolean notNull;
     protected DictionaryCodec dictionaryCodec;
-    protected ValueCodec valueCodec;
+    protected ValueCodec<?,?> valueCodec;
     protected DefaultValue defaultValue;
-    protected Map<String, Object> properties = new HashMap<>();
+    protected Map<String, Object> properties = new ConcurrentHashMap<>();
 
-    private Map<String, Feature> features = new HashMap<>();
+    private Map<String, Feature> features = new ConcurrentHashMap<>();
 
     @Override
     public String getAlias() {
@@ -77,7 +78,7 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
 
     public void addFeature(Feature feature) {
         if (features == null) {
-            features = new HashMap<>();
+            features = new ConcurrentHashMap<>();
         }
         features.put(feature.getId(), feature);
     }

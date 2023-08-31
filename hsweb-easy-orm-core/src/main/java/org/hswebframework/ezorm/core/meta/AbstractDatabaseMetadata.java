@@ -34,7 +34,7 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
     private String alias;
 
     @Getter
-    private Map<String, Feature> features = new HashMap<>();
+    private Map<String, Feature> features = new ConcurrentHashMap<>();
 
     public void addSchema(S schema) {
         schemas.put(schema.getName(), schema);
@@ -61,10 +61,9 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
         if (name.contains(".")) {
             String[] arr = name.split("[.]");
             return this.getSchema(arr[0])
-                    .flatMap(schema -> mapper.apply(schema, arr[1]));
+                       .flatMap(schema -> mapper.apply(schema, arr[1]));
         }
-        return of(this.getCurrentSchema())
-                .flatMap(schema -> mapper.apply(schema, name));
+        return mapper.apply(this.getCurrentSchema(), name);
     }
 
     @Override
@@ -75,15 +74,22 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
         if (name.contains(".")) {
             String[] arr = name.split("[.]");
             return Mono.justOrEmpty(this.getSchema(arr[0]))
-                    .flatMap(schema -> mapper.apply(schema, arr[1]));
+                       .flatMap(schema -> mapper.apply(schema, arr[1]));
         }
-        return Mono.just(this.getCurrentSchema())
-                .flatMap(schema -> mapper.apply(schema, name));
+        return mapper.apply(this.getCurrentSchema(), name);
     }
 
     @Override
     public void addFeature(Feature feature) {
         features.put(feature.getId(), feature);
+    }
+
+    public void removeFeature(Feature feature) {
+        features.remove(feature.getId(), feature);
+    }
+
+    public void removeFeature(String featureId) {
+        features.remove(featureId);
     }
 
     @Override
@@ -92,12 +98,13 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
     public AbstractDatabaseMetadata<S> clone() {
         AbstractDatabaseMetadata<S> metadata = (AbstractDatabaseMetadata) super.clone();
         metadata.schemas = new ConcurrentHashMap<>();
-        getSchemas().stream()
+        getSchemas()
+                .stream()
                 .map(SchemaMetadata::clone)
                 .map(CastUtil::<S>cast)
                 .forEach(metadata::addSchema);
 
-        metadata.features = new HashMap<>(getFeatures());
+        metadata.features = new ConcurrentHashMap<>(getFeatures());
 
         return metadata;
     }

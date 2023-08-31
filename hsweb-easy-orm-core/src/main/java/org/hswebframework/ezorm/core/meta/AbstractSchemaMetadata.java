@@ -35,7 +35,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     private String alias;
 
     @Getter
-    private Map<String, Feature> features = new HashMap<>();
+    private Map<String, Feature> features = new ConcurrentHashMap<>();
 
     @Override
     public abstract List<ObjectType> getAllObjectType();
@@ -197,7 +197,7 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     @SneakyThrows
     public AbstractSchemaMetadata clone() {
         AbstractSchemaMetadata schema = (AbstractSchemaMetadata) super.clone();
-        schema.features = new HashMap<>(features);
+        schema.features = new ConcurrentHashMap<>(features);
         return schema;
     }
 }
