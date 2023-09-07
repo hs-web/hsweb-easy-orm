@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.supports.clickhouse.ClickhouseDialect;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
@@ -77,5 +78,6 @@ public interface Dialect extends Feature {
     Dialect H2 = new H2Dialect();
     Dialect MSSQL = new SqlServerDialect();
     Dialect POSTGRES = new PostgresqlDialect();
+    Dialect clickhouse =new ClickhouseDialect();
 
 }
