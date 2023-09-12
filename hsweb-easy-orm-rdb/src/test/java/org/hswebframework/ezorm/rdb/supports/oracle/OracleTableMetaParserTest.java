@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
 import io.r2dbc.spi.Statement;
+import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
@@ -30,17 +31,7 @@ public class OracleTableMetaParserTest {
         executor = new TestSyncSqlExecutor(new OracleConnectionProvider());
         schema = new OracleSchemaMetadata("SYSTEM");
         schema.addFeature(executor);
-        schema.addFeature(new TestReactiveSqlExecutor(":",new OracleR2dbcConnectionProvider()){
-            @Override
-            protected void bind(Statement statement, int index, Object value) {
-                statement.bind(index ,value);
-            }
-
-            @Override
-            protected void bindNull(Statement statement, int index, Class<?> type) {
-                statement.bindNull(index ,type);
-            }
-        });
+        schema.addFeature(new TestJdbcReactiveSqlExecutor(new OracleConnectionProvider()));
 
         parser = new OracleTableMetadataParser(schema);
     }

@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
+import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -8,6 +9,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.junit.Assert;
 import org.junit.Test;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
@@ -19,10 +21,11 @@ public class OracleIndexMetadataParserTest {
         SyncSqlExecutor sqlExecutor = new TestSyncSqlExecutor(new OracleConnectionProvider());
         try {
 
-            OracleSchemaMetadata schema= new OracleSchemaMetadata("SYSTEM");
+            OracleSchemaMetadata schema = new OracleSchemaMetadata("SYSTEM");
             schema.setDatabase(new RDBDatabaseMetadata(Dialect.ORACLE));
+            schema.addFeature(new TestJdbcReactiveSqlExecutor(new OracleConnectionProvider()));
 
-            OracleIndexMetadataParser parser =OracleIndexMetadataParser.of(schema);
+            OracleIndexMetadataParser parser = OracleIndexMetadataParser.of(schema);
 
             schema.addFeature(sqlExecutor);
 
@@ -41,8 +44,13 @@ public class OracleIndexMetadataParserTest {
 
             List<RDBIndexMetadata> list = parser.parseTableIndex("test_index_parser");
 
-            Assert.assertEquals(list.size(),4);
+            Assert.assertEquals(list.size(), 4);
             Assert.assertTrue(list.stream().anyMatch(RDBIndexMetadata::isPrimaryKey));
+
+            parser.parseTableIndexReactive("test_index_parser")
+                  .as(StepVerifier::create)
+                  .expectNextCount(4)
+                  .verifyComplete();
 
         } finally {
             try {

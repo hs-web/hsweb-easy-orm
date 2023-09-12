@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
 import io.r2dbc.spi.Statement;
+import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.exception.DuplicateKeyException;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -34,26 +35,28 @@ public class OracleReactiveTests extends BasicReactiveTests {
     @Override
     protected ReactiveSqlExecutor getSqlExecutor() {
 
-        return new TestReactiveSqlExecutor(":",new OracleR2dbcConnectionProvider()){
-            @Override
-            protected void bindNull(Statement statement, int index, Class type) {
-                if (type == Date.class) {
-                    type = LocalDateTime.class;
-                }
-                statement.bindNull(index, type);
-            }
+        return new TestJdbcReactiveSqlExecutor(new OracleConnectionProvider());
 
-            @Override
-            protected void bind(Statement statement, int index, Object value) {
-                if (value instanceof Date) {
-                    value = ((Date) value)
-                            .toInstant()
-                            .atZone(ZoneOffset.systemDefault())
-                            .toLocalDateTime();
-                }
-                statement.bind(index, value);
-            }
-        };
+//        return new TestReactiveSqlExecutor(":",new OracleR2dbcConnectionProvider()){
+//            @Override
+//            protected void bindNull(Statement statement, int index, Class type) {
+//                if (type == Date.class) {
+//                    type = LocalDateTime.class;
+//                }
+//                statement.bindNull(index, type);
+//            }
+//
+//            @Override
+//            protected void bind(Statement statement, int index, Object value) {
+//                if (value instanceof Date) {
+//                    value = ((Date) value)
+//                            .toInstant()
+//                            .atZone(ZoneOffset.systemDefault())
+//                            .toLocalDateTime();
+//                }
+//                statement.bind(index, value);
+//            }
+//        };
 
     }
 }

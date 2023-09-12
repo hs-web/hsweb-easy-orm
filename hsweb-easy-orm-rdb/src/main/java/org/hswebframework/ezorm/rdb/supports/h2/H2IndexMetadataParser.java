@@ -15,6 +15,8 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.*;
 
@@ -111,7 +113,7 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
     }
 
     class H2IndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
-        Map<String, RDBIndexMetadata> group = new LinkedHashMap<>();
+        Map<Tuple2<String,String>, RDBIndexMetadata> group = new LinkedHashMap<>();
 
         @Override
         public Map<String, Object> newRowInstance() {
@@ -127,9 +129,11 @@ public class H2IndexMetadataParser implements IndexMetadataParser {
         @Override
         public boolean completedWrapRow(Map<String, Object> result) {
             String name = (String) result.get("index_name");
-            RDBIndexMetadata index = group.computeIfAbsent(name, __ -> new RDBIndexMetadata());
+            String tableName = ((String) result.get("table_name")).toLowerCase();
+
+            RDBIndexMetadata index = group.computeIfAbsent(Tuples.of(tableName,name), __ -> new RDBIndexMetadata());
             index.setName(name.toLowerCase());
-            index.setTableName(((String) result.get("table_name")).toLowerCase());
+            index.setTableName(tableName);
             index.setPrimaryKey(name.startsWith("PRIMARY_KEY"));
             index.setUnique(Boolean.TRUE.equals(result.get("is_unique")));
             RDBIndexMetadata.IndexColumn indexColumn = new RDBIndexMetadata.IndexColumn();
