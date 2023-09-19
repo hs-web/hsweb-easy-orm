@@ -18,6 +18,8 @@ import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlIndexMetadataParser;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.*;
 
@@ -108,7 +110,7 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
     }
 
     class PostgresqlIndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
-        Map<String, RDBIndexMetadata> group = new LinkedHashMap<>();
+        Map<Tuple2<String,String>, RDBIndexMetadata> group = new HashMap<>();
 
         @Override
         public Map<String, Object> newRowInstance() {
@@ -125,9 +127,11 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
         @Override
         public boolean completedWrapRow(Map<String, Object> result) {
             String name = (String) result.get("indexname");
-            RDBIndexMetadata index = group.computeIfAbsent(name, __ -> new RDBIndexMetadata());
+            String tableName = ((String) result.get("tablename")).toLowerCase();
+
+            RDBIndexMetadata index = group.computeIfAbsent(Tuples.of(name,tableName), __ -> new RDBIndexMetadata());
             index.setName(name.toLowerCase());
-            index.setTableName(((String) result.get("tablename")).toLowerCase());
+            index.setTableName(tableName);
             index.setPrimaryKey(Boolean.TRUE.equals(result.get("indisprimary")));
             index.setUnique(Boolean.FALSE.equals(result.get("indisunique")));
             RDBIndexMetadata.IndexColumn indexColumn = new RDBIndexMetadata.IndexColumn();

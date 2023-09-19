@@ -4,7 +4,6 @@ package org.hswebframework.ezorm.core.meta;
 import org.hswebframework.ezorm.core.*;
 
 
-@SuppressWarnings("all")
 public interface ColumnMetadata extends FeatureSupportedMetadata, ObjectMetadata, Cloneable {
     String getName();
 
@@ -12,9 +11,9 @@ public interface ColumnMetadata extends FeatureSupportedMetadata, ObjectMetadata
 
     String getComment();
 
-    Class getJavaType();
+    Class<?> getJavaType();
 
-    ValueCodec getValueCodec();
+    ValueCodec<?,?> getValueCodec();
 
     DictionaryCodec getDictionaryCodec();
 

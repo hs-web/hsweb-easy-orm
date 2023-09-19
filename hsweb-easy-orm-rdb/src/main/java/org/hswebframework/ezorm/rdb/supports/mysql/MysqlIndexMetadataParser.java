@@ -18,6 +18,8 @@ import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.supports.h2.H2IndexMetadataParser;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.*;
 
@@ -95,7 +97,7 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
     }
 
     static class MysqlIndexWrapper implements ResultWrapper<Map<String, String>, List<RDBIndexMetadata>> {
-        Map<String, RDBIndexMetadata> groupByName = new HashMap<>();
+        Map<Tuple2<String,String>, RDBIndexMetadata> groupByName = new HashMap<>();
 
         @Override
         public Map<String, String> newRowInstance() {
@@ -114,11 +116,12 @@ public class MysqlIndexMetadataParser implements IndexMetadataParser {
         @Override
         public boolean completedWrapRow(Map<String, String> result) {
             String name = result.get("index_name");
+            String tableName = result.get("table_name");
 
-            RDBIndexMetadata index = groupByName.computeIfAbsent(name, __ -> new RDBIndexMetadata());
+            RDBIndexMetadata index = groupByName.computeIfAbsent(Tuples.of(tableName,name), __ -> new RDBIndexMetadata());
             index.setName(result.get("index_name"));
             index.setUnique("0".equals(result.get("non_unique")));
-            index.setTableName(result.get("table_name"));
+            index.setTableName(tableName);
             index.setPrimaryKey("PRIMARY".equalsIgnoreCase(name));
             RDBIndexMetadata.IndexColumn column = new RDBIndexMetadata.IndexColumn();
             column.setColumn(result.get("column_name"));

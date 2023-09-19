@@ -77,10 +77,10 @@ public class SqlUtils {
         for (int i = 0, sqlLen = sql.length(); i < sqlLen; i++) {
             char c = sql.charAt(i);
             if (c == '?') {
-                if (stringParameter.length >= parameterIndex) {
+                if (stringParameter.length > parameterIndex) {
                     builder.append(stringParameter[parameterIndex++]);
                 } else {
-                    builder.append("null");
+                    builder.append("unbound");
                 }
             } else {
                 builder.append(c);
