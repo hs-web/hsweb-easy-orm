@@ -24,7 +24,7 @@ public final class Delete<P extends Param> implements Conditional<Delete<P>> {
         return param;
     }
 
-    public Delete setParam(P param) {
+    public Delete<P> setParam(P param) {
         this.param = param;
         return this;
     }

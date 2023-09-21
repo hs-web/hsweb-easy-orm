@@ -16,6 +16,7 @@
 
 package org.hswebframework.ezorm.core;
 
+import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.core.utils.StringUtils;
@@ -424,4 +425,10 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
 
     T accept(Term term);
 
+    default T accept(Param param){
+        for (Term term : param.getTerms()) {
+            accept(term);
+        }
+        return castSelf();
+    }
 }

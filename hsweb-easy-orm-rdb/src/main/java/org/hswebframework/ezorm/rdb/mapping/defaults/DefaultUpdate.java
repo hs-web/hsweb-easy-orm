@@ -3,9 +3,11 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 import org.hswebframework.ezorm.core.NestConditional;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.core.SimpleNestConditional;
+import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.GlobalConfig;
+import org.hswebframework.ezorm.core.param.UpdateParam;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.mapping.DSLUpdate;
@@ -91,7 +93,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
         );
     }
 
-    private void applyColumns(E instance){
+    private void applyColumns(E instance) {
         mapping
                 .getColumnPropertyMapping()
                 .entrySet()
@@ -205,5 +207,15 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     public ME accept(Term term) {
         terms.add(term);
         return (ME) this;
+    }
+
+    @Override
+    public ME accept(Param param) {
+        if (param instanceof UpdateParam) {
+            includes.addAll(param.getIncludes());
+            excludes.addAll(param.getExcludes());
+            set((E)((UpdateParam<?>) param).getData());
+        }
+        return DSLUpdate.super.accept(param);
     }
 }
