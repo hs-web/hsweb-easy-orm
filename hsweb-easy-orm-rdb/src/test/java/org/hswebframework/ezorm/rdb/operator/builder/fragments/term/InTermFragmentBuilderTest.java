@@ -33,6 +33,27 @@ public class InTermFragmentBuilderTest {
     }
 
     @Test
+    public void testNoSplit() {
+        InTermFragmentBuilder builder = new InTermFragmentBuilder("in", "在...之中",false,false);
+
+        Term term = new Term();
+        List<Integer> values = Flux.range(0, 510).collectList().block();
+        assertNotNull(values);
+
+        term.setValue(values);
+
+        SqlFragments fragments = builder.createFragments("id", null, term);
+
+        assertNotNull(fragments);
+        SqlRequest request = fragments.toRequest();
+
+        assertArrayEquals(values.toArray(),request.getParameters());
+
+        System.out.println(request.getSql());
+         Assert.assertFalse(request.getSql().contains("and"));
+    }
+
+    @Test
     public void testLarge() {
 
         InTermFragmentBuilder builder = new InTermFragmentBuilder("in", "在...之中",false);
