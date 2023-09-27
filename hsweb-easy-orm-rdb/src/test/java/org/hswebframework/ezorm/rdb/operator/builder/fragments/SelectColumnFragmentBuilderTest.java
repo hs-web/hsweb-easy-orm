@@ -120,6 +120,25 @@ public class SelectColumnFragmentBuilderTest {
     }
 
     @Test
+    public void testCreateFragments() {
+        SelectColumn column = new SelectColumn();
+        column.setColumn("id");
+        column.setAlias("_id");
+
+        SelectColumn fakeName = new SelectColumn();
+        fakeName.setColumn("fake_name");
+        fakeName.setAlias("fakeName");
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setSelect(Arrays.asList(column,fakeName));
+
+        SqlFragments fragments = builder.createFragments(parameter);
+        Assert.assertNotNull(fragments);
+        Assert.assertFalse(fragments.toRequest().getSql().contains("fake_name"));
+        System.out.println(fragments.toRequest().getSql());
+
+    }
+
+    @Test
     public void testSimple() {
         SelectColumn column = new SelectColumn();
         column.setColumn("id");

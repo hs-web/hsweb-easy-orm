@@ -128,7 +128,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         PrepareSqlFragments sql = null;
         for (SelectColumn column : columns) {
             PrepareSqlFragments sqlNext = this.createFragments(parameter, column);
-            if (sqlNext != null) {
+            if (sqlNext != null && sqlNext.isNotEmpty()) {
                 if (sql != null) {
                     main.addSql(",");
                 }
