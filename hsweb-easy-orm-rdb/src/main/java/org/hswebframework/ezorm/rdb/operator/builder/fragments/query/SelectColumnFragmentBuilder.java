@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import org.hswebframework.ezorm.core.param.SqlTerm;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyColumn;
@@ -11,7 +12,6 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
-import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.util.*;
 
@@ -127,11 +127,12 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
         PrepareSqlFragments sql = null;
         for (SelectColumn column : columns) {
-            if (sql != null) {
-                main.addSql(",");
-            }
-            sql = this.createFragments(parameter, column);
-            if (sql != null) {
+            PrepareSqlFragments sqlNext = this.createFragments(parameter, column);
+            if (sqlNext != null && sqlNext.isNotEmpty()) {
+                if (sql != null) {
+                    main.addSql(",");
+                }
+                sql = sqlNext;
                 main.addFragments(sql);
             }
         }
