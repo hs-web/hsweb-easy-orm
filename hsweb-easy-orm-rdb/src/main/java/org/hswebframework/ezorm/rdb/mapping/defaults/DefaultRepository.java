@@ -117,15 +117,23 @@ public abstract class DefaultRepository<E> {
     protected SaveResultOperator doSave(Collection<E> data) {
         RDBTableMetadata table = getTable();
         UpsertOperator upsert = operator.dml().upsert(table.getFullName());
-
+        int finalPrimaryIndex = getPrimaryKeyIndex(table.getColumns());
         return EventResultOperator.create(
                 () -> {
                     upsert.columns(getProperties());
                     List<String> ignore = new ArrayList<>();
-                    for (E e : data) {
-                        upsert.values(Stream.of(getProperties())
-                                            .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
-                                            .toArray());
+                    Set<Object> duplicatePrimary = new HashSet<>(32);
+                    List<E> list = new ArrayList<>(data);
+                    ListIterator<E> iterator = list.listIterator(list.size());
+                    while (iterator.hasPrevious()) {
+                        E e = iterator.previous();
+                        Object[] array = Stream.of(getProperties())
+                                               .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
+                                               .toArray();
+                        if (array.length > finalPrimaryIndex && !duplicatePrimary.add(array[finalPrimaryIndex])){
+                            continue;
+                        }
+                        upsert.values(array);
                     }
                     upsert.ignoreUpdate(ignore.toArray(new String[0]));
                     return upsert.execute();
@@ -193,15 +201,23 @@ public abstract class DefaultRepository<E> {
     protected InsertResultOperator doInsert(Collection<E> batch) {
         RDBTableMetadata table = getTable();
         InsertOperator insert = operator.dml().insert(table.getFullName());
+        int finalPrimaryIndex = getPrimaryKeyIndex(table.getColumns());
 
         return EventResultOperator.create(
                 () -> {
                     insert.columns(getProperties());
-
-                    for (E e : batch) {
-                        insert.values(Stream.of(getProperties())
-                                            .map(property -> getInsertColumnValue(e, property))
-                                            .toArray());
+                    Set<Object> duplicatePrimary = new HashSet<>(32);
+                    List<E> list = new ArrayList<>(batch);
+                    ListIterator<E> iterator = list.listIterator(list.size());
+                    while (iterator.hasPrevious()) {
+                        E e = iterator.previous();
+                        Object[] array = Stream.of(getProperties())
+                                               .map(property -> getInsertColumnValue(e, property))
+                                               .toArray();
+                        if (array.length > finalPrimaryIndex && !duplicatePrimary.add(array[finalPrimaryIndex])){
+                            continue;
+                        }
+                        insert.values(array);
                     }
                     return insert.execute();
                 },
@@ -216,5 +232,21 @@ public abstract class DefaultRepository<E> {
                         insert(insert))
         );
     }
+
+    private int getPrimaryKeyIndex(List<RDBColumnMetadata> columns) {
+        int index = 0;
+        int primaryIndex = -1;
+        for (RDBColumnMetadata column : columns) {
+            if (column.isInsertable()) {
+                if (column.isPrimaryKey()) {
+                    primaryIndex = index;
+                    break;
+                }
+            }
+            index++;
+        }
+        return primaryIndex;
+    }
+
 
 }

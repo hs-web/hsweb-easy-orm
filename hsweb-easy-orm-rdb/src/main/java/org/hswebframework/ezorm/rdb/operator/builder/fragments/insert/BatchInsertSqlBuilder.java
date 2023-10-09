@@ -85,8 +85,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         fragments.addSql(") values ");
         index = 0;
         Set<Object> duplicatePrimary = new HashSet<>(32);
-        for (int i = parameter.getValues().size() - 1; i >= 0; i--) {
-            List<Object> values = parameter.getValues().get(i);
+        for (List<Object> values : parameter.getValues()) {
             if (primaryIndex >= 0) {
                 //重复的id 则不进行处理
                 if (values.size() > primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
