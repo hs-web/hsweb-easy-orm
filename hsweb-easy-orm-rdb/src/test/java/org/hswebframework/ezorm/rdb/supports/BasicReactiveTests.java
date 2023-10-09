@@ -194,6 +194,48 @@ public abstract class BasicReactiveTests {
     }
 
     @Test
+    public void testInsertMerge(){
+
+        BasicTestEntity first= BasicTestEntity
+                .builder()
+                .id("test_merge")
+                .balance(1000L)
+                .name("first")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .stateEnum(StateEnum.enabled)
+                .build();
+
+        BasicTestEntity second= BasicTestEntity
+                .builder()
+                .id("test_merge")
+                .balance(1000L)
+                .name("second")
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .stateEnum(StateEnum.enabled)
+                .build();
+
+        repository
+                .insert(Flux.just(first,second))
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .where(BasicTestEntity::getId,first.getId())
+                .select("id","name")
+                .fetch()
+                .map(BasicTestEntity::getName)
+                .as(StepVerifier::create)
+                .expectNext(second.getName())
+                .verifyComplete();
+    }
+
+    @Test
     public void testInsertDuplicate() {
         //10次insert
         Flux.just(1, 2, 2, 3, 3, 1)

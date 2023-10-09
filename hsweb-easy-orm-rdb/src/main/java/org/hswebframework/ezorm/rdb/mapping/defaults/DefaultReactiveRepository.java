@@ -95,9 +95,8 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public Mono<Integer> insert(Publisher<E> data) {
         return Flux
                 .from(data)
-                .flatMap(e -> doInsert(e).reactive().as(this::setupLogger))
-                .reduce(Math::addExact)
-                .defaultIfEmpty(0);
+                .buffer(100)
+                .as(this::insertBatch);
     }
 
     @Override

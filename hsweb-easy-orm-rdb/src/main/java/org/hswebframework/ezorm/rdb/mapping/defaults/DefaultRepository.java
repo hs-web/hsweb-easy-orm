@@ -114,7 +114,52 @@ public abstract class DefaultRepository<E> {
         defaultContextKeyValue.add(MappingContextKeys.columnMapping(mapping));
     }
 
+    protected Collection<E> tryMergeDuplicate(Collection<E> data) {
+        if (data.isEmpty()) {
+            return data;
+        }
+        Map<Object, E> merging = new HashMap<>(data.size());
+        List<E> merged = new ArrayList<>(data.size());
+        for (E datum : data) {
+            Object id = getProperty(datum, getIdColumn());
+            if (id == null) {
+                merged.add(datum);
+            } else {
+                merging.compute(id, (_id, old) -> {
+                    if (old != null) {
+                        return merge(old, datum);
+                    }
+                    return datum;
+                });
+            }
+        }
+        merged.addAll(merging.values());
+        return merged;
+    }
+
+    protected E merge(E older, E newer) {
+        ObjectPropertyOperator opt = GlobalConfig.getPropertyOperator();
+        for (String property : getProperties()) {
+            Object newerVal = opt.getProperty(newer, property).orElse(null);
+            if (newerVal != null) {
+                continue;
+            }
+            opt.getProperty(older, property)
+               .ifPresent(olderValue -> opt.setProperty(newer, property, olderValue));
+
+        }
+        return newer;
+    }
+
+    private Object getProperty(E data, String property) {
+        return GlobalConfig
+                .getPropertyOperator()
+                .getProperty(data, property)
+                .orElse(null);
+    }
+
     protected SaveResultOperator doSave(Collection<E> data) {
+        Collection<E> _data = tryMergeDuplicate(data);
         RDBTableMetadata table = getTable();
         UpsertOperator upsert = operator.dml().upsert(table.getFullName());
 
@@ -122,7 +167,7 @@ public abstract class DefaultRepository<E> {
                 () -> {
                     upsert.columns(getProperties());
                     List<String> ignore = new ArrayList<>();
-                    for (E e : data) {
+                    for (E e : _data) {
                         upsert.values(Stream.of(getProperties())
                                             .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
                                             .toArray());
@@ -134,7 +179,7 @@ public abstract class DefaultRepository<E> {
                 table,
                 MappingEventTypes.save_before,
                 MappingEventTypes.save_after,
-                getDefaultContextKeyValue(instance(data),
+                getDefaultContextKeyValue(instance(_data),
                                           type("batch"),
                                           tableMetadata(table),
                                           upsert(upsert))
@@ -176,7 +221,7 @@ public abstract class DefaultRepository<E> {
             if (value != null) {
                 whenDefaultValue.accept(property, value);
                 //回填
-                if(!(value instanceof NativeSql)){
+                if (!(value instanceof NativeSql)) {
                     GlobalConfig.getPropertyOperator().setProperty(data, property, value);
                 }
             }
@@ -191,6 +236,7 @@ public abstract class DefaultRepository<E> {
     }
 
     protected InsertResultOperator doInsert(Collection<E> batch) {
+        Collection<E> _data = tryMergeDuplicate(batch);
         RDBTableMetadata table = getTable();
         InsertOperator insert = operator.dml().insert(table.getFullName());
 
@@ -198,7 +244,7 @@ public abstract class DefaultRepository<E> {
                 () -> {
                     insert.columns(getProperties());
 
-                    for (E e : batch) {
+                    for (E e : _data) {
                         insert.values(Stream.of(getProperties())
                                             .map(property -> getInsertColumnValue(e, property))
                                             .toArray());
@@ -210,7 +256,7 @@ public abstract class DefaultRepository<E> {
                 MappingEventTypes.insert_before,
                 MappingEventTypes.insert_after,
                 getDefaultContextKeyValue(
-                        instance(batch),
+                        instance(_data),
                         type("batch"),
                         tableMetadata(table),
                         insert(insert))
