@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings("all")
 @Getter
 @Setter
-public class Param implements Cloneable {
+public class Param implements Cloneable, Serializable {
+    private static final long serialVersionUID = 1L;
 
     /**
      * 条件
