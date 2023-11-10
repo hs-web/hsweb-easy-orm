@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.lang.reflect.Array;
 
 @Getter
 @Slf4j
@@ -25,6 +26,7 @@ public class SerializedLambda implements Serializable {
 
     @SneakyThrows
     public Class<?> getImplClass() {
+        boolean isArr = false;
         if (implClassResolved == null) {
             String className = implClass;
             try {
@@ -33,10 +35,17 @@ public class SerializedLambda implements Serializable {
                 if (!type.startsWith("L")) {
                     className = type;
                 }
+                if (className.startsWith("[L")) {
+                    className = className.substring(2);
+                    isArr = true;
+                }
             } catch (Throwable ignore) {
 
             }
             implClassResolved = Class.forName(className.replace('/', '.'));
+        }
+        if(isArr){
+            return Array.newInstance(implClassResolved,0).getClass();
         }
         return implClassResolved;
     }

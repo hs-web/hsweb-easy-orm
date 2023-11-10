@@ -32,6 +32,16 @@ public class StaticMethodReferenceColumnConvertTest {
 
     }
 
+
+    @Test
+    public void testArr(){
+        TestClass testClass = new TestClass();
+
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(testClass::getArr), "arr");
+        Assert.assertEquals(MethodReferenceConverter.convertToColumn(TestClass::getArr), "arr");
+
+    }
+
     @Test
     public void testSuper() {
 
@@ -57,6 +67,8 @@ public class StaticMethodReferenceColumnConvertTest {
         private String name;
 
         private boolean enabled;
+
+        private String[] arr;
     }
 
     @Getter
