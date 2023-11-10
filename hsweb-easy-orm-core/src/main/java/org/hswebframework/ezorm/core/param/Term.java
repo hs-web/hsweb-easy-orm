@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -16,7 +17,8 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-public class Term implements Cloneable {
+public class Term implements Serializable,Cloneable {
+    private static final long serialVersionUID = 1L;
 
     /**
      * 字段
