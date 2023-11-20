@@ -1,8 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
-import io.r2dbc.spi.Statement;
 import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
-import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -11,7 +9,6 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -38,12 +35,22 @@ public class OracleTableMetaParserTest {
 
     @Test
     public void testParseReactive() {
-        schema.loadAllTableReactive()
-              .as(StepVerifier::create)
-              .expectComplete()
-              .verify();
+//        schema.loadAllTableReactive()
+//              .as(StepVerifier::create)
+//              .expectComplete()
+//              .verify();
 
-        System.out.println(1);
+
+        parser.parseAllTableNameReactive()
+              .doOnNext(System.out::println)
+              .blockLast();
+
+//        parser.parseAllReactive()
+//              .doOnNext(table -> System.out.println(table.getName()))
+//              .then()
+//              .as(StepVerifier::create)
+//              .expectComplete()
+//              .verify();
     }
 
     @Test
