@@ -72,4 +72,21 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
 
         throw new UnsupportedOperationException("unsupported db type :" + dialect.getType());
     }
+
+    public static EnumInFragmentBuilder ofNot(Dialect dialect) {
+        if (dialect instanceof MysqlDialect) {
+            return MysqlEnumInFragmentBuilder.notIn;
+        }
+        if (dialect instanceof PostgresqlDialect) {
+            return PostgresqlEnumInFragmentBuilder.notIn;
+        }
+        if (dialect instanceof SqlServerDialect) {
+            return SqlServerEnumInFragmentBuilder.notIn;
+        }
+        if (dialect instanceof OracleDialect) {
+            return OracleEnumInFragmentBuilder.notIn;
+        }
+
+        throw new UnsupportedOperationException("unsupported db type :" + dialect.getType());
+    }
 }
