@@ -36,7 +36,7 @@ public class OracleIndexMetadataParserTest {
                             "age int," +
                             "addr varchar2(128))"));
 
-            sqlExecutor.execute(SqlRequests.of("create index test_index on test_index_parser (age)"));
+            sqlExecutor.execute(SqlRequests.of("create index test_index_0 on test_index_parser (age)"));
 
             sqlExecutor.execute(SqlRequests.of("create unique index test_index_2 on test_index_parser (name)"));
 
