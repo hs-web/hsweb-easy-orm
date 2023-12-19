@@ -123,13 +123,20 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         return getDialect().quote(getName());
     }
 
-    public void setJdbcType(SQLType jdbcType, Class javaType) {
+    public void setJdbcType(SQLType jdbcType, Class<?> javaType) {
         this.javaType = javaType;
         setType(JdbcDataType.of(jdbcType, javaType));
     }
 
     public int getPrecision(int defaultPrecision) {
-        return precision <= 0 ? defaultPrecision : precision;
+        if (precision <= 0) {
+            if (length <= 0) {
+                return defaultPrecision;
+            } else {
+                return length;
+            }
+        }
+        return precision;
     }
 
     public void setType(DataType dataType) {
@@ -138,7 +145,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     }
 
     @Override
-    public Class getJavaType() {
+    public Class<?> getJavaType() {
         if (javaType == null && type != null) {
             return javaType = type.getJavaType();
         }

@@ -19,9 +19,9 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "timestamp");
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
-        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "number(2)");
-        addDataTypeBuilder(JDBCType.SMALLINT, (meta) -> "number(5)");
-        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "number(20)");
+        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "number(" + meta.getPrecision(2) + ")");
+        addDataTypeBuilder(JDBCType.SMALLINT, (meta) ->"number(" + meta.getPrecision(5) + ")");
+        addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "number(" + meta.getPrecision(20) + ")");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "binary_double");
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
@@ -32,8 +32,11 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
         addDataTypeBuilder(JDBCType.BOOLEAN, (meta) -> "number(1)");
+        addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "number(1)");
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
+
+        classJDBCTypeMapping.put(Boolean.class,JDBCType.TINYINT);
 
         registerDataType("number", DataType
                 .builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),

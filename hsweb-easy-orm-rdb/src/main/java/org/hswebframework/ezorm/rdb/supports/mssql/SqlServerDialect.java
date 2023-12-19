@@ -37,6 +37,8 @@ public class SqlServerDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
         addDataTypeBuilder(JDBCType.REAL, (meta) -> "real");
+        addDataTypeBuilder(JDBCType.BOOLEAN, (meta) -> "bit");
+        addDataTypeBuilder(JDBCType.BIT, (meta) -> "bit");
 
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "text"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "text"));

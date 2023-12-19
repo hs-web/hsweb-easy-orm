@@ -24,7 +24,7 @@ public abstract class DefaultDialect implements Dialect {
 
     protected Map<String, DataType> dataTypeMapping = new HashMap<>();
 
-    protected Map<Class, JDBCType> classJDBCTypeMapping = new HashMap<>();
+    protected Map<Class<?>, JDBCType> classJDBCTypeMapping = new HashMap<>();
 
     protected void registerDataType(String symbol, DataType dataType) {
         dataTypeMapping.put(symbol, dataType instanceof DataTypeBuilder ? dataType : DataType.builder(dataType, meta -> symbol));

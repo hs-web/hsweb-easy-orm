@@ -39,6 +39,10 @@ public class BasicTestEntity implements Serializable {
     @Column
     private Double doubleVal;
 
+    @Column
+    private Float floatVal;
+
+
     @Column(scale = 1)
     private BigDecimal bigDecimal;
 
@@ -70,6 +74,10 @@ public class BasicTestEntity implements Serializable {
 
     @Column(name = "address_id")
     private String addressId;
+
+    @Column(name = "bool_type")
+    private Boolean enabled;
+
 
     @JoinColumn(name = "address_id")
     private Address address;

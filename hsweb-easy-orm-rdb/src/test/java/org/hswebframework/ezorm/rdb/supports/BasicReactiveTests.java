@@ -194,9 +194,9 @@ public abstract class BasicReactiveTests {
     }
 
     @Test
-    public void testInsertMerge(){
+    public void testInsertMerge() {
 
-        BasicTestEntity first= BasicTestEntity
+        BasicTestEntity first = BasicTestEntity
                 .builder()
                 .id("test_merge")
                 .balance(1000L)
@@ -207,7 +207,7 @@ public abstract class BasicReactiveTests {
                 .stateEnum(StateEnum.enabled)
                 .build();
 
-        BasicTestEntity second= BasicTestEntity
+        BasicTestEntity second = BasicTestEntity
                 .builder()
                 .id("test_merge")
                 .balance(1000L)
@@ -219,15 +219,15 @@ public abstract class BasicReactiveTests {
                 .build();
 
         repository
-                .insert(Flux.just(first,second))
+                .insert(Flux.just(first, second))
                 .as(StepVerifier::create)
                 .expectNext(1)
                 .verifyComplete();
 
         repository
                 .createQuery()
-                .where(BasicTestEntity::getId,first.getId())
-                .select("id","name")
+                .where(BasicTestEntity::getId, first.getId())
+                .select("id", "name")
                 .fetch()
                 .map(BasicTestEntity::getName)
                 .as(StepVerifier::create)
@@ -248,6 +248,7 @@ public abstract class BasicReactiveTests {
                     .tags(Arrays.asList("a", "b", "c", "d"))
                     .state((byte) 1)
                     .stateEnum(StateEnum.enabled)
+                    .enabled(true)
                     .build())
             .collectList()
             .as(repository::insertBatch)
@@ -309,6 +310,7 @@ public abstract class BasicReactiveTests {
                                                 .state((byte) 1)
                                                 .addressId("test")
                                                 .stateEnum(StateEnum.enabled)
+                                                .enabled(true)
                                                 .build();
 
         repository.save(Mono.just(entity))
@@ -355,15 +357,18 @@ public abstract class BasicReactiveTests {
 
     @Test
     public void testRepositoryCurd() {
-        BasicTestEntity entity = BasicTestEntity.builder()
-                                                .id("test_id")
-                                                .balance(1000L)
-                                                .name("test")
-                                                .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
-                                                .createTime(new Date())
-                                                .state((byte) 1)
-                                                .addressId("test")
-                                                .build();
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
+                .id("test_id")
+                .balance(1000L)
+                .name("test")
+                .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
+                .createTime(new Date())
+                .state((byte) 1)
+                .addressId("test")
+                .enabled(true)
+                .floatVal(1.2F)
+                .build();
 
         addressRepository.insert(Mono.just(Record.newRecord().putValue("id", "test").putValue("name", "test_address")))
                          .as(StepVerifier::create)

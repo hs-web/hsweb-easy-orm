@@ -356,6 +356,11 @@ public class JpaEntityTableMetadataParserProcessor {
             }
         }
         customColumn(descriptor, field, metadata, annotations);
+
+        if(metadata.getType().isNumber() || !metadata.getType().isLengthSupport()){
+            metadata.setLength(metadata.getPrecision());
+        }
+
         tableMetadata.addColumn(metadata);
     }
 

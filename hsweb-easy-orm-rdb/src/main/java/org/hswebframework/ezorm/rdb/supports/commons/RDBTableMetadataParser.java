@@ -27,7 +27,7 @@ import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.*;
 @Slf4j
 public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
-    static ContextView logContext = Context.of(Logger.class,log).readOnly();
+    static ContextView logContext = Context.of(Logger.class, log).readOnly();
 
     protected RDBSchemaMetadata schema;
 
@@ -327,6 +327,11 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
               .map(String::toLowerCase)
               .map(getDialect()::convertDataType)
               .ifPresent(column::setType);
+        if (column.getType() != null && column.getType().isNumber()) {
+            if (!record.get("data_precision").isPresent()) {
+                column.setPrecision(column.getLength());
+            }
+        }
 
         column.findFeature(ValueCodecFactory.ID)
               .flatMap(factory -> factory.createValueCodec(column))

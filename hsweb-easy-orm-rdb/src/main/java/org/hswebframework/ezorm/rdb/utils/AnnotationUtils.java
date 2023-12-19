@@ -4,10 +4,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class AnnotationUtils {
@@ -42,8 +39,8 @@ public class AnnotationUtils {
     }
 
     public static Set<Annotation> getAnnotations(Class<?> entityClass, PropertyDescriptor descriptor) {
-        Set<Annotation> annotations = new HashSet<>();
-        Set<Class<? extends Annotation>> types = new HashSet<>();
+        Set<Annotation> annotations = new LinkedHashSet<>();
+        Set<Class<? extends Annotation>> types = new LinkedHashSet<>();
 
         Consumer<Annotation[]> annoConsumer = (ann) -> {
             for (Annotation annotation : ann) {
