@@ -18,7 +18,7 @@ public class SqlServerDialect extends DefaultDialect {
         super();
         addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.NCHAR, (meta) -> StringUtils.concat("nchar(", meta.getLength(), ")"));
-        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("nvarchar(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "datetime2");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");

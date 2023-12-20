@@ -18,7 +18,7 @@ public class SqlServer2012Paginator implements Paginator {
             BlockSqlFragments block = ((BlockSqlFragments) fragments);
             LinkedList<SqlFragments> orderBy = block.getBlock(FragmentBlock.orderBy);
             if (orderBy.isEmpty()) {
-                orderBy.add(SqlFragments.single("order by 1"));
+                orderBy.add(SqlFragments.single("order by (select null)"));
             }
             block.addBlock(FragmentBlock.after, of("offset ? rows fetch next ? rows only", pageIndex * pageSize, pageSize));
 
@@ -27,7 +27,7 @@ public class SqlServer2012Paginator implements Paginator {
             PrepareSqlFragments sqlFragments = ((PrepareSqlFragments) fragments);
             if (!sqlFragments.getSql().contains("order by")
                     && !sqlFragments.getSql().contains("ORDER BY")) {
-                sqlFragments.addSql("order", "by", "1");
+                sqlFragments.addSql("order", "by", "(select null)");
             }
             sqlFragments.addSql("offset ? rows fetch next ? rows only")
                     .addParameter(pageIndex * pageSize, pageSize);

@@ -322,6 +322,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         record.getInteger("data_length").ifPresent(column::setLength);
         record.getInteger("data_precision").ifPresent(column::setPrecision);
         record.getInteger("data_scale").ifPresent(column::setScale);
+        record.getBoolean("primary_key").ifPresent(column::setPrimaryKey);
 
         record.getString("data_type")
               .map(String::toLowerCase)
