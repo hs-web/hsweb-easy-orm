@@ -194,6 +194,19 @@ public abstract class BasicReactiveTests {
     }
 
     @Test
+    public void testForUpdate(){
+        repository
+                .createQuery()
+                .where(BasicTestEntity::getId, "forupdate")
+                .select("id", "name")
+                .forUpdate()
+                .fetch()
+                .then()
+                .as(StepVerifier::create)
+                .verifyComplete();
+    }
+
+    @Test
     public void testInsertMerge() {
 
         BasicTestEntity first = BasicTestEntity

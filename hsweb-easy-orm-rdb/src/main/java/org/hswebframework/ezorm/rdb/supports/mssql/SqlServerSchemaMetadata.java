@@ -15,6 +15,7 @@ public class SqlServerSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new SqlServer2012TableMetadataParser(this));
         addFeature(new SqlServerIndexMetadataParser(this));
         addFeature(Dialect.MSSQL);
+        addFeature(new SqlServerQuerySqlBuilder(this));
     }
 
     @Override
