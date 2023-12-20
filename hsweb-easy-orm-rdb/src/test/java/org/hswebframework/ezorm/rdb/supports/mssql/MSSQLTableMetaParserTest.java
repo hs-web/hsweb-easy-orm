@@ -52,7 +52,7 @@ public class MSSQLTableMetaParserTest {
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
                 // 这里只解析表结构，而不会解析键信息.
-                // Assert.assertTrue(column.isPrimaryKey());
+                Assert.assertTrue(column.isPrimaryKey());
             }
 
             //name

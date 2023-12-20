@@ -13,12 +13,14 @@ public class SqlServerSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new SqlServerAlterTableSqlBuilder());
         addFeature(new SqlServer2012Paginator());
         addFeature(new SqlServer2012TableMetadataParser(this));
+        addFeature(new SqlServerIndexMetadataParser(this));
         addFeature(Dialect.MSSQL);
     }
 
     @Override
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata=super.newTable(name);
+        metadata.addFeature(new SqlServerBatchUpsertOperator(metadata));
         metadata.setOnColumnAdded(column->{
             if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
                 column.addFeature(SqlServerEnumInFragmentBuilder.in);
