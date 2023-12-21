@@ -51,12 +51,7 @@ public class DataTypeUtils {
 
     }
 
-    public static boolean typeIsNumber(DataType type) {
-        if (type == null) {
-            return false;
-        }
-
-        SQLType sqlType = type.getSqlType();
+    public static boolean sqlTypeIsNumber(SQLType sqlType) {
         if (sqlType != null) {
             if (sqlType instanceof JDBCType)
                 switch (((JDBCType) sqlType)) {
@@ -70,6 +65,17 @@ public class DataTypeUtils {
                     case DOUBLE:
                         return true;
                 }
+        }
+        return false;
+    }
+
+    public static boolean typeIsNumber(DataType type) {
+        if (type == null) {
+            return false;
+        }
+
+        if (sqlTypeIsNumber(type.getSqlType())) {
+            return true;
         }
 
         if (type.getJavaType() != null) {

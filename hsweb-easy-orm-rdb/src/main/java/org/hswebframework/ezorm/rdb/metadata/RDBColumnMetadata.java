@@ -128,12 +128,19 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         setType(JdbcDataType.of(jdbcType, javaType));
     }
 
+    public int getLength(int length) {
+        if (this.length <= 0) {
+            return length;
+        }
+        return this.length;
+    }
+
     public int getPrecision(int defaultPrecision) {
         if (precision <= 0) {
             if (length <= 0) {
                 return defaultPrecision;
             } else {
-                return length;
+                return Math.min(length, defaultPrecision);
             }
         }
         return precision;

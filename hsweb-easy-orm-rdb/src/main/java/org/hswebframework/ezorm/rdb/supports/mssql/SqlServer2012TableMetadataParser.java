@@ -54,9 +54,11 @@ public class SqlServer2012TableMetadataParser extends RDBTableMetadataParser {
 
     @Override
     protected String getTableCommentSql(String tname) {
-        return "select cast(p.value as varchar(500)) as comment " +
-                "from sys.extended_properties p " +
-                " where p.major_id=object_id(#{table}) and p.minor_id=0";
+        return "select cast(ep.value as nvarchar(500)) as [comment],t.name as [table_name]" +
+                " from sys.tables t" +
+                " LEFT JOIN"+
+                " sys.extended_properties ep ON t.object_id = ep.major_id AND ep.name = 'MS_Description'"+
+                " where ep.minor_id=0 and t.schema_id = SCHEMA_ID(#{schema}) and t.name like #{table}";
     }
 
     @Override

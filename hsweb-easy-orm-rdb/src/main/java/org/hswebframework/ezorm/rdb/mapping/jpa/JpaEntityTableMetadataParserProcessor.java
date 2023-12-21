@@ -357,7 +357,7 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         customColumn(descriptor, field, metadata, annotations);
 
-        if(metadata.getType().isNumber() || !metadata.getType().isLengthSupport()){
+        if (metadata.getType().sqlTypeIsNumber()) {
             metadata.setLength(metadata.getPrecision());
         }
 

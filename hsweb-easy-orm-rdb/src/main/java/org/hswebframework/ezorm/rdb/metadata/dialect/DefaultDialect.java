@@ -34,10 +34,10 @@ public abstract class DefaultDialect implements Dialect {
         defaultDataTypeBuilder = (meta) -> meta.getType().getName().toLowerCase();
 
         registerDataType("varchar", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
-                column -> "varchar(" + column.getLength() + ")"));
+                column -> "varchar(" + column.getLength(255) + ")"));
 
         registerDataType("nvarchar", DataType.builder(DataType.jdbc(JDBCType.NVARCHAR, String.class),
-                column -> "nvarchar(" + column.getLength() + ")"));
+                column -> "nvarchar(" + column.getLength(255) + ")"));
 
         registerDataType("decimal", DataType.builder(DataType.jdbc(JDBCType.DECIMAL, BigDecimal.class),
                 column -> "decimal(" + column.getPrecision(32) + "," + column.getScale() + ")"));

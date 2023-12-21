@@ -17,8 +17,8 @@ public class PostgresqlDialect extends DefaultDialect {
 
     public PostgresqlDialect() {
 
-        addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
-        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(255), ")"));
+        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(255), ")"));
         addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");

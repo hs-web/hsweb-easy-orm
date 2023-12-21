@@ -30,13 +30,17 @@ public interface DataType {
     default boolean isLengthSupport() {
         return isScaleSupport() ||
                 getSqlType() == JDBCType.VARCHAR ||
-                getSqlType() == JDBCType.CHAR||
+                getSqlType() == JDBCType.CHAR ||
                 getSqlType() == JDBCType.NVARCHAR
                 ;
     }
 
-    default boolean isNumber(){
+    default boolean isNumber() {
         return DataTypeUtils.typeIsNumber(this);
+    }
+
+    default boolean sqlTypeIsNumber() {
+        return DataTypeUtils.sqlTypeIsNumber(this.getSqlType());
     }
 
     static DataType custom(String id, String name, SQLType sqlType, Class<?> javaType) {
