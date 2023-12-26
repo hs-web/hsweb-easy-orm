@@ -34,6 +34,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFeatures.eq);
             addFeature(RDBFeatures.is);
             addFeature(RDBFeatures.not);
+            addFeature(RDBFeatures.notEq);
             addFeature(RDBFeatures.gt);
             addFeature(RDBFeatures.gte);
             addFeature(RDBFeatures.lt);

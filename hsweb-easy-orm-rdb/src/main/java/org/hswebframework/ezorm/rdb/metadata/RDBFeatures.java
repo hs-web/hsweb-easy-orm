@@ -22,6 +22,7 @@ public interface RDBFeatures {
     SymbolTermFragmentBuilder is = new SymbolTermFragmentBuilder("is", "等于", "=");
 
     SymbolTermFragmentBuilder not = new SymbolTermFragmentBuilder("not", "不等于", "!=");
+    SymbolTermFragmentBuilder notEq = new SymbolTermFragmentBuilder("neq", "不等于", "!=");
 
     LikeTermFragmentBuilder like = new LikeTermFragmentBuilder(false);
     LikeTermFragmentBuilder nlike = new LikeTermFragmentBuilder(true);
