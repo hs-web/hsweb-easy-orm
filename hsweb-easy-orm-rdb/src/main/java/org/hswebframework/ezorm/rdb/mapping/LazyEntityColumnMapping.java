@@ -62,4 +62,14 @@ public abstract class LazyEntityColumnMapping implements EntityColumnMapping {
     public Class<?> getEntityType() {
         return getMapping().getEntityType();
     }
+
+    @Override
+    public Object newInstance() {
+        return getMapping().newInstance();
+    }
+
+    @Override
+    public void reload() {
+        getMapping().reload();
+    }
 }

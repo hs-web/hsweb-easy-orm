@@ -2,13 +2,12 @@ package org.hswebframework.ezorm.rdb.mapping;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 public class DefaultEntityColumnMapping implements EntityColumnMapping {
 
@@ -28,16 +27,20 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
     @Getter
     private final Class<?> entityType;
 
+    private final Constructor<?> constructor;
+
     public void addMapping(String column, String property) {
         columnPropertyMapping.put(column, property);
         propertyColumnMapping.put(property, column);
     }
 
+    @SneakyThrows
     public DefaultEntityColumnMapping(TableOrViewMetadata table, Class<?> entityType) {
         this.id = getType().createFeatureId(entityType);
         this.name = getType().getName() + ":" + entityType.getSimpleName();
         this.table = table;
-        this.entityType=entityType;
+        this.entityType = entityType;
+        constructor = this.entityType.getConstructor();
     }
 
     @Override
@@ -45,7 +48,8 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
         if (property.contains(".")) {
             String[] key = property.split("[.]");
 
-            return table.getForeignKey(key[0])
+            return table
+                    .getForeignKey(key[0])
                     .flatMap(keyMetadata -> keyMetadata.getTarget().getColumn(key[1]));
 
         }
@@ -66,14 +70,27 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
             String[] key = columnName.split("[.]");
 
             return table.getForeignKey(key[0])
-                    .flatMap(keyMetadata -> keyMetadata.getTarget().getColumn(key[1]));
+                        .flatMap(keyMetadata -> keyMetadata.getTarget().getColumn(key[1]));
 
         }
         return table.getColumn(columnName);
     }
 
     @Override
+    public void reload() {
+        for (RDBColumnMetadata column : table.getColumns()) {
+            addMapping(column.getName(),column.getAlias());
+        }
+    }
+
+    @Override
     public Map<String, String> getColumnPropertyMapping() {
-        return new LinkedHashMap<>(columnPropertyMapping);
+        return Collections.unmodifiableMap(columnPropertyMapping);
+    }
+
+    @Override
+    @SneakyThrows
+    public Object newInstance() {
+        return constructor.newInstance();
     }
 }

@@ -20,20 +20,20 @@ public class SimpleColumnMapping implements EntityColumnMapping {
     private Supplier<? extends TableOrViewMetadata> metadata;
 
 
-    public static SimpleColumnMapping of(Class<?> type,TableOrViewMetadata metadata){
-        return of(type,()->metadata);
+    public static SimpleColumnMapping of(Class<?> type, TableOrViewMetadata metadata) {
+        return of(type, () -> metadata);
     }
 
 
     @Override
     public Optional<RDBColumnMetadata> getColumnByProperty(String property) {
-        return  metadata.get().findColumn(property);
+        return metadata.get().findColumn(property);
     }
 
     @Override
     public Optional<String> getPropertyByColumnName(String columnName) {
         return metadata.get().findColumn(columnName)
-                .map(RDBColumnMetadata::getAlias);
+                       .map(RDBColumnMetadata::getAlias);
     }
 
     @Override
@@ -43,7 +43,9 @@ public class SimpleColumnMapping implements EntityColumnMapping {
 
     @Override
     public Map<String, String> getColumnPropertyMapping() {
-        return metadata.get().getColumns()
+        return metadata
+                .get()
+                .getColumns()
                 .stream()
                 .collect(Collectors.toMap(RDBColumnMetadata::getName, RDBColumnMetadata::getAlias));
     }

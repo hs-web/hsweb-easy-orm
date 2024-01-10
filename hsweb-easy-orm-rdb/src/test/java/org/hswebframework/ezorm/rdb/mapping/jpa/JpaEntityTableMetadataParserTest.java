@@ -86,7 +86,7 @@ public class JpaEntityTableMetadataParserTest {
             ))
     @ToString
     @EqualsAndHashCode(callSuper = true)
-    public class User extends GenericEntity<String> {
+    public static class User extends GenericEntity<String> {
 
 //        @Override
 //        @Id

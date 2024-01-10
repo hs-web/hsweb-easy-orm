@@ -29,6 +29,10 @@ public interface EntityColumnMapping extends Feature {
 
     @SneakyThrows
     default Object newInstance() {
-        return getEntityType().newInstance();
+        return getEntityType().getConstructor().newInstance();
+    }
+
+    default void reload(){
+        
     }
 }
