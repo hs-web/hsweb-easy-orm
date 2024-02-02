@@ -19,10 +19,9 @@ import java.util.function.Consumer;
 
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.asc;
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.desc;
-
+@Getter
 public class BuildParameterQueryOperator extends QueryOperator {
 
-    @Getter
     protected QueryOperatorParameter parameter;
 
     public BuildParameterQueryOperator(QueryOperatorParameter parameter) {
@@ -124,6 +123,13 @@ public class BuildParameterQueryOperator extends QueryOperator {
         return this;
     }
 
+    @Override
+    public QueryOperator groupBy(SelectColumn... operators) {
+        for (SelectColumn operator : operators) {
+            parameter.getGroupBy().add(operator);
+        }
+        return this;
+    }
 
     @Override
     public QueryOperator orderBy(SortOrder... operators) {

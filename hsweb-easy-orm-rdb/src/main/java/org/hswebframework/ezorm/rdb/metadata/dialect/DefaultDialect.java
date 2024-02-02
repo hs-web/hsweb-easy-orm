@@ -1,10 +1,7 @@
 package org.hswebframework.ezorm.rdb.metadata.dialect;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hswebframework.ezorm.rdb.metadata.DataType;
-import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.CustomDataType;
+import org.hswebframework.ezorm.rdb.metadata.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,19 +31,19 @@ public abstract class DefaultDialect implements Dialect {
         defaultDataTypeBuilder = (meta) -> meta.getType().getName().toLowerCase();
 
         registerDataType("varchar", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
-                column -> "varchar(" + column.getLength(255) + ")"));
+                                                     column -> "varchar(" + column.getLength(255) + ")"));
 
         registerDataType("nvarchar", DataType.builder(DataType.jdbc(JDBCType.NVARCHAR, String.class),
-                column -> "nvarchar(" + column.getLength(255) + ")"));
+                                                      column -> "nvarchar(" + column.getLength(255) + ")"));
 
         registerDataType("decimal", DataType.builder(DataType.jdbc(JDBCType.DECIMAL, BigDecimal.class),
-                column -> "decimal(" + column.getPrecision(32) + "," + column.getScale() + ")"));
+                                                     column -> "decimal(" + column.getPrecision(32) + "," + column.getScale() + ")"));
 
         registerDataType("numeric", DataType.builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                column -> "numeric(" + column.getPrecision(32) + "," + column.getScale() + ")"));
+                                                     column -> "numeric(" + column.getPrecision(32) + "," + column.getScale() + ")"));
 
         registerDataType("number", DataType.builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                column -> "number(" + column.getPrecision(32) + "," + column.getScale() + ")"));
+                                                    column -> "number(" + column.getPrecision(32) + "," + column.getScale() + ")"));
 
 
         registerDataType("bigint", JdbcDataType.of(JDBCType.BIGINT, Long.class));
@@ -112,8 +109,8 @@ public abstract class DefaultDialect implements Dialect {
     @Override
     public Optional<SQLType> convertSqlType(Class<?> type) {
         return Optional
-                .ofNullable(classJDBCTypeMapping.get(type))
-                .map(JDBCType.class::cast);
+            .ofNullable(classJDBCTypeMapping.get(type))
+            .map(JDBCType.class::cast);
     }
 
     @Override
@@ -135,10 +132,32 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public DataType convertDataType(String dataType) {
-        if (dataType.contains("(")) {
-            dataType = dataType.substring(0, dataType.indexOf("("));
+        String type = dataType;
+        //length
+        if (type.contains("(")) {
+            type = type.substring(0, type.indexOf("("));
+            String[] arr = dataType
+                .substring(dataType.indexOf("(") + 1, dataType.lastIndexOf(")"))
+                .split(",");
+            int length = Integer.parseInt(arr[0].trim());
+            int scale = arr.length > 1 ? Integer.parseInt(arr[1].trim()) : 0;
+            return convertDataType(type, length, scale);
         }
-        return dataTypeMapping.getOrDefault(dataType.toLowerCase(), convertUnknownDataType(dataType));
+        return dataTypeMapping.getOrDefault(type.toLowerCase(), convertUnknownDataType(dataType));
+    }
+
+    protected DataType convertDataType(String type, int length, int scale) {
+        DataType staticType = dataTypeMapping.get(type);
+        if (staticType == null) {
+            return convertUnknownDataType(type);
+        } else {
+            return new LengthSupportDataType(
+                staticType,
+                length,
+                length,
+                scale
+            );
+        }
     }
 
     protected DataType convertUnknownDataType(String dataType) {

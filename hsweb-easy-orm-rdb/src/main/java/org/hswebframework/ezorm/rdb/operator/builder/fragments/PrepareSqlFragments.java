@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +43,7 @@ public class PrepareSqlFragments implements SqlFragments {
     public PrepareSqlFragments addFragments(SqlFragments fragments) {
 
         return addSql(fragments.getSql())
-                .addParameter(fragments.getParameters());
+            .addParameter(fragments.getParameters());
     }
 
     public PrepareSqlFragments addSql(String... sql) {
@@ -64,6 +65,9 @@ public class PrepareSqlFragments implements SqlFragments {
 
     @SuppressWarnings("all")
     public PrepareSqlFragments addParameter(Collection<?> parameter) {
+        if (CollectionUtils.isEmpty(parameter)) {
+            return this;
+        }
         for (Object o : parameter) {
             this.parameters.add(o);
         }
@@ -72,6 +76,9 @@ public class PrepareSqlFragments implements SqlFragments {
 
     @SuppressWarnings("all")
     public PrepareSqlFragments addParameter(Object... parameter) {
+        if (parameter == null || parameter.length == 0) {
+            return this;
+        }
         for (Object o : parameter) {
             this.parameters.add(o);
         }

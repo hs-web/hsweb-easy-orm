@@ -17,6 +17,7 @@ public class MysqlTableMetadataParser extends RDBTableMetadataParser {
             "numeric_scale as `data_scale`,",
             "column_comment as `comment`,",
             "table_name as `table_name`,",
+            "column_type as `column_type`,",
             "case when is_nullable='YES' then 0 else 1 end as 'not_null'",
             "from information_schema.columns where table_schema=#{schema} and table_name like #{table}");
 

@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.events.EventListener;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
@@ -25,6 +26,9 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.Terms;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
+import org.hswebframework.ezorm.rdb.operator.dml.query.NativeSelectColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.query.Selects;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.After;
 import org.junit.Assert;
@@ -121,8 +125,8 @@ public abstract class BasicReactiveTests {
               });
 
         RDBTableMetadata table = parser
-                .parseTableMetadata(BasicTestEntity.class)
-                .orElseThrow(NullPointerException::new);
+            .parseTableMetadata(BasicTestEntity.class)
+            .orElseThrow(NullPointerException::new);
 
         operator.ddl()
                 .createOrAlter(table)
@@ -131,13 +135,44 @@ public abstract class BasicReactiveTests {
                 .block();
         EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
         wrapper.setMapping(table
-                                   .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
-                                   .orElseThrow(NullPointerException::new));
+                               .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+                               .orElseThrow(NullPointerException::new));
 
 
         repository = new DefaultReactiveRepository<>(operator, table, BasicTestEntity.class, wrapper);
         addressRepository = operator.dml().createReactiveRepository("test_address");
 
+    }
+
+    @Test
+    public void testGroupBy() {
+        BasicTestEntity entity = BasicTestEntity
+            .builder()
+            .id("groupTest")
+            .balance(1000L)
+            .name("groupTest")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .stateEnum(StateEnum.enabled)
+            .build();
+        repository
+            .save(entity)
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+
+        repository
+            .nativeQuery()
+            .select(Selects.count1().as("total"),
+                    () -> SelectColumn.of("name"))
+            .groupBy(SelectColumn.of("name"))
+            .where(cdt -> cdt.where("name", "groupTest"))
+            .fetch(ResultWrappers.map())
+            .reactive()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
     }
 
     @Test
@@ -183,8 +218,8 @@ public abstract class BasicReactiveTests {
             try {
                 operator.sql().reactive()
                         .execute(Mono.just(SqlRequests.of("drop table " + database
-                                .getCurrentSchema()
-                                .getName() + ".test_reactive_pager")))
+                            .getCurrentSchema()
+                            .getName() + ".test_reactive_pager")))
                         .block();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -194,58 +229,58 @@ public abstract class BasicReactiveTests {
     }
 
     @Test
-    public void testForUpdate(){
+    public void testForUpdate() {
         repository
-                .createQuery()
-                .where(BasicTestEntity::getId, "forupdate")
-                .select("id", "name")
-                .forUpdate()
-                .fetch()
-                .then()
-                .as(StepVerifier::create)
-                .verifyComplete();
+            .createQuery()
+            .where(BasicTestEntity::getId, "forupdate")
+            .select("id", "name")
+            .forUpdate()
+            .fetch()
+            .then()
+            .as(StepVerifier::create)
+            .verifyComplete();
     }
 
     @Test
     public void testInsertMerge() {
 
         BasicTestEntity first = BasicTestEntity
-                .builder()
-                .id("test_merge")
-                .balance(1000L)
-                .name("first")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .stateEnum(StateEnum.enabled)
-                .build();
+            .builder()
+            .id("test_merge")
+            .balance(1000L)
+            .name("first")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .stateEnum(StateEnum.enabled)
+            .build();
 
         BasicTestEntity second = BasicTestEntity
-                .builder()
-                .id("test_merge")
-                .balance(1000L)
-                .name("second")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .stateEnum(StateEnum.enabled)
-                .build();
+            .builder()
+            .id("test_merge")
+            .balance(1000L)
+            .name("second")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .stateEnum(StateEnum.enabled)
+            .build();
 
         repository
-                .insert(Flux.just(first, second))
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+            .insert(Flux.just(first, second))
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .where(BasicTestEntity::getId, first.getId())
-                .select("id", "name")
-                .fetch()
-                .map(BasicTestEntity::getName)
-                .as(StepVerifier::create)
-                .expectNext(second.getName())
-                .verifyComplete();
+            .createQuery()
+            .where(BasicTestEntity::getId, first.getId())
+            .select("id", "name")
+            .fetch()
+            .map(BasicTestEntity::getName)
+            .as(StepVerifier::create)
+            .expectNext(second.getName())
+            .verifyComplete();
     }
 
     @Test
@@ -253,16 +288,16 @@ public abstract class BasicReactiveTests {
         //10次insert
         Flux.just(1, 2, 2, 3, 3, 1)
             .map(integer -> BasicTestEntity
-                    .builder()
-                    .id("test_dup_" + integer)
-                    .balance(1000L)
-                    .name("test2:" + integer)
-                    .createTime(new Date())
-                    .tags(Arrays.asList("a", "b", "c", "d"))
-                    .state((byte) 1)
-                    .stateEnum(StateEnum.enabled)
-                    .enabled(true)
-                    .build())
+                .builder()
+                .id("test_dup_" + integer)
+                .balance(1000L)
+                .name("test2:" + integer)
+                .createTime(new Date())
+                .tags(Arrays.asList("a", "b", "c", "d"))
+                .state((byte) 1)
+                .stateEnum(StateEnum.enabled)
+                .enabled(true)
+                .build())
             .collectList()
             .as(repository::insertBatch)
             .as(StepVerifier::create)
@@ -281,33 +316,33 @@ public abstract class BasicReactiveTests {
     public void testRepositoryInsertBach() {
         //10次insert
         StepVerifier.create(repository
-                                    .insert(Flux.range(0, 10)
-                                                .map(integer -> BasicTestEntity
-                                                        .builder()
-                                                        .id("test_id_2_" + integer)
-                                                        .balance(1000L)
-                                                        .name("test2:" + integer)
-                                                        .createTime(new Date())
-                                                        .tags(Arrays.asList("a", "b", "c", "d"))
-                                                        .state((byte) 1)
-                                                        .stateEnum(StateEnum.enabled)
-                                                        .build())))
+                                .insert(Flux.range(0, 10)
+                                            .map(integer -> BasicTestEntity
+                                                .builder()
+                                                .id("test_id_2_" + integer)
+                                                .balance(1000L)
+                                                .name("test2:" + integer)
+                                                .createTime(new Date())
+                                                .tags(Arrays.asList("a", "b", "c", "d"))
+                                                .state((byte) 1)
+                                                .stateEnum(StateEnum.enabled)
+                                                .build())))
                     .expectNext(10)
                     .verifyComplete();
 
         //每30条数据批量insert
         StepVerifier
-                .create(repository.insertBatch(Flux.range(0, 100)
-                                                   .map(integer -> BasicTestEntity.builder()
-                                                                                  .id("test_id_" + integer)
-                                                                                  .balance(1000L)
-                                                                                  .name("test:" + integer)
-                                                                                  .createTime(new Date())
-                                                                                  .state((byte) 1)
-                                                                                  .build())
-                                                   .buffer(10).delayElements(Duration.ofMillis(100))))
-                .expectNext(100)
-                .verifyComplete();
+            .create(repository.insertBatch(Flux.range(0, 100)
+                                               .map(integer -> BasicTestEntity.builder()
+                                                                              .id("test_id_" + integer)
+                                                                              .balance(1000L)
+                                                                              .name("test:" + integer)
+                                                                              .createTime(new Date())
+                                                                              .state((byte) 1)
+                                                                              .build())
+                                               .buffer(10).delayElements(Duration.ofMillis(100))))
+            .expectNext(100)
+            .verifyComplete();
 
     }
 
@@ -333,16 +368,16 @@ public abstract class BasicReactiveTests {
                   .verifyComplete();
 
         BasicTestEntity entity2 = BasicTestEntity
-                .builder()
-                .id("test_id_save2")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("test")
-                .stateEnum(StateEnum.enabled)
-                .build();
+            .builder()
+            .id("test_id_save2")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .addressId("test")
+            .stateEnum(StateEnum.enabled)
+            .build();
 
         entity.setName("test2");
 
@@ -371,17 +406,17 @@ public abstract class BasicReactiveTests {
     @Test
     public void testRepositoryCurd() {
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("test_id")
-                .balance(1000L)
-                .name("test")
-                .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
-                .createTime(new Date())
-                .state((byte) 1)
-                .addressId("test")
-                .enabled(true)
-                .floatVal(1.2F)
-                .build();
+            .builder()
+            .id("test_id")
+            .balance(1000L)
+            .name("test")
+            .tags(new ArrayList<>(Arrays.asList("a", "b", "c", "d")))
+            .createTime(new Date())
+            .state((byte) 1)
+            .addressId("test")
+            .enabled(true)
+            .floatVal(1.2F)
+            .build();
 
         addressRepository.insert(Mono.just(Record.newRecord().putValue("id", "test").putValue("name", "test_address")))
                          .as(StepVerifier::create)
@@ -439,37 +474,37 @@ public abstract class BasicReactiveTests {
     @Test
     public void testSaveNull() {
         repository
-                .insert(Mono.just(BasicTestEntity
-                                          .builder()
-                                          .name("test")
-                                          .id("test_null")
-                                          .state((byte) 1)
-                                          .doubleVal(1D)
-                                          .build()))
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+            .insert(Mono.just(BasicTestEntity
+                                  .builder()
+                                  .name("test")
+                                  .id("test_null")
+                                  .state((byte) 1)
+                                  .doubleVal(1D)
+                                  .build()))
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
 
         repository
-                .save(Flux.just(
-                        BasicTestEntity
-                                .builder()
-                                .name("test")
-                                .id("test_null2")
-                                .state((byte) 1)
-                                .doubleVal(1D)
-                                .build(),
-                        BasicTestEntity
-                                .builder()
-                                .name("test")
-                                .id("test_null")
-                                .state((byte) 1)
-                                .build())
-                )
-                .map(SaveResult::getTotal)
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+            .save(Flux.just(
+                BasicTestEntity
+                    .builder()
+                    .name("test")
+                    .id("test_null2")
+                    .state((byte) 1)
+                    .doubleVal(1D)
+                    .build(),
+                BasicTestEntity
+                    .builder()
+                    .name("test")
+                    .id("test_null")
+                    .state((byte) 1)
+                    .build())
+            )
+            .map(SaveResult::getTotal)
+            .as(StepVerifier::create)
+            .expectNext(2)
+            .verifyComplete();
 
         repository.createQuery()
                   .select("doubleVal", "id")
@@ -484,17 +519,17 @@ public abstract class BasicReactiveTests {
     @Test
     public void testEnums() {
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("enums_id")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("test")
-                .stateEnum(StateEnum.enabled)
-                .stateEnums(new StateEnum[]{StateEnum.enabled, StateEnum.disabled})
-                .build();
+            .builder()
+            .id("enums_id")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .addressId("test")
+            .stateEnum(StateEnum.enabled)
+            .stateEnums(new StateEnum[]{StateEnum.enabled, StateEnum.disabled})
+            .build();
         repository.insert(entity)
                   .as(StepVerifier::create)
                   .expectNext(1)
@@ -502,40 +537,40 @@ public abstract class BasicReactiveTests {
 
 
         repository
-                .createQuery()
-                .select("id", "stateEnums")
-                .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
-                .fetch()
-                .as(StepVerifier::create)
-                .expectNextCount(0)
-                .verifyComplete();
+            .createQuery()
+            .select("id", "stateEnums")
+            .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
+            .fetch()
+            .as(StepVerifier::create)
+            .expectNextCount(0)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .select("id", "stateEnums")
-                .in(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled)
-                .fetchOne()
-                .as(StepVerifier::create)
-                .expectNextCount(1)
-                .verifyComplete();
+            .createQuery()
+            .select("id", "stateEnums")
+            .in(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled)
+            .fetchOne()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .select("id", "stateEnums")
-                .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
-                .fetchOne()
-                .as(StepVerifier::create)
-                .expectNextCount(1)
-                .verifyComplete();
+            .createQuery()
+            .select("id", "stateEnums")
+            .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
+            .fetchOne()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .select("id", "stateEnums")
-                .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
-                .fetchOne()
-                .as(StepVerifier::create)
-                .expectNextCount(1)
-                .verifyComplete();
+            .createQuery()
+            .select("id", "stateEnums")
+            .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
+            .fetchOne()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
 
     }
 

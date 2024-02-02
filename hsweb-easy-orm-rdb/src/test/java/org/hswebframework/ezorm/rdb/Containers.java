@@ -11,7 +11,7 @@ public class Containers {
                 .withEnv("TZ", "Asia/Shanghai")
                 .withEnv("MYSQL_ROOT_PASSWORD", "root")
                 .withEnv("MYSQL_DATABASE", "ezorm")
-                .withCommand("--character-set-server=utf8mb4")
+                .withCommand("--character-set-server=utf8mb4 --max_connections=1024")
                 .withExposedPorts(3306)
                 .waitingFor(Wait.forListeningPort());
 //                .waitingFor(Wait.forLogMessage(".*ready for connections.*",1));

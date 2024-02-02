@@ -76,15 +76,15 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
         //列
         List<RDBColumnMetadata> metaDataList = getSqlExecutor()
-                .select(template(getTableMetaSql(name), param),
-                        list(RecordResultWrapper.INSTANCE))
-                .stream()
-                .map(record -> {
-                    RDBColumnMetadata column = metaData.newColumn();
-                    applyColumnInfo(column, record);
-                    return column;
-                })
-                .collect(Collectors.toList());
+            .select(template(getTableMetaSql(name), param),
+                    list(RecordResultWrapper.INSTANCE))
+            .stream()
+            .map(record -> {
+                RDBColumnMetadata column = metaData.newColumn();
+                applyColumnInfo(column, record);
+                return column;
+            })
+            .collect(Collectors.toList());
 
         metaDataList.forEach(metaData::addColumn);
         //说明
@@ -103,49 +103,49 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     @Override
     public Mono<RDBTableMetadata> parseByNameReactive(String name) {
         return tableExistsReactive(name)
-                .filter(Boolean::booleanValue)
-                .flatMap(ignore -> {
-                    RDBTableMetadata metaData = createTable(name);
-                    metaData.setName(name);
-                    metaData.setAlias(name);
-                    Map<String, Object> param = new HashMap<>();
-                    param.put("table", name);
-                    param.put("schema", schema.getName());
-                    ReactiveSqlExecutor reactiveSqlExecutor = getReactiveSqlExecutor();
-                    //列
-                    Mono<List<RDBColumnMetadata>> columns = reactiveSqlExecutor
-                            .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
-                            .map(record -> {
-                                RDBColumnMetadata column = metaData.newColumn();
-                                applyColumnInfo(column, record);
-                                metaData.addColumn(column);
-                                return column;
-                            })
-                            .collectList();
-                    //注释
-                    Mono<Map<String, Object>> comments = reactiveSqlExecutor
-                            .select(template(getTableCommentSql(name), param), singleMap())
-                            .doOnNext(comment -> metaData.setComment(String.valueOf(comment.get("comment"))))
-                            .singleOrEmpty();
+            .filter(Boolean::booleanValue)
+            .flatMap(ignore -> {
+                RDBTableMetadata metaData = createTable(name);
+                metaData.setName(name);
+                metaData.setAlias(name);
+                Map<String, Object> param = new HashMap<>();
+                param.put("table", name);
+                param.put("schema", schema.getName());
+                ReactiveSqlExecutor reactiveSqlExecutor = getReactiveSqlExecutor();
+                //列
+                Mono<List<RDBColumnMetadata>> columns = reactiveSqlExecutor
+                    .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
+                    .map(record -> {
+                        RDBColumnMetadata column = metaData.newColumn();
+                        applyColumnInfo(column, record);
+                        metaData.addColumn(column);
+                        return column;
+                    })
+                    .collectList();
+                //注释
+                Mono<Map<String, Object>> comments = reactiveSqlExecutor
+                    .select(template(getTableCommentSql(name), param), singleMap())
+                    .doOnNext(comment -> metaData.setComment(String.valueOf(comment.get("comment"))))
+                    .singleOrEmpty();
 
-                    //加载索引
-                    Flux<RDBIndexMetadata> index = schema.findFeature(IndexMetadataParser.ID)
-                                                         .map(parser -> parser.parseTableIndexReactive(name))
-                                                         .orElseGet(Flux::empty)
-                                                         .doOnNext(metaData::addIndex);
+                //加载索引
+                Flux<RDBIndexMetadata> index = schema.findFeature(IndexMetadataParser.ID)
+                                                     .map(parser -> parser.parseTableIndexReactive(name))
+                                                     .orElseGet(Flux::empty)
+                                                     .doOnNext(metaData::addIndex);
 
-                    return Flux
-                            .merge(columns, comments, index)
-                            .then(Mono.just(metaData));
-                })
-                .contextWrite(logContext);
+                return Flux
+                    .merge(columns, comments, index)
+                    .then(Mono.just(metaData));
+            })
+            .contextWrite(logContext);
     }
 
     @Override
     public Flux<RDBTableMetadata> parseAllReactive() {
         return parseAllTableNameReactive()
-                .flatMap(this::parseByNameReactive)
-                .contextWrite(logContext);
+            .flatMap(this::parseByNameReactive)
+            .contextWrite(logContext);
     }
 
     @Override
@@ -164,10 +164,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         param.put("table", name);
         param.put("schema", schema.getName());
         return getSqlExecutor()
-                .select(template(getTableExistsSql(), param),
-                        optional(single(column("total", Number.class::cast))))
-                .map(number -> number.intValue() > 0)
-                .orElse(false);
+            .select(template(getTableExistsSql(), param),
+                    optional(single(column("total", Number.class::cast))))
+            .map(number -> number.intValue() > 0)
+            .orElse(false);
 
     }
 
@@ -177,26 +177,26 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         param.put("table", name);
         param.put("schema", schema.getName());
         return getReactiveSqlExecutor()
-                .select(template(getTableExistsSql(), param),
-                        column("total", Number.class::cast))
-                .map(number -> number.intValue() > 0)
-                .singleOrEmpty()
-                .defaultIfEmpty(false)
-                .contextWrite(logContext);
+            .select(template(getTableExistsSql(), param),
+                    column("total", Number.class::cast))
+            .map(number -> number.intValue() > 0)
+            .singleOrEmpty()
+            .defaultIfEmpty(false)
+            .contextWrite(logContext);
     }
 
     @Override
     @SneakyThrows
     public List<String> parseAllTableName() {
         return getSqlExecutor()
-                .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)));
+            .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)));
     }
 
     @Override
     public Flux<String> parseAllTableNameReactive() {
         return getReactiveSqlExecutor()
-                .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)))
-                .contextWrite(logContext);
+            .select(SqlRequests.template(getAllTableSql(), Collections.singletonMap("schema", schema.getName())), list(column("name", String::valueOf)))
+            .contextWrite(logContext);
 
     }
 
@@ -209,45 +209,45 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
         //列
         Mono<Void> columns = getReactiveSqlExecutor()
-                .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
-                .doOnNext(record -> {
-                    String tableName = record
-                            .getString("table_name")
-                            .map(String::toLowerCase)
-                            .orElseThrow(() -> new NullPointerException("table_name is null"));
-                    RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
-                        RDBTableMetadata metaData = createTable(__t);
-                        metaData.setName(__t);
-                        metaData.setAlias(__t);
-                        return metaData;
-                    });
-                    RDBColumnMetadata column = tableMetadata.newColumn();
-                    applyColumnInfo(column, record);
-                    tableMetadata.addColumn(column);
-                })
-                .then();
+            .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
+            .doOnNext(record -> {
+                String tableName = record
+                    .getString("table_name")
+                    .map(String::toLowerCase)
+                    .orElseThrow(() -> new NullPointerException("table_name is null"));
+                RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
+                    RDBTableMetadata metaData = createTable(__t);
+                    metaData.setName(__t);
+                    metaData.setAlias(__t);
+                    return metaData;
+                });
+                RDBColumnMetadata column = tableMetadata.newColumn();
+                applyColumnInfo(column, record);
+                tableMetadata.addColumn(column);
+            })
+            .then();
 
         //说明
         Mono<Void> comments = getReactiveSqlExecutor()
-                .select(template(getTableCommentSql(null), param)
-                        , new RecordResultWrapper())
-                .doOnNext(record -> {
-                    record.getString("table_name")
-                          .map(String::toLowerCase)
-                          .map(metadata::get)
-                          .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
-                })
-                .then();
+            .select(template(getTableCommentSql(null), param)
+                , new RecordResultWrapper())
+            .doOnNext(record -> {
+                record.getString("table_name")
+                      .map(String::toLowerCase)
+                      .map(metadata::get)
+                      .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
+            })
+            .then();
 
         //索引
         Mono<Void> indexes = schema
-                .findFeature(IndexMetadataParser.ID)
-                .map(IndexMetadataParser::parseAllReactive)
-                .orElseGet(Flux::empty)
-                .doOnNext(index -> Optional
-                        .ofNullable(metadata.get(index.getTableName()))
-                        .ifPresent(table -> table.addIndex(index)))
-                .then();
+            .findFeature(IndexMetadataParser.ID)
+            .map(IndexMetadataParser::parseAllReactive)
+            .orElseGet(Flux::empty)
+            .doOnNext(index -> Optional
+                .ofNullable(metadata.get(index.getTableName()))
+                .ifPresent(table -> table.addIndex(index)))
+            .then();
 
 
         return Flux.concat(columns, comments, indexes)
@@ -265,34 +265,34 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
 
         //列
         getSqlExecutor()
-                .select(
-                        template(getTableMetaSql(null), param),
-                        consumer(new RecordResultWrapper(), record -> {
-                            String tableName = record
-                                    .getString("table_name")
-                                    .map(String::toLowerCase)
-                                    .orElseThrow(() -> new NullPointerException("table_name is null"));
-                            RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
-                                RDBTableMetadata metaData = createTable(__t);
-                                metaData.setName(__t);
-                                metaData.setAlias(__t);
-                                return metaData;
-                            });
-                            RDBColumnMetadata column = tableMetadata.newColumn();
-                            applyColumnInfo(column, record);
-                            tableMetadata.addColumn(column);
-                        }));
+            .select(
+                template(getTableMetaSql(null), param),
+                consumer(new RecordResultWrapper(), record -> {
+                    String tableName = record
+                        .getString("table_name")
+                        .map(String::toLowerCase)
+                        .orElseThrow(() -> new NullPointerException("table_name is null"));
+                    RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
+                        RDBTableMetadata metaData = createTable(__t);
+                        metaData.setName(__t);
+                        metaData.setAlias(__t);
+                        return metaData;
+                    });
+                    RDBColumnMetadata column = tableMetadata.newColumn();
+                    applyColumnInfo(column, record);
+                    tableMetadata.addColumn(column);
+                }));
 
         //说明
         getSqlExecutor()
-                .select(template(getTableCommentSql(null), param)
-                        , consumer(new RecordResultWrapper(), record -> {
+            .select(template(getTableCommentSql(null), param)
+                , consumer(new RecordResultWrapper(), record -> {
 
-                            record.getString("table_name")
-                                  .map(String::toLowerCase)
-                                  .map(metadata::get)
-                                  .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
-                        }));
+                    record.getString("table_name")
+                          .map(String::toLowerCase)
+                          .map(metadata::get)
+                          .ifPresent(table -> record.getString("comment").ifPresent(table::setComment));
+                }));
 
         //索引
         schema.<IndexMetadataParser>findFeature(IndexMetadataParser.ID_VALUE)
@@ -324,10 +324,20 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         record.getInteger("data_scale").ifPresent(column::setScale);
         record.getBoolean("primary_key").ifPresent(column::setPrimaryKey);
 
-        record.getString("data_type")
-              .map(String::toLowerCase)
-              .map(getDialect()::convertDataType)
-              .ifPresent(column::setType);
+//        record.getString("data_type")
+//              .map(String::toLowerCase)
+//              .map(getDialect()::convertDataType)
+//              .ifPresent(column::setType);
+
+        Optional.ofNullable(
+                    record.getString("column_type")
+                          .orElseGet(() -> record
+                              .getString("data_type")
+                              .orElse(null)))
+                .map(String::toLowerCase)
+                .map(getDialect()::convertDataType)
+                .ifPresent(column::setType);
+
         if (column.getType() != null && column.getType().isNumber()) {
             if (!record.get("data_precision").isPresent()) {
                 column.setPrecision(column.getLength());
@@ -344,10 +354,10 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
     public List<RDBTableMetadata> parseAll() {
 
         return parseAllTableName()
-                .parallelStream()
-                .map(this::doParse)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+            .parallelStream()
+            .map(this::doParse)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
     }
 }

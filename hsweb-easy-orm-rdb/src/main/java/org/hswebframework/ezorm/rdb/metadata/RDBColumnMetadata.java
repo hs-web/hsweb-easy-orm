@@ -149,6 +149,18 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public void setType(DataType dataType) {
         this.javaType = dataType.getJavaType();
         this.type = dataType;
+        if (dataType instanceof LengthSupport) {
+            LengthSupport lengthSupport = ((LengthSupport) dataType);
+            if (this.length == 0) {
+                this.length = lengthSupport.getLength();
+            }
+            if (this.precision == 0) {
+                this.precision = lengthSupport.getPrecision();
+            }
+            if (this.scale == 0) {
+                this.scale = lengthSupport.getScale();
+            }
+        }
     }
 
     @Override
@@ -271,9 +283,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             }
             if (type.isLengthSupport()) {
                 return type.isNumber()
-                        ? getPrecision() < after.getPrecision() || getScale() < after.getScale()
-                        : getLength() < after.getLength()
-                        ;
+                    ? getPrecision() < after.getPrecision() || getScale() < after.getScale()
+                    : getLength() < after.getLength()
+                    ;
             }
             if (type.isScaleSupport()) {
                 return getScale() < after.getScale();
