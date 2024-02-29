@@ -39,7 +39,7 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
             converter = Number::shortValue;
         } else if (javaType == boolean.class || javaType == Boolean.class) {
             converter = num -> num.byteValue() != 0;
-        } else if (javaType == BigDecimal.class  ) {
+        } else if (javaType == BigDecimal.class) {
             converter = num -> {
                 if (num instanceof BigDecimal) {
                     return (BigDecimal) num;
@@ -47,7 +47,7 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
                     return new BigDecimal(num.toString());
                 }
             };
-        } else if (javaType == BigInteger.class  ) {
+        } else if (javaType == BigInteger.class) {
             converter = num -> {
                 if (num instanceof BigInteger) {
                     return (BigInteger) num;
@@ -57,7 +57,7 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
                     return new BigInteger(num.toString());
                 }
             };
-        }else if (Date.class.isAssignableFrom(javaType)) {
+        } else if (Date.class.isAssignableFrom(javaType)) {
             Constructor<?> constructor = javaType.getConstructor();
             converter = num -> {
                 try {
@@ -89,12 +89,16 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
         } else if (value instanceof ZonedDateTime) {
             value = ((ZonedDateTime) value).toInstant().toEpochMilli();
         } else if (value instanceof String) {
-            //尝试转换字符格式的日期
-            Date date = DateFormatter.fromString(String.valueOf(value));
-            if (null != date) {
-                value = date.getTime();
-            } else {
+            if (org.apache.commons.lang3.StringUtils.isNumeric(String.valueOf(value))) {
                 value = new BigDecimal(String.valueOf(value));
+            } else {
+                //尝试转换字符格式的日期
+                Date date = DateFormatter.fromString(String.valueOf(value));
+                if (null != date) {
+                    value = date.getTime();
+                }else {
+                    value = new BigDecimal(String.valueOf(value));
+                }
             }
         }
 

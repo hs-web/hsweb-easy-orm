@@ -5,6 +5,7 @@ import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 
@@ -77,6 +78,15 @@ public class NumberValueCodecTest {
             Assert.assertEquals(codec.encode(100_000_000),"100,000,000");
 
         }
+
+
+    }
+
+    @Test
+    public void testCastYYYYMMDDString(){
+        NumberValueCodec codec = new NumberValueCodec(Long.class);
+
+        assertEquals(43200000L, codec.decode("43200000"));
 
 
     }
