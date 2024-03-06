@@ -44,8 +44,8 @@ public class SerializedLambda implements Serializable {
             }
             implClassResolved = Class.forName(className.replace('/', '.'));
         }
-        if(isArr){
-            return Array.newInstance(implClassResolved,0).getClass();
+        if (isArr) {
+            return Array.newInstance(implClassResolved, 0).getClass();
         }
         return implClassResolved;
     }
@@ -58,6 +58,8 @@ public class SerializedLambda implements Serializable {
     public static SerializedLambda of(Object lambdaColumn) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+            ClassLoader loader = lambdaColumn.getClass().getClassLoader();
+
             try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
                 oos.writeObject(lambdaColumn);
                 oos.flush();
@@ -65,8 +67,15 @@ public class SerializedLambda implements Serializable {
                 try (ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(data)) {
                     @Override
                     protected Class<?> resolveClass(ObjectStreamClass objectStreamClass) throws IOException, ClassNotFoundException {
-                        Class<?> clazz = super.resolveClass(objectStreamClass);
-                        return clazz == java.lang.invoke.SerializedLambda.class ? SerializedLambda.class : clazz;
+                        String name = objectStreamClass.getName();
+                        if ("java.lang.invoke.SerializedLambda".equals(name)) {
+                            return SerializedLambda.class;
+                        }
+                        try {
+                            return Class.forName(name, false, loader);
+                        } catch (Throwable ignore) {
+                        }
+                        return super.resolveClass(objectStreamClass);
                     }
                 }) {
                     SerializedLambda lambda = (SerializedLambda) objIn.readObject();
