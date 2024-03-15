@@ -288,7 +288,7 @@
             <dependency>
                 <groupId>org.hswebframework</groupId>
                 <artifactId>hsweb-utils</artifactId>
-                <version>3.0.2</version>
+                <version>3.0.4</version>
             </dependency>
 
             <dependency>
