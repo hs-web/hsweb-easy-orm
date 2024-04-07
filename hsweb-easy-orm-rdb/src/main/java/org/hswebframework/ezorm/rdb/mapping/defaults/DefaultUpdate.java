@@ -77,33 +77,38 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
 
     protected UpdateResultOperator doExecute() {
         return EventResultOperator.create(
-                () -> {
-                    if (null != instance) {
-                        applyColumns(instance);
+            () -> {
+                if (null != instance) {
+                    applyColumns(instance);
+                }
+                for (Map.Entry<String, Object> entry : tempInstance.entrySet()) {
+                    if (entry.getValue() != null) {
+                        operator.set(entry.getKey(), entry.getValue());
                     }
-                    return operator
-                            .where(dsl -> terms.forEach(dsl::accept))
-                            .execute();
-                },
-                UpdateResultOperator.class,
-                table,
-                MappingEventTypes.update_before,
-                MappingEventTypes.update_after,
-                contextKeyValues.toArray(new ContextKeyValue[0])
+                }
+                return operator
+                    .where(dsl -> terms.forEach(dsl::accept))
+                    .execute();
+            },
+            UpdateResultOperator.class,
+            table,
+            MappingEventTypes.update_before,
+            MappingEventTypes.update_after,
+            contextKeyValues.toArray(new ContextKeyValue[0])
         );
     }
 
     private void applyColumns(E instance) {
         mapping
-                .getColumnPropertyMapping()
-                .entrySet()
-                .stream()
-                .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
-                .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-                .forEach(e -> GlobalConfig
-                        .getPropertyOperator()
-                        .getProperty(instance, e.getValue())
-                        .ifPresent(val -> this.set(e.getKey(), val)));
+            .getColumnPropertyMapping()
+            .entrySet()
+            .stream()
+            .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
+            .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
+            .forEach(e -> GlobalConfig
+                .getPropertyOperator()
+                .getProperty(instance, e.getValue())
+                .ifPresent(val -> this.set(e.getKey(), val)));
     }
 
     @Override
@@ -214,7 +219,7 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
         if (param instanceof UpdateParam) {
             includes.addAll(param.getIncludes());
             excludes.addAll(param.getExcludes());
-            set((E)((UpdateParam<?>) param).getData());
+            set((E) ((UpdateParam<?>) param).getData());
         }
         return DSLUpdate.super.accept(param);
     }

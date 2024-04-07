@@ -19,8 +19,7 @@ public class BuildParameterUpdateOperator extends UpdateOperator {
         UpdateColumn updateColumn = new UpdateColumn();
         updateColumn.setColumn(column);
         updateColumn.setValue(value);
-        parameter.getColumns().add(updateColumn);
-        return this;
+        return set(updateColumn);
     }
 
     @Override
@@ -30,6 +29,7 @@ public class BuildParameterUpdateOperator extends UpdateOperator {
 
     @Override
     public UpdateOperator set(UpdateColumn column) {
+        parameter.getColumns().remove(column);
         parameter.getColumns().add(column);
         return this;
     }
