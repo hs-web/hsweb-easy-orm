@@ -15,9 +15,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTe
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperatorParameter;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Optional.*;
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.*;
@@ -33,7 +31,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
     public SqlRequest build(UpdateOperatorParameter parameter) {
 
         if (CollectionUtils.isEmpty(parameter.getColumns())) {
-           return EmptySqlRequest.INSTANCE;
+            return EmptySqlRequest.INSTANCE;
         }
         if (CollectionUtils.isEmpty(parameter.getWhere())) {
             throw new UnsupportedOperationException("unsupported no conditions update");
@@ -43,40 +41,47 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
 
         fragments.addSql("update", table.getFullName(), "set");
         int index = 0;
+        Set<RDBColumnMetadata> distinctColumns = new HashSet<>();
+
         for (UpdateColumn column : parameter.getColumns()) {
-            SqlFragments columnFragments = table.getColumn(column.getColumn())
-                    .filter(RDBColumnMetadata::isUpdatable)
-                    .<SqlFragments>map(columnMetadata -> {
-                        Object value = column.getValue();
-                        if (value == null) {
-                            return EmptySqlFragments.INSTANCE;
-                        }
+            SqlFragments columnFragments = table
+                .getColumn(column.getColumn())
+                .filter(RDBColumnMetadata::isUpdatable)
+                .<SqlFragments>map(columnMetadata -> {
+                    Object value = column.getValue();
+                    if (value == null) {
+                        return EmptySqlFragments.INSTANCE;
+                    }
+                    if (column instanceof NativeSql) {
+                        return PrepareSqlFragments
+                            .of()
+                            .addSql(((NativeSql) column).getSql())
+                            .addParameter(((NativeSql) column).getParameters());
+                    }
+                    //字段去重
+                    if (distinctColumns.add(columnMetadata)) {
+                        PrepareSqlFragments frg = PrepareSqlFragments
+                            .of()
+                            .addSql(columnMetadata.getQuoteName(), "=");
 
-                        PrepareSqlFragments sqlFragments = PrepareSqlFragments.of();
-                        sqlFragments.addSql(columnMetadata.getQuoteName(), "=");
-
-                        if (column instanceof NativeSql) {
-                            return PrepareSqlFragments.of()
-                                    .addSql(((NativeSql) column).getSql())
-                                    .addParameter(((NativeSql) column).getParameters());
+                        if (column.getFunction() != null) {
+                            return frg.addFragments(
+                                columnMetadata
+                                    .findFeatureNow(createFeatureId(column.getFunction()))
+                                    .create(columnMetadata.getName(), columnMetadata, column));
                         }
                         if (value instanceof NativeSql) {
-                            return PrepareSqlFragments.of()
-                                    .addSql(columnMetadata.getQuoteName(), "=")
-                                    .addSql(((NativeSql) column.getValue()).getSql())
-                                    .addParameter(((NativeSql) column.getValue()).getParameters());
+                            return frg
+                                .addSql(((NativeSql) column.getValue()).getSql())
+                                .addParameter(((NativeSql) column.getValue()).getParameters());
                         }
+                        return frg
+                            .addSql("?")
+                            .addParameter(columnMetadata.encode(value));
+                    }
+                    return EmptySqlFragments.INSTANCE;
 
-                        sqlFragments.addFragments(ofNullable(column.getFunction())
-                                .flatMap(function -> columnMetadata.findFeature(createFeatureId(function)))
-                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, column))
-                                .orElseGet(() -> PrepareSqlFragments.of()
-                                        .addSql("?")
-                                        .addParameter(columnMetadata.encode(value))));
-
-                        return sqlFragments;
-
-                    }).orElse(EmptySqlFragments.INSTANCE);
+                }).orElse(EmptySqlFragments.INSTANCE);
 
 
             if (columnFragments.isNotEmpty()) {
@@ -116,19 +121,19 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                 columnName = arr[1];
             } else {
                 return table.getForeignKey(arr[0])
-                        .flatMap(key -> key.getSource()
-                                .findFeature(ForeignKeyTermFragmentBuilder.ID)
-                                .map(builder -> builder.createFragments(table.getName(), key, createForeignKeyTerm(key, term))))
-                        .orElse(EmptySqlFragments.INSTANCE);
+                            .flatMap(key -> key.getSource()
+                                               .findFeature(ForeignKeyTermFragmentBuilder.ID)
+                                               .map(builder -> builder.createFragments(table.getName(), key, createForeignKeyTerm(key, term))))
+                            .orElse(EmptySqlFragments.INSTANCE);
             }
         }
 
         return table
-                .getColumn(columnName)
-                .flatMap(column -> column
-                        .findFeature(TermFragmentBuilder.createFeatureId(term.getTermType()))
-                        .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
-                .orElse(EmptySqlFragments.INSTANCE);
+            .getColumn(columnName)
+            .flatMap(column -> column
+                .findFeature(TermFragmentBuilder.createFeatureId(term.getTermType()))
+                .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
+            .orElse(EmptySqlFragments.INSTANCE);
     }
 
     protected List<Term> createForeignKeyTerm(ForeignKeyMetadata keyMetadata, Term term) {

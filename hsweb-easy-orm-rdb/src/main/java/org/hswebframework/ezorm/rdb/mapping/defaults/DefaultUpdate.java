@@ -17,6 +17,7 @@ import org.hswebframework.ezorm.rdb.mapping.events.EventResultOperator;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
@@ -83,7 +84,11 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
                 }
                 for (Map.Entry<String, Object> entry : tempInstance.entrySet()) {
                     if (entry.getValue() != null) {
-                        operator.set(entry.getKey(), entry.getValue());
+                        String column = mapping
+                            .getColumnByName(entry.getKey())
+                            .map(RDBColumnMetadata::getName)
+                            .orElse(entry.getKey());
+                        operator.set(column, entry.getValue());
                     }
                 }
                 return operator
@@ -134,6 +139,11 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     @Override
     public ME set(String column, Object value) {
         if (value != null) {
+            column = mapping
+                .getColumnByName(column)
+                .map(RDBColumnMetadata::getName)
+                .orElse(column);
+
             operator.set(column, value);
             tempInstance.put(column, value);
         }
@@ -142,9 +152,10 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
 
     @Override
     public ME setNull(String column) {
-        NullValue nullValue = table.getColumn(column)
-                                   .map(columnMetadata -> NullValue.of(columnMetadata.getType()))
-                                   .orElseGet(() -> NullValue.of(JdbcDataType.of(JDBCType.VARCHAR, String.class)));
+        NullValue nullValue = table
+            .getColumn(column)
+            .map(columnMetadata -> NullValue.of(columnMetadata.getType()))
+            .orElseGet(() -> NullValue.of(JdbcDataType.of(JDBCType.VARCHAR, String.class)));
         set(column, nullValue);
         return (ME) this;
     }

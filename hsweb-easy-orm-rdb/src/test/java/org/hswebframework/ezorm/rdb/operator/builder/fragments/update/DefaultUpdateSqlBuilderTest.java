@@ -55,12 +55,6 @@ public class DefaultUpdateSqlBuilderTest {
     public void testFunction() {
         UpdateOperatorParameter parameter = new UpdateOperatorParameter();
 
-        {
-            UpdateColumn column = new UpdateColumn();
-            column.setColumn("name");
-            column.setValue("admin");
-            parameter.getColumns().add(column);
-        }
 
         {
             UpdateColumn column = new UpdateColumn();
@@ -97,8 +91,8 @@ public class DefaultUpdateSqlBuilderTest {
 
         SqlRequest request = builder.build(parameter);
         System.out.println(request);
-        assertEquals(request.getSql(), "update PUBLIC.test set \"NAME\" = ? , \"NAME\" = name + ? where \"ID\" = ?");
-        assertArrayEquals(request.getParameters(), new Object[]{"admin", 1, "1234"});
+        assertEquals("update PUBLIC.test set \"NAME\" = name + ? where \"ID\" = ?",request.getSql());
+        assertArrayEquals(request.getParameters(), new Object[]{1, "1234"});
 
     }
 }
