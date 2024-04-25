@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
@@ -11,7 +10,6 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 抽象SQL条件片段构造器，实现{@link TermFragmentBuilder},提供常用的模版方法
@@ -78,6 +76,11 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
 
     protected String getTableName(String tableName, RDBColumnMetadata baseOn) {
         return getTable(tableName, baseOn).getFullName();
+    }
+
+    protected String buildColumnFullName(String column, RDBColumnMetadata baseOn) {
+        String table = baseOn.getOwner().getName();
+        return baseOn.getDialect().buildColumnFullName(table, column);
     }
 
     private Object convertValue(RDBColumnMetadata column, Object val) {
