@@ -78,7 +78,7 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         return getTable(tableName, baseOn).getFullName();
     }
 
-    protected String getColumnFullName(String column, RDBColumnMetadata baseOn) {
+    protected String buildColumnFullName(String column, RDBColumnMetadata baseOn) {
         String table = baseOn.getOwner().getName();
         return baseOn.getDialect().buildColumnFullName(table, column);
     }
