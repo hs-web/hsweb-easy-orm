@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.shaded.com.google.common.collect.Lists;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -572,6 +573,63 @@ public abstract class BasicReactiveTests {
             .expectNextCount(1)
             .verifyComplete();
 
+    }
+
+    @Test
+    public void testNotOrNULL() {
+        BasicTestEntity entity = BasicTestEntity
+                .builder()
+                .id("nullAddressId")
+                .name("name")
+                .state((byte) 1)
+                .build();
+
+        BasicTestEntity entity2 = BasicTestEntity
+                .builder()
+                .id("hasAddressId")
+                .name("name")
+                .state((byte) 1)
+                .addressId("0")
+                .build();
+
+        repository
+                .insert(Lists.newArrayList(entity, entity2))
+                .as(StepVerifier::create)
+                .expectNext(2)
+                .verifyComplete();
+
+
+        repository
+                .createQuery()
+                .notLike(BasicTestEntity::getAddressId, "no")
+                .count()
+                .as(StepVerifier::create)
+                .expectNext(2)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .not(BasicTestEntity::getAddressId, "no")
+                .count()
+                .as(StepVerifier::create)
+                .expectNext(2)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .notIn(BasicTestEntity::getAddressId, "no")
+                .count()
+                .as(StepVerifier::create)
+                .expectNext(2)
+                .verifyComplete();
+
+        repository
+                .createQuery()
+                .notBetween(BasicTestEntity::getAddressId, "1", "3")
+                .count()
+                .as(StepVerifier::create)
+                .expectNext(2)
+                .verifyComplete();
     }
 
 }

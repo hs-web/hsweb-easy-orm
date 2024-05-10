@@ -23,12 +23,6 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new CompositeExceptionTranslation()
                 .add(FeatureUtils.r2dbcIsAlive(), () -> PostgresqlR2DBCExceptionTranslation.of(this))
         );
-
-        // 覆盖通用的基本条件
-        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.not));
-        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.notIn));
-        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.nlike));
-        addFeature(new PostgresqlNotFragmentBuilder(RDBFeatures.notBetween));
     }
 
     @Override

@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.core.meta.ObjectMetadata;
 import org.hswebframework.ezorm.core.meta.ObjectType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.DefaultQuerySqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NotFillOrNullFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonAlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateTableSqlBuilder;
@@ -33,24 +34,26 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             /* 通用查询条件 */
             addFeature(RDBFeatures.eq);
             addFeature(RDBFeatures.is);
-            addFeature(RDBFeatures.not);
-            addFeature(RDBFeatures.notEq);
             addFeature(RDBFeatures.gt);
             addFeature(RDBFeatures.gte);
             addFeature(RDBFeatures.lt);
             addFeature(RDBFeatures.lte);
             addFeature(RDBFeatures.like);
-            addFeature(RDBFeatures.nlike);
 
             addFeature(RDBFeatures.in);
-            addFeature(RDBFeatures.notIn);
             addFeature(RDBFeatures.between);
-            addFeature(RDBFeatures.notBetween);
             addFeature(RDBFeatures.isNull);
             addFeature(RDBFeatures.notNull);
             addFeature(RDBFeatures.isEmpty);
             addFeature(RDBFeatures.notEmpty);
             addFeature(RDBFeatures.nEmpty);
+
+            //不匹配查询支持包含空值
+            addFeature(new NotFillOrNullFragmentBuilder(RDBFeatures.not));
+            addFeature(new NotFillOrNullFragmentBuilder(RDBFeatures.notEq));
+            addFeature(new NotFillOrNullFragmentBuilder(RDBFeatures.nlike));
+            addFeature(new NotFillOrNullFragmentBuilder(RDBFeatures.notIn));
+            addFeature(new NotFillOrNullFragmentBuilder(RDBFeatures.notBetween));
 
 
             //自动关联外键条件
