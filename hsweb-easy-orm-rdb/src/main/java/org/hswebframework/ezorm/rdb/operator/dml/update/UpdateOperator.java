@@ -41,6 +41,8 @@ public abstract class UpdateOperator {
 
     public abstract UpdateOperator set(String column, Object value);
     public abstract UpdateOperator set(UpdateColumn column);
+
+    @Deprecated
     public abstract UpdateOperator set(Object entity);
 
     public abstract UpdateOperator where(Consumer<Conditional<?>> dsl);

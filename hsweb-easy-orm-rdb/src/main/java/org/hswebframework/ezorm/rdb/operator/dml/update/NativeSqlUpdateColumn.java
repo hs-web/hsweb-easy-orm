@@ -1,11 +1,13 @@
 package org.hswebframework.ezorm.rdb.operator.dml.update;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true, exclude = {"sql", "parameters"})
 public class NativeSqlUpdateColumn extends UpdateColumn implements NativeSql {
 
     private String sql;

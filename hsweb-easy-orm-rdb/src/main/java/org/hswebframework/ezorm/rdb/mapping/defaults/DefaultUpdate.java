@@ -88,7 +88,12 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
                             .getColumnByName(entry.getKey())
                             .map(RDBColumnMetadata::getName)
                             .orElse(entry.getKey());
-                        operator.set(column, entry.getValue());
+                        if (excludes.contains(column)) {
+                            //忽略修改
+                            operator.set(column, null);
+                        } else {
+                            operator.set(column, entry.getValue());
+                        }
                     }
                 }
                 return operator
