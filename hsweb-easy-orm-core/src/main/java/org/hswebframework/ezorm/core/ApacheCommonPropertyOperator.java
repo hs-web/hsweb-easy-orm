@@ -37,6 +37,10 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     @SneakyThrows
     public void setProperty(Object object, String name, Object value) {
         try {
+            if (value == null) {
+                propertyUtils.setProperty(object, name, null);
+                return;
+            }
             BeanUtils.setProperty(object, name, value);
         } catch (Exception err) {
             log.warn(err.getMessage(), err);
@@ -63,8 +67,14 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
             if (instance instanceof Map) {
                 @SuppressWarnings("all")
                 Map<Object, Object> mapValue = ((Map<Object, Object>) instance);
-                for (PropertyDescriptor propertyDescriptor : BeanUtilsBean.getInstance().getPropertyUtils().getPropertyDescriptors(from)) {
-                    mapValue.put(propertyDescriptor.getName(), BeanUtilsBean.getInstance().getPropertyUtils().getProperty(from, propertyDescriptor.getName()));
+                for (PropertyDescriptor propertyDescriptor : BeanUtilsBean
+                    .getInstance()
+                    .getPropertyUtils()
+                    .getPropertyDescriptors(from)) {
+                    mapValue.put(propertyDescriptor.getName(), BeanUtilsBean
+                        .getInstance()
+                        .getPropertyUtils()
+                        .getProperty(from, propertyDescriptor.getName()));
                 }
                 return instance;
             }
