@@ -137,12 +137,11 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         if (name == null || name.isEmpty()) {
             return null;
         }
-        char firstChar = name.charAt(0);
 
-        if (firstChar == '`' || firstChar == '"' || firstChar == '[' ||
-            name.startsWith(dialect.getQuoteStart())) {
-
-            return new String(name.toCharArray(), 1, name.length() - 2);
+        if (name.startsWith(dialect.getQuoteStart())) {
+            return name
+                .replace(dialect.getQuoteStart(), "")
+                .replace(dialect.getQuoteEnd(), "");
         }
 
         return name;
