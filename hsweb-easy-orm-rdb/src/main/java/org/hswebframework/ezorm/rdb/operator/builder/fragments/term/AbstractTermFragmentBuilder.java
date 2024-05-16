@@ -137,13 +137,9 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         if (name == null || name.isEmpty()) {
             return null;
         }
-
         if (name.startsWith(dialect.getQuoteStart())) {
-            return name
-                .replace(dialect.getQuoteStart(), "")
-                .replace(dialect.getQuoteEnd(), "");
+            return name.substring(dialect.getQuoteStart().length(), name.length() - dialect.getQuoteEnd().length());
         }
-
         return name;
     }
 }
