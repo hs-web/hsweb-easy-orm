@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
@@ -114,5 +115,31 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
                .addParameter(value);
         }
         return sql;
+    }
+
+
+    /**
+     * 根据字段全名获取表别名
+     *
+     * @param columnFullName 列全名
+     * @param dialect        数据库方言
+     * @return 表别名
+     */
+    protected static Optional<String> parseTablePlainName(String columnFullName, Dialect dialect) {
+        if (columnFullName.contains(".")) {
+            String[] split = parsePlainName(columnFullName, dialect).split("\\.");
+            return Optional.of(split[0]);
+        }
+        return Optional.empty();
+    }
+
+    protected static String parsePlainName(String name, Dialect dialect) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        if (name.startsWith(dialect.getQuoteStart())) {
+            return name.substring(dialect.getQuoteStart().length(), name.length() - dialect.getQuoteEnd().length());
+        }
+        return name;
     }
 }
