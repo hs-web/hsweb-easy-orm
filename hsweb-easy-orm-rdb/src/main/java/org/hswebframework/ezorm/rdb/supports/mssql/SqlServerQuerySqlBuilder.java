@@ -20,7 +20,7 @@ class SqlServerQuerySqlBuilder extends DefaultQuerySqlBuilder {
     protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
         BlockSqlFragments fragments = BlockSqlFragments.of();
 
-        fragments.addBlock(FragmentBlock.before, "select");
+        fragments.addBlock(FragmentBlock.before, SELECT);
 
         fragments.addBlock(FragmentBlock.selectColumn, select(parameter, metadata)
                 .orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
@@ -38,16 +38,19 @@ class SqlServerQuerySqlBuilder extends DefaultQuerySqlBuilder {
 
         where(parameter, metadata)
                 .ifPresent(where ->
-                                   fragments.addBlock(FragmentBlock.where, "where")
+                                   fragments.addBlock(FragmentBlock.where, WHERE)
                                             .addBlock(FragmentBlock.where, where));
 
         //group by
-
+        groupBy(parameter, metadata)
+            .ifPresent(groupBy ->
+                           fragments.addBlock(FragmentBlock.groupBy, GROUP_BY)
+                                    .addBlock(FragmentBlock.groupBy, groupBy));
         //having
 
         //order by
         orderBy(parameter, metadata)
-                .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, "order by")
+                .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, ORDER_BY)
                                              .addBlock(FragmentBlock.orderBy, order));
 
         //分页

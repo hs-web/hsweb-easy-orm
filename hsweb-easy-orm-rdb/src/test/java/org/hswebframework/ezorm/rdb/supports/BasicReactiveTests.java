@@ -350,17 +350,18 @@ public abstract class BasicReactiveTests {
 
     @Test
     public void testReactiveRepositorySave() {
-        BasicTestEntity entity = BasicTestEntity.builder()
-                                                .id("test_id_save")
-                                                .balance(1000L)
-                                                .name("test")
-                                                .createTime(new Date())
-                                                .tags(Arrays.asList("a", "b", "c", "d"))
-                                                .state((byte) 1)
-                                                .addressId("test")
-                                                .stateEnum(StateEnum.enabled)
-                                                .enabled(true)
-                                                .build();
+        BasicTestEntity entity = BasicTestEntity
+            .builder()
+            .id("test_id_save")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .addressId("test")
+            .stateEnum(StateEnum.enabled)
+            .enabled(true)
+            .build();
 
         repository.save(Mono.just(entity))
                   .map(SaveResult::getTotal)
@@ -578,58 +579,58 @@ public abstract class BasicReactiveTests {
     @Test
     public void testNotOrNULL() {
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("nullAddressId")
-                .name("name")
-                .state((byte) 1)
-                .build();
+            .builder()
+            .id("nullAddressId")
+            .name("name")
+            .state((byte) 1)
+            .build();
 
         BasicTestEntity entity2 = BasicTestEntity
-                .builder()
-                .id("hasAddressId")
-                .name("name")
-                .state((byte) 1)
-                .addressId("0")
-                .build();
+            .builder()
+            .id("hasAddressId")
+            .name("name")
+            .state((byte) 1)
+            .addressId("0")
+            .build();
 
         repository
-                .insert(Lists.newArrayList(entity, entity2))
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+            .insert(Lists.newArrayList(entity, entity2))
+            .as(StepVerifier::create)
+            .expectNext(2)
+            .verifyComplete();
 
 
         repository
-                .createQuery()
-                .notLike(BasicTestEntity::getAddressId, "no")
-                .count()
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+            .createQuery()
+            .notLike(BasicTestEntity::getAddressId, "no")
+            .count()
+            .as(StepVerifier::create)
+            .expectNext(2)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .not(BasicTestEntity::getAddressId, "no")
-                .count()
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+            .createQuery()
+            .not(BasicTestEntity::getAddressId, "no")
+            .count()
+            .as(StepVerifier::create)
+            .expectNext(2)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .notIn(BasicTestEntity::getAddressId, "no")
-                .count()
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+            .createQuery()
+            .notIn(BasicTestEntity::getAddressId, "no")
+            .count()
+            .as(StepVerifier::create)
+            .expectNext(2)
+            .verifyComplete();
 
         repository
-                .createQuery()
-                .notBetween(BasicTestEntity::getAddressId, "1", "3")
-                .count()
-                .as(StepVerifier::create)
-                .expectNext(2)
-                .verifyComplete();
+            .createQuery()
+            .notBetween(BasicTestEntity::getAddressId, "1", "3")
+            .count()
+            .as(StepVerifier::create)
+            .expectNext(2)
+            .verifyComplete();
     }
 
 }

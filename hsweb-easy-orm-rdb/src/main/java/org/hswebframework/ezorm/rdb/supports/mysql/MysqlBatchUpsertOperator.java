@@ -10,8 +10,10 @@ import org.hswebframework.ezorm.rdb.metadata.ConstraintType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.AppendableSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
@@ -115,6 +117,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         }
     }
 
+    static SqlFragments PREFIX = SqlFragments.of("on duplicate key update");
     private class MysqlUpsertBatchInsertSqlBuilder extends BatchInsertSqlBuilder {
 
         public MysqlUpsertBatchInsertSqlBuilder(RDBTableMetadata table) {
@@ -122,7 +125,7 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         }
 
         @Override
-        protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
+        protected AppendableSqlFragments beforeBuild(InsertOperatorParameter parameter, AppendableSqlFragments fragments) {
 
             ((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict |= isDoNoThing(parameter.getColumns());
 
@@ -134,12 +137,17 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
         }
 
         @Override
-        protected PrepareSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, PrepareSqlFragments sql) {
+        protected int computeSqlSize(int columnSize, int valueSize) {
+            return super.computeSqlSize(columnSize, valueSize) + columnSize * 3 + 2;
+        }
+
+        @Override
+        protected AppendableSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, AppendableSqlFragments sql) {
 
             if (((MysqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 return sql;
             }
-            sql.addSql("on duplicate key update");
+            sql.add(PREFIX);
 
 
             int index = 0;
@@ -159,10 +167,11 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
                     continue;
                 }
                 if (more) {
-                    sql.addSql(",");
+                    sql.add(SqlFragments.COMMA);
                 }
                 more = true;
-                sql.addSql(columnMetadata.getQuoteName()).addSql("=");
+                sql.addSql(columnMetadata.getQuoteName())
+                   .add(SqlFragments.EQUAL);
                 sql.addSql(
                         "coalesce(", "VALUES(", columnMetadata.getQuoteName(), ")", ",", columnMetadata.getFullName(), ")"
                 );

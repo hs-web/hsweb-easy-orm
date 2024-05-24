@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor(staticName = "of")
 @AllArgsConstructor(staticName = "of")
-public class PrepareSqlFragments implements SqlFragments {
+public class PrepareSqlFragments implements AppendableSqlFragments {
 
     public static PrepareSqlFragments of(String sql, Object... parameter) {
         return PrepareSqlFragments.of()

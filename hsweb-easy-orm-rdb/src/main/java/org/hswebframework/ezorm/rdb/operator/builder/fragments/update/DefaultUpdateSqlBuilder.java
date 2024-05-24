@@ -37,65 +37,68 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
             throw new UnsupportedOperationException("unsupported no conditions update");
         }
 
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        BatchSqlFragments fragments = new BatchSqlFragments();
 
         fragments.addSql("update", table.getFullName(), "set");
         int index = 0;
         Set<RDBColumnMetadata> distinctColumns = new HashSet<>();
 
         for (UpdateColumn column : parameter.getColumns()) {
-            SqlFragments columnFragments = table
-                .getColumn(column.getColumn())
-                .filter(RDBColumnMetadata::isUpdatable)
-                .<SqlFragments>map(columnMetadata -> {
-                    Object value = column.getValue();
-                    if (value == null) {
-                        return EmptySqlFragments.INSTANCE;
-                    }
-                    if (column instanceof NativeSql) {
-                        return PrepareSqlFragments
-                            .of()
-                            .addSql(((NativeSql) column).getSql())
-                            .addParameter(((NativeSql) column).getParameters());
-                    }
-                    //字段去重
-                    if (distinctColumns.add(columnMetadata)) {
-                        PrepareSqlFragments frg = PrepareSqlFragments
-                            .of()
-                            .addSql(columnMetadata.getQuoteName(), "=");
-
-                        if (column.getFunction() != null) {
-                            return frg.addFragments(
+            SqlFragments columnFragments = EmptySqlFragments.INSTANCE;
+            RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
+            if (columnMetadata != null && columnMetadata.isUpdatable()) {
+                Object value = column.getValue();
+                if (value == null) {
+                    continue;
+                }
+                if (column instanceof NativeSql) {
+                    columnFragments = SimpleSqlFragments
+                        .of(
+                            ((NativeSql) column).getSql(),
+                            ((NativeSql) column).getParameters()
+                        );
+                }
+                //字段去重
+                else if (distinctColumns.add(columnMetadata)) {
+                    //函数
+                    if (column.getFunction() != null) {
+                        columnFragments = new BatchSqlFragments()
+                            .addSql(columnMetadata.getQuoteName(), "=")
+                            .add(
                                 columnMetadata
                                     .findFeatureNow(createFeatureId(column.getFunction()))
-                                    .create(columnMetadata.getName(), columnMetadata, column));
-                        }
-                        if (value instanceof NativeSql) {
-                            return frg
-                                .addSql(((NativeSql) column.getValue()).getSql())
-                                .addParameter(((NativeSql) column.getValue()).getParameters());
-                        }
-                        return frg
-                            .addSql("?")
-                            .addParameter(columnMetadata.encode(value));
+                                    .create(columnMetadata.getName(), columnMetadata, column)
+                            );
                     }
-                    return EmptySqlFragments.INSTANCE;
+                    //原生SQL
+                    else if (value instanceof NativeSql) {
+                        columnFragments = SimpleSqlFragments
+                            .of(
+                                Arrays.asList(columnMetadata.getQuoteName(), "=", ((NativeSql) column.getValue()).getSql()),
+                                Arrays.asList(((NativeSql) column.getValue()).getParameters())
+                            );
+                    }
+                    //  = ?
+                    else {
+                        columnFragments = SimpleSqlFragments
+                            .of(Arrays.asList(columnMetadata.getQuoteName(), "= ?"),
+                                Collections.singletonList(columnMetadata.encode(value)));
+                    }
 
-                }).orElse(EmptySqlFragments.INSTANCE);
-
+                }
+            }
 
             if (columnFragments.isNotEmpty()) {
                 if (index++ != 0) {
                     fragments.addSql(",");
                 }
-                fragments.addFragments(columnFragments);
-
+                fragments.add(columnFragments);
             }
         }
         if (index == 0) {
             throw new UnsupportedOperationException("No columns are updated");
         }
-        fragments.addSql("where");
+        fragments.add(SqlFragments.WHERE);
 
         SqlFragments where = createTermFragments(parameter, parameter.getWhere());
 
@@ -103,7 +106,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
             throw new UnsupportedOperationException("Unsupported No Conditions update");
         }
 
-        fragments.addFragments(where);
+        fragments.add(where);
 
         return fragments.toRequest();
     }

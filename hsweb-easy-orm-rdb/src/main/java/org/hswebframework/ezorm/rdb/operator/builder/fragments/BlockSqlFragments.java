@@ -2,9 +2,9 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import lombok.NoArgsConstructor;
 import org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock;
+import org.hswebframework.ezorm.rdb.utils.FlatList;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @NoArgsConstructor(staticName = "of")
 public class BlockSqlFragments implements SqlFragments {
@@ -18,30 +18,27 @@ public class BlockSqlFragments implements SqlFragments {
 
     @Override
     public List<String> getSql() {
-
-        List<String> sql = new ArrayList<>(blocks.size() * 5);
+        List<List<String>> sql = new ArrayList<>(blocks.size());
 
         for (LinkedList<SqlFragments> value : blocks.values()) {
             for (SqlFragments fragments : value) {
-                sql.addAll(fragments.getSql());
+                sql.add(fragments.getSql());
             }
         }
 
-        return sql;
+        return new FlatList<>(sql);
     }
 
     @Override
     public List<Object> getParameters() {
-        List<Object> sql = new ArrayList<>(blocks.size() * 5);
+        List<List<Object>> params = new ArrayList<>(blocks.size());
 
         for (LinkedList<SqlFragments> value : blocks.values()) {
             for (SqlFragments fragments : value) {
-                sql.addAll(fragments.getParameters());
+                params.add(fragments.getParameters());
             }
         }
-
-        return sql;
-
+        return new FlatList<>(params);
     }
 
 

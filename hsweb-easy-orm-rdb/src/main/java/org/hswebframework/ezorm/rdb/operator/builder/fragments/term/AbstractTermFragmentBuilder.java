@@ -6,9 +6,7 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 
 import java.util.*;
 
@@ -20,13 +18,35 @@ import java.util.*;
  * @since 4.0
  */
 @AllArgsConstructor
+@Getter
 public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder {
 
-    @Getter
     private final String termType;
 
-    @Getter
     private final String name;
+
+    // ? 缓存,避免重复创建
+    static SqlFragments[] Q_M_CACHE = new SqlFragments[200];
+
+    static {
+        for (int i = 0; i < Q_M_CACHE.length; i++) {
+            String[] arr = new String[i];
+            Arrays.fill(arr, "?");
+            Q_M_CACHE[i] = SqlFragments.single(String.join(",", arr));
+        }
+    }
+
+    protected SqlFragments createQuestionMarks(int len) {
+        if (len == 0) {
+            return EmptySqlFragments.INSTANCE;
+        }
+        if (len < Q_M_CACHE.length) {
+            return Q_M_CACHE[len];
+        }
+        String[] arr = new String[len];
+        Arrays.fill(arr, "?");
+        return SqlFragments.single(String.join(",", arr));
+    }
 
     /**
      * 尝试转换条件值为List,如果值为字符串则按,分割.
@@ -69,10 +89,10 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
 
     protected TableOrViewMetadata getTable(String tableName, RDBColumnMetadata baseOn) {
         return baseOn
-                .getOwner()
-                .getSchema()
-                .getTableOrView(tableName)
-                .orElseThrow(() -> new UnsupportedOperationException("table " + tableName + " does not exist"));
+            .getOwner()
+            .getSchema()
+            .getTableOrView(tableName)
+            .orElseThrow(() -> new UnsupportedOperationException("table " + tableName + " does not exist"));
     }
 
     protected String getTableName(String tableName, RDBColumnMetadata baseOn) {
@@ -105,13 +125,13 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         return convertValue(column, term.getValue());
     }
 
-    protected PrepareSqlFragments appendPrepareOrNative(PrepareSqlFragments sql, Object value) {
+    protected <T extends AppendableSqlFragments> T appendPrepareOrNative(T sql, Object value) {
         if (value instanceof NativeSql) {
             NativeSql nativeSql = ((NativeSql) value);
             sql.addSql(nativeSql.getSql())
                .addParameter(nativeSql.getParameters());
         } else {
-            sql.addSql("?")
+            sql.add(SqlFragments.QUESTION_MARK)
                .addParameter(value);
         }
         return sql;

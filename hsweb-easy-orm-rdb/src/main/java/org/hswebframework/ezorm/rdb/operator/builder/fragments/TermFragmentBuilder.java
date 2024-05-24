@@ -28,12 +28,12 @@ public interface TermFragmentBuilder extends Feature {
      * @return FeatureId
      */
     static FeatureId<TermFragmentBuilder> createFeatureId(String termType) {
-        return FeatureId.of(RDBFeatureType.termType.getFeatureId(termType.toLowerCase()));
+        return DynamicFeatures.lookup(RDBFeatureType.termType,termType);
     }
 
     @Override
     default String getId() {
-        return getType().getFeatureId(getTermType().toLowerCase());
+        return createFeatureId(getTermType()).getId();
     }
 
     @Override

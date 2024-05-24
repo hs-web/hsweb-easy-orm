@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -21,6 +22,8 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
     private final boolean splitLargeParameter;
 
+    private final SqlFragments SYMBOL;
+
     public InTermFragmentBuilder(String termType, String name, boolean isNot) {
         this(termType, name, isNot, SPLIT_LARGE);
     }
@@ -30,6 +33,7 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
         not = isNot;
         symbol = isNot ? "not in(" : "in(";
         this.splitLargeParameter = splitLargeParameter;
+        this.SYMBOL = SqlFragments.single(symbol);
     }
 
     @Override
@@ -41,47 +45,49 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
         }
         int len = value.size();
 
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
-        if (!splitLargeParameter) {
-            String[] arr = new String[len];
-            Arrays.fill(arr, "?");
+        if (!splitLargeParameter || len < SPLIT_LARGE_SIZE) {
+            BatchSqlFragments fragments = new BatchSqlFragments(5, 1);
             fragments.addSql(columnFullName)
-                     .addSql(symbol)
-                     .addSql("(")
-                     .addSql(arr)
-                     .addSql(")")
+                     .add(SYMBOL)
+                     .add(createQuestionMarks(len))
+                     .add(SqlFragments.RIGHT_BRACKET)
                      .addParameter(value);
             return fragments;
         }
+        BatchSqlFragments fragments = new BatchSqlFragments(len * 4, 1);
         //参数数量大于 500时,使用(column in (?,?,?) or column in(?,?,?))
         if (len > SPLIT_LARGE_SIZE) {
-            fragments.addSql("(");
+            fragments.add(SqlFragments.LEFT_BRACKET);
         }
-        fragments.addSql(columnFullName)
-                 .addSql(symbol);
+        fragments
+            .addSql(columnFullName)
+            .addSql(symbol);
 
         int flag = 0;
         for (int i = 0; i < len; i++) {
             if (flag++ != 0) {
-                fragments.addSql(",");
+                fragments.add(SqlFragments.COMMA);
             }
-            fragments.addSql("?");
+            fragments.add(SqlFragments.QUESTION_MARK);
             if (flag > SPLIT_LARGE_SIZE && i != len - 1) {
                 flag = 0;
                 if (not) {
-                    fragments.addSql(") and");
+                    fragments
+                        .add(SqlFragments.RIGHT_BRACKET)
+                        .add(SqlFragments.AND);
                 } else {
-                    fragments.addSql(") or");
+                    fragments
+                        .add(SqlFragments.RIGHT_BRACKET)
+                        .add(SqlFragments.OR);
                 }
-                fragments.addSql(columnFullName)
-                         .addSql(symbol);
+                fragments.addSql(columnFullName, symbol);
             }
         }
         if (len > SPLIT_LARGE_SIZE) {
-            fragments.addSql(")");
+            fragments.add(SqlFragments.RIGHT_BRACKET);
         }
         return fragments
-                .addSql(")")
-                .addParameter(value);
+            .add(SqlFragments.RIGHT_BRACKET)
+            .addParameter(value);
     }
 }

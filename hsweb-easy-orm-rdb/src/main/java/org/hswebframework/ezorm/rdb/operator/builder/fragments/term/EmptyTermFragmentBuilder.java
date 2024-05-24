@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 public class EmptyTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
@@ -14,10 +15,9 @@ public class EmptyTermFragmentBuilder extends AbstractTermFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
+    public SqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
 
         // column = ?
-        return PrepareSqlFragments.of()
-                .addSql(columnFullName, symbol, "''");
+        return SqlFragments.of(columnFullName, symbol, "''");
     }
 }

@@ -58,11 +58,8 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
     }
 
     protected SqlFragments from(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
-        return PrepareSqlFragments
-            .of()
-            .addSql("from")
-            .addSql(metadata.getFullName())
-            .addSql(parameter.getFromAlias());
+        return SqlFragments
+            .of("from", metadata.getFullName(), parameter.getFromAlias());
     }
 
     protected Optional<SqlFragments> groupBy(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
@@ -75,7 +72,7 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         for (SelectColumn column : groupBy) {
             if (column instanceof NativeSql) {
                 sql.addSql(((NativeSql) column).getSql())
-                    .addParameter(((NativeSql) column).getParameters());
+                   .addParameter(((NativeSql) column).getParameters());
             } else {
                 RDBColumnMetadata columnMetadata = metadata
                     .getColumn(column.getColumn())
@@ -102,11 +99,17 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         return Optional.of(sql);
     }
 
+    protected static final SqlFragments SELECT = SqlFragments.single("select");
+    protected static final SqlFragments WHERE = SqlFragments.single("where");
+    protected static final SqlFragments GROUP_BY = SqlFragments.single("group by");
+    protected static final SqlFragments ORDER_BY = SqlFragments.single("order by");
+    protected static final SqlFragments FOR_UPDATE = SqlFragments.single("for update");
+
 
     protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
         BlockSqlFragments fragments = BlockSqlFragments.of();
 
-        fragments.addBlock(FragmentBlock.before, "select");
+        fragments.addBlock(FragmentBlock.before, SELECT);
 
         fragments.addBlock(FragmentBlock.selectColumn, select(parameter, metadata)
             .orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
@@ -120,23 +123,23 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
         where(parameter, metadata)
             .ifPresent(where ->
-                           fragments.addBlock(FragmentBlock.where, "where")
+                           fragments.addBlock(FragmentBlock.where, WHERE)
                                     .addBlock(FragmentBlock.where, where));
 
         //group by
         groupBy(parameter, metadata)
             .ifPresent(groupBy ->
-                           fragments.addBlock(FragmentBlock.groupBy, "group by")
+                           fragments.addBlock(FragmentBlock.groupBy, GROUP_BY)
                                     .addBlock(FragmentBlock.groupBy, groupBy));
         //having
 
         //order by
         orderBy(parameter, metadata)
-            .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, "order by")
+            .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, ORDER_BY)
                                          .addBlock(FragmentBlock.orderBy, order));
 
         if (Boolean.TRUE.equals(parameter.getForUpdate())) {
-            fragments.addBlock(FragmentBlock.after, PrepareSqlFragments.of().addSql("for update"));
+            fragments.addBlock(FragmentBlock.after, FOR_UPDATE);
         }
         //分页
         else if (parameter.getPageIndex() != null && parameter.getPageSize() != null) {

@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.metadata;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -76,6 +77,19 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     }
 
+    @Setter(AccessLevel.PRIVATE)
+    private String quoteName, fullName;
+
+    @Override
+    public String getQuoteName() {
+        return quoteName == null ? quoteName = TableOrViewMetadata.super.getQuoteName() : quoteName;
+    }
+
+    @Override
+    public String getFullName() {
+        return fullName == null ? fullName = TableOrViewMetadata.super.getFullName() : fullName;
+    }
+
     public boolean isTable() {
         return this instanceof RDBTableMetadata;
     }
@@ -110,25 +124,25 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     public List<RDBColumnMetadata> getColumns() {
         return new ArrayList<>(allColumns
-                                       .values()
-                                       .stream()
-                                       .sorted()
-                                       .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
-                                       .values());
+                                   .values()
+                                   .stream()
+                                   .sorted()
+                                   .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
+                                   .values());
     }
 
     @Override
     public List<RDBColumnMetadata> findColumns() {
         return allColumns
-                .values()
+            .values()
+            .stream()
+            .flatMap(c -> getForeignKey()
                 .stream()
-                .flatMap(c -> getForeignKey()
-                        .stream()
-                        .map(ForeignKeyMetadata::getTarget)
-                        .map(TableOrViewMetadata::getColumns)
-                        .flatMap(Collection::stream))
-                .sorted()
-                .collect(Collectors.toList());
+                .map(ForeignKeyMetadata::getTarget)
+                .map(TableOrViewMetadata::getColumns)
+                .flatMap(Collection::stream))
+            .sorted()
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -142,9 +156,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     public Optional<RDBColumnMetadata> findColumn(String name) {
         return ofNullable(name)
-                .map(this::getColumn)
-                .filter(Optional::isPresent)
-                .orElseGet(() -> findNestColumn(name));
+            .map(this::getColumn)
+            .filter(Optional::isPresent)
+            .orElseGet(() -> findNestColumn(name));
     }
 
     private Optional<RDBColumnMetadata> findNestColumn(String name) {
@@ -183,9 +197,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     private Optional<RDBColumnMetadata> findColumnFromSchema(RDBSchemaMetadata schema, String tableName, String column) {
         return of(schema.getTableOrView(tableName)
                         .flatMap(meta -> meta.getColumn(column)))
-                .filter(Optional::isPresent)
-                .orElseGet(() -> getForeignKey(tableName) //查找外键关联信息
-                                                          .flatMap(key -> key.getTarget().getColumn(column)));
+            .filter(Optional::isPresent)
+            .orElseGet(() -> getForeignKey(tableName) //查找外键关联信息
+                                                      .flatMap(key -> key.getTarget().getColumn(column)));
     }
 
     @Override
@@ -196,9 +210,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     public Optional<ForeignKeyMetadata> getForeignKey(String targetName) {
         return foreignKey
-                .stream()
-                .filter(key -> key.getTarget().equalsNameOrAlias(targetName) || key.equalsNameOrAlias(targetName))
-                .findFirst();
+            .stream()
+            .filter(key -> key.getTarget().equalsNameOrAlias(targetName) || key.equalsNameOrAlias(targetName))
+            .findFirst();
     }
 
     public void addFeature(Feature feature) {
@@ -208,7 +222,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     public Dialect getDialect() {
         return getSchema()
-                .getDialect();
+            .getDialect();
     }
 
     @Override

@@ -8,10 +8,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.InsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
@@ -28,7 +25,7 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
 
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        BatchSqlFragments fragments = new BatchSqlFragments();
 
 
         Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>();
