@@ -1,15 +1,13 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.update;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
-import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateColumn;
@@ -17,31 +15,42 @@ import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperatorParameter;
 
 import java.util.*;
 
-import static java.util.Optional.*;
-import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.*;
+import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.createFeatureId;
 
-@AllArgsConstructor(staticName = "of")
 @SuppressWarnings("all")
 public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<UpdateOperatorParameter> implements UpdateSqlBuilder {
 
     @Getter
     private RDBTableMetadata table;
 
+    private SqlFragments PREFIX = null;
+
+    private DefaultUpdateSqlBuilder(RDBTableMetadata table) {
+        this.table = table;
+    }
+
+    public static DefaultUpdateSqlBuilder of(RDBTableMetadata table) {
+        return new DefaultUpdateSqlBuilder(table);
+    }
+
+
     @Override
     public SqlRequest build(UpdateOperatorParameter parameter) {
-
+        if (PREFIX == null) {
+            PREFIX = SqlFragments.of("update", table.getFullName(), "set");
+        }
         if (CollectionUtils.isEmpty(parameter.getColumns())) {
             return EmptySqlRequest.INSTANCE;
         }
         if (CollectionUtils.isEmpty(parameter.getWhere())) {
             throw new UnsupportedOperationException("unsupported no conditions update");
         }
-
-        BatchSqlFragments fragments = new BatchSqlFragments();
-
-        fragments.addSql("update", table.getFullName(), "set");
-        int index = 0;
         Set<RDBColumnMetadata> distinctColumns = new HashSet<>();
+
+        BatchSqlFragments fragments = new BatchSqlFragments(3 + distinctColumns.size(), distinctColumns.size());
+
+        fragments.add(PREFIX);
+        int index = 0;
 
         for (UpdateColumn column : parameter.getColumns()) {
             SqlFragments columnFragments = EmptySqlFragments.INSTANCE;
@@ -62,7 +71,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                 else if (distinctColumns.add(columnMetadata)) {
                     //函数
                     if (column.getFunction() != null) {
-                        columnFragments = new BatchSqlFragments()
+                        columnFragments = new BatchSqlFragments(2,1)
                             .addSql(columnMetadata.getQuoteName(), "=")
                             .add(
                                 columnMetadata
@@ -90,7 +99,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
 
             if (columnFragments.isNotEmpty()) {
                 if (index++ != 0) {
-                    fragments.addSql(",");
+                    fragments.add(SqlFragments.COMMA);
                 }
                 fragments.add(columnFragments);
             }

@@ -274,7 +274,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
         return this
             .createFragments(columnFullName, columnMetadata, selectColumn)
-            .map(fragments -> new BatchSqlFragments()
+            .map(fragments -> new BatchSqlFragments(2,0)
                 .add(fragments)
                 .add(SqlFragments.of("as", getAlias(null, finalColumnMetadata, selectColumn))))
             .orElse(null);

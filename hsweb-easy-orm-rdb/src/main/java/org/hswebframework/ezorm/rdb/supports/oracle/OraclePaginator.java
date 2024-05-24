@@ -23,7 +23,7 @@ public class OraclePaginator implements Paginator {
             return fragments;
         }
 
-        BatchSqlFragments paging = new BatchSqlFragments();
+        BatchSqlFragments paging = new BatchSqlFragments(3,2);
 
         paging.add(PREFIX)
               .add(fragments)

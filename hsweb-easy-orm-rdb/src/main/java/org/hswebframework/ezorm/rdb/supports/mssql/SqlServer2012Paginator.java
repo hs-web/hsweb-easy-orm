@@ -32,7 +32,7 @@ public class SqlServer2012Paginator implements Paginator {
             && !fragments.getSql().contains("ORDER BY");
 
         if (!(fragments instanceof AppendableSqlFragments)) {
-            fragments = new BatchSqlFragments().add(fragments);
+            fragments = new BatchSqlFragments(3,2).add(fragments);
         }
 
         AppendableSqlFragments sqlFragments = ((AppendableSqlFragments) fragments);

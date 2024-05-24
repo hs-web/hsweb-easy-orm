@@ -18,7 +18,7 @@ public class PostgresqlPaginator implements Paginator {
         }
 
         if (!(fragments instanceof AppendableSqlFragments)) {
-            fragments = new BatchSqlFragments().add(fragments);
+            fragments = new BatchSqlFragments(2,2).add(fragments);
         }
 
         return ((AppendableSqlFragments) fragments)
