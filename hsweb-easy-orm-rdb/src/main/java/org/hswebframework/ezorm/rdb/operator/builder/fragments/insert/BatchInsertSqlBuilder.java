@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
@@ -47,8 +48,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
         fragments.add(SqlFragments.LEFT_BRACKET);
 
-        LinkedHashMap<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>(64);
-        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>(64);
+        LinkedHashMap<Integer, RDBColumnMetadata> indexMapping =  Maps.newLinkedHashMapWithExpectedSize(columns.size());
+        LinkedHashMap<Integer, SqlFragments> functionValues =  Maps.newLinkedHashMapWithExpectedSize(columns.size());
 
         int index = 0;
         int primaryIndex = -1;

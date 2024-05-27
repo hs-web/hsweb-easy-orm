@@ -137,16 +137,25 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
 
         SqlFragments PREFIX;
 
+        protected int computeSqlSize(int columnSize, int valueSize) {
+            return (columnSize * valueSize) * 2 + valueSize * 2 + columnSize * 3 + 2;
+        }
+
         @Override
         public SqlRequest build(InsertOperatorParameter parameter) {
             if (PREFIX == null) {
                 PREFIX = SqlFragments.of("merge into", table.getFullName(), "t using (");
             }
             OracleUpsertOperatorParameter upsertParameter = (OracleUpsertOperatorParameter) parameter;
-            BatchSqlFragments fragments = new BatchSqlFragments();
-            fragments.add(PREFIX);
 
             Map<Integer, Tuple2<RDBColumnMetadata, UpsertColumn>> columnMapping = createColumnIndex(parameter.getColumns());
+            int valueSize = parameter.getValues().size();
+            int columnSize = columnMapping.size();
+            BatchSqlFragments fragments = new BatchSqlFragments(computeSqlSize(columnSize, valueSize),
+                                                                valueSize * columnSize);
+            fragments.add(PREFIX);
+
+
             boolean notContainsId = true;
             int rowIndex = 0;
             for (List<Object> values : parameter.getValues()) {

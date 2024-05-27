@@ -1,12 +1,11 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
-import org.hswebframework.ezorm.rdb.executor.DefaultBatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
@@ -19,14 +18,21 @@ import java.util.*;
 import static java.util.Optional.ofNullable;
 
 @SuppressWarnings("all")
-@AllArgsConstructor(staticName = "of")
+@RequiredArgsConstructor(staticName = "of")
 public class OracleInsertSqlBuilder implements InsertSqlBuilder {
-    private RDBTableMetadata table;
+    private final RDBTableMetadata table;
+
+    private SqlFragments INTO_SQL;
+    private static SqlFragments VALUES = SqlFragments.of("values ("),
+        INSERT = SqlFragments.of("insert"),
+        INSERT_ALL = SqlFragments.of("insert all"),
+        FROM_DUAL = SqlFragments.of("select 1 from dual");
 
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
-        BatchSqlFragments fragments = new BatchSqlFragments();
-
+        if (INTO_SQL == null) {
+            INTO_SQL = SqlFragments.of("into", table.getFullName(), "(");
+        }
 
         Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>();
         Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>();
@@ -36,22 +42,22 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
         Set<InsertColumn> columns = parameter.getColumns();
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
-                    .flatMap(table::getColumn)
-                    .orElse(null);
+                .flatMap(table::getColumn)
+                .orElse(null);
 
             if (columnMetadata != null && columnMetadata.isInsertable()) {
                 if (columnMetadata.isPrimaryKey()) {
                     primaryIndex = index;
                 }
                 indexMapping.put(index, columnMetadata);
+
                 //列为函数
-                SqlFragments functionFragments = Optional.of(column)
-                        .flatMap(insertColumn -> Optional.ofNullable(insertColumn.getFunction())
-                                .flatMap(function -> columnMetadata.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
-                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn)))
-                        .orElse(EmptySqlFragments.INSTANCE);
-                if (functionFragments.isNotEmpty()) {
-                    functionValues.put(index, functionFragments);
+                if (StringUtils.isNotEmpty(column.getFunction())) {
+                    functionValues.put(
+                        index,
+                        columnMetadata
+                            .findFeatureNow(FunctionFragmentBuilder.createFeatureId(column.getFunction()))
+                            .create(columnMetadata.getName(), columnMetadata, column));
                 }
             }
             index++;
@@ -61,17 +67,23 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
         if (indexMapping.isEmpty()) {
             throw new IllegalArgumentException("No operable columns");
         }
-        boolean batch = parameter.getValues().size() > 1;
+        int valueSize = parameter.getValues().size();
+        int columnSize = indexMapping.size();
+        boolean batch = valueSize > 1;
+        BatchSqlFragments fragments = new BatchSqlFragments(
+            3 + valueSize * 2,
+            valueSize * 2
+        );
 
         if (batch) {
-            fragments.addSql("insert all");
+            fragments.add(INSERT_ALL);
         } else {
-            fragments.addSql("insert");
+            fragments.add(INSERT);
         }
         Set<Object> duplicatePrimary = new HashSet<>();
         for (List<Object> values : parameter.getValues()) {
-            PrepareSqlFragments intoSql = PrepareSqlFragments.of();
-            PrepareSqlFragments valuesSql = PrepareSqlFragments.of();
+            BatchSqlFragments intoSql = new BatchSqlFragments(columnSize * 2 + 1, 0);
+            BatchSqlFragments valuesSql = new BatchSqlFragments(columnSize * 2 + 1, columnSize);
 
             int valueLen = values.size();
             int vIndex = 0;
@@ -82,17 +94,15 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                     continue;
                 }
             }
-            intoSql.addSql("into")
-                   .addSql(table.getFullName())
-                   .addSql("(");
+            intoSql.add(INTO_SQL);
 
-            valuesSql.addSql("values (");
+            valuesSql.add(VALUES);
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
                 int valueIndex = entry.getKey();
                 if (vIndex++ != 0) {
-                    intoSql.addSql(",");
-                    valuesSql.addSql(",");
+                    intoSql.add(SqlFragments.COMMA);
+                    valuesSql.add(SqlFragments.COMMA);
                 }
                 SqlFragments function = functionValues.get(valueIndex);
                 if (null != function) {
@@ -103,29 +113,29 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                 Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
 
                 if ((value == null || value instanceof NullValue)
-                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                    && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
                 }
                 intoSql.addSql(column.getQuoteName());
 
                 if (value instanceof NativeSql) {
                     valuesSql.addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
+                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
                 if (value == null) {
                     value = NullValue.of(column.getType());
                 }
-                valuesSql.addSql("?").addParameter(column.encode(value));
+                valuesSql.add(SqlFragments.QUESTION_MARK).addParameter(column.encode(value));
             }
-            intoSql.addSql(")");
-            valuesSql.addSql(")");
+            intoSql.add(SqlFragments.RIGHT_BRACKET);
+            valuesSql.add(SqlFragments.RIGHT_BRACKET);
 
             fragments.addFragments(intoSql)
-                    .addFragments(valuesSql);
+                     .addFragments(valuesSql);
         }
         if (batch) {
-            fragments.addSql("select 1 from dual");
+            fragments.add(FROM_DUAL);
         }
 
         return fragments.toRequest();

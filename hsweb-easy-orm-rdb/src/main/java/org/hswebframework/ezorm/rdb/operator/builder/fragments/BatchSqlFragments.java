@@ -11,7 +11,7 @@ public class BatchSqlFragments implements AppendableSqlFragments {
     private final List<List<Object>> parameter;
 
     public BatchSqlFragments() {
-        this(32, 16);
+        this(8, 8);
     }
 
     public BatchSqlFragments(int sqlSize, int parameterSize) {
