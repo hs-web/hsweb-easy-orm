@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.utils.SqlUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +50,7 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
             BatchSqlFragments fragments = new BatchSqlFragments(5, 1);
             fragments.addSql(columnFullName)
                      .add(SYMBOL)
-                     .add(createQuestionMarks(len))
+                     .add(SqlUtils.createQuestionMarks(len))
                      .add(SqlFragments.RIGHT_BRACKET)
                      .addParameter(value);
             return fragments;

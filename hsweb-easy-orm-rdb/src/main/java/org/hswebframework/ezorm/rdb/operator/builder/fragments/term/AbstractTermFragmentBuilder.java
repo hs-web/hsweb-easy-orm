@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
+import org.hswebframework.ezorm.rdb.utils.SqlUtils;
 
 import java.util.*;
 
@@ -25,28 +26,6 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
 
     private final String name;
 
-    // ? 缓存,避免重复创建
-    static SqlFragments[] Q_M_CACHE = new SqlFragments[200];
-
-    static {
-        for (int i = 0; i < Q_M_CACHE.length; i++) {
-            String[] arr = new String[i];
-            Arrays.fill(arr, "?");
-            Q_M_CACHE[i] = SqlFragments.single(String.join(",", arr));
-        }
-    }
-
-    protected SqlFragments createQuestionMarks(int len) {
-        if (len == 0) {
-            return EmptySqlFragments.INSTANCE;
-        }
-        if (len < Q_M_CACHE.length) {
-            return Q_M_CACHE[len];
-        }
-        String[] arr = new String[len];
-        Arrays.fill(arr, "?");
-        return SqlFragments.single(String.join(",", arr));
-    }
 
     /**
      * 尝试转换条件值为List,如果值为字符串则按,分割.
