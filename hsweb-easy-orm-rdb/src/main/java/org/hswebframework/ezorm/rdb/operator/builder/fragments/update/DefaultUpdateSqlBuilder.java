@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.update;
 
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
@@ -7,9 +8,7 @@ import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperatorParameter;
 
@@ -45,9 +44,11 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
         if (CollectionUtils.isEmpty(parameter.getWhere())) {
             throw new UnsupportedOperationException("unsupported no conditions update");
         }
-        Set<RDBColumnMetadata> distinctColumns = new HashSet<>();
+        int columnSize = parameter.getColumns().size();
 
-        BatchSqlFragments fragments = new BatchSqlFragments(3 + distinctColumns.size(), distinctColumns.size());
+        Set<RDBColumnMetadata> distinctColumns = Sets.newHashSetWithExpectedSize(columnSize);
+
+        BatchSqlFragments fragments = new BatchSqlFragments(3 + columnSize, columnSize);
 
         fragments.add(PREFIX);
         int index = 0;
@@ -71,7 +72,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                 else if (distinctColumns.add(columnMetadata)) {
                     //函数
                     if (column.getFunction() != null) {
-                        columnFragments = new BatchSqlFragments(2,1)
+                        columnFragments = new BatchSqlFragments(2, 1)
                             .addSql(columnMetadata.getQuoteName(), "=")
                             .add(
                                 columnMetadata
@@ -122,37 +123,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
 
     @Override
     protected SqlFragments createTermFragments(UpdateOperatorParameter parameter, Term term) {
-        String columnName = term.getColumn();
-        if (columnName == null) {
-            return EmptySqlFragments.INSTANCE;
-        }
-
-        if (columnName.contains(".")) {
-            String[] arr = columnName.split("[.]");
-            if (table.equalsNameOrAlias(arr[0])) {
-                columnName = arr[1];
-            } else {
-                return table.getForeignKey(arr[0])
-                            .flatMap(key -> key.getSource()
-                                               .findFeature(ForeignKeyTermFragmentBuilder.ID)
-                                               .map(builder -> builder.createFragments(table.getName(), key, createForeignKeyTerm(key, term))))
-                            .orElse(EmptySqlFragments.INSTANCE);
-            }
-        }
-
-        return table
-            .getColumn(columnName)
-            .flatMap(column -> column
-                .findFeature(TermFragmentBuilder.createFeatureId(term.getTermType()))
-                .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
-            .orElse(EmptySqlFragments.INSTANCE);
+        return SimpleTermsFragmentBuilder.createByTable(table, term);
     }
 
-    protected List<Term> createForeignKeyTerm(ForeignKeyMetadata keyMetadata, Term term) {
-        Term copy = term.clone();
-        //只要是嵌套到外键表的条件则认为是关联表的条件
-        term.setTerms(new LinkedList<>());
-
-        return Collections.singletonList(copy);
-    }
 }

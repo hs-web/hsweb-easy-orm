@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.delete;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
@@ -15,19 +16,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 @SuppressWarnings("all")
-@AllArgsConstructor(staticName = "of")
+@RequiredArgsConstructor(staticName = "of")
 public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<DeleteOperatorParameter> implements DeleteSqlBuilder {
 
-    private RDBTableMetadata table;
+    private final RDBTableMetadata table;
+
+    private SqlFragments DELETE;
 
     @Override
     public SqlRequest build(DeleteOperatorParameter parameter) {
         if (CollectionUtils.isEmpty(parameter.getWhere())) {
             throw new UnsupportedOperationException("Unsupported No Conditions delete");
         }
+        if (DELETE == null) {
+            DELETE = SqlFragments.of("delete from", table.getFullName(), "where");
+        }
 
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
-        fragments.addSql("delete from", table.getFullName(), "where");
+        BatchSqlFragments fragments = new BatchSqlFragments(2, 1);
+        fragments.add(DELETE);
 
         SqlFragments where = createTermFragments(parameter, parameter.getWhere());
         if (where.isEmpty()) {
@@ -40,36 +46,7 @@ public class DefaultDeleteSqlBuilder extends AbstractTermsFragmentBuilder<Delete
 
     @Override
     protected SqlFragments createTermFragments(DeleteOperatorParameter parameter, Term term) {
-        String columnName = term.getColumn();
-        if (columnName == null) {
-            return EmptySqlFragments.INSTANCE;
-        }
-
-        if (columnName.contains(".")) {
-            String[] arr = columnName.split("[.]");
-            if (table.equalsNameOrAlias(arr[0])) {
-                columnName = arr[1];
-            } else {
-                return table.getForeignKey(arr[0])
-                        .flatMap(key ->table.findFeature(ForeignKeyTermFragmentBuilder.ID)
-                                .map(builder -> builder.createFragments(table.getName(), key, createForeignKeyTerm(key, term))))
-                        .orElse(EmptySqlFragments.INSTANCE);
-            }
-        }
-
-        return table
-                .getColumn(columnName)
-                .flatMap(column -> column
-                        .findFeature(TermFragmentBuilder.createFeatureId(term.getTermType()))
-                        .map(termFragment -> termFragment.createFragments(column.getQuoteName(), column, term)))
-                .orElse(EmptySqlFragments.INSTANCE);
+         return SimpleTermsFragmentBuilder.createByTable(table,term);
     }
 
-    protected List<Term> createForeignKeyTerm(ForeignKeyMetadata keyMetadata, Term term) {
-        Term copy = term.clone();
-        //只要是嵌套到外键表的条件则认为是关联表的条件
-        term.setTerms(new LinkedList<>());
-
-        return Collections.singletonList(copy);
-    }
 }
