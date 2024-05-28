@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hswebframework.ezorm.core.param.Term;
@@ -54,8 +55,12 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         //集合
         if (value instanceof Collection) {
             Collection<Object> listValue = ((Collection<Object>) value);
-            List<Object> list = new ArrayList<>(listValue.size());
 
+            if (listValue instanceof List) {
+                return Lists.transform(((List<Object>) listValue), (val) -> this.convertValue(column, val));
+            }
+
+            List<Object> list = new ArrayList<>(listValue.size());
             for (Object val : listValue) {
                 list.add(this.convertValue(column, val));
             }
