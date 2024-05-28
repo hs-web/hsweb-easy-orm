@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.mssql;
 
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 
 public class SqlServerEnumInFragmentBuilder extends EnumInFragmentBuilder {
@@ -14,8 +14,7 @@ public class SqlServerEnumInFragmentBuilder extends EnumInFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments bitAnd(String column, long value) {
-
-        return PrepareSqlFragments.of().addSql(column, "&", String.valueOf(value));
+    public SqlFragments bitAnd(String column, long value) {
+        return SqlFragments.of(column, "&", String.valueOf(value));
     }
 }

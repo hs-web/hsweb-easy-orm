@@ -23,7 +23,6 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
     private final boolean splitLargeParameter;
 
-    private final SqlFragments SYMBOL;
 
     public InTermFragmentBuilder(String termType, String name, boolean isNot) {
         this(termType, name, isNot, SPLIT_LARGE);
@@ -34,7 +33,6 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
         not = isNot;
         symbol = isNot ? "not in(" : "in(";
         this.splitLargeParameter = splitLargeParameter;
-        this.SYMBOL = SqlFragments.single(symbol);
     }
 
     @Override
@@ -46,47 +44,63 @@ public class InTermFragmentBuilder extends AbstractTermFragmentBuilder {
         }
         int len = value.size();
 
-        if (!splitLargeParameter || len < SPLIT_LARGE_SIZE) {
+        if (!splitLargeParameter || len <= SPLIT_LARGE_SIZE) {
             BatchSqlFragments fragments = new BatchSqlFragments(5, 1);
-            fragments.addSql(columnFullName)
-                     .add(SYMBOL)
+            fragments.addSql(columnFullName, symbol)
                      .add(SqlUtils.createQuestionMarks(len))
                      .add(SqlFragments.RIGHT_BRACKET)
                      .addParameter(value);
             return fragments;
         }
-        BatchSqlFragments fragments = new BatchSqlFragments(len * 4, 1);
-        //参数数量大于 500时,使用(column in (?,?,?) or column in(?,?,?))
-        if (len > SPLIT_LARGE_SIZE) {
-            fragments.add(SqlFragments.LEFT_BRACKET);
-        }
-        fragments
-            .addSql(columnFullName)
-            .addSql(symbol);
+        int batch = len / SPLIT_LARGE_SIZE;
+        int remainder = len % SPLIT_LARGE_SIZE;
 
-        int flag = 0;
-        for (int i = 0; i < len; i++) {
-            if (flag++ != 0) {
-                fragments.add(SqlFragments.COMMA);
+        int size = (int) Math.ceil((double) len / SPLIT_LARGE_SIZE);
+        BatchSqlFragments fragments = new BatchSqlFragments(size * 4 + 1, 1);
+        //参数数量大于 500时,使用(column in (?,?,?) or column in(?,?,?))
+        fragments.add(SqlFragments.LEFT_BRACKET);
+        fragments.addSql(columnFullName, symbol);
+
+        for (int i = 0; i < batch; i++) {
+            if (i != 0) {
+                fragments
+                    .add(SqlFragments.RIGHT_BRACKET)
+                    .add(not ? SqlFragments.AND : SqlFragments.OR)
+                    .addSql(columnFullName, symbol);
             }
-            fragments.add(SqlFragments.QUESTION_MARK);
-            if (flag > SPLIT_LARGE_SIZE && i != len - 1) {
-                flag = 0;
-                if (not) {
-                    fragments
-                        .add(SqlFragments.RIGHT_BRACKET)
-                        .add(SqlFragments.AND);
-                } else {
-                    fragments
-                        .add(SqlFragments.RIGHT_BRACKET)
-                        .add(SqlFragments.OR);
-                }
-                fragments.addSql(columnFullName, symbol);
+            fragments.add(SqlUtils.createQuestionMarks(SPLIT_LARGE_SIZE));
+        }
+
+        if (remainder > 0) {
+            if (batch != 0) {
+                fragments.add(SqlFragments.RIGHT_BRACKET)
+                         .add(not ? SqlFragments.AND : SqlFragments.OR)
+                         .addSql(columnFullName, symbol);
             }
+            fragments.add(SqlUtils.createQuestionMarks(remainder));
         }
-        if (len > SPLIT_LARGE_SIZE) {
-            fragments.add(SqlFragments.RIGHT_BRACKET);
-        }
+//        int flag = 0;
+//        for (int i = 0; i < len; i++) {
+//            if (flag++ != 0) {
+//                fragments.add(SqlFragments.COMMA);
+//            }
+//            fragments.add(SqlFragments.QUESTION_MARK);
+//            if (flag > SPLIT_LARGE_SIZE && i != len - 1) {
+//                flag = 0;
+//                if (not) {
+//                    fragments
+//                        .add(SqlFragments.RIGHT_BRACKET)
+//                        .add(SqlFragments.AND);
+//                } else {
+//                    fragments
+//                        .add(SqlFragments.RIGHT_BRACKET)
+//                        .add(SqlFragments.OR);
+//                }
+//                fragments.addSql(columnFullName, symbol);
+//            }
+//        }
+        fragments.add(SqlFragments.RIGHT_BRACKET);
+
         return fragments
             .add(SqlFragments.RIGHT_BRACKET)
             .addParameter(value);

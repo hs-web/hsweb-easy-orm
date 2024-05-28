@@ -77,7 +77,7 @@ public class InTermFragmentBuilderTest {
         InTermFragmentBuilder builder = new InTermFragmentBuilder("in", "在...之中",false);
 
         Term term = new Term();
-        List<Integer> values = Flux.range(0, 510).collectList().block();
+        List<Integer> values = Flux.range(0, 1010).collectList().block();
         assertNotNull(values);
 
         term.setValue(values);
@@ -89,7 +89,7 @@ public class InTermFragmentBuilderTest {
 
         assertArrayEquals(values.toArray(),request.getParameters());
 
-        System.out.println(request.getSql());
+        System.out.println(request.toNativeSql().replace("id in(","\nid in(\n"));
         // Assert.assertEquals(request.getSql(), "id in( ? )");
 
     }

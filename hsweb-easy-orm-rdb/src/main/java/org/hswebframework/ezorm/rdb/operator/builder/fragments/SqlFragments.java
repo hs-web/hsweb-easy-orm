@@ -31,7 +31,8 @@ public interface SqlFragments {
     // ,
     SqlFragments COMMA = SqlFragments.single(",");
     // =
-    SqlFragments EQUAL = SqlFragments.single("=");
+    SqlFragments EQUAL = SqlFragments.single("="),
+        NOT_EQUAL = SqlFragments.single("!=");
     // where
     SqlFragments WHERE = SqlFragments.single("where");
     // and
@@ -42,6 +43,9 @@ public interface SqlFragments {
     SqlFragments NOT = SqlFragments.single("not");
     // ?
     SqlFragments QUESTION_MARK = SqlFragments.single("?");
+
+    SqlFragments ZERO = SqlFragments.single("0"),
+        ONE = SqlFragments.single("1");
 
     /**
      * @return 是否为空

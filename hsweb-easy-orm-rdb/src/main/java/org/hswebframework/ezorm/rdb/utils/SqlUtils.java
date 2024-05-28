@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.utils;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.PrepareSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.utils.time.DateFormatter;
@@ -38,12 +39,31 @@ public class SqlUtils {
         if (len == 0) {
             return EmptySqlFragments.INSTANCE;
         }
-        if (len < Q_M_CACHE.length) {
+        int cacheSize = Q_M_CACHE.length;
+        if (len < cacheSize) {
             return Q_M_CACHE[len];
         }
-        String[] arr = new String[len];
-        Arrays.fill(arr, "?");
-        return SqlFragments.single(String.join(",", arr));
+        // 从1开始
+        cacheSize -= 1;
+        int size = len / cacheSize;
+        int remainder = len % cacheSize;
+
+        BatchSqlFragments batch = new BatchSqlFragments(
+            size * 2 + (remainder > 0 ? 1 : 0), 0);
+
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                batch.add(SqlFragments.COMMA);
+            }
+            batch.add(Q_M_CACHE[cacheSize]);
+        }
+        if (remainder > 0) {
+            if (size > 0) {
+                batch.add(SqlFragments.COMMA);
+            }
+            batch.add(Q_M_CACHE[remainder]);
+        }
+        return batch;
     }
 
     /**
