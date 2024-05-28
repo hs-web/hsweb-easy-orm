@@ -3,9 +3,11 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BetweenAndTermFragmentBuilder extends AbstractTermFragmentBuilder {
@@ -19,25 +21,24 @@ public class BetweenAndTermFragmentBuilder extends AbstractTermFragmentBuilder {
 
     @Override
     public SqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
 
         List<Object> val = convertList(column, term);
-
-        List<Object> values = new ArrayList<>(2);
-        if (val.isEmpty()) {
-            values.add(null);
-            values.add(null);
-        } else if (val.size() == 1) {
-            values.add(val.get(0));
-            values.add(val.get(0));
-        } else {
-            values.add(val.get(0));
-            values.add(val.get(1));
+        if (val.size() != 2) {
+            List<Object> values = new ArrayList<>(2);
+            if (val.isEmpty()) {
+                values.add(null);
+                values.add(null);
+            } else if (val.size() == 1) {
+                values.add(val.get(0));
+                values.add(val.get(0));
+            } else {
+                values.add(val.get(0));
+                values.add(val.get(1));
+            }
+            val = values;
         }
 
-        return fragments
-                .addSql(columnFullName)
-                .addSql(symbol)
-                .addParameter(values);
+        return SimpleSqlFragments
+            .of(Arrays.asList(columnFullName, symbol), val);
     }
 }
