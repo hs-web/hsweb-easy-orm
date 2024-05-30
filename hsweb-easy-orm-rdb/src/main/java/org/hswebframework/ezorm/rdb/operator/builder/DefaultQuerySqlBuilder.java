@@ -6,10 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.BlockSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
@@ -67,35 +64,34 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         if (CollectionUtils.isEmpty(groupBy)) {
             return Optional.empty();
         }
-        PrepareSqlFragments sql = PrepareSqlFragments.of();
-
+        BatchSqlFragments sql = new BatchSqlFragments(groupBy.size() * 2 - 1, 0);
+        int idx = 0;
         for (SelectColumn column : groupBy) {
+            if (idx++ > 0) {
+                sql.add(SqlFragments.COMMA);
+            }
             if (column instanceof NativeSql) {
                 sql.addSql(((NativeSql) column).getSql())
                    .addParameter(((NativeSql) column).getParameters());
             } else {
-                RDBColumnMetadata columnMetadata = metadata
-                    .getColumn(column.getColumn())
-                    .orElseThrow(() -> new IllegalArgumentException("unknown column " + column.getColumn()));
-                String fullName = columnMetadata.getFullName();
+                RDBColumnMetadata columnMetadata = metadata.getColumnNow(column.getColumn());
 
+                String fullName = columnMetadata.getFullName();
                 String function = column.getFunction();
                 if (function != null) {
-                    sql.addFragments(
-                        metadata
-                            .findFeature(createFeatureId(function))
-                            .map(fragment -> fragment.create(fullName, columnMetadata, column))
-                            .filter(SqlFragments::isNotEmpty)
-                            .orElseThrow(() -> new UnsupportedOperationException("unsupported function:" + column))
-                    );
+                    SqlFragments func = metadata
+                        .findFeatureNow(createFeatureId(function))
+                        .create(fullName, columnMetadata, column);
+                    if (func.isEmpty()) {
+                        throw new UnsupportedOperationException("unsupported function:" + function);
+                    }
+                    sql.add(func);
                 } else {
                     sql.addSql(fullName);
                 }
             }
-            sql.addSql(",");
 
         }
-        sql.removeLastSql();
         return Optional.of(sql);
     }
 

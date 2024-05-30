@@ -6,19 +6,20 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
 import org.slf4j.Logger;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class DefaultReactiveDelete extends DefaultDelete<ReactiveDelete> implements ReactiveDelete {
 
-    private final Logger logger;
-
+    private final Function<Context, Context> context;
     public DefaultReactiveDelete(RDBTableMetadata tableMetadata,
                                  DeleteOperator operator,
-                                 Logger logger,
+                                 Function<Context, Context> context,
                                  ContextKeyValue<?>... keyValues) {
         super(tableMetadata, operator, keyValues);
-        this.logger = logger;
+        this.context = context;
     }
 
     public BiFunction<ReactiveDelete, Mono<Integer>, Mono<Integer>> mapper = (reactiveDelete, integerMono) -> integerMono;
@@ -28,7 +29,7 @@ public class DefaultReactiveDelete extends DefaultDelete<ReactiveDelete> impleme
         return mapper.apply(this, this
                 .doExecute()
                 .reactive()
-                .contextWrite(ctx -> ctx.put(Logger.class, logger)));
+                .contextWrite(context));
     }
 
     @Override

@@ -20,13 +20,13 @@ public class QueryOperatorParameter {
 
     private String fromAlias;
 
-    private List<Term> where = new ArrayList<>();
+    private List<Term> where = new ArrayList<>(5);
 
     private List<Join> joins = new ArrayList<>();
 
-    private List<SortOrder> orderBy = new ArrayList<>();
+    private List<SortOrder> orderBy = new ArrayList<>(2);
 
-    private List<SelectColumn> groupBy = new ArrayList<>();
+    private List<SelectColumn> groupBy = new ArrayList<>(2);
 
     private List<Term> having = new ArrayList<>();
 
