@@ -1,15 +1,17 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 import lombok.NoArgsConstructor;
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.utils.DateTimeUtils;
 import org.hswebframework.utils.time.DateFormatter;
-import org.hswebframework.ezorm.core.ValueCodec;
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.time.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -66,6 +68,44 @@ public class DateTimeCodec implements ValueCodec {
         if (toType.isAssignableFrom(data.getClass())) {
             return data;
         }
+        if (!(data instanceof Date)) {
+            data = toDate(data);
+        }
+        if (data instanceof Collection) {
+            return ((Collection<?>) data)
+                .stream()
+                .map(this::decode)
+                .collect((Collector) (toType == String.class ? Collectors.joining(",") : Collectors.toList()));
+        } else if (!(data instanceof Date)) {
+            return data;
+        }
+        if (toType == Date.class) {
+            return data;
+        }
+        if (toType == Instant.class) {
+            return ((Date) data).toInstant();
+        }
+        if (toType == LocalDateTime.class) {
+            return LocalDateTime.ofInstant(((Date) data).toInstant(), ZoneId.systemDefault());
+        }
+        if (toType == LocalDate.class) {
+            return LocalDateTime
+                .ofInstant(((Date) data).toInstant(), ZoneId.systemDefault())
+                .toLocalDate();
+        }
+        if (toType == LocalTime.class) {
+            return LocalDateTime
+                .ofInstant(((Date) data).toInstant(), ZoneId.systemDefault())
+                .toLocalTime();
+        }
+        if (toType == String.class) {
+            return DateTimeUtils.format(((Date) data), format);
+        }
+
+        return data;
+    }
+
+    public Object toDate(Object data) {
         if (data instanceof Number) {
             data = new Date(((Number) data).longValue());
         } else if (data instanceof Timestamp) {
@@ -78,50 +118,15 @@ public class DateTimeCodec implements ValueCodec {
         } else if (data instanceof ZonedDateTime) {
             ZonedDateTime dateTime = ((ZonedDateTime) data);
             data = Date.from(dateTime.toInstant());
-        }
-        if (data instanceof Date) {
-            if (toType == Date.class) {
-                return data;
-            }
-            if (toType == Instant.class) {
-                return ((Date) data).toInstant();
-            }
-            if (toType == LocalDateTime.class) {
-                return LocalDateTime.ofInstant(((Date) data).toInstant(), ZoneId.systemDefault());
-            }
-            if (toType == LocalDate.class) {
-                return LocalDateTime
-                        .ofInstant(((Date) data).toInstant(), ZoneId.systemDefault())
-                        .toLocalDate();
-            }
-            if (toType == LocalTime.class) {
-                return LocalDateTime
-                        .ofInstant(((Date) data).toInstant(), ZoneId.systemDefault())
-                        .toLocalTime();
-            }
-            if (toType == String.class) {
-                return DateTimeUtils.format(((Date) data), format);
-            }
-        }
-        if (data instanceof Collection) {
-            return ((Collection<?>) data)
-                    .stream()
-                    .map(this::decode)
-                    .collect((Collector) (toType == String.class ? Collectors.joining(",") : Collectors.toList()));
-
-        }
-        if (data instanceof String) {
+        } else if (data instanceof String) {
             String stringData = ((String) data);
-            if (toType == Date.class) {
-                if ((stringData).contains(",")) {
-                    return Arrays
-                            .stream(stringData.split(","))
-                            .map(this::doParse)
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList());
-                }
-                data = this.doParse(stringData);
+            if ((stringData).contains(",")) {
+                return Arrays
+                    .stream(stringData.split(","))
+                    .map(this::toDate)
+                    .collect(Collectors.toList());
             }
+            return this.doParse(stringData);
         }
         return data;
     }
