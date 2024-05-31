@@ -123,7 +123,8 @@ public class DateTimeCodec implements ValueCodec {
             if ((stringData).contains(",")) {
                 return Arrays
                     .stream(stringData.split(","))
-                    .map(this::toDate)
+                    .map(this::doParse)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             }
             return this.doParse(stringData);
