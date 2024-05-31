@@ -4,11 +4,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DateTimeCodecTest {
 
@@ -77,5 +79,15 @@ public class DateTimeCodecTest {
 
         assertEquals(codec.decode(((Date) date).getTime()), date);
 
+    }
+
+    @Test
+    public void testDecodeNumberTime() {
+        DateTimeCodec codec = new DateTimeCodec("HH:mm:ss", LocalTime.class);
+        long time = System.currentTimeMillis();
+
+        Object decode = codec.decode(time);
+        LocalTime localTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()).toLocalTime();
+        assertEquals(localTime, decode);
     }
 }
