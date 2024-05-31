@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock;
 import org.hswebframework.ezorm.rdb.utils.PropertiesUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,10 +47,9 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             index++;
             SqlFragments termFragments;
             if (term instanceof SqlTerm) {
-                termFragments = PrepareSqlFragments
-                        .of()
-                        .addSql(((SqlTerm) term).getSql())
-                        .addParameter(PropertiesUtils.convertList(term.getValue()));
+                termFragments = SimpleSqlFragments
+                    .of(Collections.singletonList(((SqlTerm) term).getSql()),
+                        PropertiesUtils.convertList(term.getValue()));
             } else {
                 termFragments = term.getValue() == null ? EmptySqlFragments.INSTANCE : createTermFragments(parameter, term);
             }
@@ -78,9 +78,9 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                     if (termAvailable || lastTermAvailable) {
                         nestBlock.addBlock(FragmentBlock.before, term.getType().name());
                     }
-                    nestBlock.addBlock(FragmentBlock.before, "(");
+                    nestBlock.addBlock(FragmentBlock.before, SqlFragments.LEFT_BRACKET);
                     nestBlock.addBlock(FragmentBlock.term, nestFragments);
-                    nestBlock.addBlock(FragmentBlock.after, ")");
+                    nestBlock.addBlock(FragmentBlock.after, SqlFragments.RIGHT_BRACKET);
 
                     fragments.addBlock(FragmentBlock.term, nestBlock);
                     lastTermAvailable = true;
@@ -102,8 +102,8 @@ public abstract class AbstractTermsFragmentBuilder<T> {
      * @return BlockSqlFragments
      * @see PrepareSqlFragments
      */
-    private PrepareSqlFragments createPrepareFragments(T parameter, List<Term> terms) {
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+    private SqlFragments createPrepareFragments(T parameter, List<Term> terms) {
+        BatchSqlFragments fragments = new BatchSqlFragments(terms.size() * 2, terms.size());
 
         int index = 0;
         boolean termAvailable;
@@ -113,10 +113,9 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             SqlFragments termFragments;
             //原生SQL
             if (term instanceof SqlTerm) {
-                termFragments = PrepareSqlFragments
-                        .of()
-                        .addSql(((SqlTerm) term).getSql())
-                        .addParameter(PropertiesUtils.convertList(term.getValue()));
+                termFragments = SimpleSqlFragments
+                    .of(Collections.singletonList(((SqlTerm) term).getSql()),
+                        PropertiesUtils.convertList(term.getValue()));
             } else {
                 //值为null时忽略条件
                 termFragments = term.getValue() == null ? EmptySqlFragments.INSTANCE : createTermFragments(parameter, term);
@@ -126,9 +125,11 @@ public abstract class AbstractTermsFragmentBuilder<T> {
             if (termAvailable) {
                 if (index != 1 && lastTermAvailable) {
                     //and or
-                    fragments.addSql(term.getType().name());
+                    fragments.add(term.getType() == Term.Type.and
+                                      ? SqlFragments.AND
+                                      : SqlFragments.OR);
                 }
-                fragments.addFragments(termFragments);
+                fragments.add(termFragments);
                 lastTermAvailable = termAvailable;
             }
 
@@ -140,11 +141,13 @@ public abstract class AbstractTermsFragmentBuilder<T> {
                 if (nestFragments.isNotEmpty()) {
                     //and or
                     if (termAvailable || lastTermAvailable) {
-                        fragments.addSql(term.getType().name());
+                        fragments.add(term.getType() == Term.Type.and
+                                          ? SqlFragments.AND
+                                          : SqlFragments.OR);
                     }
-                    fragments.addSql("(");
-                    fragments.addFragments(nestFragments);
-                    fragments.addSql(")");
+                    fragments.add(SqlFragments.LEFT_BRACKET);
+                    fragments.add(nestFragments);
+                    fragments.add(SqlFragments.RIGHT_BRACKET);
                     lastTermAvailable = true;
                     continue;
                 }

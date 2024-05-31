@@ -3,11 +3,17 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 public class LikeTermFragmentBuilder extends AbstractTermFragmentBuilder {
     private final boolean not;
+
+    static final SqlFragments LIKE = SqlFragments.of("like"),
+        CONCAT_L = SqlFragments.of("concat( '%',"),
+        CONCAT_R = SqlFragments.of(",'%' )"),
+        CONCAT = SqlFragments.of("concat(");
 
     public LikeTermFragmentBuilder(boolean not) {
         super(not ? TermType.nlike : TermType.like, not ? "Not Like" : "Like");
@@ -20,32 +26,32 @@ public class LikeTermFragmentBuilder extends AbstractTermFragmentBuilder {
         boolean reversal = term.getOptions().contains("reversal");
         boolean startWith = term.getOptions().contains("startWith");
         boolean endWith = term.getOptions().contains("endWith");
-
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        BatchSqlFragments fragments = new BatchSqlFragments(not ? 4 : 3, 1);
         if (reversal) {
-            fragments.addSql("?").addParameter(term.getValue());
-        }else {
+            fragments.add(SqlFragments.QUESTION_MARK).addParameter(term.getValue());
+        } else {
             fragments.addSql(columnFullName);
         }
         if (not) {
-            fragments.addSql("not");
+            fragments.add(SqlFragments.NOT);
         }
-        fragments.addSql("like");
+        fragments.add(LIKE);
 
         if (reversal) {
             if (startWith) {
-                fragments.addSql("concat( '%',");
+                fragments.add(CONCAT_L);
             } else {
-                fragments.addSql("concat(");
+                fragments.add(CONCAT);
             }
             fragments.addSql(columnFullName);
             if (endWith) {
-                fragments.addSql(",'%' )");
+                fragments.add(CONCAT_R);
             } else {
-                fragments.addSql(")");
+                fragments.add(SqlFragments.RIGHT_BRACKET);
             }
         } else {
-            fragments.addSql("?").addParameter(term.getValue());
+            fragments.add(SqlFragments.QUESTION_MARK)
+                     .addParameter(term.getValue());
         }
         return fragments;
     }

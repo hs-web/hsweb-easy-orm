@@ -10,8 +10,10 @@ import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.InsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
@@ -52,11 +54,11 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
     public SaveResultOperator execute(org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperatorParameter parameter) {
         if (idColumn == null) {
             this.idColumn = table
-                    .getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+                .getColumns()
+                .stream()
+                .filter(RDBColumnMetadata::isPrimaryKey)
+                .findFirst()
+                .orElse(null);
 
             if (this.idColumn == null) {
                 return fallback.execute(parameter);
@@ -98,10 +100,10 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
         @Override
         public Mono<SaveResult> reactive() {
             return Mono
-                    .fromSupplier(sqlRequest)
-                    .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
-                    .map(i -> SaveResult.of(0, i))
-                    .as(ExceptionUtils.translation(table));
+                .fromSupplier(sqlRequest)
+                .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                .map(i -> SaveResult.of(0, i))
+                .as(ExceptionUtils.translation(table));
         }
     }
 
@@ -128,12 +130,17 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
             return columnMapping;
         }
 
+        SqlFragments PREFIX;
+
 
         @Override
         public SqlRequest build(InsertOperatorParameter parameter) {
+            if (PREFIX == null) {
+                PREFIX = SqlFragments.of("merge into", table.getFullName(), "with(rowlock) as t using ( values");
+            }
             UpsertOperatorParameter upsertParameter = (UpsertOperatorParameter) parameter;
-            PrepareSqlFragments fragments = PrepareSqlFragments.of();
-            fragments.addSql("merge into", table.getFullName(), "with(rowlock) as t using ( values");
+            BatchSqlFragments fragments = new BatchSqlFragments();
+            fragments.add(PREFIX);
 
             Map<Integer, Tuple2<RDBColumnMetadata, UpsertColumn>> columnMapping = createColumnIndex(parameter.getColumns());
             boolean notContainsId = true;
@@ -141,9 +148,9 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
             for (List<Object> values : parameter.getValues()) {
                 int valueIndex = 0;
                 if (rowIndex > 0) {
-                    fragments.addSql(",");
+                    fragments.add(SqlFragments.COMMA);
                 }
-                fragments.addSql("(");
+                fragments.add(SqlFragments.LEFT_BRACKET);
 
                 for (Map.Entry<Integer, Tuple2<RDBColumnMetadata, UpsertColumn>> entry : columnMapping.entrySet()) {
                     int index = entry.getKey();
@@ -153,11 +160,11 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
                         notContainsId = false;
                     }
                     if (valueIndex > 0) {
-                        fragments.addSql(",");
+                        fragments.add(SqlFragments.COMMA);
                     }
 
                     if ((value == null || value instanceof NullValue)
-                            && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                         value = column.getDefaultValue().get();
                     }
 
@@ -169,7 +176,7 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
                         }
                     }
 
-                    fragments.addSql("?").addParameter(column.encode(value));
+                    fragments.add(SqlFragments.QUESTION_MARK).addParameter(column.encode(value));
                     valueIndex++;
                 }
 
@@ -178,17 +185,17 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
                         throw new UnsupportedOperationException("column " + idColumn.getFullName() + " unsupported default value");
                     }
                     Object value = idColumn.getDefaultValue().get();
-                    fragments.addSql(",");
+                    fragments.add(SqlFragments.COMMA);
 
                     if (value instanceof NativeSql) {
                         fragments
-                                .addSql(((NativeSql) value).getSql())
-                                .addParameter(((NativeSql) value).getParameters());
+                            .addSql(((NativeSql) value).getSql())
+                            .addParameter(((NativeSql) value).getParameters());
                     } else {
-                        fragments.addSql("?").addParameter(value);
+                        fragments.add(SqlFragments.QUESTION_MARK).addParameter(value);
                     }
                 }
-                fragments.addSql(")");
+                fragments.add(SqlFragments.RIGHT_BRACKET);
                 rowIndex++;
             }
 
@@ -245,9 +252,9 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
                 //update
                 {
                     if (column.isPrimaryKey()
-                            || !column.isUpdatable()
-                            || !column.isSaveable()
-                            || columnBind.getT2().isUpdateIgnore()) {
+                        || !column.isUpdatable()
+                        || !column.isSaveable()
+                        || columnBind.getT2().isUpdateIgnore()) {
 
                         continue;
                     }

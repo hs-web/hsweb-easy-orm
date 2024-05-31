@@ -1,7 +1,11 @@
 package org.hswebframework.ezorm.rdb.supports.h2;
 
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 public class H2EnumInFragmentBuilder extends EnumInFragmentBuilder {
 
@@ -14,8 +18,11 @@ public class H2EnumInFragmentBuilder extends EnumInFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments bitAnd(String column, long value) {
+    public SqlFragments bitAnd(String column, long value) {
 
-        return PrepareSqlFragments.of().addSql("BITAND(", column, ",CAST(? AS BIGINT)",")").addParameter(value);
+        return SimpleSqlFragments.of(
+            Arrays.asList("BITAND(", column, ",CAST(? AS BIGINT)", ")"),
+            Collections.singletonList(value)
+        );
     }
 }

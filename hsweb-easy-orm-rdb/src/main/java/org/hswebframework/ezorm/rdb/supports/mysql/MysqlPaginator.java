@@ -1,27 +1,33 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
 import org.hswebframework.ezorm.rdb.operator.builder.FragmentBlock;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.BlockSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.Paginator;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class MysqlPaginator implements Paginator {
+    static final String LIMIT = "limit ?,?";
+
     @Override
     public SqlFragments doPaging(SqlFragments fragments, int pageIndex, int pageSize) {
 
-        if (fragments instanceof PrepareSqlFragments) {
-            ((PrepareSqlFragments) fragments)
-                    .addSql("limit ?,?")
-                    .addParameter(pageIndex * pageSize, pageSize);
-
-        } else if (fragments instanceof BlockSqlFragments) {
-            ((BlockSqlFragments) fragments).addBlock(FragmentBlock.after, PrepareSqlFragments.of()
-                    .addSql("limit ?,?")
-                    .addParameter(pageIndex * pageSize, pageSize));
+        if (fragments instanceof BlockSqlFragments) {
+            return ((BlockSqlFragments) fragments)
+                .addBlock(
+                    FragmentBlock.after,
+                    SimpleSqlFragments
+                        .of(LIMIT, pageIndex * pageSize, pageSize));
         }
 
+        if (!(fragments instanceof AppendableSqlFragments)) {
+            fragments = new BatchSqlFragments(2,2).add(fragments);
+        }
 
-        return fragments;
+        return ((AppendableSqlFragments) fragments)
+            .addSql(LIMIT)
+            .addParameter(pageIndex * pageSize, pageSize);
     }
 }

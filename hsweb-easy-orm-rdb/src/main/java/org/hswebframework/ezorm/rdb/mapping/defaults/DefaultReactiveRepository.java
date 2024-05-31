@@ -15,8 +15,10 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import java.util.Collection;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implements ReactiveRepository<E, K> {
@@ -26,9 +28,9 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public DefaultReactiveRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         this(operator,
              () -> operator
-                     .getMetadata()
-                     .getTable(table)
-                     .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
+                 .getMetadata()
+                 .getTable(table)
+                 .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
     }
 
     public DefaultReactiveRepository(DatabaseOperator operator, RDBTableMetadata table, Class<E> type, ResultWrapper<E, ?> wrapper) {
@@ -53,7 +55,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     @Override
     public Mono<E> findById(Mono<K> primaryKey) {
         return primaryKey
-                .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
+            .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
     }
 
     @Override
@@ -75,84 +77,78 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     @Override
     public Mono<Integer> updateById(K id, Mono<E> data) {
         return data
-                .flatMap(_data -> createUpdate()
-                        .where(getIdColumn(), id)
-                        .set(_data)
-                        .execute());
+            .flatMap(_data -> createUpdate()
+                .where(getIdColumn(), id)
+                .set(_data)
+                .execute());
     }
 
     @Override
     public Mono<SaveResult> save(Publisher<E> data) {
         return Flux
-                .from(data)
-                .collectList()
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMap(list -> doSave(list).reactive().as(this::setupLogger))
-                .defaultIfEmpty(SaveResult.of(0, 0));
+            .from(data)
+            .collectList()
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(list -> doSave(list).reactive().contextWrite(this::applyContext))
+            .defaultIfEmpty(SaveResult.of(0, 0));
     }
 
     @Override
     public Mono<Integer> insert(Publisher<E> data) {
         return Flux
-                .from(data)
-                .buffer(100)
-                .as(this::insertBatch);
+            .from(data)
+            .buffer(100)
+            .as(this::insertBatch);
     }
 
     @Override
     public Mono<Integer> insertBatch(Publisher<? extends Collection<E>> data) {
         return Flux
-                .from(data)
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMap(e -> doInsert(e).reactive())
-                .reduce(Math::addExact)
-                .defaultIfEmpty(0)
-                .as(this::setupLogger);
+            .from(data)
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(e -> doInsert(e).reactive())
+            .reduce(Math::addExact)
+            .defaultIfEmpty(0)
+            .contextWrite(this::applyContext);
     }
 
     @Override
     public ReactiveQuery<E> createQuery() {
         return new DefaultReactiveQuery<>(getTable()
-                , mapping
-                , operator.dml()
-                , wrapper
-                , logger
-                , getDefaultContextKeyValue());
+            , mapping
+            , operator.dml()
+            , wrapper
+            , this::applyContext
+            , getDefaultContextKeyValue());
     }
 
     @Override
     public ReactiveUpdate<E> createUpdate() {
         return new DefaultReactiveUpdate<>(
-                getTable()
-                , operator.dml().update(getTable().getFullName())
-                , mapping
-                , logger
-                , getDefaultContextKeyValue());
+            getTable()
+            , operator.dml().update(getTable().getFullName())
+            , mapping
+            , this::applyContext
+            , getDefaultContextKeyValue());
     }
 
     @Override
     public ReactiveDelete createDelete() {
         return new DefaultReactiveDelete(getTable()
-                , operator.dml().delete(getTable().getFullName())
-                , logger
-                , getDefaultContextKeyValue()
+            , operator.dml().delete(getTable().getFullName())
+            , this::applyContext
+            , getDefaultContextKeyValue()
         );
     }
 
-
-    private <T> Mono<T> setupLogger(Mono<T> async) {
-        return async.contextWrite(ctx -> ctx.put(Logger.class, logger));
+    protected Context applyContext(Context context) {
+        return context.put(Logger.class, logger);
     }
-
-    private <T> Flux<T> setupLogger(Flux<T> async) {
-        return async.contextWrite(ctx -> ctx.put(Logger.class, logger));
-    }
-
 
     @Override
     public QueryOperator nativeQuery() {
         return operator
-                .dml()
-                .query(getTable());
+            .dml()
+            .query(getTable());
     }
 }

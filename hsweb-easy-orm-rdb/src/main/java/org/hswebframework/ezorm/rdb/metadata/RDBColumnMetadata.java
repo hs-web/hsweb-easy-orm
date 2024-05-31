@@ -114,13 +114,23 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
      */
     private String previousName;
 
+    @Setter(AccessLevel.PRIVATE)
+    private String quoteName, fullName, fullTableName;
+
+    public String getFullName() {
+        return fullName == null ? fullName = createFullName0(getOwner().getName()) : fullName;
+    }
+
+    public String getFullTableName() {
+        return fullTableName == null ? fullTableName = createFullName0(getOwner().getFullName()) : fullTableName;
+    }
 
     public Dialect getDialect() {
         return getOwner().getDialect();
     }
 
     public String getQuoteName() {
-        return getDialect().quote(getName());
+        return quoteName == null ? quoteName = getDialect().quote(getName()) : quoteName;
     }
 
     public void setJdbcType(SQLType jdbcType, Class<?> javaType) {
@@ -254,19 +264,18 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
                      .collect(Collectors.toList());
     }
 
+    public String createFullName0(String ownerName) {
+        return getDialect().buildColumnFullName(ownerName, getName());
+    }
+
     public String getFullName(String ownerName) {
         if (ownerName == null || ownerName.isEmpty()) {
             ownerName = getOwner().getName();
         }
+        if (Objects.equals(ownerName, getOwner().getName())) {
+            return getFullName();
+        }
         return getDialect().buildColumnFullName(ownerName, getName());
-    }
-
-    public String getFullName() {
-        return getFullName(getOwner().getName());
-    }
-
-    public String getFullTableName() {
-        return getFullName(getOwner().getFullName());
     }
 
     public boolean ddlModifiable(RDBColumnMetadata after) {

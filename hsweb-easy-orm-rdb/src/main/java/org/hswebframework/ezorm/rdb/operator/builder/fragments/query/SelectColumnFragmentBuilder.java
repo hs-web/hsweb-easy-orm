@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyColumn;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -44,7 +45,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
     private Set<SelectColumn> getAllSelectColumn(String ownerAlias, Set<String> excludes, TableOrViewMetadata metadata) {
         List<RDBColumnMetadata> metadataList = metadata.getColumns();
 
-        Set<SelectColumn> columns = new HashSet<>(metadataList.size());
+        Set<SelectColumn> columns = new LinkedHashSet<>(metadataList.size());
 
         for (RDBColumnMetadata column : metadata.getColumns()) {
             SelectColumn selectColumn;
@@ -127,17 +128,17 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
         Set<SelectColumn> columns = createSelectColumns(parameter);
 
-        PrepareSqlFragments main = PrepareSqlFragments.of();
+        BatchSqlFragments main = new BatchSqlFragments(columns.size() * 2, 0);
 
-        PrepareSqlFragments sql = null;
+        SqlFragments sql = null;
         for (SelectColumn column : columns) {
-            PrepareSqlFragments sqlNext = this.createFragments(parameter, column);
+            SqlFragments sqlNext = this.createFragments(parameter, column);
             if (sqlNext != null && sqlNext.isNotEmpty()) {
                 if (sql != null) {
-                    main.addSql(",");
+                    main.add(SqlFragments.COMMA);
                 }
                 sql = sqlNext;
-                main.addFragments(sql);
+                main.add(sql);
             }
         }
 
@@ -213,7 +214,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         return joins;
     }
 
-    public PrepareSqlFragments createFragments(QueryOperatorParameter parameter, SelectColumn selectColumn) {
+    public SqlFragments createFragments(QueryOperatorParameter parameter, SelectColumn selectColumn) {
         if (selectColumn instanceof NativeSql) {
             PrepareSqlFragments sqlFragments = PrepareSqlFragments
                 .of()
@@ -273,11 +274,10 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
         return this
             .createFragments(columnFullName, columnMetadata, selectColumn)
-            .map(fragments -> {
-                PrepareSqlFragments sqlFragments = PrepareSqlFragments.of().addFragments(fragments);
-                sqlFragments.addSql("as").addSql(getAlias(null, finalColumnMetadata, selectColumn));
-                return sqlFragments;
-            }).orElse(null);
+            .map(fragments -> new BatchSqlFragments(2,0)
+                .add(fragments)
+                .add(SqlFragments.of("as", getAlias(null, finalColumnMetadata, selectColumn))))
+            .orElse(null);
     }
 
     public Optional<SqlFragments> createFragments(String columnFullName, RDBColumnMetadata columnMetadata, SelectColumn column) {
@@ -294,7 +294,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                 });
         } else {
             return ofNullable(columnFullName)
-                .map(PrepareSqlFragments::of);
+                .map(SqlFragments::single);
         }
     }
 

@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerEnumInFragmentBuilder;
@@ -18,9 +18,12 @@ import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlEnumInFragmentBu
 
 import java.util.List;
 
+@Getter
 public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    @Getter
+    public static SqlFragments NOT_ZERO = SqlFragments.of("!= 0");
+    public static SqlFragments IS_ZERO = SqlFragments.of("= 0");
+
     private final boolean not;
 
     public EnumInFragmentBuilder(boolean not) {
@@ -40,21 +43,22 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
                 mask |= 1L << ((Enum<?>) value).ordinal();
             }
         }
-
-        PrepareSqlFragments sql = bitAnd(columnFullName, mask);
+        BatchSqlFragments _sql = new BatchSqlFragments(2, 0);
+        SqlFragments sql = bitAnd(columnFullName, mask);
+        _sql.add(sql);
 
         if (any) {
             // arr & 10 != 0
-            sql.addSql(not ? "=" : "!=", "0");
+            _sql.add(not ? IS_ZERO : NOT_ZERO);
         } else {
             // arr & 10 = arr
-            sql.addSql(not ? "!=" : "=", columnFullName);
+            _sql.addSql(not ? "!=" : "=", columnFullName);
         }
 
-        return sql;
+        return _sql;
     }
 
-    public abstract PrepareSqlFragments bitAnd(String column, long value);
+    public abstract SqlFragments bitAnd(String column, long value);
 
     public static EnumInFragmentBuilder of(Dialect dialect) {
         if (dialect instanceof MysqlDialect) {
@@ -70,7 +74,7 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
             return OracleEnumInFragmentBuilder.in;
         }
 
-        throw new UnsupportedOperationException("unsupported db type :" + dialect.getType());
+        throw new UnsupportedOperationException("unsupported db type :" + dialect);
     }
 
     public static EnumInFragmentBuilder ofNot(Dialect dialect) {

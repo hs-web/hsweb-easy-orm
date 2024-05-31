@@ -1,14 +1,14 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.term;
 
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
+import org.hswebframework.ezorm.rdb.utils.SqlUtils;
 
 import java.util.*;
 
@@ -20,13 +20,13 @@ import java.util.*;
  * @since 4.0
  */
 @AllArgsConstructor
+@Getter
 public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder {
 
-    @Getter
     private final String termType;
 
-    @Getter
     private final String name;
+
 
     /**
      * 尝试转换条件值为List,如果值为字符串则按,分割.
@@ -55,8 +55,12 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         //集合
         if (value instanceof Collection) {
             Collection<Object> listValue = ((Collection<Object>) value);
-            List<Object> list = new ArrayList<>(listValue.size());
 
+            if (listValue instanceof List) {
+                return Lists.transform(((List<Object>) listValue), (val) -> this.convertValue(column, val));
+            }
+
+            List<Object> list = new ArrayList<>(listValue.size());
             for (Object val : listValue) {
                 list.add(this.convertValue(column, val));
             }
@@ -69,10 +73,10 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
 
     protected TableOrViewMetadata getTable(String tableName, RDBColumnMetadata baseOn) {
         return baseOn
-                .getOwner()
-                .getSchema()
-                .getTableOrView(tableName)
-                .orElseThrow(() -> new UnsupportedOperationException("table " + tableName + " does not exist"));
+            .getOwner()
+            .getSchema()
+            .getTableOrView(tableName)
+            .orElseThrow(() -> new UnsupportedOperationException("table " + tableName + " does not exist"));
     }
 
     protected String getTableName(String tableName, RDBColumnMetadata baseOn) {
@@ -105,13 +109,13 @@ public abstract class AbstractTermFragmentBuilder implements TermFragmentBuilder
         return convertValue(column, term.getValue());
     }
 
-    protected PrepareSqlFragments appendPrepareOrNative(PrepareSqlFragments sql, Object value) {
+    protected <T extends AppendableSqlFragments> T appendPrepareOrNative(T sql, Object value) {
         if (value instanceof NativeSql) {
             NativeSql nativeSql = ((NativeSql) value);
             sql.addSql(nativeSql.getSql())
                .addParameter(nativeSql.getParameters());
         } else {
-            sql.addSql("?")
+            sql.add(SqlFragments.QUESTION_MARK)
                .addParameter(value);
         }
         return sql;

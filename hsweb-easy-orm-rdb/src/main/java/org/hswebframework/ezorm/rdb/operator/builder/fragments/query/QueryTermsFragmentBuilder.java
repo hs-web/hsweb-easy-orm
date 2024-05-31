@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AbstractTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
@@ -48,10 +49,11 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
     protected SqlFragments createByColumn(RDBColumnMetadata column, String owner, Term term) {
         if (column != null) {
-            return column
-                    .findFeature(createFeatureId(term.getTermType()))
-                    .map(termFragment -> termFragment.createFragments(createColumnFullName(column, owner), column, term))
-                    .orElse(EmptySqlFragments.INSTANCE);
+            TermFragmentBuilder builder = column.findFeature(createFeatureId(term.getTermType())).orElse(null);
+            if (builder != null) {
+                return builder
+                    .createFragments(createColumnFullName(column, owner), column, term);
+            }
         }
         return EmptySqlFragments.INSTANCE;
     }
@@ -59,21 +61,21 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
     private SqlFragments createByJoin(String[] arr, QueryOperatorParameter parameter, Term term) {
         return parameter
-                .findJoin(arr[0]) //先找join的表
-                .flatMap(join -> metaData
-                        .getSchema()
-                        .getTableOrView(join.getTarget())
-                        .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
-                        .map(column -> createByColumn(column, join.getAlias(), term)))
-                .orElseGet(() -> {//外键关联查询
-                    return metaData
-                            .getForeignKey(arr[0])
-                            .flatMap(key -> key
-                                    .getSource()
-                                    .findFeature(ForeignKeyTermFragmentBuilder.ID)
-                                    .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
-                            .orElse(EmptySqlFragments.INSTANCE);
-                });
+            .findJoin(arr[0]) //先找join的表
+            .flatMap(join -> metaData
+                .getSchema()
+                .getTableOrView(join.getTarget())
+                .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
+                .map(column -> createByColumn(column, join.getAlias(), term)))
+            .orElseGet(() -> {//外键关联查询
+                return metaData
+                    .getForeignKey(arr[0])
+                    .flatMap(key -> key
+                        .getSource()
+                        .findFeature(ForeignKeyTermFragmentBuilder.ID)
+                        .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
+                    .orElse(EmptySqlFragments.INSTANCE);
+            });
     }
 
     protected SqlFragments createTermFragments(QueryOperatorParameter parameter, Term term) {
@@ -115,10 +117,10 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
         //匹配join
         for (Join join : parameter.getJoins()) {
             RDBColumnMetadata joinColumn = metaData
-                    .getSchema()
-                    .getTableOrView(join.getTarget())
-                    .flatMap(joinTable -> joinTable.getColumn(cname))
-                    .orElse(null);
+                .getSchema()
+                .getTableOrView(join.getTarget())
+                .flatMap(joinTable -> joinTable.getColumn(cname))
+                .orElse(null);
             if (joinColumn != null) {
                 return createByColumn(joinColumn, join.getAlias(), term);
             }

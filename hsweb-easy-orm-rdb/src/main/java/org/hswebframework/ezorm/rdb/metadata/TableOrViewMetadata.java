@@ -51,7 +51,7 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
     List<RDBColumnMetadata> findColumns();
 
     /**
-     * 获取当前表或者视图对列
+     * 获取当前表或者视图的列
      *
      * @param name 列名或者别名
      * @return Optional
@@ -59,6 +59,18 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
      * @see RDBColumnMetadata#getAlias()
      */
     Optional<RDBColumnMetadata> getColumn(String name);
+
+    /**
+     * 立即获取当前表或者视图的列,如果不存在则抛出异常: {@link IllegalStateException}
+     *
+     * @param name 列名称
+     * @return RDBColumnMetadata
+     */
+    default RDBColumnMetadata getColumnNow(String name) {
+        return getColumn(name)
+            .orElseThrow(() -> new IllegalStateException("column not found:" + name + " in " + getFullName()));
+    }
+
 
     /**
      * 查找列,可查找通过外键关联表对列或者其他表对列
@@ -129,17 +141,17 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
 
     default String getFullName() {
         return StringUtils.concat(
-                getSchema().getName(),
-                ".",
-                getName()
+            getSchema().getName(),
+            ".",
+            getName()
         );
     }
 
     default String getQuoteName() {
 
         return getDialect().quote(getSchema().getName(), false)
-                + "."
-                + getDialect().quote(getName(), false);
+            + "."
+            + getDialect().quote(getName(), false);
     }
 
     @Override

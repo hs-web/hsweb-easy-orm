@@ -20,7 +20,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.NullTermFrag
  */
 public class NotFillOrNullFragmentBuilder extends AbstractTermFragmentBuilder {
 
-    private final NullTermFragmentBuilder     nullBuilder;
+    private final NullTermFragmentBuilder nullBuilder;
     private final AbstractTermFragmentBuilder notBuilder;
 
     public NotFillOrNullFragmentBuilder(AbstractTermFragmentBuilder notBuilder) {
@@ -36,12 +36,11 @@ public class NotFillOrNullFragmentBuilder extends AbstractTermFragmentBuilder {
         SqlFragments notSqlFragments = notBuilder.createFragments(columnFullName, column, term);
         SqlFragments nullSqlFragments = nullBuilder.createFragments(columnFullName, column, term);
 
-        return PrepareSqlFragments.of()
-                .addSql("(")
-                .addSql(nullSqlFragments.getSql())
-                .addSql("or")
-                .addSql(notSqlFragments.getSql())
-                .addSql(")")
-                .addParameter(notSqlFragments.getParameters());
+        return new BatchSqlFragments(5, 1)
+            .add(SqlFragments.LEFT_BRACKET)
+            .add(nullSqlFragments)
+            .add(SqlFragments.OR)
+            .add(notSqlFragments)
+            .add(SqlFragments.RIGHT_BRACKET);
     }
 }

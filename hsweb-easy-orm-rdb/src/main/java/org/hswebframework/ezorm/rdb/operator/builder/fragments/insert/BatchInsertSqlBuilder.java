@@ -1,14 +1,13 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.*;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
@@ -27,24 +26,41 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         return new BatchInsertSqlBuilder(table);
     }
 
+    static SqlFragments VALUES = SqlFragments.single(") values ");
+
+    protected int computeSqlSize(int columnSize, int valueSize) {
+        return (columnSize * valueSize) * 2 + valueSize * 2 + columnSize * 3 + 2;
+    }
+
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
-        PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
+//        PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
+        Set<InsertColumn> columns = parameter.getColumns();
+        List<List<Object>> valueList = parameter.getValues();
+        int columnSize = columns.size();
+        int valueSize = valueList.size();
+        AppendableSqlFragments fragments = beforeBuild(
+            parameter,
+            new BatchSqlFragments(
+                computeSqlSize(columnSize, valueSize),
+                columnSize * valueSize
+            ));
 
-        Map<Integer, RDBColumnMetadata> indexMapping = new LinkedHashMap<>(64);
-        Map<Integer, SqlFragments> functionValues = new LinkedHashMap<>(64);
+        fragments.add(SqlFragments.LEFT_BRACKET);
+
+        LinkedHashMap<Integer, RDBColumnMetadata> indexMapping =  Maps.newLinkedHashMapWithExpectedSize(columns.size());
+        LinkedHashMap<Integer, SqlFragments> functionValues =  Maps.newLinkedHashMapWithExpectedSize(columns.size());
 
         int index = 0;
         int primaryIndex = -1;
 
         //如果只有一条数据则忽略null的列
         boolean ignoreNullColumn = parameter.getValues().size() == 1;
-        Set<InsertColumn> columns = parameter.getColumns();
+
         for (InsertColumn column : columns) {
             RDBColumnMetadata columnMetadata = ofNullable(column.getColumn())
-                    .flatMap(table::getColumn)
-                    .orElse(null);
-
+                .flatMap(table::getColumn)
+                .orElse(null);
             if (columnMetadata != null && columnMetadata.isInsertable()) {
                 if (columnMetadata.isPrimaryKey()) {
                     primaryIndex = index;
@@ -53,27 +69,26 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 if (ignoreNullColumn) {
                     List<Object> values = parameter.getValues().get(0);
                     if (index >= values.size()
-                            || values.get(index) instanceof NullValue
-                            //为空并且没有默认值
-                            || (values.get(index) == null && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue))) {
+                        || values.get(index) instanceof NullValue
+                        //为空并且没有默认值
+                        || (values.get(index) == null && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue))) {
                         index++;
                         continue;
                     }
                 }
                 if (indexMapping.size() != 0) {
-                    fragments.addSql(",");
+                    fragments.add(SqlFragments.COMMA);
                 }
                 fragments.addSql(columnMetadata.getQuoteName());
                 indexMapping.put(index, columnMetadata);
+
                 //列为函数
-                SqlFragments functionFragments = Optional
-                        .of(column)
-                        .flatMap(insertColumn -> ofNullable(insertColumn.getFunction())
-                                .flatMap(function -> columnMetadata.findFeature(FunctionFragmentBuilder.createFeatureId(function)))
-                                .map(builder -> builder.create(columnMetadata.getName(), columnMetadata, insertColumn)))
-                        .orElse(EmptySqlFragments.INSTANCE);
-                if (functionFragments.isNotEmpty()) {
-                    functionValues.put(index, functionFragments);
+                if (StringUtils.isNotEmpty(column.getFunction())) {
+                    functionValues.put(
+                        index,
+                        columnMetadata
+                            .findFeatureNow(FunctionFragmentBuilder.createFeatureId(column.getFunction()))
+                            .create(columnMetadata.getName(), columnMetadata, column));
                 }
             }
             index++;
@@ -82,10 +97,11 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         if (indexMapping.isEmpty()) {
             throw new IllegalArgumentException("No operable columns");
         }
-        fragments.addSql(") values ");
+        // ) values
+        fragments.add(VALUES);
         index = 0;
         Set<Object> duplicatePrimary = new HashSet<>(32);
-        for (List<Object> values : parameter.getValues()) {
+        for (List<Object> values : valueList) {
             if (primaryIndex >= 0) {
                 //重复的id 则不进行处理
                 if (values.size() > primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
@@ -93,60 +109,63 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 }
             }
             if (index++ != 0) {
-                fragments.addSql(",");
+                fragments.add(SqlFragments.COMMA);
             }
-            fragments.addSql("(");
+            fragments.add(SqlFragments.LEFT_BRACKET);
             int valueLen = values.size();
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 int valueIndex = entry.getKey();
                 if (vIndex++ != 0) {
-                    fragments.addSql(",");
+                    fragments.add(SqlFragments.COMMA);
                 }
                 SqlFragments function = functionValues.get(valueIndex);
                 if (null != function) {
-                    fragments.addFragments(function);
+                    fragments.add(function);
                 } else {
                     RDBColumnMetadata column = entry.getValue();
 
                     Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
 
                     if ((value == null || value instanceof NullValue)
-                            && column.getDefaultValue() instanceof RuntimeDefaultValue) {
+                        && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                         value = column.getDefaultValue().get();
                     }
                     if (value instanceof NativeSql) {
                         fragments
-                                .addSql(((NativeSql) value).getSql())
-                                .addParameter(((NativeSql) value).getParameters());
+                            .addSql(((NativeSql) value).getSql())
+                            .addParameter(((NativeSql) value).getParameters());
 
                     } else {
                         if (value == null) {
                             value = NullValue.of(column.getType());
                         }
-                        fragments.addSql("?").addParameter(column.encode(value));
+                        fragments.add(SqlFragments.QUESTION_MARK)
+                                 .addParameter(column.encode(value));
                     }
                 }
             }
 
-            fragments.addSql(")");
+            fragments.add(SqlFragments.RIGHT_BRACKET);
             afterValues(columns, values, fragments);
         }
 
         return afterBuild(columns, parameter, fragments).toRequest();
     }
 
-    protected PrepareSqlFragments beforeBuild(InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
-        return fragments.addSql("insert into")
+    protected static SqlFragments INSERT_INTO = SqlFragments.single("insert into");
+
+    protected AppendableSqlFragments beforeBuild(InsertOperatorParameter parameter, AppendableSqlFragments fragments) {
+        return fragments.add(INSERT_INTO)
                         .addSql(table.getFullName());
     }
 
-    protected PrepareSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, PrepareSqlFragments fragments) {
+    protected AppendableSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, AppendableSqlFragments fragments) {
 
         return fragments;
     }
 
-    protected void afterValues(Set<InsertColumn> columns, List<Object> values, PrepareSqlFragments sql) {
+    protected void afterValues(Set<InsertColumn> columns, List<Object> values, AppendableSqlFragments sql) {
 
     }
 

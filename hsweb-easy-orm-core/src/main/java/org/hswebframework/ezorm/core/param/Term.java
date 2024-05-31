@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-public class Term implements Serializable,Cloneable {
+public class Term implements Serializable, Cloneable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -35,13 +35,13 @@ public class Term implements Serializable,Cloneable {
     /**
      * 链接类型
      */
-    @Schema(description = "多个条件关联类型",defaultValue = "and")
+    @Schema(description = "多个条件关联类型", defaultValue = "and")
     private Type type = Type.and;
 
     /**
      * 条件类型
      */
-    @Schema(description = "动态条件类型",defaultValue = "eq")
+    @Schema(description = "动态条件类型", defaultValue = "eq")
     private String termType = TermType.eq;
 
     /**
@@ -59,6 +59,17 @@ public class Term implements Serializable,Cloneable {
     @Schema(description = "嵌套条件")
     private List<Term> terms = new LinkedList<>();
 
+    public static Term of(String column,
+                          String termType,
+                          Object value,
+                          String... options) {
+        Term term = new Term();
+        term.setColumn(column);
+        term.setTermType(termType);
+        term.setValue(value);
+        term.getOptions().addAll(Arrays.asList(options));
+        return term;
+    }
 
     public Term or(String term, Object value) {
         return or(term, TermType.eq, value);

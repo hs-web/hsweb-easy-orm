@@ -6,10 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.BlockSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
@@ -58,11 +55,8 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
     }
 
     protected SqlFragments from(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
-        return PrepareSqlFragments
-            .of()
-            .addSql("from")
-            .addSql(metadata.getFullName())
-            .addSql(parameter.getFromAlias());
+        return SqlFragments
+            .of("from", metadata.getFullName(), parameter.getFromAlias());
     }
 
     protected Optional<SqlFragments> groupBy(QueryOperatorParameter parameter, TableOrViewMetadata metadata) {
@@ -70,43 +64,48 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         if (CollectionUtils.isEmpty(groupBy)) {
             return Optional.empty();
         }
-        PrepareSqlFragments sql = PrepareSqlFragments.of();
-
+        BatchSqlFragments sql = new BatchSqlFragments(groupBy.size() * 2 - 1, 0);
+        int idx = 0;
         for (SelectColumn column : groupBy) {
+            if (idx++ > 0) {
+                sql.add(SqlFragments.COMMA);
+            }
             if (column instanceof NativeSql) {
                 sql.addSql(((NativeSql) column).getSql())
-                    .addParameter(((NativeSql) column).getParameters());
+                   .addParameter(((NativeSql) column).getParameters());
             } else {
-                RDBColumnMetadata columnMetadata = metadata
-                    .getColumn(column.getColumn())
-                    .orElseThrow(() -> new IllegalArgumentException("unknown column " + column.getColumn()));
-                String fullName = columnMetadata.getFullName();
+                RDBColumnMetadata columnMetadata = metadata.getColumnNow(column.getColumn());
 
+                String fullName = columnMetadata.getFullName();
                 String function = column.getFunction();
                 if (function != null) {
-                    sql.addFragments(
-                        metadata
-                            .findFeature(createFeatureId(function))
-                            .map(fragment -> fragment.create(fullName, columnMetadata, column))
-                            .filter(SqlFragments::isNotEmpty)
-                            .orElseThrow(() -> new UnsupportedOperationException("unsupported function:" + column))
-                    );
+                    SqlFragments func = metadata
+                        .findFeatureNow(createFeatureId(function))
+                        .create(fullName, columnMetadata, column);
+                    if (func.isEmpty()) {
+                        throw new UnsupportedOperationException("unsupported function:" + function);
+                    }
+                    sql.add(func);
                 } else {
                     sql.addSql(fullName);
                 }
             }
-            sql.addSql(",");
 
         }
-        sql.removeLastSql();
         return Optional.of(sql);
     }
+
+    protected static final SqlFragments SELECT = SqlFragments.single("select");
+    protected static final SqlFragments WHERE = SqlFragments.single("where");
+    protected static final SqlFragments GROUP_BY = SqlFragments.single("group by");
+    protected static final SqlFragments ORDER_BY = SqlFragments.single("order by");
+    protected static final SqlFragments FOR_UPDATE = SqlFragments.single("for update");
 
 
     protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
         BlockSqlFragments fragments = BlockSqlFragments.of();
 
-        fragments.addBlock(FragmentBlock.before, "select");
+        fragments.addBlock(FragmentBlock.before, SELECT);
 
         fragments.addBlock(FragmentBlock.selectColumn, select(parameter, metadata)
             .orElseGet(() -> PrepareSqlFragments.of().addSql("*")));
@@ -120,23 +119,23 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
 
         where(parameter, metadata)
             .ifPresent(where ->
-                           fragments.addBlock(FragmentBlock.where, "where")
+                           fragments.addBlock(FragmentBlock.where, WHERE)
                                     .addBlock(FragmentBlock.where, where));
 
         //group by
         groupBy(parameter, metadata)
             .ifPresent(groupBy ->
-                           fragments.addBlock(FragmentBlock.groupBy, "group by")
+                           fragments.addBlock(FragmentBlock.groupBy, GROUP_BY)
                                     .addBlock(FragmentBlock.groupBy, groupBy));
         //having
 
         //order by
         orderBy(parameter, metadata)
-            .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, "order by")
+            .ifPresent(order -> fragments.addBlock(FragmentBlock.orderBy, ORDER_BY)
                                          .addBlock(FragmentBlock.orderBy, order));
 
         if (Boolean.TRUE.equals(parameter.getForUpdate())) {
-            fragments.addBlock(FragmentBlock.after, PrepareSqlFragments.of().addSql("for update"));
+            fragments.addBlock(FragmentBlock.after, FOR_UPDATE);
         }
         //分页
         else if (parameter.getPageIndex() != null && parameter.getPageSize() != null) {

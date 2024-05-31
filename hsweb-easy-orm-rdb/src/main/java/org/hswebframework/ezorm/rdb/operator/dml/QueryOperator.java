@@ -260,7 +260,6 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
 
     public abstract QueryOperator orderBy(SortOrder... operators);
 
-    //todo 暂未支持
     public abstract QueryOperator groupBy(Operator<SelectColumn>... operators);
 
     public abstract QueryOperator groupBy(SelectColumn... operators);

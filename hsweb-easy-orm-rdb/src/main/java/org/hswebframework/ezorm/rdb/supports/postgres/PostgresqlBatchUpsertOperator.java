@@ -35,22 +35,23 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     public PostgresqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
-        this.builder = new PostgresqlUpsertBatchInsertSqlBuilder(table);
         this.idColumn = table.getColumns()
                              .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                             .findFirst().orElse(null);
+                             .findFirst()
+                             .orElse(null);
         this.fallback = new DefaultSaveOrUpdateOperator(table);
+        this.builder = new PostgresqlUpsertBatchInsertSqlBuilder(table);
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         if (idColumn == null) {
             this.idColumn = table
-                    .getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .orElse(null);
+                .getColumns()
+                .stream()
+                .filter(RDBColumnMetadata::isPrimaryKey)
+                .findFirst()
+                .orElse(null);
 
             if (this.idColumn == null) {
                 return fallback.execute(parameter);
@@ -92,22 +93,34 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
         @Override
         public Mono<SaveResult> reactive() {
             return Mono
-                    .fromSupplier(sqlRequest)
-                    .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
-                    .map(i -> SaveResult.of(0, i))
-                    .as(ExceptionUtils.translation(table));
+                .fromSupplier(sqlRequest)
+                .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                .map(i -> SaveResult.of(0, i))
+                .as(ExceptionUtils.translation(table));
         }
     }
 
+    static SqlFragments UPDATE_SET = SqlFragments.of("update set");
+
     private class PostgresqlUpsertBatchInsertSqlBuilder extends BatchInsertSqlBuilder {
+
+        SqlFragments PREFIX = null;
 
         public PostgresqlUpsertBatchInsertSqlBuilder(RDBTableMetadata table) {
             super(table);
         }
 
         @Override
-        protected PrepareSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, PrepareSqlFragments sql) {
-            sql.addSql("on conflict (", idColumn.getName(), ") do ");
+        protected int computeSqlSize(int columnSize, int valueSize) {
+            return super.computeSqlSize(columnSize, valueSize) + columnSize * 3 + 2;
+        }
+
+        @Override
+        protected AppendableSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, AppendableSqlFragments sql) {
+            if (PREFIX == null) {
+                PREFIX = SqlFragments.of("on conflict (", idColumn.getName(), ") do ");
+            }
+            sql.add(PREFIX);
 
             if (((PostgresqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 sql.addSql("nothing");
@@ -124,25 +137,26 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                     continue;
                 }
                 RDBColumnMetadata columnMetadata = table.getColumn(column.getColumn()).orElse(null);
-                if ( columnMetadata == null
-                        || columnMetadata.isPrimaryKey()
-                        || !columnMetadata.isUpdatable()
-                        || !columnMetadata.isSaveable()) {
+                if (columnMetadata == null
+                    || columnMetadata.isPrimaryKey()
+                    || !columnMetadata.isUpdatable()
+                    || !columnMetadata.isSaveable()) {
 
                     continue;
                 }
                 if (more) {
-                    sql.addSql(",");
+                    sql.add(SqlFragments.COMMA);
                 } else {
-                    sql.addSql("update set");
+                    sql.add(UPDATE_SET);
                 }
                 more = true;
-                sql.addSql(columnMetadata.getQuoteName()).addSql("=");
+                sql.addSql(columnMetadata.getQuoteName())
+                   .add(SqlFragments.EQUAL);
 
                 sql.addSql(
-                        "coalesce(", columnMetadata.getFullName("excluded"), ",", columnMetadata.getFullName(),")"
+                    "coalesce(", columnMetadata.getFullName("excluded"), ",", columnMetadata.getFullName(), ")"
                 );
-               // sql.addSql(columnMetadata.getFullName("excluded"));
+                // sql.addSql(columnMetadata.getFullName("excluded"));
             }
             if (!more) {
                 sql.addSql("nothing");
@@ -152,7 +166,7 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 if (CollectionUtils.isNotEmpty(where)) {
                     SqlFragments fragments = SimpleTermsFragmentBuilder.instance().createTermFragments(table, where);
                     if (fragments.isNotEmpty()) {
-                        sql.addSql("where").addFragments(fragments);
+                        sql.add(SqlFragments.WHERE).addFragments(fragments);
                     }
                 }
             }

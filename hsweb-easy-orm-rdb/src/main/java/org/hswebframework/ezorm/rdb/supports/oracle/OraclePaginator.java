@@ -8,24 +8,27 @@ import static org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSql
 
 public class OraclePaginator implements Paginator {
 
+    static final SqlFragments PREFIX = SqlFragments.of("select * from ( SELECT row_.*, rownum rownum_ FROM (");
+    static final String SUFFIX_SQL = ") row_ ) where rownum_ <= ?  AND rownum_ > ?";
+    static final SqlFragments SUFFIX = SqlFragments.of(SUFFIX_SQL);
+
     @Override
     public SqlFragments doPaging(SqlFragments fragments, int pageIndex, int pageSize) {
-        if (fragments instanceof PrepareSqlFragments) {
-            PrepareSqlFragments paging = of();
-
-            paging.addSql("select * from ( SELECT row_.*, rownum rownum_ FROM (")
-                    .addFragments(fragments)
-                    .addSql(") row_ ) where rownum_ <= ?  AND rownum_ > ?")
-                    .addParameter((pageIndex + 1) * pageSize, pageIndex * pageSize);
-            return paging;
-        } else if (fragments instanceof BlockSqlFragments) {
+        if (fragments instanceof BlockSqlFragments) {
             BlockSqlFragments block = ((BlockSqlFragments) fragments);
-            block.addBlockFirst(FragmentBlock.before, of().addSql("select * from ( SELECT row_.*, rownum rownum_ FROM ("));
+            block.addBlockFirst(FragmentBlock.before, PREFIX);
 
-            block.addBlock(FragmentBlock.after, of().addSql(") row_ ) where rownum_ <= ?  AND rownum_ > ?")
-                    .addParameter((pageIndex + 1) * pageSize, pageIndex * pageSize));
+            block.addBlock(FragmentBlock.after, SimpleSqlFragments
+                .of(SUFFIX_SQL, (pageIndex + 1) * pageSize, pageIndex * pageSize));
+            return fragments;
         }
 
-        return fragments;
+        BatchSqlFragments paging = new BatchSqlFragments(3,2);
+
+        paging.add(PREFIX)
+              .add(fragments)
+              .add(SUFFIX)
+              .addParameter((pageIndex + 1) * pageSize, pageIndex * pageSize);
+        return paging;
     }
 }

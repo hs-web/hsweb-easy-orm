@@ -15,8 +15,8 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
@@ -29,16 +29,16 @@ import static org.hswebframework.ezorm.rdb.operator.dml.query.Selects.count1;
 
 public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> implements ReactiveQuery<T> {
 
-    private final Logger logger;
+    private final Function<Context, Context> context;
 
     public DefaultReactiveQuery(TableOrViewMetadata tableMetadata,
                                 EntityColumnMapping mapping,
                                 DMLOperator operator,
                                 ResultWrapper<T, ?> wrapper,
-                                Logger logger,
+                                Function<Context, Context> context,
                                 ContextKeyValue<?>... keyValues) {
         super(tableMetadata, mapping, operator, wrapper, keyValues);
-        this.logger = logger;
+        this.context = context;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                  .when(param.isForUpdate(), QueryOperator::forUpdate)
                                  .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetch")))
                                  .reactive())
-                .contextWrite(ctx->ctx.put(Logger.class,logger));
+                .contextWrite(context);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                                  .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetchOne")))
                                  .reactive()
                                  .take(1))
-                .contextWrite(ctx-> ctx.put(Logger.class,logger))
+                .contextWrite(context)
                 .singleOrEmpty();
     }
 
@@ -111,7 +111,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                         .map(Number::intValue)
                         .reduce(Math::addExact)
                         .switchIfEmpty(Mono.just(0)))
-                .contextWrite(ctx-> ctx.put(Logger.class,logger))
+                .contextWrite(context)
                 .singleOrEmpty();
     }
 

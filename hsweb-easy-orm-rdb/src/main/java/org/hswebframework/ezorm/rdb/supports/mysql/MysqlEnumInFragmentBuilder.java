@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.mysql;
 
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 
 public class MysqlEnumInFragmentBuilder extends EnumInFragmentBuilder {
@@ -14,8 +14,8 @@ public class MysqlEnumInFragmentBuilder extends EnumInFragmentBuilder {
     }
 
     @Override
-    public PrepareSqlFragments bitAnd(String column, long value) {
+    public SqlFragments bitAnd(String column, long value) {
 
-        return PrepareSqlFragments.of().addSql(column,"&", String.valueOf(value));
+        return SqlFragments.of(column, "&", String.valueOf(value));
     }
 }

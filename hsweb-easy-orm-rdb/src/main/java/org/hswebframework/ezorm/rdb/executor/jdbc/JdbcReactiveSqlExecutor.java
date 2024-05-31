@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,40 +26,53 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-
-        return getConnection()
+        return Mono
+            .deferContextual(ctx -> getConnection()
                 .flatMap(connection -> toFlux(request)
-                        .map(sql -> doUpdate(connection, sql))
-                        .reduce(Math::addExact))
-                .defaultIfEmpty(0);
+                    .map(sql -> doUpdate(ctx.getOrDefault(Logger.class, log), connection, sql))
+                    .reduce(Math::addExact))
+                .defaultIfEmpty(0));
 
     }
 
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
-        return getConnection()
+
+        return Mono
+            .deferContextual(ctx -> getConnection()
                 .flatMap(connection -> toFlux(request)
-                        .doOnNext(sql -> doExecute(connection, sql))
-                        .then());
+                    .doOnNext(sql -> doExecute(ctx.getOrDefault(Logger.class, log), connection, sql))
+                    .then()));
     }
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
         return Flux
-                .create(sink -> {
-                    @SuppressWarnings("all")
-                    Disposable disposable = getConnection()
+            .deferContextual(ctx -> {
+                Logger logger = ctx.getOrDefault(Logger.class, log);
+                return Flux
+                    .create(sink -> {
+                        @SuppressWarnings("all")
+                        Disposable disposable = getConnection()
                             .flatMap(connection -> toFlux(request)
-                                    .doOnNext(sql -> doSelect(connection, sql, consumer(wrapper, sink::next)))
-                                    .then())
+                                .doOnNext(sql -> this
+                                    .doSelect(
+                                        logger,
+                                        connection,
+                                        sql,
+                                        consumer(wrapper, sink::next),
+                                        t -> sink.isCancelled()))
+                                .then())
                             .subscribe((ignore) -> sink.complete(),
                                        sink::error,
                                        sink::complete,
                                        Context.of(sink.contextView()));
 
-                    sink.onCancel(disposable)
-                        .onDispose(disposable);
-                });
+                        sink.onCancel(disposable)
+                            .onDispose(disposable);
+                    });
+            });
+
     }
 
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
