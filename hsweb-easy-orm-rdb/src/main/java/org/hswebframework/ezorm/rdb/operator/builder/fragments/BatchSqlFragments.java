@@ -47,6 +47,9 @@ public class BatchSqlFragments implements AppendableSqlFragments {
     }
 
     public BatchSqlFragments addSql(String... sql) {
+        if (sql == null || sql.length == 0) {
+            return this;
+        }
         if (sql.length == 1) {
             return addSql(Collections.singletonList(sql[0]));
         }
@@ -63,11 +66,17 @@ public class BatchSqlFragments implements AppendableSqlFragments {
     @Override
     @SuppressWarnings("all")
     public BatchSqlFragments addParameter(Collection<?> parameter) {
+        if (CollectionUtils.isEmpty(parameter)) {
+            return this;
+        }
         return addParameters(parameter instanceof List ? ((List) parameter) : new ArrayList<>(parameter));
     }
 
     @Override
     public BatchSqlFragments addParameter(Object... parameter) {
+        if (parameter == null || parameter.length == 0) {
+            return this;
+        }
         return addParameters(Arrays.asList(parameter));
     }
 
