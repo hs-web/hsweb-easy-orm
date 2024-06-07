@@ -37,13 +37,12 @@ public class SimpleTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Tab
     }
 
     public static SqlFragments createByTable(TableOrViewMetadata table, Term term) {
-        if (term.getValue() instanceof NativeSql) {
-            NativeSql sql = ((NativeSql) term.getValue());
-            return SimpleSqlFragments.of(sql.getSql(), sql.getParameters());
-        }
-
         String columnName = term.getColumn();
         if (columnName == null) {
+            if (term.getValue() instanceof NativeSql) {
+                NativeSql sql = ((NativeSql) term.getValue());
+                return SimpleSqlFragments.of(sql.getSql(), sql.getParameters());
+            }
             return EmptySqlFragments.INSTANCE;
         }
 
