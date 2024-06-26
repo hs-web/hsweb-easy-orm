@@ -213,12 +213,13 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
             .doOnNext(record -> {
                 String tableName = record
                     .getString("table_name")
-                    .map(String::toLowerCase)
                     .orElseThrow(() -> new NullPointerException("table_name is null"));
                 RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
-                    RDBTableMetadata metaData = createTable(__t);
-                    metaData.setName(__t);
-                    metaData.setAlias(__t);
+                    String lowerName = __t.toLowerCase();
+                    RDBTableMetadata metaData = createTable(lowerName);
+                    metaData.setName(lowerName);
+                    metaData.setAlias(lowerName);
+                    metaData.setRealName(__t);
                     return metaData;
                 });
                 RDBColumnMetadata column = tableMetadata.newColumn();
@@ -270,12 +271,13 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 consumer(new RecordResultWrapper(), record -> {
                     String tableName = record
                         .getString("table_name")
-                        .map(String::toLowerCase)
                         .orElseThrow(() -> new NullPointerException("table_name is null"));
                     RDBTableMetadata tableMetadata = metadata.computeIfAbsent(tableName, __t -> {
-                        RDBTableMetadata metaData = createTable(__t);
-                        metaData.setName(__t);
-                        metaData.setAlias(__t);
+                        String lowerName = __t.toLowerCase();
+                        RDBTableMetadata metaData = createTable(lowerName);
+                        metaData.setName(lowerName);
+                        metaData.setAlias(lowerName);
+                        metaData.setRealName(__t);
                         return metaData;
                     });
                     RDBColumnMetadata column = tableMetadata.newColumn();

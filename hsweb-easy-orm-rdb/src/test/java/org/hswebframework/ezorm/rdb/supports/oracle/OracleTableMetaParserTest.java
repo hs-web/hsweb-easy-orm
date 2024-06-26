@@ -5,7 +5,9 @@ import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.Paginator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,14 +56,38 @@ public class OracleTableMetaParserTest {
     }
 
     @Test
+    public void testParseAll() {
+        executor.execute(SqlRequests.of("CREATE TABLE \"test_table_all\"(" +
+                                            "\"id\" varchar2(32) primary key," +
+                                            "name varchar2(128) not null," +
+                                            "age number(10)" +
+                                            ")"));
+        try {
+            for (RDBTableMetadata rdbTableMetadata : parser.parseAll()) {
+                System.out.println(rdbTableMetadata.getName() + " => " + rdbTableMetadata.getRealName());
+                schema.addTable(rdbTableMetadata);
+            }
+
+            RDBTableMetadata metadata = schema
+                .getTable("test_table_all", false)
+                .orElseThrow(NullPointerException::new);
+
+            Assert.assertEquals("test_table_all", metadata.getRealName());
+
+        } finally {
+            executor.execute(prepare("drop table \"test_table_all\""));
+        }
+    }
+
+    @Test
     public void testParse() {
 
         try {
             executor.execute(SqlRequests.of("CREATE TABLE test_table(" +
-                                                    "id varchar2(32) primary key," +
-                                                    "name varchar2(128) not null," +
-                                                    "age number(10)" +
-                                                    ")"));
+                                                "id varchar2(32) primary key," +
+                                                "name varchar2(128) not null," +
+                                                "age number(10)" +
+                                                ")"));
             RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
 
             //id

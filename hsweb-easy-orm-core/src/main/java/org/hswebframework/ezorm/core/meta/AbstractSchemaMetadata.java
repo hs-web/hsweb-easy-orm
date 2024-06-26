@@ -52,8 +52,9 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         if (typeMapping == null) {
 
             List<T> all = loadMetadata(type);
-            Map<String, ObjectMetadata> group = all.stream()
-                                                   .collect(toMap(ObjectMetadata::getName, Function.identity(), (_1, _2) -> _1, ConcurrentHashMap::new));
+            Map<String, ObjectMetadata> group = all
+                .stream()
+                .collect(toMap(ObjectMetadata::getName, Function.identity(), (_1, _2) -> _1, ConcurrentHashMap::new));
 
             typeMapping = metaRepository.put(type.getId(), group);
             if (typeMapping != null) {
@@ -68,34 +69,34 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         Map<String, ObjectMetadata> typeMapping = metaRepository.get(type.getId());
         if (typeMapping == null) {
             return loadMetadataReactive(type)
-                    .collectMap(ObjectMetadata::getName, Function.identity())
-                    .flatMapMany(group -> {
-                        Map<String, ObjectMetadata> mapping = metaRepository.put(type.getId(), group);
-                        if (mapping != null) {
-                            mapping.forEach(group::putIfAbsent);
-                        }
-                        return Flux.fromIterable(group.values());
-                    })
-                    .map(CastUtil::cast);
+                .collectMap(ObjectMetadata::getName, Function.identity())
+                .flatMapMany(group -> {
+                    Map<String, ObjectMetadata> mapping = metaRepository.put(type.getId(), group);
+                    if (mapping != null) {
+                        mapping.forEach(group::putIfAbsent);
+                    }
+                    return Flux.fromIterable(group.values());
+                })
+                .map(CastUtil::cast);
         }
         return Flux.fromIterable(typeMapping.values()).map(CastUtil::cast);
     }
 
     protected <T extends ObjectMetadata> List<T> loadMetadata(ObjectType type) {
         return getParser(type)
-                .map(ObjectMetadataParser::parseAll)
-                .map(CastUtil::<List<T>>cast)
-                .orElseGet(Collections::emptyList);
+            .map(ObjectMetadataParser::parseAll)
+            .map(CastUtil::<List<T>>cast)
+            .orElseGet(Collections::emptyList);
     }
 
     protected <T extends ObjectMetadata> T loadMetadata(ObjectType type, String name) {
         return getParser(type)
-                .flatMap(parser -> {
-                    log.debug("load {} metadata {} ,use parser:{}", type, name, parser.getClass().getSimpleName());
-                    return parser.parseByName(name);
-                })
-                .map(CastUtil::<T>cast)
-                .orElse(null);
+            .flatMap(parser -> {
+                log.debug("load {} metadata {} ,use parser:{}", type, name, parser.getClass().getSimpleName());
+                return parser.parseByName(name);
+            })
+            .map(CastUtil::<T>cast)
+            .orElse(null);
     }
 
     protected <T extends ObjectMetadata> Flux<T> loadMetadataReactive(ObjectType type) {
@@ -108,8 +109,8 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         return Mono.justOrEmpty(getParser(type))
                    .flatMap(parser -> {
                        log.debug("reactive load {} [{}] metadata ,use parser:{}", type, name, parser
-                               .getClass()
-                               .getSimpleName());
+                           .getClass()
+                           .getSimpleName());
                        return parser.parseByNameReactive(name);
                    })
                    .map(CastUtil::cast);
@@ -125,9 +126,10 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     }
 
     public void addObject(ObjectMetadata metadata) {
-        Map<String, ObjectMetadata> repo = metaRepository.computeIfAbsent(metadata
-                                                                                  .getObjectType()
-                                                                                  .getId(), t -> new ConcurrentHashMap<>());
+        Map<String, ObjectMetadata> repo = metaRepository
+            .computeIfAbsent(metadata
+                                 .getObjectType()
+                                 .getId(), t -> new ConcurrentHashMap<>());
 
         repo.put(metadata.getName(), metadata);
         if (metadata.getAlias() != null) {
@@ -140,23 +142,29 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
         Objects.requireNonNull(name, "name");
 
         return ofNullable(metaRepository.get(type.getId()))
-                .map(repo -> repo.remove(name))
-                .map(CastUtil::cast);
+            .map(repo -> repo.remove(name))
+            .map(CastUtil::cast);
     }
 
     public <T extends ObjectMetadata> Mono<T> getObjectReactive(ObjectType type, String name, boolean autoLoad) {
         Objects.requireNonNull(name, "name");
         Map<String, ObjectMetadata> mapping = metaRepository.computeIfAbsent(type.getId(), t -> new ConcurrentHashMap<>());
 
-        if (mapping.get(name) == null && autoLoad) {
+        ObjectMetadata metadata = getLoadedObject0(mapping, name);
+        if (metadata == null && autoLoad) {
             return loadMetadataReactive(type, name)
-                    .doOnNext(obj -> mapping.put(name, obj))
-                    .map(CastUtil::cast);
+                .doOnNext(obj -> mapping.put(name, obj))
+                .map(CastUtil::cast);
         }
-        return Mono
-                .justOrEmpty(mapping.get(name))
-                .map(CastUtil::cast)
-                ;
+        return Mono.justOrEmpty(CastUtil.<T>cast(metadata));
+    }
+
+    protected ObjectMetadata getLoadedObject0(Map<String, ObjectMetadata> from, String name) {
+        ObjectMetadata metadata = from.get(name);
+        if (metadata == null) {
+            metadata = from.get(name.toLowerCase());
+        }
+        return metadata;
     }
 
     public <T extends ObjectMetadata> Mono<T> getObjectReactive(ObjectType type, String name) {
@@ -171,9 +179,22 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
     @Override
     public <T extends ObjectMetadata> Optional<T> getObject(ObjectType type, String name, boolean autoLoad) {
         Objects.requireNonNull(name, "name");
-        return of(metaRepository.computeIfAbsent(type.getId(), t -> new ConcurrentHashMap<>()))
-                .map(repo -> repo.computeIfAbsent(name, __ -> autoLoad ? loadMetadata(type, name) : null))
-                .map(CastUtil::cast);
+        Map<String, ObjectMetadata> mapping = metaRepository.computeIfAbsent(type.getId(), t -> new ConcurrentHashMap<>());
+
+        ObjectMetadata metadata = getLoadedObject0(mapping, name);
+        if (metadata == null && autoLoad) {
+            synchronized (this) {
+                metadata = getLoadedObject0(mapping, name);
+                if (metadata != null) {
+                    return Optional.of(CastUtil.cast(metadata));
+                }
+                metadata = loadMetadata(type, name);
+                if (null != metadata) {
+                    mapping.put(name, metadata);
+                }
+            }
+        }
+        return Optional.ofNullable(CastUtil.cast(metadata));
     }
 
     public void addFeature(Feature feature) {

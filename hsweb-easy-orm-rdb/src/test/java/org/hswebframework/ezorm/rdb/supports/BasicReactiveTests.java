@@ -24,6 +24,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.dml.Terms;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.query.NativeSelectColumn;
@@ -573,6 +574,33 @@ public abstract class BasicReactiveTests {
             .as(StepVerifier::create)
             .expectNextCount(1)
             .verifyComplete();
+
+    }
+
+    @Test
+    public void testUpdateByNative(){
+        BasicTestEntity entity = BasicTestEntity
+            .builder()
+            .id("testUpdateByNative")
+            .name("testUpdateByNative")
+            .state((byte) 1)
+            .build();
+
+        repository
+            .insert(entity)
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
+
+        repository.createUpdate()
+            .set(BasicTestEntity::getState, NativeSql.of("state + 1"))
+            .where(entity::getId)
+            .lte(BasicTestEntity::getState,NativeSql.of("state + 1"))
+            .execute()
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
+
 
     }
 

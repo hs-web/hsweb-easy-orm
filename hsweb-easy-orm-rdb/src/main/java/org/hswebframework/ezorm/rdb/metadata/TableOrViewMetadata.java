@@ -139,11 +139,15 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
         }
     }
 
+    default String getRealName() {
+        return getName();
+    }
+
     default String getFullName() {
         return StringUtils.concat(
             getSchema().getName(),
             ".",
-            getName()
+            getRealName()
         );
     }
 
@@ -151,7 +155,7 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
 
         return getDialect().quote(getSchema().getName(), false)
             + "."
-            + getDialect().quote(getName(), false);
+            + getDialect().quote(getRealName(), false);
     }
 
     @Override

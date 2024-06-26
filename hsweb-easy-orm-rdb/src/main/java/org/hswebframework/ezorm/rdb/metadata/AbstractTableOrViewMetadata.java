@@ -41,6 +41,8 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     private RDBSchemaMetadata schema;
 
+    private String realName;
+
     @Setter
     private Consumer<RDBColumnMetadata> onColumnAdded;
 
@@ -88,6 +90,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     public String getFullName() {
         return fullName == null ? fullName = TableOrViewMetadata.super.getFullName() : fullName;
+    }
+
+    public String getRealName() {
+        return realName == null ? name : realName;
     }
 
     public boolean isTable() {
