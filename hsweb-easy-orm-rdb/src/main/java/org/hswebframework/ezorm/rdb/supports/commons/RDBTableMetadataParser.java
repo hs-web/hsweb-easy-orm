@@ -81,6 +81,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
             .stream()
             .map(record -> {
                 RDBColumnMetadata column = metaData.newColumn();
+                record.getString("table_name").ifPresent(metaData::setRealName);
                 applyColumnInfo(column, record);
                 return column;
             })
@@ -114,8 +115,9 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                 ReactiveSqlExecutor reactiveSqlExecutor = getReactiveSqlExecutor();
                 //列
                 Mono<List<RDBColumnMetadata>> columns = reactiveSqlExecutor
-                    .select(template(getTableMetaSql(null), param), new RecordResultWrapper())
+                    .select(template(getTableMetaSql(name), param), new RecordResultWrapper())
                     .map(record -> {
+                        record.getString("table_name").ifPresent(metaData::setRealName);
                         RDBColumnMetadata column = metaData.newColumn();
                         applyColumnInfo(column, record);
                         metaData.addColumn(column);
@@ -129,10 +131,11 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                     .singleOrEmpty();
 
                 //加载索引
-                Flux<RDBIndexMetadata> index = schema.findFeature(IndexMetadataParser.ID)
-                                                     .map(parser -> parser.parseTableIndexReactive(name))
-                                                     .orElseGet(Flux::empty)
-                                                     .doOnNext(metaData::addIndex);
+                Flux<RDBIndexMetadata> index = schema
+                    .findFeature(IndexMetadataParser.ID)
+                    .map(parser -> parser.parseTableIndexReactive(name))
+                    .orElseGet(Flux::empty)
+                    .doOnNext(metaData::addIndex);
 
                 return Flux
                     .merge(columns, comments, index)
