@@ -1,13 +1,11 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 import com.google.common.collect.Lists;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -40,7 +38,7 @@ public class DateTimeCodecTest {
         Object encode = codec.encode(str);
         Assert.assertTrue(encode instanceof List);
 
-        Assert.assertEquals(str,codec.decode(encode));
+        Assert.assertEquals(str, codec.decode(encode));
     }
 
     @Test
@@ -52,8 +50,12 @@ public class DateTimeCodecTest {
         Object encode = codec.decode(str);
         Assert.assertTrue(encode instanceof List);
 
-        Assert.assertArrayEquals(((List) encode).toArray(), Arrays.stream(str.split("[,]")).map(codec::encode).toArray());
+        Assert.assertArrayEquals(((List) encode).toArray(), Arrays
+            .stream(str.split("[,]"))
+            .map(codec::encode)
+            .toArray());
     }
+
     @Test
     public void testDecodeInstant() {
         DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd", Instant.class);
@@ -65,8 +67,9 @@ public class DateTimeCodecTest {
 
         Object date = codec.encode("2019-01-01");
 
-      assertTrue(codec.decode(date) instanceof Instant);
+        assertTrue(codec.decode(date) instanceof Instant);
     }
+
     @Test
     public void testDecodeDate() {
         DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd", Date.class);
@@ -95,10 +98,10 @@ public class DateTimeCodecTest {
     }
 
     @Test
+    @SneakyThrows
     public void testDecodeStringTime() {
         DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd HH:mm:ss", LocalDateTime.class);
-        LocalDateTime now = LocalDateTime.now();
-
+        LocalDateTime now = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 1));
         {
             Object decode = codec.decode(now.toString());
             assertEquals(now, decode);
