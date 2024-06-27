@@ -126,7 +126,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     public ReactiveUpdate<E> createUpdate() {
         return new DefaultReactiveUpdate<>(
             getTable()
-            , operator.dml().update(getTable().getFullName())
+            , operator.dml().update(getTable())
             , mapping
             , this::applyContext
             , getDefaultContextKeyValue());
@@ -135,7 +135,7 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     @Override
     public ReactiveDelete createDelete() {
         return new DefaultReactiveDelete(getTable()
-            , operator.dml().delete(getTable().getFullName())
+            , operator.dml().delete(getTable())
             , this::applyContext
             , getDefaultContextKeyValue()
         );

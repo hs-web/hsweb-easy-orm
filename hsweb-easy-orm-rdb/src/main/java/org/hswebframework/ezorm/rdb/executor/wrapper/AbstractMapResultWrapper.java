@@ -53,7 +53,7 @@ public abstract class AbstractMapResultWrapper<T extends Map<String, Object>> im
         if (!columnFilter.test(column)) {
             return;
         }
-        if (wrapperNestObject && column.contains(".")) {
+        if (wrapperNestObject && column.contains(".") && !column.startsWith(".")) {
             String[] attrs = column.split("[.]", 2);
             if (!columnFilter.test(attrs[0])) {
                 return;

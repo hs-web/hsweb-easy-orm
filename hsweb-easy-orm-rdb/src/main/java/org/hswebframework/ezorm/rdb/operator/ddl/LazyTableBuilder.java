@@ -112,13 +112,14 @@ public class LazyTableBuilder implements TableBuilder {
     private SqlRequest buildAlterSql(RDBTableMetadata table, RDBTableMetadata oldTable) {
 
         return schema
-                .findFeatureNow(AlterTableSqlBuilder.ID)
-                .build(AlterRequest.builder()
-                                   .allowDrop(dropColumn)
-                                   .newTable(table)
-                                   .allowAlter(allowAlter)
-                                   .oldTable(oldTable)
-                                   .build());
+            .findFeatureNow(AlterTableSqlBuilder.ID)
+            .build(AlterRequest
+                       .builder()
+                       .allowDrop(dropColumn)
+                       .newTable(table)
+                       .allowAlter(allowAlter)
+                       .oldTable(oldTable)
+                       .build());
     }
 
     private void accept(RDBTableMetadata table) {
@@ -181,41 +182,42 @@ public class LazyTableBuilder implements TableBuilder {
                 ReactiveSqlExecutor sqlExecutor = schema.findFeatureNow(ReactiveSqlExecutor.ID);
 
                 return schema
-                        .getTableReactive(tableName, autoLoad)
-                        .map(oldTable -> {
-                            RDBTableMetadata newTable = oldTable.clone();
-                            accept(newTable);
-                            removed.forEach(newTable::removeColumn);
-                            SqlRequest request = buildAlterSql(newTable, oldTable);
-                            if (request.isEmpty()) {
-                                if (merge) {
-                                    oldTable.merge(newTable);
-                                    removed.forEach(oldTable::removeColumn);
-                                } else {
-                                    oldTable.replace(newTable);
-                                }
-                                return Mono.just(true);
+                    .getTableReactive(tableName, autoLoad)
+                    .map(oldTable -> {
+                        RDBTableMetadata newTable = oldTable.clone();
+                        accept(newTable);
+                        removed.forEach(newTable::removeColumn);
+                        SqlRequest request = buildAlterSql(newTable, oldTable);
+                        if (request.isEmpty()) {
+                            if (merge) {
+                                oldTable.merge(newTable);
+                                removed.forEach(oldTable::removeColumn);
+                            } else {
+                                oldTable.replace(newTable);
                             }
-                            return sqlExecutor.execute(request)
-                                              .doOnSuccess(ignore -> {
-                                                  oldTable.merge(newTable);
-                                                  removed.forEach(oldTable::removeColumn);
-                                              })
-                                              .thenReturn(true);
-                        })
-                        .switchIfEmpty(Mono.fromSupplier(() -> {
-                            RDBTableMetadata newTable = schema.newTable(tableName);
-                            accept(newTable);
-                            SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(newTable);
-                            if (request.isEmpty()) {
-                                return Mono.just(true);
-                            }
-                            return sqlExecutor
-                                    .execute(request)
-                                    .doOnSuccess(ignore -> schema.addTable(newTable))
-                                    .thenReturn(true);
-                        }))
-                        .flatMap(Function.identity());
+                            return Mono.just(true);
+                        }
+                        return sqlExecutor
+                            .execute(request)
+                            .doOnSuccess(ignore -> {
+                                oldTable.merge(newTable);
+                                removed.forEach(oldTable::removeColumn);
+                            })
+                            .thenReturn(true);
+                    })
+                    .switchIfEmpty(Mono.fromSupplier(() -> {
+                        RDBTableMetadata newTable = schema.newTable(tableName);
+                        accept(newTable);
+                        SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(newTable);
+                        if (request.isEmpty()) {
+                            return Mono.just(true);
+                        }
+                        return sqlExecutor
+                            .execute(request)
+                            .doOnSuccess(ignore -> schema.addTable(newTable))
+                            .thenReturn(true);
+                    }))
+                    .flatMap(Function.identity());
             }
         };
     }

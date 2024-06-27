@@ -12,17 +12,26 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 public abstract class AbstractColumnMetadata implements ColumnMetadata {
     protected String name;
+    protected String realName;
     protected String alias;
     protected String comment;
     protected Class<?> javaType;
     protected boolean updatable;
     protected boolean notNull;
     protected DictionaryCodec dictionaryCodec;
-    protected ValueCodec<?,?> valueCodec;
+    protected ValueCodec<?, ?> valueCodec;
     protected DefaultValue defaultValue;
     protected Map<String, Object> properties = new ConcurrentHashMap<>();
 
     private Map<String, Feature> features = new ConcurrentHashMap<>();
+
+    public String getRealName() {
+        return realName == null ? name : realName;
+    }
+
+    public boolean realNameDetected() {
+        return realName != null;
+    }
 
     @Override
     public String getAlias() {
@@ -86,6 +95,6 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
     @Override
     @SneakyThrows
     public ObjectMetadata clone() {
-        return (ObjectMetadata)super.clone();
+        return (ObjectMetadata) super.clone();
     }
 }

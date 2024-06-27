@@ -161,7 +161,7 @@ public abstract class DefaultRepository<E> {
     protected SaveResultOperator doSave(Collection<E> data) {
         Collection<E> _data = tryMergeDuplicate(data);
         RDBTableMetadata table = getTable();
-        UpsertOperator upsert = operator.dml().upsert(table.getFullName());
+        UpsertOperator upsert = operator.dml().upsert(table);
 
         return EventResultOperator.create(
                 () -> {
@@ -188,7 +188,7 @@ public abstract class DefaultRepository<E> {
 
     protected InsertResultOperator doInsert(E data) {
         RDBTableMetadata table = getTable();
-        InsertOperator insert = operator.dml().insert(table.getFullName());
+        InsertOperator insert = operator.dml().insert(table);
 
         return EventResultOperator.create(
                 () -> {
@@ -238,7 +238,7 @@ public abstract class DefaultRepository<E> {
     protected InsertResultOperator doInsert(Collection<E> batch) {
         Collection<E> _data = tryMergeDuplicate(batch);
         RDBTableMetadata table = getTable();
-        InsertOperator insert = operator.dml().insert(table.getFullName());
+        InsertOperator insert = operator.dml().insert(table);
 
         return EventResultOperator.create(
                 () -> {

@@ -67,8 +67,8 @@ public class CommonAlterTableSqlBuilderTest {
             System.out.println(sql);
             List<SqlRequest> sqlList = ((BatchSqlRequest) sql).getBatch();
             Assert.assertEquals(sqlList.size(), 1);
-            Assert.assertEquals(sql.getSql(), "alter table PUBLIC.test add \"TEST\" varchar(32)");
-            Assert.assertEquals(sqlList.get(0).getSql(), "comment on column PUBLIC.test.\"TEST\" is 'test'");
+            Assert.assertEquals(sql.getSql(), "alter table \"PUBLIC\".test add \"TEST\" varchar(32)");
+            Assert.assertEquals(sqlList.get(0).getSql(), "comment on column \"PUBLIC\".test.\"TEST\" is 'test'");
 
         }
 
@@ -81,7 +81,7 @@ public class CommonAlterTableSqlBuilderTest {
                     .oldTable(old)
                     .newTable(copy)
                     .build());
-            Assert.assertEquals(sql.getSql(), "alter table PUBLIC.test modify \"NAME\" varchar(200) null");
+            Assert.assertEquals(sql.getSql(), "alter table \"PUBLIC\".test modify \"NAME\" varchar(200) null");
         }
 
         {
@@ -93,7 +93,7 @@ public class CommonAlterTableSqlBuilderTest {
                     .allowDrop(true)
                     .build());
 
-            Assert.assertEquals(sql.getSql(), "alter table PUBLIC.test drop column \"NAME\"");
+            Assert.assertEquals(sql.getSql(), "alter table \"PUBLIC\".test drop column \"NAME\"");
         }
     }
 

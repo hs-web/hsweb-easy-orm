@@ -82,6 +82,13 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         this.setName(name);
     }
 
+
+    public String getQuoteName() {
+        return getDatabase()
+            .getDialect()
+            .quote(getName(), false);
+    }
+
     @Override
     @SuppressWarnings("all")
     public RDBDatabaseMetadata getDatabase() {
@@ -98,7 +105,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     }
 
     public Optional<RDBTableMetadata> getTable(String name) {
-        return getTable(name,true);
+        return getTable(name, true);
     }
 
     public Mono<RDBTableMetadata> getTableReactive(String name) {
@@ -108,16 +115,16 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     public Mono<RDBTableMetadata> getTableReactive(String name, boolean autoLoad) {
         if (name.contains(".")) {
             return this
-                    .getDatabase()
-                    .getObjectReactive(name, (schema, _name) -> schema.getTableReactive(_name, autoLoad));
+                .getDatabase()
+                .getObjectReactive(name, (schema, _name) -> schema.getTableReactive(_name, autoLoad));
         }
         return getObjectReactive(RDBObjectType.table, name, autoLoad);
     }
 
     public Mono<TableOrViewMetadata> getTableOrViewReactive(String name, boolean autoLoad) {
         return getTableReactive(name, autoLoad)
-                .cast(TableOrViewMetadata.class)
-                .switchIfEmpty(Mono.defer(() -> getViewReactive(name, autoLoad).cast(TableOrViewMetadata.class)));
+            .cast(TableOrViewMetadata.class)
+            .switchIfEmpty(Mono.defer(() -> getViewReactive(name, autoLoad).cast(TableOrViewMetadata.class)));
     }
 
     public Mono<TableOrViewMetadata> getTableOrViewReactive(String name) {
@@ -149,7 +156,7 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     public Mono<TableOrViewMetadata> findTableOrViewReactive(String name) {
 
         return getTableOrViewReactive(name, false)
-                .switchIfEmpty(getDatabase().getTableOrViewReactive(name));
+            .switchIfEmpty(getDatabase().getTableOrViewReactive(name));
     }
 
     public Optional<TableOrViewMetadata> findTableOrView(String name) {
@@ -162,10 +169,10 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     public Optional<TableOrViewMetadata> getTableOrView(String name, boolean autoLoad) {
         return Optional.of(getTable(name, autoLoad)
-                                   .map(AbstractTableOrViewMetadata.class::cast))
+                               .map(AbstractTableOrViewMetadata.class::cast))
                        .filter(Optional::isPresent)
                        .orElseGet(() -> getView(name, autoLoad)
-                               .map(AbstractTableOrViewMetadata.class::cast))
+                           .map(AbstractTableOrViewMetadata.class::cast))
                        .map(TableOrViewMetadata.class::cast);
     }
 
@@ -176,15 +183,15 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     @Override
     protected <T extends ObjectMetadata> List<T> loadMetadata(ObjectType type) {
         return super.<T>loadMetadata(type)
-                .stream()
-                .map(this::metadataParsed)
-                .collect(Collectors.toList());
+                    .stream()
+                    .map(this::metadataParsed)
+                    .collect(Collectors.toList());
     }
 
     @Override
     protected <T extends ObjectMetadata> Flux<T> loadMetadataReactive(ObjectType type) {
         return super.<T>loadMetadataReactive(type)
-                .map(this::metadataParsed);
+                    .map(this::metadataParsed);
     }
 
 
@@ -205,8 +212,8 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     @Override
     protected <T extends ObjectMetadata> Mono<T> loadMetadataReactive(ObjectType type, String name) {
         return super
-                .<T>loadMetadataReactive(type, name)
-                .map(this::metadataParsed);
+            .<T>loadMetadataReactive(type, name)
+            .map(this::metadataParsed);
     }
 
     public RDBTableMetadata newTable(String name) {
@@ -218,14 +225,14 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     public void loadAllTable() {
 
         loadMetadata(RDBObjectType.table)
-                .forEach(table -> addTable(((RDBTableMetadata) table)));
+            .forEach(table -> addTable(((RDBTableMetadata) table)));
 
     }
 
     public Mono<Void> loadAllTableReactive() {
         return loadMetadataReactive(RDBObjectType.table)
-                .doOnNext(table -> addTable(((RDBTableMetadata) table)))
-                .then();
+            .doOnNext(table -> addTable(((RDBTableMetadata) table)))
+            .then();
     }
 
     @Override
@@ -237,16 +244,16 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         return Optional.ofNullable(getDatabase())
                        .map(RDBDatabaseMetadata::getDialect)
                        .orElseGet(() -> this
-                               .<Dialect>getFeatures(RDBFeatureType.dialect)
-                               .stream()
-                               .findFirst()
-                               .orElse(null));
+                           .<Dialect>getFeatures(RDBFeatureType.dialect)
+                           .stream()
+                           .findFirst()
+                           .orElse(null));
     }
 
     public Optional<TableOrViewMetadata> removeTableOrView(String name) {
         return this.<TableOrViewMetadata>removeObject(RDBObjectType.table, name)
-                .map(Optional::of)
-                .orElseGet(() -> removeObject(RDBObjectType.view, name));
+                   .map(Optional::of)
+                   .orElseGet(() -> removeObject(RDBObjectType.view, name));
     }
 
     @Override
@@ -257,10 +264,10 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
     @Override
     public String toString() {
         return "schema " +
-                getName() +
-                " (" + getClass().getSimpleName() + ")" +
-                "\n" +
-                FeatureUtils.featureToString(getFeatureList());
+            getName() +
+            " (" + getClass().getSimpleName() + ")" +
+            "\n" +
+            FeatureUtils.featureToString(getFeatureList());
 
     }
 }

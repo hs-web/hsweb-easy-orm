@@ -33,7 +33,7 @@ public class DefaultTableBuilder implements TableBuilder {
     private boolean allowAlter = true;
     private boolean autoLoad = true;
     private boolean merge = true;
-    private final Set<String> removed=new HashSet<>();
+    private final Set<String> removed = new HashSet<>();
 
     public DefaultTableBuilder(RDBTableMetadata table) {
         this.table = table;
@@ -47,7 +47,7 @@ public class DefaultTableBuilder implements TableBuilder {
 
     @Override
     public ForeignKeyDSLBuilder foreignKey() {
-        return new ForeignKeyDSLBuilder(this,table);
+        return new ForeignKeyDSLBuilder(this, table);
     }
 
     public DefaultTableBuilder custom(Consumer<RDBTableMetadata> consumer) {
@@ -64,12 +64,12 @@ public class DefaultTableBuilder implements TableBuilder {
     @Override
     public ColumnBuilder addColumn(String name) {
         RDBColumnMetadata rdbColumnMetaData = table
-                .getColumn(name)
-                .orElseGet(() -> {
-                    RDBColumnMetadata columnMetaData = table.newColumn();
-                    columnMetaData.setName(name);
-                    return columnMetaData;
-                });
+            .getColumn(name)
+            .orElseGet(() -> {
+                RDBColumnMetadata columnMetaData = table.newColumn();
+                columnMetaData.setName(name);
+                return columnMetaData;
+            });
 
         return new DefaultColumnBuilder(rdbColumnMetaData, this, table);
     }
@@ -127,13 +127,13 @@ public class DefaultTableBuilder implements TableBuilder {
 
     private SqlRequest buildAlterSql(RDBTableMetadata oldTable) {
         return schema
-                .findFeatureNow(AlterTableSqlBuilder.ID)
-                .build(AlterRequest.builder()
-                                   .allowDrop(dropColumn)
-                                   .newTable(table)
-                                   .allowAlter(allowAlter)
-                                   .oldTable(oldTable)
-                                   .build());
+            .findFeatureNow(AlterTableSqlBuilder.ID)
+            .build(AlterRequest.builder()
+                               .allowDrop(dropColumn)
+                               .newTable(table)
+                               .allowAlter(allowAlter)
+                               .oldTable(oldTable)
+                               .build());
     }
 
     @Override
@@ -180,35 +180,37 @@ public class DefaultTableBuilder implements TableBuilder {
                 ReactiveSqlExecutor sqlExecutor = schema.findFeatureNow(ReactiveSqlExecutor.ID);
 
                 return schema
-                        .getTableReactive(table.getName(), autoLoad)
-                        .map(oldTable -> {
-                            SqlRequest request = buildAlterSql(oldTable);
-                            if (request.isEmpty()) {
-                                if (merge) {
-                                    oldTable.merge(table);
-                                    removed.forEach(oldTable::removeColumn);
-                                } else {
-                                    oldTable.replace(table);
-                                }
-                                return Mono.just(true);
+                    .getTableReactive(table.getName(), autoLoad)
+                    .map(oldTable -> {
+                        SqlRequest request = buildAlterSql(oldTable);
+                        if (request.isEmpty()) {
+                            if (merge) {
+                                oldTable.merge(table);
+                                removed.forEach(oldTable::removeColumn);
+                            } else {
+                                oldTable.replace(table);
                             }
-                            return sqlExecutor.execute(request)
-                                              .doOnSuccess(ignore -> {
-                                                  oldTable.merge(table);
-                                                  removed.forEach(oldTable::removeColumn);
-                                              })
-                                              .thenReturn(true);
-                        })
-                        .switchIfEmpty(Mono.fromSupplier(() -> {
-                            SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
-                            if (request.isEmpty()) {
-                                return Mono.just(true);
-                            }
-                            return sqlExecutor.execute(request)
-                                              .doOnSuccess(ignore -> schema.addTable(table))
-                                              .thenReturn(true);
-                        }))
-                        .flatMap(Function.identity());
+                            return Mono.just(true);
+                        }
+                        return sqlExecutor
+                            .execute(request)
+                            .doOnSuccess(ignore -> {
+                                oldTable.merge(table);
+                                removed.forEach(oldTable::removeColumn);
+                            })
+                            .thenReturn(true);
+                    })
+                    .switchIfEmpty(Mono.fromSupplier(() -> {
+                        SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
+                        if (request.isEmpty()) {
+                            return Mono.just(true);
+                        }
+                        return sqlExecutor
+                            .execute(request)
+                            .doOnSuccess(ignore -> schema.addTable(table))
+                            .thenReturn(true);
+                    }))
+                    .flatMap(Function.identity());
             }
         };
     }

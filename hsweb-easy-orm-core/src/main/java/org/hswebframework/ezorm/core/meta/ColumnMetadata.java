@@ -7,6 +7,8 @@ import org.hswebframework.ezorm.core.*;
 public interface ColumnMetadata extends FeatureSupportedMetadata, ObjectMetadata, Cloneable {
     String getName();
 
+    String getRealName();
+
     String getAlias();
 
     String getComment();

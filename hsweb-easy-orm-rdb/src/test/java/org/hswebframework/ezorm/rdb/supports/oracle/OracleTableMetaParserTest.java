@@ -4,9 +4,15 @@ import org.hswebframework.ezorm.rdb.TestJdbcReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
+import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.builder.Paginator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,6 +80,40 @@ public class OracleTableMetaParserTest {
 
             Assert.assertEquals("test_table_all", metadata.getRealName());
 
+            for (RDBColumnMetadata column : metadata.getColumns()) {
+                System.out.println(column);
+            }
+
+            RDBDatabaseMetadata
+                databaseMetadata = new RDBDatabaseMetadata(Dialect.ORACLE);
+            databaseMetadata.addSchema(schema);
+            databaseMetadata.setCurrentSchema(schema);
+            databaseMetadata.addFeature(executor);
+            DatabaseOperator databaseOperator = DefaultDatabaseOperator.of(databaseMetadata);
+
+            SyncRepository<Record, String> repository = databaseOperator
+                .dml()
+                .createRepository("test_table_all");
+
+            repository
+                .save(Record.newRecord().putValue("id", "test").putValue("NAME", "test").putValue("AGE", 1));
+
+            repository.findById("test");
+
+            repository.createUpdate()
+                      .where("id", "test")
+                      .set("NAME", "test2")
+                      .execute();
+
+            System.out.println(repository
+                                   .createQuery()
+                                   .paging(0, 10)
+                                   .fetch());
+
+            repository
+                .createDelete()
+                .where("id", "test")
+                .execute();
         } finally {
             executor.execute(prepare("drop table \"test_table_all\""));
         }

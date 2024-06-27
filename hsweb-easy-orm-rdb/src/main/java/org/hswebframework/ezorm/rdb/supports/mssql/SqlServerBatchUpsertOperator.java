@@ -136,7 +136,7 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
         @Override
         public SqlRequest build(InsertOperatorParameter parameter) {
             if (PREFIX == null) {
-                PREFIX = SqlFragments.of("merge into", table.getFullName(), "with(rowlock) as t using ( values");
+                PREFIX = SqlFragments.of("merge into", table.getQuoteName(), "with(rowlock) as t using ( values");
             }
             UpsertOperatorParameter upsertParameter = (UpsertOperatorParameter) parameter;
             BatchSqlFragments fragments = new BatchSqlFragments();

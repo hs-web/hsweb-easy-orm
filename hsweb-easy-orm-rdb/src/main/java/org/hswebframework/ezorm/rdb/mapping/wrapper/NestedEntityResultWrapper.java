@@ -38,10 +38,10 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
             ForeignKeyMetadata metadata = mapping.getTable().getForeignKey(table).orElse(null);
             if (null != metadata) {
                 Object value = metadata
-                        .getTarget()
-                        .getColumn(column)
-                        .map(m -> m.decode(context.getResult()))
-                        .orElseGet(context::getResult);
+                    .getTarget()
+                    .getColumn(column)
+                    .map(m -> m.decode(context.getResult()))
+                    .orElseGet(context::getResult);
                 GlobalConfig.getPropertyOperator().setProperty(nestInstance, column, value);
             }
         } else {

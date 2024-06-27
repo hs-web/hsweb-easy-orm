@@ -312,6 +312,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
         record.getString("name")
 //                .map(String::toLowerCase)
               .ifPresent(name -> {
+                  column.setRealName(name);
                   column.setName(name);
                   column.setProperty("old-name", name);
               });

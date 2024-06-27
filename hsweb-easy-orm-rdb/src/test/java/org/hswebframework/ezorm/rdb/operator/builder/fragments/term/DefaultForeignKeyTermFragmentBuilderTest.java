@@ -54,7 +54,7 @@ public class DefaultForeignKeyTermFragmentBuilderTest {
 
         SqlRequest request = fragments.toRequest();
         System.out.println(fragments.toRequest());
-        Assert.assertEquals(request.getSql(), "exists( select 1 from PUBLIC.detail detail where test.\"ID\" = detail.\"ID\" and ( ( detail.\"ID\" = ? or detail.\"ID\" = ? ) and ( detail.\"COMMENT\" = ? ) ) )");
+        Assert.assertEquals(request.getSql(), "exists( select 1 from \"PUBLIC\".detail detail where test.\"ID\" = detail.\"ID\" and ( ( detail.\"ID\" = ? or detail.\"ID\" = ? ) and ( detail.\"COMMENT\" = ? ) ) )");
 
     }
 

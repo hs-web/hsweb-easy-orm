@@ -99,12 +99,12 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     @Override
     public SyncUpdate<E> createUpdate() {
-        return new DefaultSyncUpdate<>(getTable(), operator.dml().update(getTable().getFullName()), mapping);
+        return new DefaultSyncUpdate<>(getTable(), operator.dml().update(getTable()), mapping);
     }
 
     @Override
     public SyncDelete createDelete() {
-        return new DefaultSyncDelete(getTable(), operator.dml().delete(getTable().getFullName()));
+        return new DefaultSyncDelete(getTable(), operator.dml().delete(getTable()));
     }
 
     @Override

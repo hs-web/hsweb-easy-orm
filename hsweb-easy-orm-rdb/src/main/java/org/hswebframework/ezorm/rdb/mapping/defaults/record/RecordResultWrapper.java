@@ -26,15 +26,16 @@ public class RecordResultWrapper extends AbstractMapResultWrapper<Record> {
 
         if (mapping != null) {
             Record record = context.getRowInstance();
-
             String property = mapping
-                    .getPropertyByColumnName(context.getColumnLabel())
-                    .orElse(context.getColumnLabel());
-
+                .getPropertyByColumnName(context.getColumnLabel())
+                .orElse(null);
+            if (property == null) {
+                return;
+            }
             Object value = mapping
-                    .getColumnByProperty(property)
-                    .map(columnMetadata -> columnMetadata.decode(context.getResult()))
-                    .orElseGet(context::getResult);
+                .getColumnByProperty(property)
+                .map(columnMetadata -> columnMetadata.decode(context.getResult()))
+                .orElseGet(context::getResult);
 
             super.doWrap(record, property, value);
             return;

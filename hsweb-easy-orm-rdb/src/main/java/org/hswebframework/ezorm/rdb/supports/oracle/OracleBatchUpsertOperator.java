@@ -144,7 +144,7 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
         @Override
         public SqlRequest build(InsertOperatorParameter parameter) {
             if (PREFIX == null) {
-                PREFIX = SqlFragments.of("merge into", table.getFullName(), "t using (");
+                PREFIX = SqlFragments.of("merge into", table.getQuoteName(), "t using (");
             }
             OracleUpsertOperatorParameter upsertParameter = (OracleUpsertOperatorParameter) parameter;
 

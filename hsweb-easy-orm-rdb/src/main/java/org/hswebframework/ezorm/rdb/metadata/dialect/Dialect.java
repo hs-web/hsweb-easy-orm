@@ -52,9 +52,9 @@ public interface Dialect extends Feature {
             return keyword;
         }
         return StringUtils.concat(
-                getQuoteStart(),
-                isColumnToUpperCase() && changeCase ? keyword.toUpperCase() : keyword,
-                getQuoteEnd()
+            getQuoteStart(),
+            isColumnToUpperCase() && changeCase ? keyword.toUpperCase() : keyword,
+            getQuoteEnd()
         );
     }
 
@@ -63,14 +63,19 @@ public interface Dialect extends Feature {
     }
 
     default String buildColumnFullName(String tableName, String columnName) {
+        return buildColumnFullName(tableName, columnName, true);
+    }
+
+    default String buildColumnFullName(String tableName, String columnName, boolean changeCase) {
         if (columnName.contains(".")) {
             return columnName;
         }
         if (StringUtils.isNullOrEmpty(tableName)) {
-            return StringUtils.concat(getQuoteStart(), isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
+            return StringUtils.concat(getQuoteStart(), changeCase && isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
         }
-        return StringUtils.concat(tableName, ".", getQuoteStart(), isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
+        return StringUtils.concat(tableName, ".", getQuoteStart(), changeCase && isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
     }
+
 
     Dialect MYSQL = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();

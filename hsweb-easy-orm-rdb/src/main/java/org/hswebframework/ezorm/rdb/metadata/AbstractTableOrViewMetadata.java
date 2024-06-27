@@ -84,16 +84,37 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     @Override
     public String getQuoteName() {
-        return quoteName == null ? quoteName = TableOrViewMetadata.super.getQuoteName() : quoteName;
+        if (quoteName == null) {
+            return quoteName = (
+                getSchema().getQuoteName()
+                    + "."
+                    + getDialect().quote(getRealName(), realName == null)
+            );
+        }
+        return quoteName;
     }
 
     @Override
     public String getFullName() {
-        return fullName == null ? fullName = TableOrViewMetadata.super.getFullName() : fullName;
+        if (fullName == null) {
+            if (realName != null) {
+                return fullName =
+                    StringUtils.concat(getSchema().getQuoteName(), ".", getDialect().quote(getRealName(), false));
+            }
+            return fullName = StringUtils.concat(getSchema().getQuoteName(), ".", name);
+
+        }
+        return fullName;
     }
 
     public String getRealName() {
         return realName == null ? name : realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+        this.quoteName = null;
+        this.fullName = null;
     }
 
     public boolean isTable() {
@@ -252,8 +273,16 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     @Override
     public void merge(TableOrViewMetadata metadata) {
         metadata.getForeignKeys().forEach(this::addForeignKey);
-        metadata.getFeatureList().forEach(this::addFeature);
+        for (Feature feature : metadata.getFeatureList()) {
+            features.putIfAbsent(feature.getId(), feature);
+        }
         metadata.getColumns().forEach(this::addColumn);
+        if (metadata instanceof AbstractTableOrViewMetadata) {
+            String relName = ((AbstractTableOrViewMetadata) metadata).realName;
+            if (relName != null) {
+                this.setRealName(relName);
+            }
+        }
 
     }
 
