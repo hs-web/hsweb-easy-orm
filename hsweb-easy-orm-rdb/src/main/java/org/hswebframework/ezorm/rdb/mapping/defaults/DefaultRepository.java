@@ -83,12 +83,12 @@ public abstract class DefaultRepository<E> {
     public String[] getProperties() {
         if (properties == null) {
             properties = mapping
-                    .getColumnPropertyMapping()
-                    .entrySet()
-                    .stream()
-                    .filter(kv -> getTable().getColumn(kv.getKey()).isPresent())
-                    .map(Map.Entry::getValue)
-                    .toArray(String[]::new);
+                .getColumnPropertyMapping()
+                .entrySet()
+                .stream()
+                .filter(kv -> getTable().getColumn(kv.getKey()).isPresent())
+                .map(Map.Entry::getValue)
+                .toArray(String[]::new);
         }
         return properties;
     }
@@ -96,21 +96,21 @@ public abstract class DefaultRepository<E> {
     protected String getIdColumn() {
         if (idColumn == null) {
             this.idColumn = getTable()
-                    .getColumns()
-                    .stream()
-                    .filter(RDBColumnMetadata::isPrimaryKey)
-                    .findFirst()
-                    .map(RDBColumnMetadata::getName)
-                    .orElseThrow(() -> new UnsupportedOperationException("id column not exists"));
+                .getColumns()
+                .stream()
+                .filter(RDBColumnMetadata::isPrimaryKey)
+                .findFirst()
+                .map(RDBColumnMetadata::getName)
+                .orElseThrow(() -> new UnsupportedOperationException("id column not exists"));
         }
         return idColumn;
     }
 
     protected void initMapping(Class<E> entityType) {
 
-        this.mapping = LazyEntityColumnMapping.of(() -> getTable()
-                .<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature for "+entityType)));
+        this.mapping = LazyEntityColumnMapping
+            .of(() -> getTable().findFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType)));
+
         defaultContextKeyValue.add(MappingContextKeys.columnMapping(mapping));
     }
 
@@ -153,9 +153,9 @@ public abstract class DefaultRepository<E> {
 
     private Object getProperty(E data, String property) {
         return GlobalConfig
-                .getPropertyOperator()
-                .getProperty(data, property)
-                .orElse(null);
+            .getPropertyOperator()
+            .getProperty(data, property)
+            .orElse(null);
     }
 
     protected SaveResultOperator doSave(Collection<E> data) {
@@ -164,25 +164,25 @@ public abstract class DefaultRepository<E> {
         UpsertOperator upsert = operator.dml().upsert(table);
 
         return EventResultOperator.create(
-                () -> {
-                    upsert.columns(getProperties());
-                    List<String> ignore = new ArrayList<>();
-                    for (E e : _data) {
-                        upsert.values(Stream.of(getProperties())
-                                            .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
-                                            .toArray());
-                    }
-                    upsert.ignoreUpdate(ignore.toArray(new String[0]));
-                    return upsert.execute();
-                },
-                SaveResultOperator.class,
-                table,
-                MappingEventTypes.save_before,
-                MappingEventTypes.save_after,
-                getDefaultContextKeyValue(instance(_data),
-                                          type("batch"),
-                                          tableMetadata(table),
-                                          upsert(upsert))
+            () -> {
+                upsert.columns(getProperties());
+                List<String> ignore = new ArrayList<>();
+                for (E e : _data) {
+                    upsert.values(Stream.of(getProperties())
+                                        .map(property -> getInsertColumnValue(e, property, (prop, val) -> ignore.add(prop)))
+                                        .toArray());
+                }
+                upsert.ignoreUpdate(ignore.toArray(new String[0]));
+                return upsert.execute();
+            },
+            SaveResultOperator.class,
+            table,
+            MappingEventTypes.save_before,
+            MappingEventTypes.save_after,
+            getDefaultContextKeyValue(instance(_data),
+                                      type("batch"),
+                                      tableMetadata(table),
+                                      upsert(upsert))
         );
     }
 
@@ -191,23 +191,23 @@ public abstract class DefaultRepository<E> {
         InsertOperator insert = operator.dml().insert(table);
 
         return EventResultOperator.create(
-                () -> {
-                    for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
-                        String column = entry.getKey();
-                        String property = entry.getValue();
-                        insert.value(column, getInsertColumnValue(data, property));
-                    }
-                    return insert.execute();
-                },
-                InsertResultOperator.class,
-                table,
-                MappingEventTypes.insert_before,
-                MappingEventTypes.insert_after,
-                getDefaultContextKeyValue(
-                        instance(data),
-                        type("single"),
-                        tableMetadata(table),
-                        insert(insert))
+            () -> {
+                for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
+                    String column = entry.getKey();
+                    String property = entry.getValue();
+                    insert.value(column, getInsertColumnValue(data, property));
+                }
+                return insert.execute();
+            },
+            InsertResultOperator.class,
+            table,
+            MappingEventTypes.insert_before,
+            MappingEventTypes.insert_after,
+            getDefaultContextKeyValue(
+                instance(data),
+                type("single"),
+                tableMetadata(table),
+                insert(insert))
         );
 
     }
@@ -241,25 +241,25 @@ public abstract class DefaultRepository<E> {
         InsertOperator insert = operator.dml().insert(table);
 
         return EventResultOperator.create(
-                () -> {
-                    insert.columns(getProperties());
+            () -> {
+                insert.columns(getProperties());
 
-                    for (E e : _data) {
-                        insert.values(Stream.of(getProperties())
-                                            .map(property -> getInsertColumnValue(e, property))
-                                            .toArray());
-                    }
-                    return insert.execute();
-                },
-                InsertResultOperator.class,
-                table,
-                MappingEventTypes.insert_before,
-                MappingEventTypes.insert_after,
-                getDefaultContextKeyValue(
-                        instance(_data),
-                        type("batch"),
-                        tableMetadata(table),
-                        insert(insert))
+                for (E e : _data) {
+                    insert.values(Stream.of(getProperties())
+                                        .map(property -> getInsertColumnValue(e, property))
+                                        .toArray());
+                }
+                return insert.execute();
+            },
+            InsertResultOperator.class,
+            table,
+            MappingEventTypes.insert_before,
+            MappingEventTypes.insert_after,
+            getDefaultContextKeyValue(
+                instance(_data),
+                type("batch"),
+                tableMetadata(table),
+                insert(insert))
         );
     }
 

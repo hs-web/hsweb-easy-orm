@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -44,10 +45,14 @@ public class SimpleColumnMapping implements EntityColumnMapping {
     @Override
     public Map<String, String> getColumnPropertyMapping() {
         return metadata
-                .get()
-                .getColumns()
-                .stream()
-                .collect(Collectors.toMap(RDBColumnMetadata::getName, RDBColumnMetadata::getAlias));
+            .get()
+            .getColumns()
+            .stream()
+            .collect(Collectors.toMap(
+                RDBColumnMetadata::getName,
+                RDBColumnMetadata::getAlias,
+                (a, b) -> b,
+                LinkedHashMap::new));
     }
 
     @Override
