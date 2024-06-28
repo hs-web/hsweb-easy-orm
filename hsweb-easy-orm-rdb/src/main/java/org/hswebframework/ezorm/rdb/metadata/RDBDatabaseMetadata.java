@@ -21,12 +21,20 @@ public class RDBDatabaseMetadata extends AbstractDatabaseMetadata<RDBSchemaMetad
         return this.getObject(name, RDBSchemaMetadata::getTableOrView);
     }
 
+    public Optional<TableOrViewMetadata> getTableOrView(String name, boolean autoLoad) {
+        return this.getObject(name, (schema, _name) -> schema.getTableOrView(_name, autoLoad));
+    }
+
     public Optional<RDBTableMetadata> getTable(String name) {
         return this.getObject(name, RDBSchemaMetadata::getTable);
     }
 
     public Mono<TableOrViewMetadata> getTableOrViewReactive(String name) {
         return this.getObjectReactive(name, RDBSchemaMetadata::getTableOrViewReactive);
+    }
+
+    public Mono<TableOrViewMetadata> getTableOrViewReactive(String name, boolean autoLoad) {
+        return this.getObjectReactive(name, (schema, _name) -> schema.getTableOrViewReactive(_name, autoLoad));
     }
 
     public Mono<RDBTableMetadata> getTableReactive(String name) {

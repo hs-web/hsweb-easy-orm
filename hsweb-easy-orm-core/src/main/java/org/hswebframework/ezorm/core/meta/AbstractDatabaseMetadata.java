@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.CastUtil;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -13,7 +14,7 @@ import java.util.function.BiFunction;
 import static java.util.Optional.*;
 
 public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
-        implements DatabaseMetadata<S>, FeatureSupportedMetadata {
+    implements DatabaseMetadata<S>, FeatureSupportedMetadata {
 
     private Map<String, S> schemas = new ConcurrentHashMap<>();
 
@@ -59,11 +60,12 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
             return empty();
         }
         if (name.contains(".")) {
-            String[] arr = name.split("[.]");
-            return this.getSchema(arr[0])
-                       .flatMap(schema -> mapper.apply(schema, arr[1]));
+            String[] arr = StringUtils.getPlainName(name.split("[.]"));
+            return this
+                .getSchema(arr[0])
+                .flatMap(schema -> mapper.apply(schema, arr[1]));
         }
-        return mapper.apply(this.getCurrentSchema(), name);
+        return mapper.apply(this.getCurrentSchema(), StringUtils.getPlainName(name));
     }
 
     @Override
@@ -72,11 +74,12 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
             return Mono.empty();
         }
         if (name.contains(".")) {
-            String[] arr = name.split("[.]");
-            return Mono.justOrEmpty(this.getSchema(arr[0]))
-                       .flatMap(schema -> mapper.apply(schema, arr[1]));
+            String[] arr = StringUtils.getPlainName(name.split("[.]"));
+            return Mono
+                .justOrEmpty(this.getSchema(arr[0]))
+                .flatMap(schema -> mapper.apply(schema, arr[1]));
         }
-        return mapper.apply(this.getCurrentSchema(), name);
+        return mapper.apply(this.getCurrentSchema(), StringUtils.getPlainName(name));
     }
 
     @Override
@@ -99,10 +102,10 @@ public abstract class AbstractDatabaseMetadata<S extends SchemaMetadata>
         AbstractDatabaseMetadata<S> metadata = (AbstractDatabaseMetadata) super.clone();
         metadata.schemas = new ConcurrentHashMap<>();
         getSchemas()
-                .stream()
-                .map(SchemaMetadata::clone)
-                .map(CastUtil::<S>cast)
-                .forEach(metadata::addSchema);
+            .stream()
+            .map(SchemaMetadata::clone)
+            .map(CastUtil::<S>cast)
+            .forEach(metadata::addSchema);
 
         metadata.features = new ConcurrentHashMap<>(getFeatures());
 

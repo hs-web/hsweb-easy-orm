@@ -155,8 +155,9 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
 
     public Mono<TableOrViewMetadata> findTableOrViewReactive(String name) {
 
-        return getTableOrViewReactive(name, false)
-            .switchIfEmpty(getDatabase().getTableOrViewReactive(name));
+        return this
+            .getTableOrViewReactive(name, false)
+            .switchIfEmpty(getDatabase().getTableOrViewReactive(name, false));
     }
 
     public Optional<TableOrViewMetadata> findTableOrView(String name) {
@@ -164,16 +165,15 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
         if (current.isPresent()) {
             return current;
         }
-        return getDatabase().getTableOrView(name);
+        return getDatabase().getTableOrView(name, false);
     }
 
     public Optional<TableOrViewMetadata> getTableOrView(String name, boolean autoLoad) {
-        return Optional.of(getTable(name, autoLoad)
-                               .map(AbstractTableOrViewMetadata.class::cast))
-                       .filter(Optional::isPresent)
-                       .orElseGet(() -> getView(name, autoLoad)
-                           .map(AbstractTableOrViewMetadata.class::cast))
-                       .map(TableOrViewMetadata.class::cast);
+        return Optional
+            .of(getTable(name, autoLoad).map(AbstractTableOrViewMetadata.class::cast))
+            .filter(Optional::isPresent)
+            .orElseGet(() -> getView(name, autoLoad).map(AbstractTableOrViewMetadata.class::cast))
+            .map(TableOrViewMetadata.class::cast);
     }
 
     public Optional<TableOrViewMetadata> getTableOrView(String name) {

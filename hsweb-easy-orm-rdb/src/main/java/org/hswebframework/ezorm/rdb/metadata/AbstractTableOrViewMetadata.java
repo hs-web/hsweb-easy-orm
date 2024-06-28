@@ -142,6 +142,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         column.setOwner(this);
         allColumns.put(column.getName(), column);
         allColumns.put(column.getAlias(), column);
+        allColumns.put(column.getRealName(),column);
         if (onColumnAdded != null) {
             onColumnAdded.accept(column);
         }
@@ -150,12 +151,13 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     @Override
     public List<RDBColumnMetadata> getColumns() {
-        return new ArrayList<>(allColumns
-                                   .values()
-                                   .stream()
-                                   .sorted()
-                                   .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
-                                   .values());
+        return new ArrayList<>(
+            allColumns
+                .values()
+                .stream()
+                .sorted()
+                .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
+                .values());
     }
 
     @Override
@@ -177,7 +179,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         if (StringUtils.isNullOrEmpty(name)) {
             return Optional.empty();
         }
-        return Optional.ofNullable(allColumns.get(name));
+        return Optional.ofNullable(allColumns.get(StringUtils.getPlainName(name)));
     }
 
     @Override
@@ -194,7 +196,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         }
 
         if (name.contains(".")) {
-            String[] arr = name.split("[.]");
+            String[] arr = StringUtils.getPlainName(name.split("[.]"));
             if (arr.length == 2) {  //table.name
                 return findColumnFromSchema(schema, arr[0], arr[1]);
 

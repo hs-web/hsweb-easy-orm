@@ -110,7 +110,7 @@ public abstract class DefaultRepository<E> {
 
         this.mapping = LazyEntityColumnMapping.of(() -> getTable()
                 .<EntityColumnMapping>findFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(entityType))
-                .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature")));
+                .orElseThrow(() -> new UnsupportedOperationException("unsupported columnPropertyMapping feature for "+entityType)));
         defaultContextKeyValue.add(MappingContextKeys.columnMapping(mapping));
     }
 

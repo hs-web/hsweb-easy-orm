@@ -67,4 +67,20 @@ public class StringUtils {
             return new String(chars);
         }
     }
+
+
+    public static String[] getPlainName(String[] name) {
+        for (int i = 0; i < name.length; i++) {
+            name[i] = getPlainName(name[i]);
+        }
+        return name;
+    }
+
+    public static String getPlainName(String name) {
+        char str = name.charAt(0);
+        if (str == '`' || str == '\"' || str == '[') {
+            return name.substring(1, name.length() - 1);
+        }
+        return name;
+    }
 }
