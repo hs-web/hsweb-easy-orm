@@ -109,13 +109,13 @@ public class JpaEntityTableMetadataParserProcessor {
             Set<Annotation> annotations = getAnnotations(entityType, descriptor);
 
             getAnnotation(annotations, Column.class)
-                    .ifPresent(column -> handleColumnAnnotation(descriptor, annotations, ColumnInfo.of(column)));
+                .ifPresent(column -> handleColumnAnnotation(descriptor, annotations, ColumnInfo.of(column)));
 
             getAnnotation(annotations, JoinColumns.class)
-                    .ifPresent(column -> afterRun.add(() -> handleJoinColumnAnnotation(descriptor, annotations, column.value())));
+                .ifPresent(column -> afterRun.add(() -> handleJoinColumnAnnotation(descriptor, annotations, column.value())));
 
             getAnnotation(annotations, JoinColumn.class)
-                    .ifPresent(column -> afterRun.add(() -> handleJoinColumnAnnotation(descriptor, annotations, column)));
+                .ifPresent(column -> afterRun.add(() -> handleJoinColumnAnnotation(descriptor, annotations, column)));
 
         }
 
@@ -170,13 +170,13 @@ public class JpaEntityTableMetadataParserProcessor {
         builder.setTarget(joinTableName);
 
         getAnnotation(annotations, OneToOne.class)
-                .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.oneToOne));
+            .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.oneToOne));
         getAnnotation(annotations, OneToMany.class)
-                .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.oneToMay));
+            .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.oneToMay));
         getAnnotation(annotations, ManyToMany.class)
-                .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.manyToMay));
+            .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.manyToMay));
         getAnnotation(annotations, ManyToOne.class)
-                .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.manyToOne));
+            .ifPresent(oneToOne -> builder.setAssociationType(AssociationType.manyToOne));
 
 
         for (JoinColumn joinColumn : column) {
@@ -256,8 +256,8 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         String columnName;
         Field field = AnnotationUtils
-                .getFiledByDescriptor(entityType, descriptor)
-                .orElse(null);
+            .getFiledByDescriptor(entityType, descriptor)
+            .orElse(null);
         if (null == field) {
             return;
         }
@@ -290,38 +290,38 @@ public class JpaEntityTableMetadataParserProcessor {
             metadata.setColumnDefinition(column.columnDefinition);
         }
         getAnnotation(annotations, GeneratedValue.class)
-                .map(gen -> {
-                    if (gen.strategy() == GenerationType.SEQUENCE) {
-                        metadata.setAutoIncrement(true);
-                        metadata.setProperty("seq_name", gen.generator());
-                        return null;
-                    } else {
-                        DefaultValueGenerator<RDBColumnMetadata> generator = LazyDefaultValueGenerator
-                                .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())));
-                        return generator.generate(metadata);
-                    }
-                })
-                .ifPresent(metadata::setDefaultValue);
+            .map(gen -> {
+                if (gen.strategy() == GenerationType.SEQUENCE) {
+                    metadata.setAutoIncrement(true);
+                    metadata.setProperty("seq_name", gen.generator());
+                    return null;
+                } else {
+                    DefaultValueGenerator<RDBColumnMetadata> generator = LazyDefaultValueGenerator
+                        .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())));
+                    return generator.generate(metadata);
+                }
+            })
+            .ifPresent(metadata::setDefaultValue);
 
         getAnnotation(annotations, DefaultValue.class)
-                .map(gen -> {
-                    if (gen.value().isEmpty()) {
-                        return LazyDefaultValueGenerator
-                                .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
-                                .generate(metadata);
-                    }
-                    return (RuntimeDefaultValue) gen::value;
-                })
-                .ifPresent(metadata::setDefaultValue);
+            .map(gen -> {
+                if (gen.value().isEmpty()) {
+                    return LazyDefaultValueGenerator
+                        .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
+                        .generate(metadata);
+                }
+                return (RuntimeDefaultValue) gen::value;
+            })
+            .ifPresent(metadata::setDefaultValue);
 
 
         getAnnotation(annotations, Comment.class)
-                .map(Comment::value)
-                .ifPresent(metadata::setComment);
+            .map(Comment::value)
+            .ifPresent(metadata::setComment);
 
         getAnnotation(annotations, Upsert.class)
-                .map(Upsert::insertOnly)
-                .ifPresent(insertOnly -> metadata.setSaveable(!insertOnly));
+            .map(Upsert::insertOnly)
+            .ifPresent(insertOnly -> metadata.setSaveable(!insertOnly));
 
         getAnnotation(annotations, Id.class).ifPresent(id -> metadata.setPrimaryKey(true));
 
@@ -330,24 +330,24 @@ public class JpaEntityTableMetadataParserProcessor {
         metadata.addFeature(propertyDescriptor);
 
         ofNullable(dataTypeResolver)
-                .map(resolver -> resolver.resolve(propertyDescriptor))
-                .ifPresent(metadata::setType);
+            .map(resolver -> resolver.resolve(propertyDescriptor))
+            .ifPresent(metadata::setType);
 
         if (metadata.getType() == null) {
             tableMetadata
-                    .getDialect()
-                    .convertSqlType(metadata.getJavaType())
-                    .ifPresent(jdbcType -> metadata.setJdbcType(jdbcType, metadata.getJavaType()));
+                .getDialect()
+                .convertSqlType(metadata.getJavaType())
+                .ifPresent(jdbcType -> metadata.setJdbcType(jdbcType, metadata.getJavaType()));
         }
 
         ofNullable(valueCodecResolver)
-                .map(resolver -> resolver.resolve(propertyDescriptor)
-                                         .orElseGet(() -> metadata
-                                                 .findFeature(ValueCodecFactory.ID)
-                                                 .flatMap(factory -> factory.createValueCodec(metadata))
-                                                 .orElse(null)))
-                .ifPresent(metadata::setValueCodec);
-        ;
+            .map(resolver -> resolver
+                .resolve(propertyDescriptor)
+                .orElseGet(() -> metadata
+                    .findFeature(ValueCodecFactory.ID)
+                    .flatMap(factory -> factory.createValueCodec(metadata))
+                    .orElse(null)))
+            .ifPresent(metadata::setValueCodec);
         if (metadata.getValueCodec() instanceof EnumValueCodec) {
             EnumValueCodec codec = ((EnumValueCodec) metadata.getValueCodec());
             if (codec.isToMask()) {
@@ -357,7 +357,9 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         customColumn(descriptor, field, metadata, annotations);
 
-        if (metadata.getType().sqlTypeIsNumber()) {
+        if (metadata.getType() == null) {
+            log.warn("can not resolve column type for {}.{}", entityType.getName(), descriptor.getName());
+        } else if (metadata.getType().sqlTypeIsNumber()) {
             metadata.setLength(metadata.getPrecision());
         }
 

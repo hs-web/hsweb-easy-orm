@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.mapping.jpa;
 
 
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.mapping.annotation.Comment;
 import org.hswebframework.ezorm.rdb.mapping.parser.*;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
@@ -12,6 +13,8 @@ import org.hswebframework.utils.ClassUtils;
 
 import javax.persistence.Table;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 /**
  * @see javax.persistence.Column
@@ -20,8 +23,15 @@ import java.util.Optional;
  */
 public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
 
-    @Setter
-    private RDBDatabaseMetadata databaseMetadata;
+    private Callable<RDBDatabaseMetadata> databaseMetadata;
+
+    public void setDatabaseMetadata(Callable<RDBDatabaseMetadata> databaseMetadata) {
+        this.databaseMetadata = databaseMetadata;
+    }
+
+    public void setDatabaseMetadata(RDBDatabaseMetadata databaseMetadata) {
+        this.databaseMetadata = () -> databaseMetadata;
+    }
 
     @Setter
     private DataTypeResolver dataTypeResolver = DefaultDataTypeResolver.INSTANCE;
@@ -30,12 +40,14 @@ public class JpaEntityTableMetadataParser implements EntityTableMetadataParser {
     private ValueCodecResolver valueCodecResolver = DefaultValueCodecResolver.COMMONS;
 
 
+    @SneakyThrows
     public Optional<RDBTableMetadata> parseTableMetadata(Class<?> entityType) {
 
         Table table = AnnotationUtils.getAnnotation(entityType, Table.class);
         if (table == null) {
             return Optional.empty();
         }
+        RDBDatabaseMetadata databaseMetadata = this.databaseMetadata.call();
         RDBSchemaMetadata schema = databaseMetadata
                 .getSchema(table.schema())
                 .orElseGet(databaseMetadata::getCurrentSchema);
