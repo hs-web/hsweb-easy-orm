@@ -22,7 +22,12 @@ public class MethodReferenceConverter {
     }
 
     public static MethodReferenceInfo parse(Object column) {
-        return cache.computeIfAbsent(column.getClass(), t -> {
+        Class<?> clazz = column.getClass();
+        MethodReferenceInfo ref = cache.get(clazz);
+        if (ref != null) {
+            return ref;
+        }
+        return cache.computeIfAbsent(clazz, t -> {
             SerializedLambda lambda = SerializedLambda.of(column);
             String methodName = lambda.getMethodName();
             String columnName = methodName;
