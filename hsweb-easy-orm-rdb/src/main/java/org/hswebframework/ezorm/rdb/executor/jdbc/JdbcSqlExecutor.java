@@ -7,10 +7,11 @@ import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.slf4j.Logger;
+import reactor.core.Disposable;
+import reactor.core.Disposables;
 
 import java.sql.*;
 import java.util.List;
-import java.util.function.Predicate;
 
 import static org.hswebframework.ezorm.rdb.executor.jdbc.JdbcSqlExecutorHelper.*;
 import static org.hswebframework.ezorm.rdb.utils.SqlUtils.printSql;
@@ -129,22 +130,47 @@ public abstract class JdbcSqlExecutor {
     }
 
     @SneakyThrows
+    protected PreparedStatement createStatement(Connection connection, String sql) {
+        return connection.prepareStatement(sql);
+    }
+
+    @SneakyThrows
+    protected ResultSet beforeRead(ResultSet resultSet) {
+        return resultSet;
+    }
+
+    @SneakyThrows
     protected <T, R> R doSelect(Logger logger,
                                 Connection connection,
                                 SqlRequest request,
                                 ResultWrapper<T, R> wrapper,
-                                Predicate<T> stopped) {
-        PreparedStatement statement = connection.prepareStatement(request.getSql());
+                                Disposable.Composite stopped) {
+        PreparedStatement statement = createStatement(connection, request.getSql());
         try {
             printSql(logger, request);
+
+            Disposable disposable = () -> {
+                try {
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("==>    Cancel: {}", request.toNativeSql());
+                    }
+                    releaseStatement(statement);
+                } catch (Throwable ignore) {
+                }
+            };
+            stopped.add(disposable);
+            if (stopped.isDisposed()) {
+                return wrapper.getResult();
+            }
             preparedStatementParameter(statement, request.getParameters());
-            ResultSet resultSet = statement.executeQuery();
+            ResultSet resultSet = beforeRead(statement.executeQuery());
             ResultSetMetaData metaData = resultSet.getMetaData();
             List<String> columns = getResultColumns(metaData);
 
             wrapper.beforeWrap(() -> columns);
 
             int index = 0;
+            stopped.remove(disposable);
             while (resultSet.next()) {
                 //调用包装器,将查询结果包装为对象
                 T data = wrapper.newRowInstance();
@@ -156,7 +182,7 @@ public abstract class JdbcSqlExecutor {
                     data = context.getRowInstance();
                 }
                 index++;
-                if (!wrapper.completedWrapRow(data) || stopped.test(data)) {
+                if (!wrapper.completedWrapRow(data) || stopped.isDisposed()) {
                     break;
                 }
             }
@@ -172,6 +198,6 @@ public abstract class JdbcSqlExecutor {
 
     @SneakyThrows
     public <T, R> R doSelect(Connection connection, SqlRequest request, ResultWrapper<T, R> wrapper) {
-        return doSelect(logger, connection, request, wrapper, (t) -> false);
+        return doSelect(logger, connection, request, wrapper, Disposables.composite());
     }
 }

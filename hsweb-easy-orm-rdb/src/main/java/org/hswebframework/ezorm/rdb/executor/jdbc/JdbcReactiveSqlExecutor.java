@@ -7,8 +7,10 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.Disposable;
+import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
 import java.sql.Connection;
@@ -52,8 +54,9 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                 Logger logger = ctx.getOrDefault(Logger.class, log);
                 return Flux
                     .create(sink -> {
+                        Disposable.Composite disposable = Disposables.composite();
                         @SuppressWarnings("all")
-                        Disposable disposable = getConnection()
+                        Disposable queryDisposable = getConnection()
                             .flatMap(connection -> toFlux(request)
                                 .doOnNext(sql -> this
                                     .doSelect(
@@ -61,14 +64,17 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                                         connection,
                                         sql,
                                         consumer(wrapper, sink::next),
-                                        t -> sink.isCancelled()))
+                                        disposable))
                                 .then())
+                            .subscribeOn(Schedulers.boundedElastic())
                             .subscribe((ignore) -> sink.complete(),
                                        sink::error,
                                        sink::complete,
                                        Context.of(sink.contextView()));
 
-                        sink.onCancel(disposable)
+                        disposable.add(queryDisposable);
+
+                        sink
                             .onDispose(disposable);
                     });
             });
