@@ -7,6 +7,8 @@ import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 /**
  * @author zhouhao
@@ -20,6 +22,7 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(255), ")"));
         addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(255), ")"));
         addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "timestamp");
+        addDataTypeBuilder(JDBCType.TIMESTAMP_WITH_TIMEZONE, (meta) -> "timestamptz");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "time");
         addDataTypeBuilder(JDBCType.DATE, (meta) -> "date");
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "text");
@@ -36,6 +39,7 @@ public class PostgresqlDialect extends DefaultDialect {
 
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
+
         addDataTypeBuilder("json", meta -> "json");
         addDataTypeBuilder("jsonb", meta -> "jsonb");
 
@@ -46,6 +50,10 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("blob", DataType.builder(JdbcDataType.of(JDBCType.BLOB, String.class), (c) -> "bytea"));
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "text"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "text"));
+        registerDataType("timestamptz", DataType
+            .builder(JdbcDataType
+                         .of(JDBCType.TIMESTAMP_WITH_TIMEZONE, ZonedDateTime.class),
+                     c -> "timestamptz"));
 
         registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT, Long.class));
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER, Integer.class));

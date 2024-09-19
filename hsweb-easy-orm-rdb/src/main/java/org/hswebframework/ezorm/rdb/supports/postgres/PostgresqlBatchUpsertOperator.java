@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
@@ -19,8 +20,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("all")
 public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
@@ -29,36 +32,60 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     private PostgresqlUpsertBatchInsertSqlBuilder builder;
 
-    private RDBColumnMetadata idColumn;
+    private SqlFragments prefix;
 
     private SaveOrUpdateOperator fallback;
 
     public PostgresqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
-        this.idColumn = table.getColumns()
-                             .stream().filter(RDBColumnMetadata::isPrimaryKey)
-                             .findFirst()
-                             .orElse(null);
         this.fallback = new DefaultSaveOrUpdateOperator(table);
         this.builder = new PostgresqlUpsertBatchInsertSqlBuilder(table);
     }
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
-        if (idColumn == null) {
-            this.idColumn = table
+        if (getOrCreateOnConflict().isEmpty()) {
+            return fallback.execute(parameter);
+        }
+        return new PostgresqlSaveResultOperator(() -> builder.build(new PostgresqlUpsertOperatorParameter(parameter)));
+    }
+
+    SqlFragments getOrCreateOnConflict() {
+        if (prefix == null) {
+            prefix = createOnConflict();
+        }
+        return prefix;
+    }
+
+    SqlFragments createOnConflict() {
+        RDBColumnMetadata idColumn = table
+            .getColumns()
+            .stream()
+            .filter(RDBColumnMetadata::isPrimaryKey)
+            .findFirst()
+            .orElse(null);
+        if (idColumn != null) {
+            return SqlFragments.of("on conflict (", idColumn.getName(), ") do ");
+        }
+        RDBIndexMetadata indexMetadata = table
+            .getIndexes()
+            .stream()
+            .filter(index -> index.isUnique())
+            .findFirst()
+            .orElse(null);
+
+        if (indexMetadata != null) {
+            String columns = indexMetadata
                 .getColumns()
                 .stream()
-                .filter(RDBColumnMetadata::isPrimaryKey)
-                .findFirst()
-                .orElse(null);
+                .map(c -> table.getColumn(c.getColumn()).orElse(null))
+                .filter(Objects::nonNull)
+                .map(RDBColumnMetadata::getQuoteName)
+                .collect(Collectors.joining(","));
 
-            if (this.idColumn == null) {
-                return fallback.execute(parameter);
-            }
+            return SqlFragments.of("on conflict( ", columns, ") do ");
         }
-
-        return new PostgresqlSaveResultOperator(() -> builder.build(new PostgresqlUpsertOperatorParameter(parameter)));
+        return EmptySqlFragments.INSTANCE;
     }
 
     class PostgresqlUpsertOperatorParameter extends InsertOperatorParameter {
@@ -104,7 +131,6 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     private class PostgresqlUpsertBatchInsertSqlBuilder extends BatchInsertSqlBuilder {
 
-        SqlFragments PREFIX = null;
 
         public PostgresqlUpsertBatchInsertSqlBuilder(RDBTableMetadata table) {
             super(table);
@@ -117,10 +143,7 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
         @Override
         protected AppendableSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, AppendableSqlFragments sql) {
-            if (PREFIX == null) {
-                PREFIX = SqlFragments.of("on conflict (", idColumn.getName(), ") do ");
-            }
-            sql.add(PREFIX);
+            sql.add(createOnConflict());
 
             if (((PostgresqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 sql.addSql("nothing");

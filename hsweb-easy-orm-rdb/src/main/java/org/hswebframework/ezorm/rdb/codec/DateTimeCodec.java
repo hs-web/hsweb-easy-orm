@@ -118,6 +118,8 @@ public class DateTimeCodec implements ValueCodec {
         } else if (data instanceof ZonedDateTime) {
             ZonedDateTime dateTime = ((ZonedDateTime) data);
             data = Date.from(dateTime.toInstant());
+        }else if(data instanceof OffsetDateTime){
+            data = Date.from(((OffsetDateTime) data).toInstant());
         } else if (data instanceof String) {
             String stringData = ((String) data);
             if ((stringData).contains(",")) {

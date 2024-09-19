@@ -57,6 +57,9 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
 
     public Object encode(Object data) {
         if (data == null) {
+            if (valueCodec != null) {
+                return valueCodec.encodeNull();
+            }
             return null;
         }
         if (valueCodec != null) {

@@ -22,6 +22,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @AllArgsConstructor
 @Slf4j
@@ -110,7 +111,7 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
     }
 
     class PostgresqlIndexMetadataWrapper implements ResultWrapper<Map<String, Object>, List<RDBIndexMetadata>> {
-        Map<Tuple2<String,String>, RDBIndexMetadata> group = new HashMap<>();
+        Map<Tuple2<String,String>, RDBIndexMetadata> group = new ConcurrentHashMap<>();
 
         @Override
         public Map<String, Object> newRowInstance() {
@@ -127,16 +128,15 @@ public class PostgresqlIndexMetadataParser implements IndexMetadataParser {
         @Override
         public boolean completedWrapRow(Map<String, Object> result) {
             String name = (String) result.get("indexname");
-            String tableName = ((String) result.get("tablename")).toLowerCase();
+            String tableName = ((String) result.get("tablename"));
 
             RDBIndexMetadata index = group.computeIfAbsent(Tuples.of(name,tableName), __ -> new RDBIndexMetadata());
             index.setName(name.toLowerCase());
             index.setTableName(tableName);
             index.setPrimaryKey(Boolean.TRUE.equals(result.get("indisprimary")));
-            index.setUnique(Boolean.FALSE.equals(result.get("indisunique")));
+            index.setUnique(Boolean.TRUE.equals(result.get("indisunique")));
             RDBIndexMetadata.IndexColumn indexColumn = new RDBIndexMetadata.IndexColumn();
-            indexColumn.setColumn(((String) result.get("attname")).toLowerCase());
-            // TODO: 2019-10-22 咋获取排序...
+            indexColumn.setColumn(((String) result.get("attname")));
             indexColumn.setSort(RDBIndexMetadata.IndexSort.asc);
             indexColumn.setSortIndex(((Number) result.get("attnum")).intValue());
             index.getColumns().add(indexColumn);

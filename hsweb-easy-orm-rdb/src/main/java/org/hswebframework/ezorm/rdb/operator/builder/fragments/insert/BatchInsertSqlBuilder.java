@@ -48,8 +48,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
 
         fragments.add(SqlFragments.LEFT_BRACKET);
 
-        LinkedHashMap<Integer, RDBColumnMetadata> indexMapping =  Maps.newLinkedHashMapWithExpectedSize(columns.size());
-        LinkedHashMap<Integer, SqlFragments> functionValues =  Maps.newLinkedHashMapWithExpectedSize(columns.size());
+        LinkedHashMap<Integer, RDBColumnMetadata> indexMapping = Maps.newLinkedHashMapWithExpectedSize(columns.size());
+        LinkedHashMap<Integer, SqlFragments> functionValues = Maps.newLinkedHashMapWithExpectedSize(columns.size());
 
         int index = 0;
         int primaryIndex = -1;
@@ -140,8 +140,16 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                         if (value == null) {
                             value = NullValue.of(column.getType());
                         }
-                        fragments.add(SqlFragments.QUESTION_MARK)
-                                 .addParameter(column.encode(value));
+                        value = column.encode(value);
+                        if (value instanceof NativeSql) {
+                            fragments
+                                .addSql(((NativeSql) value).getSql())
+                                .addParameter(((NativeSql) value).getParameters());
+
+                        } else {
+                            fragments.add(SqlFragments.QUESTION_MARK)
+                                     .addParameter(value);
+                        }
                     }
                 }
             }

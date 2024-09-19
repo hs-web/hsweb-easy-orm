@@ -219,7 +219,13 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
 
     @Override
     public Object encode(Object data) {
-        if (data instanceof NullValue) {
+        if (data == null || data instanceof NullValue) {
+            if (valueCodec != null) {
+                Object newVal = valueCodec.encodeNull();
+                if (newVal != null) {
+                    return newVal;
+                }
+            }
             return data;
         }
         return super.encode(data);

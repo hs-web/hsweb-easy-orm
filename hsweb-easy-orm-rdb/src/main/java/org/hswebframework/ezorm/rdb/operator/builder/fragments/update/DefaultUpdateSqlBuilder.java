@@ -90,9 +90,18 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                     }
                     //  = ?
                     else {
-                        columnFragments = SimpleSqlFragments
-                            .of(Arrays.asList(columnMetadata.getQuoteName(), "= ?"),
-                                Collections.singletonList(columnMetadata.encode(value)));
+                        value = columnMetadata.encode(value);
+                        if (value instanceof NativeSql) {
+                            columnFragments = SimpleSqlFragments
+                                .of(
+                                    Arrays.asList(columnMetadata.getQuoteName(), "=", ((NativeSql) column.getValue()).getSql()),
+                                    Arrays.asList(((NativeSql) column.getValue()).getParameters())
+                                );
+                        } else {
+                            columnFragments = SimpleSqlFragments
+                                .of(Arrays.asList(columnMetadata.getQuoteName(), "= ?"),
+                                    Collections.singletonList(columnMetadata.encode(value)));
+                        }
                     }
 
                 }
