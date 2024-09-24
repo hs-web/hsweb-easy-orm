@@ -23,9 +23,9 @@ public class DateTimeCodec implements ValueCodec {
 
     private String format;
 
-    private Class toType;
+    private Class<?> toType;
 
-    public DateTimeCodec(String format, Class toType) {
+    public DateTimeCodec(String format, Class<?> toType) {
         this.format = format;
         this.toType = toType;
     }
@@ -48,10 +48,11 @@ public class DateTimeCodec implements ValueCodec {
         }
         if (value instanceof String) {
             if (((String) value).contains(",")) {
-                return Arrays.stream(((String) value).split(","))
-                             .map(this::doParse)
-                             .filter(Objects::nonNull)
-                             .collect(Collectors.toList());
+                return Arrays
+                    .stream(((String) value).split(","))
+                    .map(this::doParse)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
             }
 
             return doParse(((String) value));
@@ -67,6 +68,10 @@ public class DateTimeCodec implements ValueCodec {
         }
         if (toType.isAssignableFrom(data.getClass())) {
             return data;
+        }
+        // java.sql.Date 无法使用toInstant
+        if (data instanceof java.sql.Date) {
+            data = new Date(((java.sql.Date) data).getTime());
         }
         if (!(data instanceof Date)) {
             data = toDate(data);
@@ -118,7 +123,7 @@ public class DateTimeCodec implements ValueCodec {
         } else if (data instanceof ZonedDateTime) {
             ZonedDateTime dateTime = ((ZonedDateTime) data);
             data = Date.from(dateTime.toInstant());
-        }else if(data instanceof OffsetDateTime){
+        } else if (data instanceof OffsetDateTime) {
             data = Date.from(((OffsetDateTime) data).toInstant());
         } else if (data instanceof String) {
             String stringData = ((String) data);

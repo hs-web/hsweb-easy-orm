@@ -115,4 +115,19 @@ public class DateTimeCodecTest {
             assertEquals(Lists.newArrayList(now, now), decode);
         }
     }
+
+    @Test
+    public void testDecodeSqlDate() {
+        DateTimeCodec codec = new DateTimeCodec("yyyy-MM-dd", LocalDateTime.class);
+
+        java.sql.Date data = new java.sql.Date(System.currentTimeMillis());
+
+        Object val = codec.encode(data);
+        assertEquals(data, val);
+
+        Object date = codec.encode("2019-01-01");
+
+        assertTrue(codec.decode(date) instanceof LocalDateTime);
+    }
+
 }
