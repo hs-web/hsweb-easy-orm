@@ -44,7 +44,6 @@ public class MysqlDialect extends DefaultDialect {
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
         registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
         registerDataType("year", JdbcDataType.of(JDBCType.DATE, Date.class));
-        registerDataType("text", JdbcDataType.of(JDBCType.CLOB, Date.class));
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, Date.class));
 
     }
