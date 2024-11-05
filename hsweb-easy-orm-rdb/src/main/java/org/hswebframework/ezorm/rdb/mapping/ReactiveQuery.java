@@ -31,4 +31,14 @@ public interface ReactiveQuery<T> extends DSLQuery<ReactiveQuery<T>> {
      * @return 如果未查询到结果将返回{@link Mono#empty()}
      */
     Mono<T> fetchOne();
+
+    /**
+     * 复制当前查询对象,在需要多次设置查询条件时,可以使用此方法复制一个新的查询对象
+     *
+     * @return 新的查询对象
+     * @since 4.1.3
+     */
+    default ReactiveQuery<T> copy() {
+        return this;
+    }
 }
