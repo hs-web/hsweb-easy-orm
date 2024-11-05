@@ -42,77 +42,85 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
     }
 
     @Override
+    public ReactiveQuery<T> copy() {
+        DefaultReactiveQuery<T> copy = new DefaultReactiveQuery<>(
+            tableMetadata, columnMapping, operator, wrapper, context);
+        copy.param = param.clone();
+        return copy;
+    }
+
+    @Override
     public Flux<T> fetch() {
         return this
-                .doFetch(operator.query(tableMetadata),
-                         "fetch",
-                         (_queryOperator) -> _queryOperator
-                                 .context(param.getContext())
-                                 .select(getSelectColumn())
-                                 .where(param.getTerms())
-                                 .orderBy(getSortOrder())
-                                 .when(param.isPaging(), query -> query.paging(param.getPageIndex(), param.getPageSize()))
-                                 .when(param.isForUpdate(), QueryOperator::forUpdate)
-                                 .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetch")))
-                                 .reactive())
-                .contextWrite(context);
+            .doFetch(operator.query(tableMetadata),
+                     "fetch",
+                     (_queryOperator) -> _queryOperator
+                         .context(param.getContext())
+                         .select(getSelectColumn())
+                         .where(param.getTerms())
+                         .orderBy(getSortOrder())
+                         .when(param.isPaging(), query -> query.paging(param.getPageIndex(), param.getPageSize()))
+                         .when(param.isForUpdate(), QueryOperator::forUpdate)
+                         .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetch")))
+                         .reactive())
+            .contextWrite(context);
     }
 
     @Override
     public Mono<T> fetchOne() {
         return this
-                .doFetch(operator.query(tableMetadata),
-                         "fetchOne",
-                         (_queryOperator) -> _queryOperator
-                                 .context(param.getContext())
-                                 .select(getSelectColumn())
-                                 .where(param.getTerms())
-                                 .orderBy(getSortOrder())
-                                 //.paging(0, 1)
-                                 .when(param.isForUpdate(), QueryOperator::forUpdate)
-                                 .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetchOne")))
-                                 .reactive()
-                                 .take(1))
-                .contextWrite(context)
-                .singleOrEmpty();
+            .doFetch(operator.query(tableMetadata),
+                     "fetchOne",
+                     (_queryOperator) -> _queryOperator
+                         .context(param.getContext())
+                         .select(getSelectColumn())
+                         .where(param.getTerms())
+                         .orderBy(getSortOrder())
+                         //.paging(0, 1)
+                         .when(param.isForUpdate(), QueryOperator::forUpdate)
+                         .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type("fetchOne")))
+                         .reactive()
+                         .take(1))
+            .contextWrite(context)
+            .singleOrEmpty();
     }
 
     private <O> Flux<O> doFetch(QueryOperator queryOperator, String type, Function<QueryOperator, Publisher<O>> executor) {
         DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
         tableMetadata
-                .fireEvent(MappingEventTypes.select_before, eventContext ->
-                        eventContext.set(
-                                source(DefaultReactiveQuery.this),
-                                query(queryOperator),
-                                dml(operator),
-                                tableMetadata(tableMetadata),
-                                columnMapping(columnMapping),
-                                reactiveResultHolder.value(holder),
-                                queryOaram.value(param),
-                                executorType("reactive"),
-                                type(type)
-                        ));
+            .fireEvent(MappingEventTypes.select_before, eventContext ->
+                eventContext.set(
+                    source(DefaultReactiveQuery.this),
+                    query(queryOperator),
+                    dml(operator),
+                    tableMetadata(tableMetadata),
+                    columnMapping(columnMapping),
+                    reactiveResultHolder.value(holder),
+                    queryOaram.value(param),
+                    executorType("reactive"),
+                    type(type)
+                ));
         return holder
-                .doBefore()
-                .thenMany(Flux.defer(() -> executor.apply(queryOperator.clone())));
+            .doBefore()
+            .thenMany(Flux.defer(() -> executor.apply(queryOperator.clone())));
     }
 
     @Override
     public Mono<Integer> count() {
         QueryOperator queryOperator = operator
-                .query(tableMetadata)
-                .select(count1().as("_total"));
+            .query(tableMetadata)
+            .select(count1().as("_total"));
         return this
-                .doFetch(queryOperator, "count", _opt -> _opt
-                        .context(param.getContext())
-                        .where(param.getTerms())
-                        .fetch(column("_total", Number.class::cast))
-                        .reactive()
-                        .map(Number::intValue)
-                        .reduce(Math::addExact)
-                        .switchIfEmpty(Mono.just(0)))
-                .contextWrite(context)
-                .singleOrEmpty();
+            .doFetch(queryOperator, "count", _opt -> _opt
+                .context(param.getContext())
+                .where(param.getTerms())
+                .fetch(column("_total", Number.class::cast))
+                .reactive()
+                .map(Number::intValue)
+                .reduce(Math::addExact)
+                .switchIfEmpty(Mono.just(0)))
+            .contextWrite(context)
+            .singleOrEmpty();
     }
 
 }
