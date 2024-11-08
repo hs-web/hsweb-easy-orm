@@ -24,6 +24,9 @@ public class DateTimeCodecTest {
         Object val = codec.encode(data);
         assertEquals(data, val);
 
+        val = codec.encode(String.valueOf(data.getTime()));
+        assertEquals(data, val);
+
         assertEquals(codec.decode(codec.encode("2019:01:01")), "2019:01:01");
 
     }

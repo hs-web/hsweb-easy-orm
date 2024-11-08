@@ -35,6 +35,15 @@ public class DateTimeCodec implements ValueCodec {
         if (smartFormat != null) {
             return smartFormat;
         }
+        try {
+            long timestampMaybe = Long.parseLong(dateString);
+            if (timestampMaybe > 0) {
+                return Date.from(Instant.ofEpochMilli(timestampMaybe));
+            }
+        } catch (Throwable ignore) {
+
+        }
+
         return DateTimeFormat.forPattern(format).parseDateTime(dateString).toDate();
     }
 
