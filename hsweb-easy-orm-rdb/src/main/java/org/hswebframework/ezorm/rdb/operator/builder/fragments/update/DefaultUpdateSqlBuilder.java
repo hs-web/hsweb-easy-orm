@@ -100,7 +100,7 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                         } else {
                             columnFragments = SimpleSqlFragments
                                 .of(Arrays.asList(columnMetadata.getQuoteName(), "= ?"),
-                                    Collections.singletonList(columnMetadata.encode(value)));
+                                    Collections.singletonList(value));
                         }
                     }
 
