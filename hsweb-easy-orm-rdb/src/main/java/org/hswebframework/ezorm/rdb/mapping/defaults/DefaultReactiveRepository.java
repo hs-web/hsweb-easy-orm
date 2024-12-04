@@ -53,6 +53,11 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
     }
 
     @Override
+    public E newInstanceNow() {
+        return wrapper.newRowInstance();
+    }
+
+    @Override
     public Mono<E> findById(Mono<K> primaryKey) {
         return primaryKey
             .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
