@@ -26,6 +26,17 @@ public interface ReactiveRepository<T, K> {
     Mono<T> newInstance();
 
     /**
+     * 创建实体类实例
+     *
+     * @return 实体类实例
+     */
+    default T newInstanceNow() {
+        return newInstance()
+            .toFuture()
+            .getNow(null);
+    }
+
+    /**
      * 根据异步ID查询
      *
      * @param key key
