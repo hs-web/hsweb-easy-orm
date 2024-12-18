@@ -4,13 +4,16 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Getter
 @Setter
 @EqualsAndHashCode
-public class FunctionColumn {
+public class FunctionColumn implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String column;
 
     private String function;

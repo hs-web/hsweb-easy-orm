@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
-public interface NativeSql {
+import java.io.Serializable;
+
+public interface NativeSql extends Serializable {
 
     Object[] EMPTY_PARAMETER = new Object[0];
 
@@ -11,16 +13,6 @@ public interface NativeSql {
     }
 
     static NativeSql of(String sql, Object... parameters) {
-        return new NativeSql() {
-            @Override
-            public String getSql() {
-                return sql;
-            }
-
-            @Override
-            public Object[] getParameters() {
-                return parameters;
-            }
-        };
+        return new SimpleNativeSql(sql, parameters);
     }
 }
