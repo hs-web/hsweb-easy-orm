@@ -31,7 +31,7 @@ public class JsonValueCodecTest {
 
         Assert.assertTrue(arr instanceof List);
 
-        Assert.assertEquals(((List) arr).size(), 2);
+        Assert.assertEquals(2, ((List) arr).size());
 
     }
 
@@ -44,7 +44,7 @@ public class JsonValueCodecTest {
 
         Assert.assertTrue(arr instanceof Set);
 
-        Assert.assertEquals(((Set) arr).size(), 2);
+        Assert.assertEquals(2, ((Set) arr).size());
 
     }
 
@@ -74,6 +74,23 @@ public class JsonValueCodecTest {
         Assert.assertEquals(val.size(), 2);
         Assert.assertEquals(val.get("a"), Integer.valueOf(1));
         Assert.assertEquals(val.get("b"), Integer.valueOf(2));
+    }
+
+    @Test
+    @SneakyThrows
+    public void testMapField() {
+        JsonValueCodec codec = JsonValueCodec.ofField(JsonCodecEntity.class.getDeclaredField("nestMap"));
+
+        Object arr = codec.decode("{\"name\":{ \"key\":\"1\" }}");
+        System.out.println(arr);
+        Assert.assertTrue(arr instanceof Map);
+        Map<String, Map<String,Integer>> val = ((Map) arr);
+
+        Map<String,Integer> vls =  val.get("name");
+        assertNotNull(vls);
+
+        assertEquals((Object) 1, vls.get("key"));
+
     }
 
     @Test
@@ -225,6 +242,8 @@ public class JsonValueCodecTest {
         private Mono<JsonCodecEntity> mono;
 
         private Flux<JsonCodecEntity> flux;
+
+        private Map<String, Map<String, Integer>> nestMap;
 
     }
 

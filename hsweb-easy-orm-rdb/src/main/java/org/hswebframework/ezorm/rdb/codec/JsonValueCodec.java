@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -34,9 +35,9 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
 
     static {
         defaultMapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-                .setTimeZone(TimeZone.getDefault());
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+            .setTimeZone(TimeZone.getDefault());
     }
 
     private final JavaType jacksonType;
@@ -51,10 +52,10 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
     }
 
     public static JsonValueCodec ofCollection(Class<? extends Collection> targetType
-            , Class<?> elementType) {
+        , Class<?> elementType) {
         return new JsonValueCodec(targetType, defaultMapper
-                .getTypeFactory()
-                .constructCollectionType(targetType, elementType));
+            .getTypeFactory()
+            .constructCollectionType(targetType, elementType));
     }
 
     public static JsonValueCodec ofMap(Class<? extends Map> targetType, Class<?> keyType, Class<?> valueType) {
@@ -62,6 +63,7 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
                                                            .constructMapType(targetType, keyType, valueType));
     }
 
+    @SuppressWarnings("all")
     public static JsonValueCodec ofField(Field field) {
         Class type = field.getType();
         Class targetType = type;
@@ -69,30 +71,25 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
         JavaType jacksonType = null;
 
         if (type == Mono.class || type == Flux.class) {
-            targetType = (Class) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+            targetType = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
         }
+        TypeFactory factory = defaultMapper.getTypeFactory();
         if (Map.class.isAssignableFrom(targetType)) {
             if (genericType instanceof ParameterizedType) {
                 Type[] types = ((ParameterizedType) genericType).getActualTypeArguments();
-                jacksonType = defaultMapper
-                        .getTypeFactory()
-                        .constructMapType(targetType, (Class) types[0], (Class) types[1]);
+                jacksonType = factory.constructMapType(targetType, factory.constructType(types[0]), factory.constructType(types[1]));
             }
 
         } else if (Collection.class.isAssignableFrom(targetType)) {
             if (genericType instanceof ParameterizedType) {
                 Type[] types = ((ParameterizedType) genericType).getActualTypeArguments();
-                jacksonType = defaultMapper
-                        .getTypeFactory()
-                        .constructCollectionType(targetType, (Class) types[0]);
+                jacksonType = factory.constructCollectionType(targetType, factory.constructType(types[0]));
             }
         } else if (targetType.isArray()) {
-            jacksonType = defaultMapper
-                    .getTypeFactory()
-                    .constructArrayType(targetType.getComponentType());
+            jacksonType = factory.constructArrayType(targetType.getComponentType());
         }
         if (jacksonType == null) {
-            jacksonType = defaultMapper.getTypeFactory().constructType(targetType);
+            jacksonType = factory.constructType(targetType);
         }
 
         return new JsonValueCodec(type, jacksonType);
