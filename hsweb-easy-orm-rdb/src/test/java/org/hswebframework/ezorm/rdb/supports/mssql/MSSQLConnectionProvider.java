@@ -19,10 +19,14 @@ public class MSSQLConnectionProvider implements ConnectionProvider {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        GenericContainer<?> container = Containers.newMSSQL();
+        try {
+            GenericContainer<?> container = Containers.newMSSQL();
 
-        container.start();
-        port = container.getMappedPort(1433);
+            container.start();
+            port = container.getMappedPort(1433);
+        }catch (Throwable e){
+            e.printStackTrace();
+        }
     }
 
     @SneakyThrows

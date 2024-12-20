@@ -87,7 +87,7 @@ public class BasicTestEntity implements Serializable, Extensible {
     private transient Map<String, Object> extensions = new HashMap<>();
 
     @Override
-    public Map<String, Object> getExtensions() {
+    public Map<String, Object> extensions() {
         return extensions;
     }
 
