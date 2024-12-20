@@ -128,7 +128,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
             return this
                     .doExecute(Operation.execute, _logger, toFlux(request), Result::getRowsUpdated)
                     .doOnNext(count -> _logger.debug("==>    Updated: {}", count))
-                    .reduce(0, Math::addExact);
+                    .reduce(0, (l,r)-> l + r.intValue());
         });
     }
 
