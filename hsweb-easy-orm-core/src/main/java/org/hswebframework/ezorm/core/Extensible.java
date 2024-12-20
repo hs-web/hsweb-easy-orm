@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.core;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 import java.util.Map;
@@ -17,7 +18,7 @@ public interface Extensible {
      *
      * @return 扩展属性
      */
-    @JsonAnySetter
+    @JsonAnyGetter
     Map<String, Object> extensions();
 
     /**
