@@ -4,6 +4,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
+
 public class Containers {
 
     public static GenericContainer<?> newMysql(String version) {
@@ -32,7 +34,7 @@ public class Containers {
         return new GenericContainer<>(DockerImageName.parse("iatebes/oracle_11g"))
                 .withEnv("TZ", "Asia/Shanghai")
                 .withExposedPorts(1521)
-                .waitingFor(Wait.forLogMessage(".*opened.*", 1));
+                .waitingFor(Wait.forLogMessage(".*opened.*", 1).withStartupTimeout(Duration.ofMinutes(2)));
     }
 
     public static GenericContainer<?> newMSSQL() {
@@ -42,7 +44,7 @@ public class Containers {
                 .withEnv("ACCEPT_EULA","y")
                 .withEnv("MSSQL_PID","Enterprise")
                 .withExposedPorts(1433)
-                .waitingFor(Wait.forLogMessage(".*Service Broker manager has started.*",1));
+                .waitingFor(Wait.forLogMessage(".*Service Broker manager has started.*",1).withStartupTimeout(Duration.ofMinutes(2)));
     }
 
 }
