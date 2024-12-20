@@ -1,9 +1,12 @@
 package org.hswebframework.ezorm.rdb.mapping.wrapper;
 
+import org.hswebframework.ezorm.core.Extensible;
 import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
+import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 
 public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
@@ -37,16 +40,29 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
             }
             ForeignKeyMetadata metadata = mapping.getTable().getForeignKey(table).orElse(null);
             if (null != metadata) {
-                Object value = metadata
-                    .getTarget()
-                    .getColumn(column)
-                    .map(m -> m.decode(context.getResult()))
-                    .orElseGet(context::getResult);
-                GlobalConfig.getPropertyOperator().setProperty(nestInstance, column, value);
+                RDBColumnMetadata col = metadata.getTarget().getColumn(column).orElse(null);
+
+                Object val = col == null ? context.getResult() : col.decode(context.getResult());
+
+                setProperty(col, context.getRowInstance(), label, val);
             }
         } else {
-            GlobalConfig.getPropertyOperator().setProperty(context.getRowInstance(), label, context.getResult());
+            setProperty(mapping.getColumnByProperty(label).orElse(null),
+                        context.getRowInstance(),
+                        label,
+                        context.getResult());
         }
+    }
+
+    protected void setProperty(RDBColumnMetadata col, E instance, String label, Object val) {
+        if (instance instanceof Extensible && (col == null || !col
+            .getFeature(EntityPropertyDescriptor.ID)
+            .isPresent())) {
+            ((Extensible) instance).setExtension(label, val);
+        } else {
+            GlobalConfig.getPropertyOperator().setProperty(instance, label, val);
+        }
+
     }
 
     @Override
