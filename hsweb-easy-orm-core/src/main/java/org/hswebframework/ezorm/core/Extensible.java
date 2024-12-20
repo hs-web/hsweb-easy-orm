@@ -40,4 +40,23 @@ public interface Extensible {
     @JsonAnySetter
     void setExtension(String property, Object value);
 
+    /**
+     * 方法引用方式设置扩展属性
+     * @param property 属性名
+     * @param value 属性值
+     * @param <T> 属性值类型
+     */
+    default <T> void setExtension(StaticMethodReferenceColumn<T> property, T value) {
+        setExtension(property.getColumn(), value);
+    }
+
+    /**
+     * 方法引用方式设置扩展属性
+     * @param property 属性名
+     * @param <T> 属性值类型
+     */
+    default <T> void setExtension(MethodReferenceColumn<T> property) {
+        setExtension(property.getColumn(), property.get());
+    }
+
 }
