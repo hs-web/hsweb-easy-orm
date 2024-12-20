@@ -2,15 +2,13 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.Extensible;
 import org.hswebframework.ezorm.core.GlobalConfig;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.core.RuntimeDefaultValue;
-import org.hswebframework.ezorm.rdb.events.ContextKey;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.events.ContextKeys;
-import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
+import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.LazyEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.events.EventResultOperator;
@@ -22,18 +20,12 @@ import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertResultOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveOrUpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperator;
-import reactor.core.publisher.Mono;
+import org.hswebframework.ezorm.rdb.utils.PropertyUtils;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -138,24 +130,27 @@ public abstract class DefaultRepository<E> {
     }
 
     protected E merge(E older, E newer) {
-        ObjectPropertyOperator opt = GlobalConfig.getPropertyOperator();
         for (String property : getProperties()) {
-            Object newerVal = opt.getProperty(newer, property).orElse(null);
+
+            Object newerVal = getProperty(newer, property);
             if (newerVal != null) {
                 continue;
             }
-            opt.getProperty(older, property)
-               .ifPresent(olderValue -> opt.setProperty(newer, property, olderValue));
 
+            newerVal = getProperty(older, property);
+            if (newerVal != null) {
+                setProperty(newer, property, newerVal);
+            }
         }
         return newer;
     }
 
-    private Object getProperty(E data, String property) {
-        return GlobalConfig
-            .getPropertyOperator()
-            .getProperty(data, property)
-            .orElse(null);
+    void setProperty(E entity, String property, Object value) {
+        PropertyUtils.setProperty(entity, property, value, mapping);
+    }
+
+    Object getProperty(E entity, String property) {
+        return PropertyUtils.getProperty(entity, property, mapping).orElse(null);
     }
 
     protected SaveResultOperator doSave(Collection<E> data) {
@@ -213,7 +208,7 @@ public abstract class DefaultRepository<E> {
     }
 
     private Object getInsertColumnValue(E data, String property, BiConsumer<String, Object> whenDefaultValue) {
-        Object value = GlobalConfig.getPropertyOperator().getProperty(data, property).orElse(null);
+        Object value = getProperty(data, property);
         if (value == null) {
             value = mapping.getColumnByProperty(property)
                            .flatMap(RDBColumnMetadata::generateDefaultValue)
@@ -222,7 +217,7 @@ public abstract class DefaultRepository<E> {
                 whenDefaultValue.accept(property, value);
                 //回填
                 if (!(value instanceof NativeSql)) {
-                    GlobalConfig.getPropertyOperator().setProperty(data, property, value);
+                    setProperty(data, property, value);
                 }
             }
         }

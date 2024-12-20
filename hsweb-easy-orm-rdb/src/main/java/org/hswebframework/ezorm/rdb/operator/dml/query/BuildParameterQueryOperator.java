@@ -35,16 +35,18 @@ public class BuildParameterQueryOperator extends QueryOperator {
 
     @Override
     public QueryOperator select(Collection<String> columns) {
-
-        columns.stream()
-               .map(SelectColumn::of)
-               .forEach(parameter.getSelect()::add);
+        for (String column : columns) {
+            parameter.getSelect().add(SelectColumn.of(column));
+        }
         return this;
     }
 
     @Override
     public QueryOperator select(String... columns) {
-        return select(Arrays.asList(columns));
+        for (String column : columns) {
+            parameter.getSelect().add(SelectColumn.of(column));
+        }
+        return this;
     }
 
     @Override

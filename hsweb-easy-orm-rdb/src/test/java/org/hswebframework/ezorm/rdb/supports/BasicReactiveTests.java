@@ -132,9 +132,15 @@ public abstract class BasicReactiveTests {
 
         operator.ddl()
                 .createOrAlter(table)
+                .addColumn("ext_name")
+                .varchar(32)
+                .commit()
                 .commit()
                 .reactive()
                 .block();
+        table.<EntityColumnMapping>getFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+            .reload();
+
         EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
         wrapper.setMapping(table
                                .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
@@ -143,6 +149,7 @@ public abstract class BasicReactiveTests {
 
         repository = new DefaultReactiveRepository<>(operator, table, BasicTestEntity.class, wrapper);
         addressRepository = operator.dml().createReactiveRepository("test_address");
+
 
     }
 
@@ -268,6 +275,8 @@ public abstract class BasicReactiveTests {
             .stateEnum(StateEnum.enabled)
             .build();
 
+        second.setExtension("ext_name", "test");
+
         repository
             .insert(Flux.just(first, second))
             .as(StepVerifier::create)
@@ -277,8 +286,9 @@ public abstract class BasicReactiveTests {
         repository
             .createQuery()
             .where(BasicTestEntity::getId, first.getId())
-            .select("id", "name")
+            .select("id", "name","ext_name")
             .fetch()
+            .doOnNext(System.out::println)
             .map(BasicTestEntity::getName)
             .as(StepVerifier::create)
             .expectNext(second.getName())
@@ -578,7 +588,7 @@ public abstract class BasicReactiveTests {
     }
 
     @Test
-    public void testUpdateByNative(){
+    public void testUpdateByNative() {
         BasicTestEntity entity = BasicTestEntity
             .builder()
             .id("testUpdateByNative")
@@ -593,13 +603,13 @@ public abstract class BasicReactiveTests {
             .verifyComplete();
 
         repository.createUpdate()
-            .set(BasicTestEntity::getState, NativeSql.of("state + 1"))
-            .where(entity::getId)
-            .lte(BasicTestEntity::getState,NativeSql.of("state + 1"))
-            .execute()
-            .as(StepVerifier::create)
-            .expectNext(1)
-            .verifyComplete();
+                  .set(BasicTestEntity::getState, NativeSql.of("state + 1"))
+                  .where(entity::getId)
+                  .lte(BasicTestEntity::getState, NativeSql.of("state + 1"))
+                  .execute()
+                  .as(StepVerifier::create)
+                  .expectNext(1)
+                  .verifyComplete();
 
 
     }

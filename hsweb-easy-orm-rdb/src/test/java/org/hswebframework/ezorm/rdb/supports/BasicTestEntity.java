@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.*;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
+import org.hswebframework.ezorm.core.Extensible;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
 import org.hswebframework.ezorm.rdb.mapping.annotation.EnumCodec;
@@ -11,16 +12,16 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.JDBCType;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Table(name = "entity_test_table", indexes = @Index(name = "test_index", columnList = "name,state desc"))
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = {"createTime","address"})
-public class BasicTestEntity implements Serializable {
+@EqualsAndHashCode(exclude = {"createTime", "address"})
+@ToString
+public class BasicTestEntity implements Serializable, Extensible {
 
     @Column(length = 32)
     @Id
@@ -64,7 +65,7 @@ public class BasicTestEntity implements Serializable {
     private StateEnum stateEnum;
 
     @Column
-    @ColumnType(javaType = Long.class,jdbcType = JDBCType.BIGINT)
+    @ColumnType(javaType = Long.class, jdbcType = JDBCType.BIGINT)
     @EnumCodec(toMask = true)
     @DefaultValue("0")
     private StateEnum[] stateEnums;
@@ -81,4 +82,23 @@ public class BasicTestEntity implements Serializable {
 
     @JoinColumn(name = "address_id")
     private Address address;
+
+    @Builder.Default
+    private transient Map<String, Object> extensions = new HashMap<>();
+
+    @Override
+    public Map<String, Object> getExtensions() {
+        return extensions;
+    }
+
+    @Override
+    public Object getExtension(String property) {
+        return extensions.get(property);
+    }
+
+    @Override
+    public void setExtension(String property, Object value) {
+        extensions.put(property, value);
+    }
+
 }

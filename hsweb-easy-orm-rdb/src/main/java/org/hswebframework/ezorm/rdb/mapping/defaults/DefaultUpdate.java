@@ -1,18 +1,14 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
-import org.hswebframework.ezorm.core.NestConditional;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.core.SimpleNestConditional;
+import org.hswebframework.ezorm.core.*;
 import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.QueryParam;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.core.param.UpdateParam;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.mapping.DSLUpdate;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.events.EventResultOperator;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingContextKeys;
 import org.hswebframework.ezorm.rdb.mapping.events.MappingEventTypes;
@@ -21,7 +17,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateResultOperator;
-import org.hswebframework.ezorm.rdb.operator.dml.upsert.SaveResultOperator;
+import org.hswebframework.ezorm.rdb.utils.PropertyUtils;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -115,11 +111,11 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
             .stream()
             .filter(e -> includes.isEmpty() || includes.contains(e.getKey()) || includes.contains(e.getValue()))
             .filter(e -> !excludes.contains(e.getKey()) && !excludes.contains(e.getValue()))
-            .forEach(e -> GlobalConfig
-                .getPropertyOperator()
-                .getProperty(instance, e.getValue())
+            .forEach(e -> PropertyUtils
+                .getProperty(instance, e.getValue(), mapping)
                 .ifPresent(val -> this.set(e.getKey(), val)));
     }
+
 
     @Override
     public ME includes(String... properties) {

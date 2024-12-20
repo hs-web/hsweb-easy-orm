@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.utils.PropertyUtils;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -46,7 +47,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
                 .map(columnMetadata -> columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
         if (value != null) {
-            GlobalConfig.getPropertyOperator().setProperty(context.getRowInstance(), property, value);
+           PropertyUtils.setProperty(context.getRowInstance(), property, value,mapping);
         }
     }
 
