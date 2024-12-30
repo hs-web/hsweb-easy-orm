@@ -11,8 +11,7 @@ import java.util.Map;
  * @author zhouhao
  * @since 4.1.3
  */
-@Deprecated
-public interface Extensible {
+public interface Extendable {
 
     /**
      * 获取所有扩展属性

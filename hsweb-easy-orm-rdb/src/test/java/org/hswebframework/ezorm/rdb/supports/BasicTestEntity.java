@@ -1,8 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports;
 
 import lombok.*;
-import org.hswebframework.ezorm.core.DefaultValueGenerator;
-import org.hswebframework.ezorm.core.Extensible;
+import org.hswebframework.ezorm.core.Extendable;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.mapping.annotation.DefaultValue;
 import org.hswebframework.ezorm.rdb.mapping.annotation.EnumCodec;
@@ -21,7 +20,7 @@ import java.util.*;
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = {"createTime", "address"})
 @ToString
-public class BasicTestEntity implements Serializable, Extensible {
+public class BasicTestEntity implements Serializable, Extendable {
 
     @Column(length = 32)
     @Id

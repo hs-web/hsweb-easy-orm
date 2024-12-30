@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.utils;
 
-import org.hswebframework.ezorm.core.Extensible;
+import org.hswebframework.ezorm.core.Extendable;
 import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.core.ObjectPropertyOperator;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
@@ -12,13 +12,13 @@ public class PropertyUtils {
 
     public static Optional<Object> getProperty(Object entity, String property, EntityColumnMapping mapping) {
         ObjectPropertyOperator opt = GlobalConfig.getPropertyOperator();
-        if (entity instanceof Extensible && isExtensibleColumn(property, mapping)) {
-            return Optional.ofNullable(((Extensible) entity).getExtension(property));
+        if (entity instanceof Extendable && isExtendableColumn(property, mapping)) {
+            return Optional.ofNullable(((Extendable) entity).getExtension(property));
         }
         return opt.getProperty(entity, property);
     }
 
-    public static boolean isExtensibleColumn(String property, EntityColumnMapping mapping) {
+    public static boolean isExtendableColumn(String property, EntityColumnMapping mapping) {
         return mapping
             .getColumnByProperty(property)
             .map(c -> !c.getFeature(EntityPropertyDescriptor.ID).isPresent())
@@ -26,8 +26,8 @@ public class PropertyUtils {
     }
 
     public static void setProperty(Object entity, String property, Object value, EntityColumnMapping mapping) {
-        if (entity instanceof Extensible && isExtensibleColumn(property, mapping)) {
-            ((Extensible) entity).setExtension(property, value);
+        if (entity instanceof Extendable && isExtendableColumn(property, mapping)) {
+            ((Extendable) entity).setExtension(property, value);
         } else {
             GlobalConfig.getPropertyOperator().setProperty(entity, property, value);
         }
