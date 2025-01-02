@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.core;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Map;
 
@@ -81,7 +82,7 @@ public interface Extendable {
      * @param value    属性值
      * @param <T>      属性值类型
      */
-    default <T> void setExtension(StaticMethodReferenceColumn<T> property, T value) {
+    default <T> void withExtension(StaticMethodReferenceColumn<T> property, T value) {
         setExtension(property.getColumn(), value);
     }
 
@@ -91,7 +92,7 @@ public interface Extendable {
      * @param property 属性名
      * @param <T>      属性值类型
      */
-    default <T> void setExtension(MethodReferenceColumn<T> property) {
+    default <T> void withExtension(MethodReferenceColumn<T> property) {
         setExtension(property.getColumn(), property.get());
     }
 
