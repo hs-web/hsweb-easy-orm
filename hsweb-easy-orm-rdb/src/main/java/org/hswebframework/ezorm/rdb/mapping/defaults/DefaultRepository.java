@@ -2,13 +2,10 @@ package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hswebframework.ezorm.core.Extensible;
-import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.events.ContextKeys;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.mapping.LazyEntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.events.EventResultOperator;

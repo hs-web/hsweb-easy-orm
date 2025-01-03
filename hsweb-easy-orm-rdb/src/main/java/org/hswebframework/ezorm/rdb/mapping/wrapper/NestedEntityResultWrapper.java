@@ -1,6 +1,6 @@
 package org.hswebframework.ezorm.rdb.mapping.wrapper;
 
-import org.hswebframework.ezorm.core.Extensible;
+import org.hswebframework.ezorm.core.Extendable;
 import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -55,10 +55,10 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
     }
 
     protected void setProperty(RDBColumnMetadata col, E instance, String label, Object val) {
-        if (instance instanceof Extensible && (col == null || !col
+        if (instance instanceof Extendable && (col == null || !col
             .getFeature(EntityPropertyDescriptor.ID)
             .isPresent())) {
-            ((Extensible) instance).setExtension(label, val);
+            ((Extendable) instance).setExtension(label, val);
         } else {
             GlobalConfig.getPropertyOperator().setProperty(instance, label, val);
         }

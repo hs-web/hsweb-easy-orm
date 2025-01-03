@@ -6,22 +6,22 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class DefaultExtensibleTest {
+public class DefaultExtendableTest {
 
 
     @Test
     @SneakyThrows
     public void testJson() {
-        DefaultExtensible entity = new DefaultExtensible();
+        DefaultExtendable entity = new DefaultExtendable();
 
         entity.setExtension("extName", "test");
 
         ObjectMapper mapper = new ObjectMapper();
 
-        String json = mapper.writerFor(DefaultExtensible.class).writeValueAsString(entity);
+        String json = mapper.writerFor(DefaultExtendable.class).writeValueAsString(entity);
 
         System.out.println(json);
-        DefaultExtensible decoded = mapper.readerFor(DefaultExtensible.class).readValue(json);
+        DefaultExtendable decoded = mapper.readerFor(DefaultExtendable.class).readValue(json);
 
         assertNotNull(decoded.getExtension("extName"));
 

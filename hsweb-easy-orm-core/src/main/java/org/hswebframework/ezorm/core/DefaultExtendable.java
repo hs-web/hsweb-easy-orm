@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Setter
-public class DefaultExtensible implements Extensible {
+public class DefaultExtendable implements Extendable {
 
     private Map<String, Object> extensions;
 
