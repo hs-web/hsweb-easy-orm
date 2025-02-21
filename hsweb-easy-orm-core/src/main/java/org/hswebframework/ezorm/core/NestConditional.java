@@ -14,13 +14,13 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
 
     T end();
 
-    NestConditional<NestConditional<T>> nest();
+    NestConditional<? extends NestConditional<T>> nest();
 
-    NestConditional<NestConditional<T>> nest(String column, Object value);
+    NestConditional<? extends NestConditional<T>> nest(String column, Object value);
 
-    NestConditional<NestConditional<T>> orNest();
+    NestConditional<? extends NestConditional<T>> orNest();
 
-    NestConditional<NestConditional<T>> orNest(String column, Object value);
+    NestConditional<? extends NestConditional<T>> orNest(String column, Object value);
 
     NestConditional<T> and();
 
@@ -161,7 +161,7 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
     default <B> NestConditional<T> is(MethodReferenceColumn<B> column) {
         return accept(column, TermType.eq);
     }
-    
+
     default <B> NestConditional<T> like(StaticMethodReferenceColumn<B> column, Object value) {
         return accept(column, TermType.like, value);
     }

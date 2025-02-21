@@ -229,7 +229,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
         RDBColumnMetadata columnMetadata;
 
         if (columnStr != null && columnStr.contains(".")) {//关联表 table.column
-            String[] arr = columnStr.split("[.]");
+            String[] arr = StringUtils.split(columnStr,'.');
             return parameter
                 .findJoin(arr[0])
                 .flatMap(join -> metadata

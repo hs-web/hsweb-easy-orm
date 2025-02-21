@@ -1,8 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTermFragmentBuilder;
@@ -10,8 +10,6 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTe
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId;
 
 
 public class SimpleTermsFragmentBuilder extends AbstractTermsFragmentBuilder<TableOrViewMetadata> {
@@ -47,7 +45,7 @@ public class SimpleTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Tab
         }
 
         if (columnName.contains(".")) {
-            String[] arr = columnName.split("[.]");
+            String[] arr = StringUtils.split(columnName,'.');
             if (table.equalsNameOrAlias(arr[0])) {
                 columnName = arr[1];
             } else {
