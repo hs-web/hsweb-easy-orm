@@ -115,6 +115,9 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
 
     @SneakyThrows
     protected Object doRead(String str) {
+        if (str.isEmpty()) {
+            return null;
+        }
         return mapper.readValue(str, jacksonType);
     }
 
@@ -138,7 +141,7 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             } else if (data instanceof byte[]) {
                 target = mapper.readValue((byte[]) data, jacksonType);
             } else if (data instanceof String) {
-                target = mapper.readValue(((String) data), jacksonType);
+                target = doRead(((String) data));
             } else if (data instanceof ByteBuffer) {
                 return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
             } else if (FeatureUtils.r2dbcIsAlive()) {
