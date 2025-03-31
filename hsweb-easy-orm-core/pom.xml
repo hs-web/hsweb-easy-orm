@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hsweb-easy-orm</artifactId>
         <groupId>org.hswebframework</groupId>
-        <version>4.1.3-SNAPSHOT</version>
+        <version>4.1.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
