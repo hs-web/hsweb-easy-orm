@@ -2,15 +2,24 @@ package org.hswebframework.ezorm.core.utils;
 
 import io.netty.util.concurrent.FastThreadLocal;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class StringUtils {
 
-    static FastThreadLocal<StringBuilder> SHARE = new FastThreadLocal<StringBuilder>() {
+    private static final FastThreadLocal<StringBuilder> SHARE = new FastThreadLocal<StringBuilder>() {
         @Override
         protected StringBuilder initialValue() throws Exception {
             return new StringBuilder();
+        }
+    };
+
+    private static final FastThreadLocal<List<String>> SHARE_SPLIT = new FastThreadLocal<List<String>>() {
+        @Override
+        protected List<String> initialValue() {
+            return new ArrayList<>(8);
         }
     };
 
@@ -19,7 +28,7 @@ public class StringUtils {
             return true;
         }
         if (arg instanceof String) {
-            return (String.valueOf(arg)).length() == 0;
+            return (String.valueOf(arg)).isEmpty();
         }
         if (arg instanceof Collection) {
             return ((Collection<?>) arg).isEmpty();
@@ -68,6 +77,35 @@ public class StringUtils {
         }
     }
 
+    public static String[] split(String str, char c) {
+        List<String> list = SHARE_SPLIT.get();
+        StringBuilder builder = SHARE.get();
+        try {
+            int len = str.length();
+            int total = 0;
+
+            for (int i = 0; i < len; i++) {
+                char ch = str.charAt(i);
+                if (ch == c) {
+                    list.add(builder.toString());
+                    builder.setLength(0);
+                    total++;
+                } else {
+                    builder.append(ch);
+                }
+            }
+
+            if (builder.length() > 0) {
+                list.add(builder.toString());
+                total++;
+            }
+
+            return list.toArray(new String[total]);
+        } finally {
+            builder.setLength(0);
+            list.clear();
+        }
+    }
 
     public static String[] getPlainName(String[] name) {
         for (int i = 0; i < name.length; i++) {

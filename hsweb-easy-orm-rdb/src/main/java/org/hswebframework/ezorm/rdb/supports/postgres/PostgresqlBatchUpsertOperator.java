@@ -18,10 +18,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.upsert.*;
 import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -35,6 +32,8 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
     private SqlFragments prefix;
 
     private SaveOrUpdateOperator fallback;
+
+    private Set<String> primaryColumns;
 
     public PostgresqlBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
@@ -58,6 +57,9 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
     }
 
     SqlFragments createOnConflict() {
+        if (primaryColumns == null) {
+            primaryColumns = new HashSet<>();
+        }
         RDBColumnMetadata idColumn = table
             .getColumns()
             .stream()
@@ -65,7 +67,8 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
             .findFirst()
             .orElse(null);
         if (idColumn != null) {
-            return SqlFragments.of("on conflict (", idColumn.getName(), ") do ");
+            primaryColumns.add(idColumn.getName());
+            return SqlFragments.of("on conflict (", idColumn.getQuoteName(), ") do ");
         }
         RDBIndexMetadata indexMetadata = table
             .getIndexes()
@@ -80,7 +83,10 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 .stream()
                 .map(c -> table.getColumn(c.getColumn()).orElse(null))
                 .filter(Objects::nonNull)
-                .map(RDBColumnMetadata::getQuoteName)
+                .map(c -> {
+                    primaryColumns.add(c.getName());
+                    return c.getQuoteName();
+                })
                 .collect(Collectors.joining(","));
 
             return SqlFragments.of("on conflict( ", columns, ") do ");
@@ -134,6 +140,15 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
         public PostgresqlUpsertBatchInsertSqlBuilder(RDBTableMetadata table) {
             super(table);
+        }
+
+        @Override
+        protected boolean isPrimaryKey(RDBColumnMetadata col) {
+            getOrCreateOnConflict();
+            if (primaryColumns != null && primaryColumns.contains(col.getName())) {
+                return true;
+            }
+            return super.isPrimaryKey(col);
         }
 
         @Override

@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.mapping;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
@@ -46,7 +47,7 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
     @Override
     public Optional<RDBColumnMetadata> getColumnByProperty(String property) {
         if (property.contains(".")) {
-            String[] key = property.split("[.]");
+            String[] key = StringUtils.split(property,'.');
 
             return table
                     .getForeignKey(key[0])
@@ -67,7 +68,7 @@ public class DefaultEntityColumnMapping implements EntityColumnMapping {
     @Override
     public Optional<RDBColumnMetadata> getColumnByName(String columnName) {
         if (columnName.contains(".")) {
-            String[] key = columnName.split("[.]");
+            String[] key = StringUtils.split(columnName,'.');
 
             return table.getForeignKey(key[0])
                         .flatMap(keyMetadata -> keyMetadata.getTarget().getColumn(key[1]));

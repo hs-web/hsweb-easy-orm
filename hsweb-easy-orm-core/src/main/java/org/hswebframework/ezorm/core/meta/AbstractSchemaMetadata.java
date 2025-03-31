@@ -11,6 +11,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -36,6 +38,8 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
     @Getter
     private Map<String, Feature> features = new ConcurrentHashMap<>();
+
+    private final Lock lock = new ReentrantLock();
 
     @Override
     public abstract List<ObjectType> getAllObjectType();
@@ -186,7 +190,8 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
 
         ObjectMetadata metadata = getLoadedObject0(mapping, name);
         if (metadata == null && autoLoad) {
-            synchronized (this) {
+            try {
+                lock.lock();
                 metadata = getLoadedObject0(mapping, name);
                 if (metadata != null) {
                     return Optional.of(CastUtil.cast(metadata));
@@ -195,6 +200,8 @@ public abstract class AbstractSchemaMetadata implements SchemaMetadata {
                 if (null != metadata) {
                     mapping.put(name, metadata);
                 }
+            }finally {
+                lock.unlock();
             }
         }
         return Optional.ofNullable(CastUtil.cast(metadata));

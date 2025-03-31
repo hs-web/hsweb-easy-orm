@@ -138,14 +138,14 @@ public abstract class BasicReactiveTests {
                 .commit()
                 .reactive()
                 .block();
-        table.<EntityColumnMapping>getFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+        table
+            .<EntityColumnMapping>getFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
             .reload();
 
         EntityResultWrapper<BasicTestEntity> wrapper = new EntityResultWrapper<>(BasicTestEntity::new);
         wrapper.setMapping(table
                                .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
                                .orElseThrow(NullPointerException::new));
-
 
         repository = new DefaultReactiveRepository<>(operator, table, BasicTestEntity.class, wrapper);
         addressRepository = operator.dml().createReactiveRepository("test_address");
@@ -286,7 +286,7 @@ public abstract class BasicReactiveTests {
         repository
             .createQuery()
             .where(BasicTestEntity::getId, first.getId())
-            .select("id", "name","ext_name")
+            .select("id", "name", "ext_name")
             .fetch()
             .doOnNext(System.out::println)
             .map(BasicTestEntity::getName)
@@ -310,8 +310,9 @@ public abstract class BasicReactiveTests {
                 .stateEnum(StateEnum.enabled)
                 .enabled(true)
                 .build())
-            .collectList()
-            .as(repository::insertBatch)
+//            .collectList()
+            .as(repository::save)
+            .map(r -> r.getTotal())
             .as(StepVerifier::create)
             .expectNext(3)
             .verifyComplete();

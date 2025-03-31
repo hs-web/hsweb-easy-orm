@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
@@ -32,6 +33,10 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         return (columnSize * valueSize) * 2 + valueSize * 2 + columnSize * 3 + 2;
     }
 
+    protected boolean isPrimaryKey(RDBColumnMetadata col) {
+        return col.isPrimaryKey();
+    }
+
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
 //        PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
@@ -52,7 +57,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         LinkedHashMap<Integer, SqlFragments> functionValues = Maps.newLinkedHashMapWithExpectedSize(columns.size());
 
         int index = 0;
-        int primaryIndex = -1;
+        List<Integer> primaryIndex = new ArrayList<>(1);
 
         //如果只有一条数据则忽略null的列
         boolean ignoreNullColumn = parameter.getValues().size() == 1;
@@ -62,8 +67,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 .flatMap(table::getColumn)
                 .orElse(null);
             if (columnMetadata != null && columnMetadata.isInsertable()) {
-                if (columnMetadata.isPrimaryKey()) {
-                    primaryIndex = index;
+                if (isPrimaryKey(columnMetadata)) {
+                    primaryIndex.add(index);
                 }
                 //忽略null的列
                 if (ignoreNullColumn) {
@@ -100,14 +105,31 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         // ) values
         fragments.add(VALUES);
         index = 0;
-        Set<Object> duplicatePrimary = new HashSet<>(32);
+        Set<Object> duplicatePrimary = new HashSet<>(8);
         for (List<Object> values : valueList) {
-            if (primaryIndex >= 0) {
-                //重复的id 则不进行处理
-                if (values.size() > primaryIndex && !duplicatePrimary.add(values.get(primaryIndex))) {
+            int indexSize = primaryIndex.size();
+            int vSize = values.size();
+            // id
+            if (indexSize == 1) {
+                int idx = primaryIndex.get(0);
+                if (vSize > idx && !duplicatePrimary.add(values.get(idx))) {
                     continue;
                 }
             }
+            // 唯一索引?
+            else if (indexSize >= 1) {
+                Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
+                for (Integer i : primaryIndex) {
+                    if (vSize > i) {
+                        dis.add(values.get(i));
+                    }
+                }
+                // 存在重复数据 ?
+                if(!duplicatePrimary.add(dis)){
+                    continue;
+                }
+            }
+
             if (index++ != 0) {
                 fragments.add(SqlFragments.COMMA);
             }

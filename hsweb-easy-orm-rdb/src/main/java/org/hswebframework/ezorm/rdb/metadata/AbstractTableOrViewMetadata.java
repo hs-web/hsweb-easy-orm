@@ -137,27 +137,34 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         return schema;
     }
 
-    public void addColumn(RDBColumnMetadata column) {
+    private List<RDBColumnMetadata> columnCache;
 
+    public void addColumn(RDBColumnMetadata column) {
+        columnCache = null;
         column.setOwner(this);
         allColumns.put(column.getName(), column);
         allColumns.put(column.getAlias(), column);
-        allColumns.put(column.getRealName(),column);
+        allColumns.put(column.getRealName(), column);
         if (onColumnAdded != null) {
             onColumnAdded.accept(column);
         }
     }
 
-
     @Override
     public List<RDBColumnMetadata> getColumns() {
-        return new ArrayList<>(
-            allColumns
-                .values()
-                .stream()
-                .sorted()
-                .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
-                .values());
+        if (columnCache == null) {
+            columnCache =
+                Collections.unmodifiableList(
+                    new ArrayList<>(
+                        allColumns
+                            .values()
+                            .stream()
+                            .sorted()
+                            .collect(Collectors.toMap(RDBColumnMetadata::getName, Function.identity(), (_1, _2) -> _1, LinkedHashMap::new))
+                            .values())
+                );
+        }
+        return columnCache;
     }
 
     @Override
@@ -184,10 +191,17 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
 
     @Override
     public Optional<RDBColumnMetadata> findColumn(String name) {
-        return ofNullable(name)
-            .map(this::getColumn)
-            .filter(Optional::isPresent)
-            .orElseGet(() -> findNestColumn(name));
+        if (name == null) {
+            return Optional.empty();
+        }
+        Optional<RDBColumnMetadata> col = this.getColumn(name);
+
+        if(col.isPresent()){
+            return col;
+        }
+
+        return findNestColumn(name);
+
     }
 
     private Optional<RDBColumnMetadata> findNestColumn(String name) {
@@ -196,7 +210,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         }
 
         if (name.contains(".")) {
-            String[] arr = StringUtils.getPlainName(name.split("[.]"));
+            String[] arr = StringUtils.getPlainName(StringUtils.split(name,'.'));
             if (arr.length == 2) {  //table.name
                 return findColumnFromSchema(schema, arr[0], arr[1]);
 
@@ -224,11 +238,15 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     }
 
     private Optional<RDBColumnMetadata> findColumnFromSchema(RDBSchemaMetadata schema, String tableName, String column) {
-        return of(schema.getTableOrView(tableName)
-                        .flatMap(meta -> meta.getColumn(column)))
-            .filter(Optional::isPresent)
-            .orElseGet(() -> getForeignKey(tableName) //查找外键关联信息
-                                                      .flatMap(key -> key.getTarget().getColumn(column)));
+        Optional<RDBColumnMetadata> col =
+            schema.getTableOrView(tableName)
+                  .flatMap(meta -> meta.getColumn(column));
+        if(col.isPresent()){
+            return col;
+        }
+        return getForeignKey(tableName) //查找外键关联信息
+                                 .flatMap(key -> key.getTarget().getColumn(column));
+
     }
 
     @Override
@@ -293,6 +311,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         foreignKey.clear();
         features.clear();
         allColumns.clear();
+        columnCache = null;
         merge(metadata);
     }
 }
