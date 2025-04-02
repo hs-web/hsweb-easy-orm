@@ -38,6 +38,12 @@ public class ApacheCommonPropertyOperator implements ObjectPropertyOperator, Obj
     public void setProperty(Object object, String name, Object value) {
         try {
             if (value == null) {
+                if (object instanceof Extendable) {
+                    if (propertyUtils.getPropertyDescriptor(object, name) == null) {
+                        ((Extendable) object).setExtension(name, null);
+                        return;
+                    }
+                }
                 propertyUtils.setProperty(object, name, null);
                 return;
             }
