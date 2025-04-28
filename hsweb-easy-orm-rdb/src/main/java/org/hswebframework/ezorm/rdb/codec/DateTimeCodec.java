@@ -115,6 +115,9 @@ public class DateTimeCodec implements ValueCodec {
         if (toType == String.class) {
             return DateTimeUtils.format(((Date) data), format);
         }
+        if (toType == Timestamp.class){
+            return new Timestamp(((Date) data).getTime());
+        }
 
         return data;
     }
