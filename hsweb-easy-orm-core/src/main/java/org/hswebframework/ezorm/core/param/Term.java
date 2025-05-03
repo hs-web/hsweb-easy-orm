@@ -137,7 +137,7 @@ public class Term implements Serializable, Cloneable {
     public void setColumn(String column) {
         if (column == null) return;
         if (column.contains("$")) {
-            String tmp[] = column.split("[$]");
+            String[] tmp = column.split("[$]");
             setTermType(tmp[1]);
             column = tmp[0];
             if (tmp.length > 2) {
@@ -149,7 +149,7 @@ public class Term implements Serializable, Cloneable {
 
     public void setTermType(String termType) {
         if (termType.contains("$")) {
-            String tmp[] = termType.split("[$]");
+            String[] tmp = termType.split("[$]");
             termType = tmp[0];
             if (tmp.length > 1) {
                 options.addAll(Arrays.asList(tmp).subList(1, tmp.length));
@@ -164,9 +164,9 @@ public class Term implements Serializable, Cloneable {
     @SneakyThrows
     public Term clone() {
         Term term = ((Term) super.clone());
+        term.setTermType(termType);
         term.setColumn(column);
         term.setValue(value);
-        term.setTermType(termType);
         term.setType(type);
         term.setTerms(terms.stream().map(Term::clone).collect(Collectors.toList()));
         term.setOptions(new ArrayList<>(getOptions()));

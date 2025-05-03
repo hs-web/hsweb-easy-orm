@@ -103,8 +103,8 @@ public class DefaultDelete<ME extends DSLDelete<?>> implements DSLDelete<ME> {
     public ME and(String column, String termType, Object value) {
         if (value != null) {
             Term term = new Term();
-            term.setColumn(column);
             term.setTermType(termType);
+            term.setColumn(column);
             term.setValue(value);
             term.setType(Term.Type.and);
             terms.add(term);
@@ -116,8 +116,8 @@ public class DefaultDelete<ME extends DSLDelete<?>> implements DSLDelete<ME> {
     public ME or(String column, String termType, Object value) {
         if (value != null) {
             Term term = new Term();
-            term.setColumn(column);
             term.setTermType(termType);
+            term.setColumn(column);
             term.setValue(value);
             term.setType(Term.Type.or);
             terms.add(term);

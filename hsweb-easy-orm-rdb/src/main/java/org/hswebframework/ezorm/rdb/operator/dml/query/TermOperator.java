@@ -10,8 +10,8 @@ public class TermOperator implements Supplier<Term> {
     private Term term = new Term();
 
     public TermOperator(String column, String termType, Object value) {
-        term.setColumn(column);
         term.setTermType(termType);
+        term.setColumn(column);
         term.setValue(value);
     }
 

@@ -193,8 +193,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     public ME and(String column, String termType, Object value) {
         if (value != null) {
             Term term = new Term();
-            term.setColumn(column);
             term.setTermType(termType);
+            term.setColumn(column);
             term.setValue(value);
             term.setType(Term.Type.and);
             terms.add(term);
@@ -206,8 +206,8 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     public ME or(String column, String termType, Object value) {
         if (value != null) {
             Term term = new Term();
-            term.setColumn(column);
             term.setTermType(termType);
+            term.setColumn(column);
             term.setValue(value);
             term.setType(Term.Type.or);
             terms.add(term);
