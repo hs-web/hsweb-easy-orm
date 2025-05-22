@@ -14,6 +14,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.util.context.Context;
 
 import java.sql.Connection;
+import java.util.function.Function;
 
 import static org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers.consumer;
 
@@ -24,27 +25,38 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
         super(log);
     }
 
+    @Deprecated
     public abstract Mono<Connection> getConnection();
+
+    protected <T> Flux<T> doInConnection(Function<Connection, Publisher<T>> handler) {
+        return getConnection()
+            .flatMapMany(handler);
+    }
 
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
-        return Mono
-            .deferContextual(ctx -> getConnection()
-                .flatMap(connection -> toFlux(request)
-                    .map(sql -> doUpdate(ctx.getOrDefault(Logger.class, log), connection, sql))
-                    .reduce(Math::addExact))
-                .defaultIfEmpty(0));
+        return Flux
+            .deferContextual(
+                ctx ->
+                    doInConnection(connection -> this
+                        .toFlux(request)
+                        .map(sql -> doUpdate(ctx.getOrDefault(Logger.class, log), connection, sql))
+                        .reduce(Math::addExact)))
+            .last(0);
 
     }
 
     @Override
     public Mono<Void> execute(Publisher<SqlRequest> request) {
 
-        return Mono
-            .deferContextual(ctx -> getConnection()
-                .flatMap(connection -> toFlux(request)
-                    .doOnNext(sql -> doExecute(ctx.getOrDefault(Logger.class, log), connection, sql))
-                    .then()));
+        return Flux
+            .deferContextual(
+                ctx ->
+                    doInConnection(connection -> this
+                        .toFlux(request)
+                        .doOnNext(sql -> doExecute(ctx.getOrDefault(Logger.class, log), connection, sql))))
+
+            .then();
     }
 
     @Override
@@ -55,17 +67,20 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                 return Flux
                     .create(sink -> {
                         Disposable.Composite disposable = Disposables.composite();
+
                         @SuppressWarnings("all")
-                        Disposable queryDisposable = getConnection()
-                            .flatMap(connection -> toFlux(request)
-                                .doOnNext(sql -> this
-                                    .doSelect(
-                                        logger,
-                                        connection,
-                                        sql,
-                                        consumer(wrapper, sink::next),
-                                        disposable))
-                                .then())
+                        Disposable queryDisposable = this
+                            .doInConnection(connection -> {
+                                return toFlux(request)
+                                    .doOnNext(sql -> this
+                                        .doSelect(
+                                            logger,
+                                            connection,
+                                            sql,
+                                            consumer(wrapper, sink::next),
+                                            disposable))
+                                    .then();
+                            })
                             .subscribeOn(Schedulers.boundedElastic())
                             .subscribe((ignore) -> sink.complete(),
                                        sink::error,

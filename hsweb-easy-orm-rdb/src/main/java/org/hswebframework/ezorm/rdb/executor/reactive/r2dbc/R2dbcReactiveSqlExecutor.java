@@ -20,7 +20,6 @@ import reactor.core.publisher.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -46,10 +45,18 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
      *
      * @return r2dbc Connection
      */
+    @Deprecated
     protected abstract Mono<Connection> getConnection();
 
+    protected <T> Flux<T> doInConnection(Function<Connection, Publisher<T>> handler) {
+        return getConnection()
+            .flatMapMany(source -> Flux
+                .from(handler.apply(source))
+                .doFinally(signal -> releaseConnection(signal, source)));
+    }
+
     /**
-     * 释放连接，不建议实现此方法，推荐在getConnection里使用{@link Mono#usingWhen(Publisher, Function, Function)}来处理.
+     * 释放连接，不建议实现此方法，{@link R2dbcReactiveSqlExecutor#doInConnection(Function)}
      *
      * @param type       type
      * @param connection connection
@@ -76,10 +83,10 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     SqlRequest request,
                                     Function<Result, Publisher<T>> mapper) {
         return Flux
-                .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
-                .flatMap(mapper)
-                .doOnSubscribe(subscription -> printSql(logger, request))
-                .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
+            .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
+            .flatMap(mapper)
+            .doOnSubscribe(subscription -> printSql(logger, request))
+            .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
     }
 
     /**
@@ -110,11 +117,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
      * @return 执行结果
      */
     private <T> Flux<T> doExecute(Operation operation, Logger logger, Flux<SqlRequest> sqlRequestFlux, Function<Result, Publisher<T>> mapper) {
-        return this
-                .getConnection()
-                .flatMapMany(connection -> sqlRequestFlux
-                        .concatMap(sqlRequest -> this.doExecute(operation, logger, connection, sqlRequest, mapper))
-                        .doFinally(type -> releaseConnection(type, connection)));
+        return doInConnection(connection -> sqlRequestFlux
+            .concatMap(sqlRequest -> this.doExecute(operation, logger, connection, sqlRequest, mapper)));
     }
 
     private <T> Flux<T> doExecute(Operation operation, Flux<SqlRequest> sqlRequestFlux, Function<Result, Publisher<T>> mapper) {
@@ -126,9 +130,9 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return Mono.deferContextual(ctx -> {
             Logger _logger = ctx.getOrDefault(Logger.class, logger);
             return this
-                    .doExecute(Operation.execute, _logger, toFlux(request), Result::getRowsUpdated)
-                    .doOnNext(count -> _logger.debug("==>    Updated: {}", count))
-                    .reduce(0, (l,r)-> l + r.intValue());
+                .doExecute(Operation.execute, _logger, toFlux(request), Result::getRowsUpdated)
+                .doOnNext(count -> _logger.debug("==>    Updated: {}", count))
+                .reduce(0, (l, r) -> l + r.intValue());
         });
     }
 
@@ -139,41 +143,41 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
 
     private <E> Flux<E> wrapResult(Result result, ResultWrapper<E, ?> wrapper) {
         return Flux
-                .from(result.map((row, meta) -> {
-                          //查询结果的列名
-                          List<String> columns = meta
-                                  .getColumnMetadatas()
-                                  .stream()
-                                  .map(ColumnMetadata::getName)
-                                  .collect(Collectors.toList());
+            .from(result.map((row, meta) -> {
+                      //查询结果的列名
+                      List<String> columns = meta
+                          .getColumnMetadatas()
+                          .stream()
+                          .map(ColumnMetadata::getName)
+                          .collect(Collectors.toList());
 
-                          wrapper.beforeWrap(() -> columns);
-                          E e = wrapper.newRowInstance();
-                          for (int i = 0, len = columns.size(); i < len; i++) {
-                              String column = columns.get(i);
-                              Object value = row.get(i);
+                      wrapper.beforeWrap(() -> columns);
+                      E e = wrapper.newRowInstance();
+                      for (int i = 0, len = columns.size(); i < len; i++) {
+                          String column = columns.get(i);
+                          Object value = row.get(i);
 
-                              DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, value, e);
+                          DefaultColumnWrapperContext<E> context = new DefaultColumnWrapperContext<>(i, column, value, e);
 
-                              wrapper.wrapColumn(context);
-                              e = context.getRowInstance();
-                          }
-                          //中断转换
-                          if (!wrapper.completedWrapRow(e)) {
-                              return Interrupted.instance;
-                          }
-                          return e;
-                      })
-                )
-                .takeWhile(Interrupted::nonInterrupted)
-                .map(CastUtil::<E>cast);
+                          wrapper.wrapColumn(context);
+                          e = context.getRowInstance();
+                      }
+                      //中断转换
+                      if (!wrapper.completedWrapRow(e)) {
+                          return Interrupted.instance;
+                      }
+                      return e;
+                  })
+            )
+            .takeWhile(Interrupted::nonInterrupted)
+            .map(CastUtil::<E>cast);
     }
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
         return this
-                .doExecute(Operation.select, this.toFlux(request), result -> this.wrapResult(result, wrapper))
-                .doAfterTerminate(wrapper::completedWrap);
+            .doExecute(Operation.select, this.toFlux(request), result -> this.wrapResult(result, wrapper))
+            .doAfterTerminate(wrapper::completedWrap);
     }
 
     /**
@@ -186,17 +190,17 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
 
         return Flux
-                .from(request)
-                .flatMap(sql -> {
-                    //批量SQL
-                    if (sql instanceof BatchSqlRequest) {
-                        return Flux.concat(Flux.just(sql), Flux.fromIterable(((BatchSqlRequest) sql).getBatch()));
-                    }
-                    return Flux.just(sql);
-                })
-                //忽略空SQL
-                .filter(SqlRequest::isNotEmpty)
-                .map(this::convertRequest);
+            .from(request)
+            .flatMap(sql -> {
+                //批量SQL
+                if (sql instanceof BatchSqlRequest) {
+                    return Flux.concat(Flux.just(sql), Flux.fromIterable(((BatchSqlRequest) sql).getBatch()));
+                }
+                return Flux.just(sql);
+            })
+            //忽略空SQL
+            .filter(SqlRequest::isNotEmpty)
+            .map(this::convertRequest);
     }
 
     /**
@@ -234,9 +238,9 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         //时间需要转换为LocalDateTime
         if (value instanceof Date) {
             value = ((Date) value)
-                    .toInstant()
-                    .atZone(ZoneOffset.systemDefault())
-                    .toLocalDateTime();
+                .toInstant()
+                .atZone(ZoneOffset.systemDefault())
+                .toLocalDateTime();
         }
         statement.bind(getBindSymbol() + (index + getBindFirstIndex()), value);
     }
