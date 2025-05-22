@@ -42,7 +42,11 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                         .toFlux(request)
                         .map(sql -> doUpdate(ctx.getOrDefault(Logger.class, log), connection, sql))
                         .reduce(Math::addExact)))
-            .last(0);
+            .last(0)
+            // 使用弹性线程池来执行jdbc操作
+            .subscribeOn(Schedulers.boundedElastic())
+            // 下游切换为parallel线程池,弹性线程池数据不可控，在虚拟线程等场景下，可能影响下游基于ThreadLocal等场景的缓存性能。
+            .publishOn(Schedulers.parallel());
 
     }
 
@@ -55,14 +59,15 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                     doInConnection(connection -> this
                         .toFlux(request)
                         .doOnNext(sql -> doExecute(ctx.getOrDefault(Logger.class, log), connection, sql))))
-
+            .subscribeOn(Schedulers.boundedElastic())
+            .publishOn(Schedulers.parallel())
             .then();
     }
 
     @Override
     public <E> Flux<E> select(Publisher<SqlRequest> request, ResultWrapper<E, ?> wrapper) {
         return Flux
-            .deferContextual(ctx -> {
+            .<E>deferContextual(ctx -> {
                 Logger logger = ctx.getOrDefault(Logger.class, log);
                 return Flux
                     .create(sink -> {
@@ -92,7 +97,8 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                         sink
                             .onDispose(disposable);
                     });
-            });
+            })
+            .publishOn(Schedulers.parallel());
 
     }
 

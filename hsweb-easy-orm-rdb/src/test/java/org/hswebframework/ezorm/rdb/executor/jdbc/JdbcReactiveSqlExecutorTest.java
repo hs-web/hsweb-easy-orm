@@ -40,7 +40,8 @@ public class JdbcReactiveSqlExecutorTest {
                 .update(Flux.range(0, 10)
                         .doOnNext(i -> System.out.println())
                         .map(num -> prepare("insert into test (id) values (?) ", num)))
-                .doOnError(Throwable::printStackTrace);
+                .doOnError(Throwable::printStackTrace)
+                .doFinally(s-> System.out.println(Thread.currentThread()));
 
         StepVerifier.create(counter)
                 .expectNext(10)

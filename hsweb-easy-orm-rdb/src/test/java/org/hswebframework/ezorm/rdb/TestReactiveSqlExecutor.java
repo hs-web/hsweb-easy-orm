@@ -3,8 +3,12 @@ package org.hswebframework.ezorm.rdb;
 import io.r2dbc.spi.Connection;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.rdb.executor.reactive.r2dbc.R2dbcReactiveSqlExecutor;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
+
+import java.util.function.Function;
 
 @Slf4j
 public class TestReactiveSqlExecutor extends R2dbcReactiveSqlExecutor {
@@ -33,12 +37,20 @@ public class TestReactiveSqlExecutor extends R2dbcReactiveSqlExecutor {
     @Override
     protected Mono<Connection> getConnection() {
         return provider.getConnection()
-                .doOnNext(connection -> log.debug("get connection {}", connection));
+                       .doOnNext(connection -> log.debug("get connection {}", connection));
+    }
+
+    @Override
+    protected <T> Flux<T> doInConnection(Function<Connection, Publisher<T>> handler) {
+        return Flux.usingWhen(
+            provider.getConnection(),
+            handler,
+            c -> Mono.fromRunnable(() -> provider.releaseConnection(c)));
     }
 
     @Override
     protected void releaseConnection(SignalType type, Connection connection) {
-         log.debug("release connection {}", connection);
+        log.debug("release connection {}", connection);
         provider.releaseConnection(connection);
     }
 
