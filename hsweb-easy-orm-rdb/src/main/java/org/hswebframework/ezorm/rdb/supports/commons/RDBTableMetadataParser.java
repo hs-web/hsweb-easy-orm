@@ -138,7 +138,7 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                     .doOnNext(metaData::addIndex);
 
                 return Flux
-                    .merge(columns, comments, index)
+                    .concat(columns, comments, index)
                     .then(Mono.just(metaData));
             })
             .contextWrite(logContext);
