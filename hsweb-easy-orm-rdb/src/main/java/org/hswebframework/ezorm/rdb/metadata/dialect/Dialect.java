@@ -4,6 +4,8 @@ import org.hswebframework.ezorm.core.meta.Feature;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
@@ -76,6 +78,16 @@ public interface Dialect extends Feature {
         return StringUtils.concat(tableName, ".", getQuoteStart(), changeCase && isColumnToUpperCase() ? columnName.toUpperCase() : columnName, getQuoteEnd());
     }
 
+    /**
+     * 位运算AND操作,用于枚举类型的查询等操作
+     *
+     * @param column 列名
+     * @param value  位值
+     * @return SQL片段
+     */
+    default SqlFragments bitAnd(String column, long value) {
+        return SqlFragments.of(column, "&", String.valueOf(value));
+    }
 
     Dialect MYSQL = new MysqlDialect();
     Dialect ORACLE = new OracleDialect();

@@ -4,10 +4,14 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.core.utils.StringUtils;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class OracleDialect extends DefaultDialect {
     public OracleDialect() {
@@ -80,5 +84,13 @@ public class OracleDialect extends DefaultDialect {
     @Override
     public String getName() {
         return "Oracle";
+    }
+
+    @Override
+    public SqlFragments bitAnd(String column, long value) {
+        return SimpleSqlFragments.of(
+            Arrays.asList("BITAND(", column, ",", "?)"),
+            Collections.singletonList(value)
+        );
     }
 }

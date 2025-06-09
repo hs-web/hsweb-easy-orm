@@ -73,8 +73,12 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
         if (dialect instanceof OracleDialect) {
             return OracleEnumInFragmentBuilder.in;
         }
-
-        throw new UnsupportedOperationException("unsupported db type :" + dialect);
+        return new EnumInFragmentBuilder(false) {
+            @Override
+            public SqlFragments bitAnd(String column, long value) {
+                return dialect.bitAnd(column,value);
+            }
+        };
     }
 
     public static EnumInFragmentBuilder ofNot(Dialect dialect) {
@@ -90,7 +94,11 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
         if (dialect instanceof OracleDialect) {
             return OracleEnumInFragmentBuilder.notIn;
         }
-
-        throw new UnsupportedOperationException("unsupported db type :" + dialect.getType());
+        return new EnumInFragmentBuilder(true) {
+            @Override
+            public SqlFragments bitAnd(String column, long value) {
+                return dialect.bitAnd(column,value);
+            }
+        };
     }
 }
