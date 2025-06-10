@@ -14,6 +14,13 @@ public class QueryOperatorParameter {
 
     private List<SelectColumn> select = new ArrayList<>();
 
+    /**
+     * 别名,用于标识可使用的条件别名对应的列信息.
+     *
+     * @since 4.1.4
+     */
+    private List<SelectColumn> alias = new ArrayList<>();
+
     private Set<String> selectExcludes = new HashSet<>();
 
     private String from;
@@ -38,12 +45,16 @@ public class QueryOperatorParameter {
 
     private Map<String, Object> context;
 
+    public QueryOperatorParameter() {
+    }
+
     public Optional<Join> findJoin(String targetName) {
-        return Optional.ofNullable(joins)
-                       .flatMap(_joins -> _joins
-                               .stream()
-                               .filter(join -> join.equalsTargetOrAlias(targetName))
-                               .findFirst());
+        return Optional
+            .ofNullable(joins)
+            .flatMap(_joins -> _joins
+                .stream()
+                .filter(join -> join.equalsTargetOrAlias(targetName))
+                .findFirst());
     }
 
     public String getFromAlias() {
@@ -57,12 +68,13 @@ public class QueryOperatorParameter {
     @Override
     @SuppressWarnings("all")
     @SneakyThrows
-    public QueryOperatorParameter clone(){
+    public QueryOperatorParameter clone() {
         QueryOperatorParameter parameter = new QueryOperatorParameter();
         parameter.select.addAll(this.select);
         parameter.selectExcludes.addAll(this.selectExcludes);
         parameter.from = this.from;
         parameter.fromAlias = this.fromAlias;
+        parameter.alias.addAll(this.alias);
         parameter.where.addAll(this.where);
         parameter.joins.addAll(this.joins);
         parameter.orderBy.addAll(this.orderBy);

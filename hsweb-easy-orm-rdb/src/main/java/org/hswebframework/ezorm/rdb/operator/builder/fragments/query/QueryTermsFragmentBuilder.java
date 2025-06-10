@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
@@ -12,6 +13,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.ForeignKeyTe
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
+import org.hswebframework.ezorm.rdb.utils.FlatList;
 
 import java.util.*;
 
@@ -97,10 +99,13 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
         if (column != null) {
             return createByColumn(column, parameter.getFromAlias(), term);
         }
-        String cname = columnName;
 
+        List<SelectColumn> cols = parameter.getSelect();
+        if (CollectionUtils.isNotEmpty(parameter.getAlias())) {
+            cols = new FlatList<>(Arrays.asList(cols, parameter.getAlias()));
+        }
         //匹配查询的列别名
-        for (SelectColumn selectColumn : parameter.getSelect()) {
+        for (SelectColumn selectColumn : cols) {
             if (Objects.equals(selectColumn.getAlias(), columnName)) {
                 String selectColumnName = selectColumn.getColumn();
                 //join
@@ -113,6 +118,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                 }
             }
         }
+        String cname = columnName;
 
         //匹配join
         for (Join join : parameter.getJoins()) {
