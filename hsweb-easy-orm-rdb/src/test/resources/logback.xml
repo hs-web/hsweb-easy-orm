@@ -8,6 +8,8 @@
     <logger name="org.testcontainers" level="info"/>
     <logger name="org.hswebframework" level="debug"/>
     <logger name="org.hswebframework.ezorm" level="info"/>
+    <logger name="org.apache.commons" level="warn"/>
+    <logger name="io.asyncer" level="warn"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
