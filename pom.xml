@@ -12,7 +12,7 @@
         <module>hsweb-easy-orm-rdb</module>
     </modules>
 
-    <name>${project.artifactId}</name>
+    <name>Easy ORM</name>
     <url>https://www.hswebframework.org</url>
     <description>一个简单的orm工具</description>
 
