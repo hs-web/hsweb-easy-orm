@@ -22,7 +22,7 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
     - name: Build with Maven
-      run: mvn -Duser.timezone="Asia/Shanghai" test -Pjava11
+      run: mvn -Duser.timezone="Asia/Shanghai" test -Pjava11 -q
     - name: Codecov
       uses: codecov/codecov-action@v2.1.0
       with:

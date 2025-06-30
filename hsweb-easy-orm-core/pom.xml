@@ -10,6 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>Easy ORM Core</name>
     <artifactId>hsweb-easy-orm-core</artifactId>
     <description>easyorm核心,提供dsl工具封装</description>
 
