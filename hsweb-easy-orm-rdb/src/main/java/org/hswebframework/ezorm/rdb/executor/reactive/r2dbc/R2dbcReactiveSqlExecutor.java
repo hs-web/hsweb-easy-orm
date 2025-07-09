@@ -17,6 +17,7 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.*;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -84,11 +85,21 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     Function<Result, Publisher<T>> mapper) {
         return Flux
             .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
-            .flatMap(mapper)
+            .flatMap(result -> {
+                return transformResult(result, mapper);
+            })
             .doOnSubscribe(subscription -> printSql(logger, request))
             .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
     }
 
+    protected <T> Publisher<T> transformResult(Result result,Function<Result, Publisher<T>> mapper){
+        if (Schedulers.isInNonBlockingThread()) {
+            return mapper.apply(result);
+        }
+        return Flux
+            .from(mapper.apply(result))
+            .publishOn(Schedulers.parallel());
+    }
     /**
      * 使用指定的Connection执行SQL并返回执行结果
      *
