@@ -17,6 +17,7 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.*;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
@@ -85,20 +86,17 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     Function<Result, Publisher<T>> mapper) {
         return Flux
             .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
-            .flatMap(result -> {
-                return transformResult(result, mapper);
-            })
+            .flatMap(mapper)
             .doOnSubscribe(subscription -> printSql(logger, request))
-            .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
+            .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err))
+            .publishOn(getScheduler());
     }
 
-    protected <T> Publisher<T> transformResult(Result result,Function<Result, Publisher<T>> mapper){
+    protected Scheduler getScheduler() {
         if (Schedulers.isInNonBlockingThread()) {
-            return mapper.apply(result);
+            return Schedulers.immediate();
         }
-        return Flux
-            .from(mapper.apply(result))
-            .publishOn(Schedulers.parallel());
+        return Schedulers.parallel();
     }
     /**
      * 使用指定的Connection执行SQL并返回执行结果
@@ -129,7 +127,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
      */
     private <T> Flux<T> doExecute(Operation operation, Logger logger, Flux<SqlRequest> sqlRequestFlux, Function<Result, Publisher<T>> mapper) {
         return doInConnection(connection -> sqlRequestFlux
-            .concatMap(sqlRequest -> this.doExecute(operation, logger, connection, sqlRequest, mapper)));
+            .concatMap(sqlRequest -> this
+                .doExecute(operation, logger, connection, sqlRequest, mapper)));
     }
 
     private <T> Flux<T> doExecute(Operation operation, Flux<SqlRequest> sqlRequestFlux, Function<Result, Publisher<T>> mapper) {
@@ -181,7 +180,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                   })
             )
             .takeWhile(Interrupted::nonInterrupted)
-            .map(CastUtil::<E>cast);
+            .map(CastUtil::<E>cast)
+            .publishOn(getScheduler());
     }
 
     @Override
