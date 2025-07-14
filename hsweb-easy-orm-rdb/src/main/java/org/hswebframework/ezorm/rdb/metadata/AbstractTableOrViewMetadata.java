@@ -142,6 +142,9 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
     public void addColumn(RDBColumnMetadata column) {
         columnCache = null;
         column.setOwner(this);
+        if (getDialect().isColumnToUpperCase()) {
+            allColumns.put(column.getName().toUpperCase(), column);
+        }
         allColumns.put(column.getName(), column);
         allColumns.put(column.getAlias(), column);
         allColumns.put(column.getRealName(), column);
@@ -196,7 +199,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         }
         Optional<RDBColumnMetadata> col = this.getColumn(name);
 
-        if(col.isPresent()){
+        if (col.isPresent()) {
             return col;
         }
 
@@ -210,7 +213,7 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         }
 
         if (name.contains(".")) {
-            String[] arr = StringUtils.getPlainName(StringUtils.split(name,'.'));
+            String[] arr = StringUtils.getPlainName(StringUtils.split(name, '.'));
             if (arr.length == 2) {  //table.name
                 return findColumnFromSchema(schema, arr[0], arr[1]);
 
@@ -241,11 +244,11 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         Optional<RDBColumnMetadata> col =
             schema.getTableOrView(tableName)
                   .flatMap(meta -> meta.getColumn(column));
-        if(col.isPresent()){
+        if (col.isPresent()) {
             return col;
         }
         return getForeignKey(tableName) //查找外键关联信息
-                                 .flatMap(key -> key.getTarget().getColumn(column));
+                                        .flatMap(key -> key.getTarget().getColumn(column));
 
     }
 

@@ -77,7 +77,6 @@ public abstract class DefaultRepository<E> {
                 .stream()
                 .filter(kv -> getTable().getColumn(kv.getKey()).isPresent())
                 .map(Map.Entry::getValue)
-                .distinct()
                 .toArray(String[]::new);
         }
         return properties;
