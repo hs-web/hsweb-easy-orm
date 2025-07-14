@@ -96,6 +96,9 @@ public abstract class JdbcSqlExecutor {
                     }
                 }
             }
+        } catch (Throwable e) {
+            logger.error("==>      Error: {}", request.toNativeSql(), e);
+            throw e;
         } finally {
             if (null != statement) {
                 releaseStatement(statement);
@@ -151,7 +154,7 @@ public abstract class JdbcSqlExecutor {
 
             Disposable disposable = () -> {
                 try {
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("==>    Cancel: {}", request.toNativeSql());
                     }
                     releaseStatement(statement);
