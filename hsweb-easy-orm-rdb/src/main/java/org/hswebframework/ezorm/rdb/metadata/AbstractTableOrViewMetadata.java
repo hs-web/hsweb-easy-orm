@@ -130,6 +130,10 @@ public abstract class AbstractTableOrViewMetadata implements TableOrViewMetadata
         if (metadata != null) {
             allColumns.remove(metadata.getAlias());
         }
+        metadata = allColumns.remove(name.toUpperCase());
+        if (metadata != null) {
+            allColumns.remove(metadata.getAlias());
+        }
     }
 
     @Override
