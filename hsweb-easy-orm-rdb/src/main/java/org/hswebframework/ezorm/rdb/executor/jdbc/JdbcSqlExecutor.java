@@ -61,6 +61,9 @@ public abstract class JdbcSqlExecutor {
                 }
             }
             return count;
+        }catch (Throwable e) {
+            logger.error("==>      Error: {}", request.toNativeSql(), e);
+            throw e;
         } finally {
             if (null != statement) {
                 releaseStatement(statement);
@@ -193,6 +196,9 @@ public abstract class JdbcSqlExecutor {
             logger.debug("==>    Results: {}", index);
             releaseResultSet(resultSet);
             return wrapper.getResult();
+        } catch (Throwable e) {
+            logger.error("==>      Error: {}", request.toNativeSql(), e);
+            throw e;
         } finally {
             releaseStatement(statement);
         }
