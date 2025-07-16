@@ -33,6 +33,14 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
             .flatMapMany(handler);
     }
 
+    protected <T> Flux<T> wrapOperator( Flux<T> operator){
+        return operator
+            // 使用弹性线程池来执行jdbc操作
+            .subscribeOn(Schedulers.boundedElastic())
+            // 下游切换为parallel线程池,弹性线程池数据不可控，在虚拟线程等场景下，可能影响下游基于ThreadLocal等场景的缓存性能。
+            .publishOn(Schedulers.parallel());
+    }
+
     @Override
     public Mono<Integer> update(Publisher<SqlRequest> request) {
         return Flux
@@ -42,11 +50,8 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                         .toFlux(request)
                         .map(sql -> doUpdate(ctx.getOrDefault(Logger.class, log), connection, sql))
                         .reduce(Math::addExact)))
-            .last(0)
-            // 使用弹性线程池来执行jdbc操作
-            .subscribeOn(Schedulers.boundedElastic())
-            // 下游切换为parallel线程池,弹性线程池数据不可控，在虚拟线程等场景下，可能影响下游基于ThreadLocal等场景的缓存性能。
-            .publishOn(Schedulers.parallel());
+            .as(this::wrapOperator)
+            .last(0);
 
     }
 
@@ -59,8 +64,7 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                     doInConnection(connection -> this
                         .toFlux(request)
                         .doOnNext(sql -> doExecute(ctx.getOrDefault(Logger.class, log), connection, sql))))
-            .subscribeOn(Schedulers.boundedElastic())
-            .publishOn(Schedulers.parallel())
+            .as(this::wrapOperator)
             .then();
     }
 
@@ -86,7 +90,6 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                                             disposable))
                                     .then();
                             })
-                            .subscribeOn(Schedulers.boundedElastic())
                             .subscribe((ignore) -> sink.complete(),
                                        sink::error,
                                        sink::complete,
@@ -98,8 +101,7 @@ public abstract class JdbcReactiveSqlExecutor extends JdbcSqlExecutor implements
                             .onDispose(disposable);
                     });
             })
-            .publishOn(Schedulers.parallel());
-
+            .as(this::wrapOperator);
     }
 
     protected Flux<SqlRequest> toFlux(Publisher<SqlRequest> request) {
