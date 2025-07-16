@@ -1,5 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.hswebframework.ezorm.rdb.context.ContextHolder;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.SyncDelete;
 import org.hswebframework.ezorm.rdb.mapping.SyncQuery;
@@ -8,19 +10,23 @@ import org.hswebframework.ezorm.rdb.mapping.SyncUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.util.context.Context;
 
 import java.util.*;
 import java.util.function.Supplier;
 
 public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements SyncRepository<E, K> {
 
+    private final Context context;
 
     public DefaultSyncRepository(DatabaseOperator operator, String table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         this(operator,
              () -> operator
-                     .getMetadata()
-                     .getTable(table)
-                     .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
+                 .getMetadata()
+                 .getTable(table)
+                 .orElseThrow(() -> new UnsupportedOperationException("table [" + table + "] doesn't exist")), type, wrapper);
     }
 
 
@@ -30,7 +36,12 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     public DefaultSyncRepository(DatabaseOperator operator, Supplier<RDBTableMetadata> table, Class<E> type, ResultWrapper<E, ?> wrapper) {
         super(operator, table, wrapper);
+        context = Context.of(Logger.class, createLogger(type));
         initMapping(type);
+    }
+
+    protected Logger createLogger(Class<E> type) {
+        return LoggerFactory.getLogger(type);
     }
 
     @Override
@@ -43,9 +54,10 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
         if (idList == null || idList.isEmpty()) {
             return 0;
         }
-        return createDelete()
+        return ContextHolder
+            .doInContext(context, () -> createDelete()
                 .where().in(getIdColumn(), idList)
-                .execute();
+                .execute());
     }
 
     @Override
@@ -53,64 +65,72 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
         if (id == null || data == null) {
             return 0;
         }
-        return createUpdate()
+        return ContextHolder
+            .doInContext(context, () -> createUpdate()
                 .set(data)
                 .where(getIdColumn(), id)
-                .execute();
+                .execute());
     }
 
     @Override
     public SaveResult save(Collection<E> list) {
-
-        return doSave(list).sync();
+        return ContextHolder
+            .doInContext(context, () -> doSave(list).sync());
     }
 
     @Override
     public Optional<E> findById(K primaryKey) {
-        return Optional.ofNullable(primaryKey)
-                       .flatMap(k -> createQuery().where(getIdColumn(), k).fetchOne());
+        if (primaryKey == null) {
+            return Optional.empty();
+        }
+        return ContextHolder
+            .doInContext(context, () -> createQuery().where(getIdColumn(), primaryKey).fetchOne());
     }
 
     @Override
     public List<E> findById(Collection<K> primaryKey) {
-        if (primaryKey.isEmpty()) {
+        if (CollectionUtils.isEmpty(primaryKey)) {
             return new ArrayList<>();
         }
-        return createQuery().where().in(getIdColumn(), primaryKey).fetch();
+        return ContextHolder
+            .doInContext(context, () -> createQuery()
+                .where()
+                .in(getIdColumn(), primaryKey)
+                .fetch());
     }
 
     @Override
     public void insert(E data) {
-        doInsert(data).sync();
+        ContextHolder.doInContext(context, () -> doInsert(data).sync());
     }
 
     @Override
     public int insertBatch(Collection<E> batch) {
-        if (batch.isEmpty()) {
+        if (CollectionUtils.isEmpty(batch)) {
             return 0;
         }
-        return doInsert(batch).sync();
+        return ContextHolder.doInContext(context, () -> doInsert(batch).sync());
     }
 
     @Override
     public SyncQuery<E> createQuery() {
-        return new DefaultSyncQuery<>(getTable(), mapping, operator.dml(), wrapper);
+        return new DefaultSyncQuery<>(getTable(), mapping, operator.dml(), wrapper,context);
     }
 
     @Override
     public SyncUpdate<E> createUpdate() {
-        return new DefaultSyncUpdate<>(getTable(), operator.dml().update(getTable()), mapping);
+        return new DefaultSyncUpdate<>(getTable(), operator.dml().update(getTable()), mapping,context);
     }
 
     @Override
     public SyncDelete createDelete() {
-        return new DefaultSyncDelete(getTable(), operator.dml().delete(getTable()));
+        return new DefaultSyncDelete(getTable(), operator.dml().delete(getTable()),context);
     }
 
     @Override
     public QueryOperator nativeQuery() {
         return operator
-                .dml()
-                .query(getTable());
+            .dml()
+            .query(getTable());
     }
 }

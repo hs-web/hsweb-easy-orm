@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.context.ContextHolder;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
@@ -20,6 +21,10 @@ import static org.hswebframework.ezorm.rdb.utils.SqlUtils.printSql;
 public abstract class JdbcSqlExecutor {
 
     private Logger logger;
+
+    protected Logger logger() {
+        return ContextHolder.current().getOrDefault(Logger.class, logger);
+    }
 
     @SneakyThrows
     protected void releaseStatement(Statement statement) {
@@ -61,7 +66,7 @@ public abstract class JdbcSqlExecutor {
                 }
             }
             return count;
-        }catch (Throwable e) {
+        } catch (Throwable e) {
             logger.error("==>      Error: {}", request.toNativeSql(), e);
             throw e;
         } finally {
@@ -72,7 +77,7 @@ public abstract class JdbcSqlExecutor {
     }
 
     protected int doUpdate(Connection connection, SqlRequest request) {
-        return doUpdate(logger, connection, request);
+        return doUpdate(logger(), connection, request);
     }
 
     @SneakyThrows
@@ -110,7 +115,7 @@ public abstract class JdbcSqlExecutor {
     }
 
     protected void doExecute(Connection connection, SqlRequest request) {
-        doExecute(logger, connection, request);
+        doExecute(logger(), connection, request);
     }
 
     @SneakyThrows
@@ -207,6 +212,6 @@ public abstract class JdbcSqlExecutor {
 
     @SneakyThrows
     public <T, R> R doSelect(Connection connection, SqlRequest request, ResultWrapper<T, R> wrapper) {
-        return doSelect(logger, connection, request, wrapper, Disposables.composite());
+        return doSelect(logger(), connection, request, wrapper, Disposables.composite());
     }
 }

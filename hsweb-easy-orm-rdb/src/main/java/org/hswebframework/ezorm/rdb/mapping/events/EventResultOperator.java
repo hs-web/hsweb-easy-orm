@@ -9,7 +9,9 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -32,51 +34,61 @@ public class EventResultOperator {
             return operator.get();
         }
         return (T) Proxy
-                .newProxyInstance(
-                        EventResultOperator.class.getClassLoader(),
-                        new Class[]{target},
-                        ((proxy, method, args) -> {
+            .newProxyInstance(
+                EventResultOperator.class.getClassLoader(),
+                new Class[]{target},
+                ((proxy, method, args) -> {
 
-                            ContextKeyValue<Boolean> isReactive = MappingContextKeys
-                                    .reactive(Publisher.class.isAssignableFrom(method.getReturnType()));
-                            try {
+                    ContextKeyValue<Boolean> isReactive = MappingContextKeys
+                        .reactive(Publisher.class.isAssignableFrom(method.getReturnType()));
+                    try {
 
-                                DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
+                        DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
 
-                                tableMetadata.fireEvent(before, ctx -> {
-                                    ctx.set(keyValue).set(isReactive, reactiveResult(holder));
-                                });
-
-                                if (!isReactive.getValue()) {
-                                    Object result = method.invoke(operator.get(), args);
-                                    tableMetadata.fireEvent(after, ctx -> {
-                                        ctx.set(keyValue).set(MappingContextKeys.result(result), isReactive);
-                                    });
-                                    return result;
-                                }
-                                boolean isMono = Mono.class.isAssignableFrom(method.getReturnType());
-                                return holder
-                                        .doBefore()
-                                        .then(Mono.fromCallable(() -> method.invoke(operator.get(), args)).cache())
-                                        .flatMapMany(result -> {
-                                            return holder
-                                                    .doInvoke()
-                                                    .thenMany((Publisher<Object>) result)
-                                                    //有返回值
-                                                    .map(holder::doAfter)
-                                                    //无返回值
-                                                    .defaultIfEmpty(holder.doAfterNoResult())
-                                                    .flatMap(Function.identity());
-                                        })
-                                        .as(isMono ? Mono::from : flux -> flux)
-                                        ;
-
-                            } catch (Throwable e) {
-                                tableMetadata.fireEvent(after, ctx -> {
-                                    ctx.set(keyValue).set(MappingContextKeys.error(e), isReactive);
-                                });
-                                throw e;
+                        tableMetadata.fireEvent(before, ctx -> {
+                            ctx.set(keyValue).set(isReactive);
+                            if (isReactive.getValue()) {
+                                ctx.set(reactiveResult(holder));
                             }
-                        }));
+                        });
+
+                        if (!isReactive.getValue()) {
+                            Object result = method.invoke(operator.get(), args);
+                            tableMetadata.fireEvent(after, ctx -> {
+                                ctx.set(keyValue).set(MappingContextKeys.result(result), isReactive);
+                            });
+                            return result;
+                        }
+                        boolean isMono = Mono.class.isAssignableFrom(method.getReturnType());
+                        return holder
+                            .doBefore()
+                            .then(Mono.fromCallable(() -> method.invoke(operator.get(), args)).cache())
+                            .flatMapMany(result -> {
+                                return holder
+                                    .doInvoke()
+                                    .thenMany((Publisher<Object>) result)
+                                    //有返回值
+                                    .map(holder::doAfter)
+                                    //无返回值
+                                    .defaultIfEmpty(holder.doAfterNoResult())
+                                    .flatMap(Function.identity());
+                            })
+                            .as(isMono ? Mono::from : flux -> flux)
+                            ;
+
+                    } catch (Throwable e) {
+                        if (e instanceof InvocationTargetException) {
+                            e = e.getCause();
+                        }
+                        if (e instanceof UndeclaredThrowableException) {
+                            e = e.getCause();
+                        }
+                        Throwable error = e;
+                        tableMetadata.fireEvent(after, ctx -> {
+                            ctx.set(keyValue).set(MappingContextKeys.error(error), isReactive);
+                        });
+                        throw error;
+                    }
+                }));
     }
 }

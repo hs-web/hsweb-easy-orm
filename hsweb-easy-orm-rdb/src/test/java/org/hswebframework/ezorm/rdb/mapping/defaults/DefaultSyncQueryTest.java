@@ -13,6 +13,7 @@ import org.hswebframework.ezorm.rdb.supports.h2.H2SchemaMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.util.context.Context;
 
 import java.util.Date;
 
@@ -65,7 +66,7 @@ public class DefaultSyncQueryTest {
 
         wrapper.setMapping(mapping);
 
-        DefaultSyncQuery<TestEntity> query = new DefaultSyncQuery<>(metadata, mapping,operator.dml(), wrapper);
+        DefaultSyncQuery<TestEntity> query = new DefaultSyncQuery<>(metadata, mapping, operator.dml(), wrapper, Context.empty());
 
         Assert.assertEquals(1,  query.count());
 
