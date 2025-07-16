@@ -46,7 +46,7 @@
         <!-- base setting -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.locales>zh_CN</project.build.locales>
-        <project.build.jdk>1.8</project.build.jdk>
+        <project.build.jdk>17</project.build.jdk>
         <junit.version>4.13.2</junit.version>
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>2.17.0</log4j.version>
@@ -115,25 +115,6 @@
                     <url>https://central.sonatype.com/repository/maven-snapshots</url>
                 </snapshotRepository>
             </distributionManagement>
-        </profile>
-        <profile>
-            <id>java8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <properties>
-                <project.build.jdk>1.8</project.build.jdk>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>[11,)</jdk>
-            </activation>
-            <properties>
-                <project.build.jdk>11</project.build.jdk>
-            </properties>
         </profile>
     </profiles>
 

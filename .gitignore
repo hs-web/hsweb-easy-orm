@@ -20,3 +20,4 @@ bin/
 hs_err_pid*
 pom.xml.versionsBackup
 !maven-wrapper.jar
+.java-version
