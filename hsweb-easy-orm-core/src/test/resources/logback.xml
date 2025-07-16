@@ -4,10 +4,10 @@
     <logger name="io.r2dbc" level="warn"/>
     <logger name="reactor" level="warn"/>
     <logger name="com.github" level="warn"/>
-    <logger name="io.asyncer" level="warn"/>
+    <logger name="dev.miku" level="warn"/>
     <logger name="org.testcontainers" level="info"/>
     <logger name="org.hswebframework" level="debug"/>
-    <logger name="org.hswebframework.ezorm" level="debug"/>
+    <logger name="org.hswebframework.ezorm" level="info"/>
     <logger name="org.apache" level="info"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

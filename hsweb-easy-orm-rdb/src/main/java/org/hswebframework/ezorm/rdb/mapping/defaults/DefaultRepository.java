@@ -184,11 +184,11 @@ public abstract class DefaultRepository<E> {
 
         return EventResultOperator.create(
             () -> {
-                for (Map.Entry<String, String> entry : mapping.getColumnPropertyMapping().entrySet()) {
-                    String column = entry.getKey();
-                    String property = entry.getValue();
-                    insert.value(column, getInsertColumnValue(data, property));
-                }
+                insert.columns(getProperties());
+                insert.values(Stream
+                                  .of(getProperties())
+                                  .map(property -> getInsertColumnValue(data, property))
+                                  .toArray());
                 return insert.execute();
             },
             InsertResultOperator.class,

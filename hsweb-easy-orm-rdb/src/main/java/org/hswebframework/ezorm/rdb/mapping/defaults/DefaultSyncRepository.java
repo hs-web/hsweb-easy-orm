@@ -86,7 +86,7 @@ public class DefaultSyncRepository<E, K> extends DefaultRepository<E> implements
 
     @Override
     public int insertBatch(Collection<E> batch) {
-        if (batch.size() == 0) {
+        if (batch.isEmpty()) {
             return 0;
         }
         return doInsert(batch).sync();
