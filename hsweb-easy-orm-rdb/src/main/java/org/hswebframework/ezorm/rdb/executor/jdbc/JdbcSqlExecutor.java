@@ -67,13 +67,17 @@ public abstract class JdbcSqlExecutor {
             }
             return count;
         } catch (Throwable e) {
-            logger.error("==>      Error: {}", request.toNativeSql(), e);
-            throw e;
+            logger.warn("==>      Error: {}", request.toNativeSql(), e);
+            throw translateError("update",request,e);
         } finally {
             if (null != statement) {
                 releaseStatement(statement);
             }
         }
+    }
+
+    protected Throwable translateError(String action, SqlRequest sql, Throwable error) {
+        return error;
     }
 
     protected int doUpdate(Connection connection, SqlRequest request) {
@@ -105,8 +109,8 @@ public abstract class JdbcSqlExecutor {
                 }
             }
         } catch (Throwable e) {
-            logger.error("==>      Error: {}", request.toNativeSql(), e);
-            throw e;
+            logger.warn("==>      Error: {}", request.toNativeSql(), e);
+            throw translateError("execute",request,e);
         } finally {
             if (null != statement) {
                 releaseStatement(statement);
@@ -202,8 +206,8 @@ public abstract class JdbcSqlExecutor {
             releaseResultSet(resultSet);
             return wrapper.getResult();
         } catch (Throwable e) {
-            logger.error("==>      Error: {}", request.toNativeSql(), e);
-            throw e;
+            logger.warn("==>      Error: {}", request.toNativeSql(), e);
+            throw translateError("update",request,e);
         } finally {
             releaseStatement(statement);
         }
