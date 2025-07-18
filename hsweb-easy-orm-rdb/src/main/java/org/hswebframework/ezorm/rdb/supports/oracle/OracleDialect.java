@@ -18,7 +18,7 @@ public class OracleDialect extends DefaultDialect {
         super();
         addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.NCHAR, (meta) -> StringUtils.concat("nchar(", meta.getLength(), ")"));
-        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar2(", meta.getLength(), ")"));
+        addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar2(", meta.getLength(), " char)"));
         addDataTypeBuilder(JDBCType.NVARCHAR, (meta) -> StringUtils.concat("nvarchar2(", meta.getLength(), ")"));
         addDataTypeBuilder(JDBCType.TIMESTAMP, (meta) -> "timestamp");
         addDataTypeBuilder(JDBCType.TIME, (meta) -> "timestamp");
@@ -50,7 +50,7 @@ public class OracleDialect extends DefaultDialect {
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));
 
         registerDataType("varchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
-                                                      column -> "varchar2(" + column.getLength() + ")"));
+                                                      column -> "varchar2(" + column.getLength() + "  char)"));
 
         registerDataType("nvarchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
                                                        column -> "nvarchar2(" + column.getLength() + ")"));
