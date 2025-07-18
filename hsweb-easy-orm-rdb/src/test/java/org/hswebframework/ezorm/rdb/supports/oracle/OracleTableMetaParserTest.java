@@ -136,7 +136,7 @@ public class OracleTableMetaParserTest {
 
                 Assert.assertNotNull(column);
 
-                Assert.assertEquals(column.getDataType(), "varchar2(32)");
+                Assert.assertEquals(column.getDataType(), "varchar2(32 char)");
                 Assert.assertEquals(column.getType().getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
                 Assert.assertTrue(column.isNotNull());
@@ -150,7 +150,7 @@ public class OracleTableMetaParserTest {
 
                 Assert.assertNotNull(column);
 
-                Assert.assertEquals(column.getDataType(), "varchar2(128)");
+                Assert.assertEquals(column.getDataType(), "varchar2(128 char)");
                 Assert.assertEquals(column.getLength(), 128);
                 Assert.assertEquals(column.getType().getSqlType(), JDBCType.VARCHAR);
                 Assert.assertEquals(column.getJavaType(), String.class);
