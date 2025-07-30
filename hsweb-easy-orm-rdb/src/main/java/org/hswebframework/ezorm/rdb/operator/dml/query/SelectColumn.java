@@ -12,12 +12,19 @@ public class SelectColumn extends FunctionColumn {
 
     private String alias;
 
-    public static SelectColumn of(String name,String alias) {
+
+    public SelectColumn alias(String alias) {
+        this.alias = alias;
+        return this;
+    }
+
+    public static SelectColumn of(String name, String alias) {
         SelectColumn column = new SelectColumn();
         column.setColumn(name);
         column.setAlias(alias);
         return column;
     }
+
     public static SelectColumn of(String name) {
         SelectColumn column = new SelectColumn();
         column.setColumn(name);
