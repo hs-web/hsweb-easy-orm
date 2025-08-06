@@ -136,9 +136,9 @@ public class OracleTableMetaParserTest {
 
                 Assert.assertNotNull(column);
 
-                Assert.assertEquals(column.getDataType(), "varchar2(32 char)");
-                Assert.assertEquals(column.getType().getSqlType(), JDBCType.VARCHAR);
-                Assert.assertEquals(column.getJavaType(), String.class);
+                Assert.assertEquals("varchar2(32 char)", column.getDataType());
+                Assert.assertEquals(JDBCType.VARCHAR, column.getType().getSqlType());
+                Assert.assertEquals(String.class, column.getJavaType());
                 Assert.assertTrue(column.isNotNull());
                 // 这里只解析表结构，而不会解析键信息.
                 // Assert.assertTrue(column.isPrimaryKey());

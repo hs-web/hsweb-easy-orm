@@ -46,15 +46,31 @@ public class EnumValueCodecTest {
 
         EnumValueCodec codec = new EnumValueCodec(TestEnum[].class, true);
 
-        Assert.assertEquals(3L, codec.encode(new TestEnum[]{TestEnum.A,TestEnum.B}));
+        Assert.assertEquals(3L, codec.encode(new TestEnum[]{TestEnum.A, TestEnum.B}));
 
-        Assert.assertArrayEquals(new TestEnum[]{TestEnum.A,TestEnum.B}, (Object[]) codec.decode(3));
+        Assert.assertArrayEquals(new TestEnum[]{TestEnum.A, TestEnum.B}, (Object[]) codec.decode(3));
 
     }
 
+    @Test
+    public void testCustomProperty() {
+        EnumValueCodec codec = new EnumValueCodec(TestEnum.class, "property",false);
+
+        for (TestEnum value : TestEnum.values()) {
+            assertEquals(value, codec.decode(Long.valueOf(value.property).intValue()));
+        }
+
+    }
 
     public enum TestEnum {
         A, B, C;
+
+        final long property  = ordinal() * 10;
+
+        public long getProperty() {
+            return property;
+        }
     }
+
 
 }
