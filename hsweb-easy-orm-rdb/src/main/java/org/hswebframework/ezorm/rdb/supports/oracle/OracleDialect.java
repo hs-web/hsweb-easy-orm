@@ -50,7 +50,7 @@ public class OracleDialect extends DefaultDialect {
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));
 
         registerDataType("varchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
-                                                      column -> "varchar2(" + column.getLength() + "  char)"));
+                                                      column -> "varchar2(" + column.getLength() + " char)"));
 
         registerDataType("nvarchar2", DataType.builder(DataType.jdbc(JDBCType.VARCHAR, String.class),
                                                        column -> "nvarchar2(" + column.getLength() + ")"));
