@@ -8,8 +8,8 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.utils.time.DateFormatter;
 import org.slf4j.Logger;
+import reactor.util.annotation.NonNull;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -147,7 +147,7 @@ public class SqlUtils {
         return sqlParameterToString(sql, len, stringParameter);
     }
 
-    private static @Nonnull String sqlParameterToString(String sql, int len, String[] stringParameter) {
+    private static @NonNull String sqlParameterToString(String sql, int len, String[] stringParameter) {
         StringBuilder builder = new StringBuilder(sql.length() + len + 16);
 
         int parameterIndex = 0;
