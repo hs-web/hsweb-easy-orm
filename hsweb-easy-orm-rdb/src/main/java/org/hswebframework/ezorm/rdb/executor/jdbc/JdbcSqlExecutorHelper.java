@@ -1,9 +1,12 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
+import org.hswebframework.ezorm.rdb.codec.ClobValue;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 
+import javax.sql.rowset.serial.SerialClob;
 import java.io.ByteArrayInputStream;
+import java.io.CharArrayReader;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,9 +42,11 @@ public class JdbcSqlExecutorHelper {
                 statement.setNull(index++, ((NullValue) object).getDataType().getSqlType().getVendorTypeNumber());
             } else if (object instanceof Date) {
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
-            } else if (object instanceof byte[]) {
-                statement.setBlob(index++, new ByteArrayInputStream((byte[]) object));
-            } else{
+            } else if (object instanceof byte[] b) {
+                statement.setBlob(index++, new ByteArrayInputStream(b));
+            } else if (object instanceof ClobValue cb) {
+                statement.setCharacterStream(index++, cb.reader());
+            } else {
                 statement.setObject(index++, object);
             }
 

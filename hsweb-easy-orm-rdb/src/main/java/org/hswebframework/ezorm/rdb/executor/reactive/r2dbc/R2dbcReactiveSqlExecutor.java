@@ -1,13 +1,11 @@
 package org.hswebframework.ezorm.rdb.executor.reactive.r2dbc;
 
-import io.r2dbc.spi.ColumnMetadata;
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.Result;
-import io.r2dbc.spi.Statement;
+import io.r2dbc.spi.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.CastUtil;
+import org.hswebframework.ezorm.rdb.codec.ClobValue;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
@@ -256,6 +254,10 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
             } else if (parameter instanceof NullValue) {
                 bindNull(statement, index, ((NullValue) parameter).getDataType().getJavaType());
             } else {
+                // convert clob
+                if (parameter instanceof ClobValue cb) {
+                    parameter = Clob.from(Mono.just(cb.source()));
+                }
                 bind(statement, index, parameter);
             }
             index++;

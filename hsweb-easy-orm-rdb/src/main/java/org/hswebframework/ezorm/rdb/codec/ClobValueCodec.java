@@ -4,6 +4,8 @@ package org.hswebframework.ezorm.rdb.codec;
 import io.netty.buffer.ByteBuf;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.core.meta.ColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -11,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Clob;
+import java.sql.JDBCType;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -19,9 +22,24 @@ public class ClobValueCodec implements ValueCodec {
     public static final ClobValueCodec INSTANCE = new ClobValueCodec();
 
     @Override
+    public Object encode(Object value, ColumnMetadata column) {
+        Object val = this.encode(value);
+        if (val instanceof CharSequence cs && column instanceof RDBColumnMetadata col) {
+            if (col.getType().getSqlType() == JDBCType.LONGVARCHAR ||
+                col.getType().getSqlType() == JDBCType.LONGNVARCHAR ||
+                col.getType().getSqlType() == JDBCType.CLOB) {
+                return new ClobValue(cs);
+            }
+        }
+        return val;
+    }
+
+    @Override
     @SneakyThrows
     public Object encode(Object value) {
-
+        if (value == null) {
+            return null;
+        }
         if (value instanceof Clob) {
             return value;
         }

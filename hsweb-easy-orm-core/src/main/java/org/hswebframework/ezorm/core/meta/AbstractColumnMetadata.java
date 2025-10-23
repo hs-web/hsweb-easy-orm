@@ -46,7 +46,7 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
             return null;
         }
         if (valueCodec != null) {
-            data = valueCodec.decode(data);
+            data = valueCodec.decode(data, this);
         }
         if (dictionaryCodec != null) {
             data = dictionaryCodec.decode(data);
@@ -63,7 +63,7 @@ public abstract class AbstractColumnMetadata implements ColumnMetadata {
             return null;
         }
         if (valueCodec != null) {
-            data = valueCodec.encode(data);
+            data = valueCodec.encode(data, this);
         }
         if (dictionaryCodec != null) {
             data = dictionaryCodec.encode(data);

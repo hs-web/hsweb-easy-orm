@@ -10,6 +10,8 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.core.meta.ColumnMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -22,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.JDBCType;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TimeZone;
@@ -102,6 +105,20 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
     }
 
     @Override
+    public Object encode(Object value, ColumnMetadata column) {
+        Object data = encode(value);
+        if (data instanceof CharSequence cs && column instanceof RDBColumnMetadata col) {
+            // clob 类型
+            if (col.getType().getSqlType() == JDBCType.LONGVARCHAR ||
+                col.getType().getSqlType() == JDBCType.LONGNVARCHAR ||
+                col.getType().getSqlType() == JDBCType.CLOB) {
+                return new ClobValue(cs);
+            }
+        }
+        return data;
+    }
+
+    @Override
     @SneakyThrows
     public Object encode(Object value) {
         if (value == null) {
@@ -145,7 +162,7 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             } else if (data instanceof ByteBuffer) {
                 return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
             } else if (FeatureUtils.r2dbcIsAlive()) {
-                Mono mono = null;
+                Mono<?> mono = null;
                 if (data instanceof io.r2dbc.spi.Clob) {
                     mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
                                .collect(Collectors.joining())

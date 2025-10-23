@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.Assert.*;
 
-public class ClobValueCodecTest {
+public class R2dbcClobValueCodecTest {
 
 
     @Test
