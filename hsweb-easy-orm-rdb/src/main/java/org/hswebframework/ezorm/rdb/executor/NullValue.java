@@ -8,18 +8,21 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 @Getter
 @AllArgsConstructor(staticName = "of")
 public class NullValue {
-    @Deprecated
-    private Class type;
 
-    @NonNull
+    private Class<?> type;
+
     private DataType dataType;
 
-    public static NullValue of(DataType dataType){
-        return of(dataType.getJavaType(),dataType);
+    public static NullValue of(DataType dataType) {
+        return of(dataType.getJavaType(), dataType);
+    }
+
+    public Class<?> getType() {
+        return type == null ? dataType.getJavaType() : type;
     }
 
     @Override
     public String toString() {
-        return "null" + (dataType==null?"": (type != null ? "(" + dataType.getId() + ")" : ""));
+        return "null" + (type != null ? "("+type.getSimpleName()+")" : (dataType != null ? "(" + dataType.getId() + ")" : ""));
     }
 }

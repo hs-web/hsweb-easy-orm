@@ -221,7 +221,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public Object encode(Object data) {
         if (data == null || data instanceof NullValue) {
             if (valueCodec != null) {
-                Object newVal = valueCodec.encodeNull();
+                Object newVal = valueCodec.encodeNull(this);
                 if (newVal != null) {
                     return newVal;
                 }

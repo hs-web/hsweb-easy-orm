@@ -5,6 +5,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import reactor.core.publisher.Flux;
@@ -21,14 +23,29 @@ public class ClobValueCodec implements ValueCodec {
 
     public static final ClobValueCodec INSTANCE = new ClobValueCodec();
 
+    static boolean isClobType(DataType type) {
+        return type.getSqlType() == JDBCType.LONGVARCHAR ||
+            type.getSqlType() == JDBCType.LONGNVARCHAR ||
+            type.getSqlType() == JDBCType.CLOB;
+    }
+
+    @Override
+    public Object encodeNull(ColumnMetadata column) {
+        if (column instanceof RDBColumnMetadata col) {
+            if (ClobValueCodec.isClobType(col.getType())) {
+                return NullValue.of(LongCharSequence.class, col.getType());
+            }
+            return NullValue.of(col.getType());
+        }
+        return null;
+    }
+
     @Override
     public Object encode(Object value, ColumnMetadata column) {
         Object val = this.encode(value);
         if (val instanceof CharSequence cs && column instanceof RDBColumnMetadata col) {
-            if (col.getType().getSqlType() == JDBCType.LONGVARCHAR ||
-                col.getType().getSqlType() == JDBCType.LONGNVARCHAR ||
-                col.getType().getSqlType() == JDBCType.CLOB) {
-                return new ClobValue(cs);
+            if (ClobValueCodec.isClobType(col.getType())) {
+                return new LongCharSequence(cs);
             }
         }
         return val;
