@@ -38,12 +38,7 @@ public class JdbcSqlExecutorHelper {
             if (object == null) {
                 statement.setNull(index++, Types.NULL);
             } else if (object instanceof NullValue nullValue) {
-                Class<?> javaType = nullValue.getType();
-                if (LongCharSequence.class == javaType) {
-                    statement.setCharacterStream(index++, new StringReader(""));
-                } else {
-                    statement.setNull(index++, nullValue.getDataType().getSqlType().getVendorTypeNumber());
-                }
+                statement.setNull(index++, nullValue.getDataType().getSqlType().getVendorTypeNumber());
             } else if (object instanceof Date) {
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
             } else if (object instanceof byte[] b) {

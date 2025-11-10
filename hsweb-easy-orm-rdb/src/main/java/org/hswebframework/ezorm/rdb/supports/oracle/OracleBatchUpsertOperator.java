@@ -1,8 +1,11 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
+import io.r2dbc.mssql.codec.ClobCodec;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.codec.ClobValueCodec;
+import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -188,9 +191,15 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                             value = NullValue.of(column.getType());
                         }
                     }
-
+                    value = column.encode(value);
+                    // 适配 clob字段 不支持设置null
+                    if (valueSize > 1 && (value == null || value instanceof NullValue)) {
+                        if (ClobValueCodec.isClobType(column.getType())) {
+                            value = new LongCharSequence("");
+                        }
+                    }
                     fragments.addSql("? as ", column.getQuoteName())
-                             .addParameter(column.encode(value));
+                             .addParameter(value);
                     valueIndex++;
                 }
 

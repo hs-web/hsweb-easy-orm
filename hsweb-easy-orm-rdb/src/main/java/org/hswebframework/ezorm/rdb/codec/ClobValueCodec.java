@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,7 +24,7 @@ public class ClobValueCodec implements ValueCodec {
 
     public static final ClobValueCodec INSTANCE = new ClobValueCodec();
 
-    static boolean isClobType(DataType type) {
+    public static boolean isClobType(DataType type) {
         return type.getSqlType() == JDBCType.LONGVARCHAR ||
             type.getSqlType() == JDBCType.LONGNVARCHAR ||
             type.getSqlType() == JDBCType.CLOB;

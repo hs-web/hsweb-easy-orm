@@ -23,25 +23,23 @@ public class OracleConnectionProvider implements ConnectionProvider {
     static {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        GenericContainer<?> container = Containers.newOracle();
 
-        container.start();
-        port = container.getMappedPort(1521);
+            GenericContainer<?> container = Containers.newOracle();
 
-        String username = System.getProperty("oracle.username", "system");
-        String password = System.getProperty("oracle.password", "oracle");
-        String url = System.getProperty("oracle.url", "127.0.0.1:" + port);
-        String db = System.getProperty("oracle.db", "orcl");
-        connectionSupplier = () -> DriverManager.getConnection("jdbc:oracle:thin:@" + url + ":" + db, username, password);
-        for (int i = 0; i < 10; i++) {
-            try {
+            container.start();
+            port = container.getMappedPort(1521);
+
+            String username = System.getProperty("oracle.username", "system");
+            String password = System.getProperty("oracle.password", "oracle");
+            String url = System.getProperty("oracle.url", "127.0.0.1:" + port);
+            String db = System.getProperty("oracle.db", "orcl");
+            connectionSupplier = () -> DriverManager.getConnection("jdbc:oracle:thin:@" + url + ":" + db, username, password);
+            for (int i = 0; i < 10; i++) {
                 connectionQueue.add(connectionSupplier.call());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 
