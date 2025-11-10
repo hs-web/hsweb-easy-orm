@@ -252,7 +252,14 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
             if (parameter == null) {
                 bindNull(statement, index, String.class);
             } else if (parameter instanceof NullValue nullValue) {
-                bindNull(statement, index, nullValue.getType());
+                Class<?> javaType = nullValue.getType();
+                if (javaType == LongCharSequence.class) {
+                    // 空字符,批量保存时,有的数据库不同行不能有的设置null有的不设置.
+                    bindNull(statement, index, Clob.class);
+                }else {
+                    bindNull(statement, index, javaType);
+                }
+
             } else {
                 // convert clob
                 if (parameter instanceof LongCharSequence cb) {
