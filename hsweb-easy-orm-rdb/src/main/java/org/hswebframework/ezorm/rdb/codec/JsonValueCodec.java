@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -159,27 +160,29 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
         try {
             Object target = data;
 
-            if (data instanceof Clob) {
-                target = mapper.readValue(((Clob) data).getCharacterStream(), jacksonType);
-            } else if (data instanceof Blob) {
-                target = mapper.readValue(((Blob) data).getBinaryStream(), jacksonType);
+            if (data instanceof Clob _clob) {
+                target = mapper.readValue(_clob.getCharacterStream(), jacksonType);
+            } else if (data instanceof Blob _blob) {
+                target = mapper.readValue(_blob.getBinaryStream(), jacksonType);
             } else if (data instanceof InputStream) {
                 target = mapper.readValue((InputStream) data, jacksonType);
-            } else if (data instanceof byte[]) {
-                target = mapper.readValue((byte[]) data, jacksonType);
-            } else if (data instanceof String) {
-                target = doRead(((String) data));
+            } else if (data instanceof byte[] bytes) {
+                target = mapper.readValue(bytes, jacksonType);
+            } else if (data instanceof CharSequence) {
+                target = doRead(String.valueOf(data));
+            } else if (data instanceof Reader reader) {
+                target = mapper.readValue(reader, jacksonType);
             } else if (data instanceof ByteBuffer) {
                 return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
             } else if (FeatureUtils.r2dbcIsAlive()) {
                 Mono<?> mono = null;
-                if (data instanceof io.r2dbc.spi.Clob) {
-                    mono = Flux.from(((io.r2dbc.spi.Clob) data).stream())
+                if (data instanceof io.r2dbc.spi.Clob _clob) {
+                    mono = Flux.from(_clob.stream())
                                .collect(Collectors.joining())
                                .map(this::doRead);
 
-                } else if (data instanceof io.r2dbc.spi.Blob) {
-                    mono = Mono.from(((io.r2dbc.spi.Blob) data).stream())
+                } else if (data instanceof io.r2dbc.spi.Blob _blob) {
+                    mono = Mono.from(_blob.stream())
                                .map(ByteBufferBackedInputStream::new)
                                .map(this::doRead);
                 }
@@ -203,6 +206,9 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             }
             if (targetType == Flux.class) {
                 return target == null ? Flux.empty() : Flux.just(target);
+            }
+            if (target == null) {
+                return null;
             }
             log.warn("unsupported json format:{}", data);
             return target;
