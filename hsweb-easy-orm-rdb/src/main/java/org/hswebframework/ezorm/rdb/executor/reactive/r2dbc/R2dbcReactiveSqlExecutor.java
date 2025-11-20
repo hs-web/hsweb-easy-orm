@@ -81,7 +81,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     SqlRequest request,
                                     Function<Result, Publisher<T>> mapper) {
         return Flux
-            .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
+            .defer(() -> this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
             .flatMap(mapper)
             .doOnSubscribe(subscription -> printSql(logger, request))
             .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
