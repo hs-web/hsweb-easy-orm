@@ -359,6 +359,43 @@ public abstract class BasicReactiveTests {
 
     }
 
+    @Test
+    public void testReactiveRepositoryBatchSave() {
+        BasicTestEntity e1 = BasicTestEntity
+            .builder()
+            .id("test_id_batch_save")
+//            .balance(1000L)
+            .name("test")
+//            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+//            .addressId("test")
+//            .stateEnum(StateEnum.enabled)
+//            .enabled(true)
+            .build();
+
+        BasicTestEntity e2 = BasicTestEntity
+            .builder()
+            .id("test_id_batch_save_2")
+//            .balance(1000L)
+            .name("test")
+//            .createTime(new Date())
+            .tags(null)
+            .state((byte) 1)
+//            .addressId("test")
+//            .stateEnum(StateEnum.enabled)
+//            .enabled(true)
+            .build();
+
+
+        repository.save(Flux.just(e1, e2))
+                  .map(SaveResult::getTotal)
+                  .as(StepVerifier::create)
+                  .expectNext(2)
+                  .verifyComplete();
+
+
+    }
 
     @Test
     public void testReactiveRepositorySave() {

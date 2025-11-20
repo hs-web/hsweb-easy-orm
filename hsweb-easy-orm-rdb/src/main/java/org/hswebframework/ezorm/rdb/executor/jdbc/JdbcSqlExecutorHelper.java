@@ -1,12 +1,11 @@
 package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
-import org.hswebframework.ezorm.rdb.codec.ClobValue;
+import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 
-import javax.sql.rowset.serial.SerialClob;
 import java.io.ByteArrayInputStream;
-import java.io.CharArrayReader;
+import java.io.StringReader;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,18 +37,17 @@ public class JdbcSqlExecutorHelper {
         for (Object object : parameter) {
             if (object == null) {
                 statement.setNull(index++, Types.NULL);
-            } else if (object instanceof NullValue) {
-                statement.setNull(index++, ((NullValue) object).getDataType().getSqlType().getVendorTypeNumber());
+            } else if (object instanceof NullValue nullValue) {
+                statement.setNull(index++, nullValue.getDataType().getSqlType().getVendorTypeNumber());
             } else if (object instanceof Date) {
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
             } else if (object instanceof byte[] b) {
                 statement.setBlob(index++, new ByteArrayInputStream(b));
-            } else if (object instanceof ClobValue cb) {
+            } else if (object instanceof LongCharSequence cb) {
                 statement.setCharacterStream(index++, cb.reader());
             } else {
                 statement.setObject(index++, object);
             }
-
         }
     }
 

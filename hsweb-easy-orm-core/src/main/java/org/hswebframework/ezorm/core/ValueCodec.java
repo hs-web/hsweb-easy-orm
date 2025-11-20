@@ -12,6 +12,10 @@ public interface ValueCodec<E, D> extends Encoder<E>, Decoder<D> {
 
     D decode(Object data);
 
+    default E encodeNull(ColumnMetadata column){
+        return encodeNull();
+    }
+
     default E encode(Object value, ColumnMetadata column){
         return encode(value);
     }
