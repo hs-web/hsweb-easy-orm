@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonAlterTa
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonDropIndexSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.DefaultForeignKeyTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import reactor.core.publisher.Flux;
@@ -66,6 +67,11 @@ public class RDBSchemaMetadata extends AbstractSchemaMetadata {
             addFeature(RDBFeatures.max);
             addFeature(RDBFeatures.min);
             addFeature(RDBFeatures.avg);
+
+            addFeature(new SimpleFunctionFragmentBuilder("stddev", "标准差"));
+            addFeature(new SimpleFunctionFragmentBuilder("variance", "方差"));
+            addFeature(new SimpleFunctionFragmentBuilder("stddev_pop", "标准差(总体)"));
+            addFeature(new SimpleFunctionFragmentBuilder("stddev_samp", "标准差(样本)"));
 
 
             /* DDL */

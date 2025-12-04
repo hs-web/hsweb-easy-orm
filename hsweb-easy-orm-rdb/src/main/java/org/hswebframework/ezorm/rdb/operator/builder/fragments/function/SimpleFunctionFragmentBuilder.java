@@ -17,6 +17,12 @@ public class SimpleFunctionFragmentBuilder implements FunctionFragmentBuilder {
 
     private final SqlFragments FUNCTION;
 
+    public SimpleFunctionFragmentBuilder(String function, String alias, String name) {
+        this.function = function;
+        this.name = name;
+        FUNCTION = SqlFragments.single(alias + "(");
+    }
+
     public SimpleFunctionFragmentBuilder(String function, String name) {
         this.function = function;
         this.name = name;

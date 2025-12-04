@@ -33,15 +33,16 @@ public class OracleR2dbcConnectionProvider implements R2dbcConnectionProvider {
 
         URL hostUrl = new URL("file://" + url);
 
-        connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions
-                                                            .builder()
-                                                            .option(DRIVER, "oracle")
-                                                            .option(HOST, hostUrl.getHost())
-                                                            .option(PORT, hostUrl.getPort())
-                                                            .option(USER, username)
-                                                            .option(PASSWORD, password)
-                                                            .option(DATABASE, db)
-                                                            .build());
+        connectionFactory = ConnectionFactories
+            .get(ConnectionFactoryOptions
+                     .builder()
+                     .option(DRIVER, "oracle")
+                     .option(HOST, hostUrl.getHost())
+                     .option(PORT, hostUrl.getPort())
+                     .option(USER, username)
+                     .option(PASSWORD, password)
+                     .option(DATABASE, db)
+                     .build());
 
         connectionSupplier = Mono.from(connectionFactory.create());
 

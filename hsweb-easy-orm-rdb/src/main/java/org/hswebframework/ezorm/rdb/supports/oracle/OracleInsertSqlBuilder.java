@@ -3,6 +3,8 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
+import org.hswebframework.ezorm.rdb.codec.ClobValueCodec;
+import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
@@ -126,7 +128,14 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                 if (value == null) {
                     value = NullValue.of(column.getType());
                 }
-                valuesSql.add(SqlFragments.QUESTION_MARK).addParameter(column.encode(value));
+                value = column.encode(value);
+                // 适配 clob字段 不支持设置null
+                if (valueSize > 1 && (value == null || value instanceof NullValue)) {
+                    if (ClobValueCodec.isClobType(column.getType())) {
+                        value = new LongCharSequence("");
+                    }
+                }
+                valuesSql.add(SqlFragments.QUESTION_MARK).addParameter(value);
             }
             intoSql.add(SqlFragments.RIGHT_BRACKET);
             valuesSql.add(SqlFragments.RIGHT_BRACKET);

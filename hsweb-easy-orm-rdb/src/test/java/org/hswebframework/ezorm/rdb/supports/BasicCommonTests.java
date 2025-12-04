@@ -14,6 +14,7 @@ import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
 import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.mapping.defaults.record.RecordResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
@@ -107,8 +108,8 @@ public abstract class BasicCommonTests {
               });
 
         RDBTableMetadata table = parser
-                .parseTableMetadata(BasicTestEntity.class)
-                .orElseThrow(NullPointerException::new);
+            .parseTableMetadata(BasicTestEntity.class)
+            .orElseThrow(NullPointerException::new);
 
         //  table.addFeature((EventListener) (type, context) -> log.debug("event:{},context:{}", type, context));
 
@@ -117,10 +118,10 @@ public abstract class BasicCommonTests {
                 .commit()
                 .sync();
         NestedEntityResultWrapper wrapper =
-                table
-                        .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
-                        .map(mapping -> new NestedEntityResultWrapper(mapping))
-                        .orElseThrow(NullPointerException::new);
+            table
+                .<EntityColumnMapping>getFeature(MappingFeatureType.columnPropertyMapping.createFeatureId(BasicTestEntity.class))
+                .map(mapping -> new NestedEntityResultWrapper(mapping))
+                .orElseThrow(NullPointerException::new);
 
         repository = new DefaultSyncRepository<>(operator, table, BasicTestEntity.class, wrapper);
         addressRepository = operator.dml().createRepository("test_address");
@@ -145,17 +146,17 @@ public abstract class BasicCommonTests {
     @Test
     public void testRepositoryInsertBach() {
         List<BasicTestEntity> entities = Flux
-                .range(0, 100)
-                .map(integer -> BasicTestEntity.builder()
-                                               // .id("test_id_" + integer)
-                                               .balance(1000L)
-                                               .name("test:" + integer)
-                                               .createTime(new Date())
-                                               .tags(Arrays.asList("a", "b", "c", "d"))
-                                               .state((byte) 1)
-                                               // .stateEnum(StateEnum.enabled)
-                                               .build())
-                .collectList().block();
+            .range(0, 100)
+            .map(integer -> BasicTestEntity.builder()
+                                           // .id("test_id_" + integer)
+                                           .balance(1000L)
+                                           .name("test:" + integer)
+                                           .createTime(new Date())
+                                           .tags(Arrays.asList("a", "b", "c", "d"))
+                                           .state((byte) 1)
+                                           // .stateEnum(StateEnum.enabled)
+                                           .build())
+            .collectList().block();
         Assert.assertEquals(100, repository.insertBatch(entities));
     }
 
@@ -163,19 +164,19 @@ public abstract class BasicCommonTests {
     public void testInsertDuplicate() {
         //10次insert
         Assert.assertEquals(3, repository.insertBatch(
-                Stream
-                        .of(1, 2, 2, 3, 1, 3)
-                        .map(integer -> BasicTestEntity
-                                .builder()
-                                .id("test_dup_" + integer)
-                                .balance(1000L)
-                                .name("test2:" + integer)
-                                .createTime(new Date())
-                                .tags(Arrays.asList("a", "b", "c", "d"))
-                                .state((byte) 1)
-                                .stateEnum(StateEnum.enabled)
-                                .build())
-                        .collect(Collectors.toList())
+            Stream
+                .of(1, 2, 2, 3, 1, 3)
+                .map(integer -> BasicTestEntity
+                    .builder()
+                    .id("test_dup_" + integer)
+                    .balance(1000L)
+                    .name("test2:" + integer)
+                    .createTime(new Date())
+                    .tags(Arrays.asList("a", "b", "c", "d"))
+                    .state((byte) 1)
+                    .stateEnum(StateEnum.enabled)
+                    .build())
+                .collect(Collectors.toList())
         ));
         ;
 
@@ -186,31 +187,76 @@ public abstract class BasicCommonTests {
     }
 
     @Test
+    public void testRepositoryBatchSave() {
+        BasicTestEntity e1 = BasicTestEntity
+            .builder()
+            .id("test_id_batch_save")
+//            .balance(1000L)
+            .name("test")
+//            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+//            .addressId("test")
+//            .stateEnum(StateEnum.enabled)
+//            .enabled(true)
+            .build();
+
+        BasicTestEntity e2 = BasicTestEntity
+            .builder()
+            .id("test_id_batch_save_2")
+//            .balance(1000L)
+            .name("test")
+//            .createTime(new Date())
+            .tags(null)
+            .state((byte) 1)
+//            .addressId("test")
+//            .stateEnum(StateEnum.enabled)
+//            .enabled(true)
+            .build();
+
+
+        Assert.assertEquals(2, repository.save(e1, e2).getTotal());
+
+        getSqlExecutor()
+            .select("select * from entity_test_table where id in(?,?)",e1.getId(),e2.getId())
+            .forEach(System.out::println);
+
+        repository
+            .createQuery()
+            .select("id","tags")
+            .where()
+            .in("id", Arrays.asList(e1.getId(), e2.getId()))
+            .fetch()
+            .forEach(System.out::println);
+
+    }
+
+    @Test
     public void testRepositorySave() {
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("test_id_save")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
+            .builder()
+            .id("test_id_save")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
 //                .aTest("test")
-                .addressId("test")
-                .doubleVal(1D)
-                .bigDecimal(new BigDecimal("1.2"))
-                .stateEnum(StateEnum.enabled)
-                .stateEnums(new StateEnum[]{StateEnum.enabled})
-                .build();
+            .addressId("test")
+            .doubleVal(1D)
+            .bigDecimal(new BigDecimal("1.2"))
+            .stateEnum(StateEnum.enabled)
+            .stateEnums(new StateEnum[]{StateEnum.enabled})
+            .build();
 
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
         {
             BasicTestEntity inBase = repository
-                    .createQuery()
-                    .select("*")
-                    .where("id", entity.getId())
-                    .fetchOne()
-                    .orElseThrow(UnsupportedOperationException::new);
+                .createQuery()
+                .select("*")
+                .where("id", entity.getId())
+                .fetchOne()
+                .orElseThrow(UnsupportedOperationException::new);
 
             Assert.assertEquals(entity, inBase);
 
@@ -220,11 +266,11 @@ public abstract class BasicCommonTests {
         Assert.assertEquals(repository.save(entity).getTotal(), 1);
 
         BasicTestEntity inBase = repository
-                .createQuery()
-                .select("*")
-                .where("id", entity.getId())
-                .fetchOne()
-                .orElseThrow(UnsupportedOperationException::new);
+            .createQuery()
+            .select("*")
+            .where("id", entity.getId())
+            .fetchOne()
+            .orElseThrow(UnsupportedOperationException::new);
 
         Assert.assertEquals(StateEnum.enabled, inBase.getStateEnum());
 
@@ -234,48 +280,48 @@ public abstract class BasicCommonTests {
     @Test
     public void testEnums() {
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("enums_id")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("test")
-                .stateEnum(StateEnum.enabled)
-                .stateEnums(new StateEnum[]{StateEnum.enabled, StateEnum.disabled})
-                .build();
+            .builder()
+            .id("enums_id")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .addressId("test")
+            .stateEnum(StateEnum.enabled)
+            .stateEnums(new StateEnum[]{StateEnum.enabled, StateEnum.disabled})
+            .build();
         repository.insert(entity);
 
 
         Assert.assertFalse(repository
-                                   .createQuery()
-                                   .select("id", "stateEnums")
-                                   .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
-                                   .fetchOne()
-                                   .isPresent());
+                               .createQuery()
+                               .select("id", "stateEnums")
+                               .in(BasicTestEntity::getStateEnums, StateEnum.enabled)
+                               .fetchOne()
+                               .isPresent());
 
         Assert.assertTrue(repository
-                                  .createQuery()
-                                  .select("id", "stateEnums")
-                                  .in(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled)
-                                  .fetchOne()
-                                  .isPresent());
+                              .createQuery()
+                              .select("id", "stateEnums")
+                              .in(BasicTestEntity::getStateEnums, StateEnum.enabled, StateEnum.disabled)
+                              .fetchOne()
+                              .isPresent());
 
         Assert.assertTrue(repository
-                                  .createQuery()
-                                  .select("id", "stateEnums")
-                                  .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
-                                  .fetchOne()
-                                  .isPresent());
+                              .createQuery()
+                              .select("id", "stateEnums")
+                              .where(Terms.enumInAny(BasicTestEntity::getStateEnums, StateEnum.disabled))
+                              .fetchOne()
+                              .isPresent());
 
 
         Assert.assertTrue(repository
-                                  .createQuery()
-                                  .select("id", "stateEnums")
-                                  .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
-                                  .fetchOne()
-                                  .isPresent());
+                              .createQuery()
+                              .select("id", "stateEnums")
+                              .where(Terms.enumNotInAny(BasicTestEntity::getStateEnums, StateEnum.warn))
+                              .fetchOne()
+                              .isPresent());
 
     }
 
@@ -284,16 +330,16 @@ public abstract class BasicCommonTests {
     public void testJoin() {
 
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("joinTest")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("joinTest")
-                .stateEnum(StateEnum.enabled)
-                .build();
+            .builder()
+            .id("joinTest")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .addressId("joinTest")
+            .stateEnum(StateEnum.enabled)
+            .build();
         addressRepository.insert(Record.newRecord().putValue("id", "joinTest").putValue("name", "joinTest"));
         repository.insert(entity);
 
@@ -309,16 +355,16 @@ public abstract class BasicCommonTests {
 
 
         BasicTestEntity entity = BasicTestEntity
-                .builder()
-                .id("test_id")
-                .balance(1000L)
-                .name("test")
-                .createTime(new Date())
-                .tags(Arrays.asList("a", "b", "c", "d"))
-                .state((byte) 1)
-                .addressId("test")
-                .stateEnum(StateEnum.enabled)
-                .build();
+            .builder()
+            .id("test_id")
+            .balance(1000L)
+            .name("test")
+            .createTime(new Date())
+            .tags(Arrays.asList("a", "b", "c", "d"))
+            .state((byte) 1)
+            .addressId("test")
+            .stateEnum(StateEnum.enabled)
+            .build();
         addressRepository.insert(Record.newRecord().putValue("id", "test").putValue("name", "test_address"));
         repository.insert(entity);
 
@@ -392,9 +438,9 @@ public abstract class BasicCommonTests {
         } finally {
             try {
                 operator
-                        .sql()
-                        .sync()
-                        .execute(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_pager"));
+                    .sql()
+                    .sync()
+                    .execute(SqlRequests.of("drop table " + database.getCurrentSchema().getName() + ".test_pager"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -454,11 +500,11 @@ public abstract class BasicCommonTests {
         } finally {
             try {
                 operator
-                        .sql()
-                        .sync()
-                        .execute(SqlRequests.of("drop table " + database
-                                .getCurrentSchema()
-                                .getName() + ".test_dml_crud"));
+                    .sql()
+                    .sync()
+                    .execute(SqlRequests.of("drop table " + database
+                        .getCurrentSchema()
+                        .getName() + ".test_dml_crud"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -512,11 +558,11 @@ public abstract class BasicCommonTests {
         } finally {
             try {
                 operator
-                        .sql()
-                        .sync()
-                        .execute(SqlRequests.of("drop table " + database
-                                .getCurrentSchema()
-                                .getName() + ".test_ddl_create"));
+                    .sql()
+                    .sync()
+                    .execute(SqlRequests.of("drop table " + database
+                        .getCurrentSchema()
+                        .getName() + ".test_ddl_create"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
