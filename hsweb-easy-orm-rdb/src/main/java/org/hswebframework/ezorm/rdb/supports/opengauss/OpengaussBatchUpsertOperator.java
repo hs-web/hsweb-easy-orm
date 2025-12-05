@@ -133,7 +133,7 @@ public class OpengaussBatchUpsertOperator implements SaveOrUpdateOperator {
             sql.add(createOnConflict());
 
             if (((OpengaussUpsertOperatorParameter) parameter).doNoThingOnConflict) {
-                sql.addSql("nothing");
+                sql.addSql("update nothing");
                 return sql;
             }
 
@@ -169,7 +169,7 @@ public class OpengaussBatchUpsertOperator implements SaveOrUpdateOperator {
                 // sql.addSql(columnMetadata.getFullName("excluded"));
             }
             if (!more) {
-                sql.addSql("nothing");
+                sql.addSql("update nothing");
             } else {
                 // FIXME: 2021/4/15 实现类似 table._time>excluded._time的条件控制功能
                 List<Term> where = ((OpengaussUpsertOperatorParameter) parameter).where;
