@@ -12,6 +12,8 @@ import reactor.util.annotation.NonNull;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class SqlUtils {
 
@@ -142,27 +144,210 @@ public class SqlUtils {
             } else {
                 stringParameter[i] = "'" + parameter + "'";
             }
-            len += stringParameter.length;
+            len += stringParameter[i].length();
         }
         return sqlParameterToString(sql, len, stringParameter);
     }
 
     private static @NonNull String sqlParameterToString(String sql, int len, String[] stringParameter) {
-        StringBuilder builder = new StringBuilder(sql.length() + len + 16);
-
-        int parameterIndex = 0;
-        for (int i = 0, sqlLen = sql.length(); i < sqlLen; i++) {
-            char c = sql.charAt(i);
-            if (c == '?') {
-                if (stringParameter.length > parameterIndex) {
-                    builder.append(stringParameter[parameterIndex++]);
-                } else {
-                    builder.append("unbound");
-                }
+        return replaceSqlParameter(sql, len, (parameterIndex) -> {
+            if (stringParameter.length > parameterIndex) {
+                return stringParameter[parameterIndex];
             } else {
-                builder.append(c);
+                return "unbound";
             }
+        });
+    }
+
+    public static String replaceSqlParameter(String sql, int estimatedExtraLen, Function<Integer, String> replacer) {
+        return replaceSqlParameter(
+            sql,
+            new StringBuilder(sql.length() + estimatedExtraLen),
+            (integer, builder) -> {
+                builder.append(replacer.apply(integer));
+            })
+            .toString();
+    }
+
+    public static StringBuilder replaceSqlParameter(String sql,
+                                                    StringBuilder builder,
+                                                    BiConsumer<Integer, StringBuilder> replacer) {
+        int index = 0;
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        boolean inLineComment = false;
+        boolean inBlockComment = false;
+
+        for (int i = 0; i < sql.length(); i++) {
+            char c = sql.charAt(i);
+
+            // --- 处理注释 -----------------------------------------------------
+            if (inLineComment) {
+                builder.append(c);
+                if (c == '\n') {
+                    inLineComment = false;
+                }
+                continue;
+            }
+
+            if (inBlockComment) {
+                builder.append(c);
+                if (c == '*' && i + 1 < sql.length() && sql.charAt(i + 1) == '/') {
+                    builder.append('/');
+                    i++;
+                    inBlockComment = false;
+                }
+                continue;
+            }
+
+            // 进入注释（仅当不在字符串中）
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '-' && i + 1 < sql.length() && sql.charAt(i + 1) == '-') {
+                    builder.append("--");
+                    i++;
+                    inLineComment = true;
+                    continue;
+                }
+                if (c == '/' && i + 1 < sql.length() && sql.charAt(i + 1) == '*') {
+                    builder.append("/*");
+                    i++;
+                    inBlockComment = true;
+                    continue;
+                }
+            }
+
+            // --- 处理字符串和双引号 -------------------------------------------
+            // 处理单引号字符串（支持转义：'' 表示一个单引号字符）
+            if (!inDoubleQuote && c == '\'') {
+                if (inSingleQuote && i + 1 < sql.length() && sql.charAt(i + 1) == '\'') {
+                    // 在单引号字符串内遇到 ''，这是转义的单引号，不是字符串结束
+                    builder.append("''");
+                    i++; // 跳过下一个单引号
+                    continue;
+                }
+                inSingleQuote = !inSingleQuote;
+                builder.append(c);
+                continue;
+            }
+
+            // 处理双引号字符串（支持转义："" 表示一个双引号字符）
+            if (!inSingleQuote && c == '\"') {
+                if (inDoubleQuote && i + 1 < sql.length() && sql.charAt(i + 1) == '\"') {
+                    // 在双引号字符串内遇到 ""，这是转义的双引号，不是字符串结束
+                    builder.append("\"\"");
+                    i++; // 跳过下一个双引号
+                    continue;
+                }
+                inDoubleQuote = !inDoubleQuote;
+                builder.append(c);
+                continue;
+            }
+
+            // 在字符串/标识符内不替换 '?'
+            if (inSingleQuote || inDoubleQuote) {
+                builder.append(c);
+                continue;
+            }
+
+            // --- 跳过 PostgreSQL 操作符 ------------------------------------
+            if (c == '?') {
+                // 检查多字符操作符：?| ?& ?!
+                if (i + 1 < sql.length()) {
+                    char next = sql.charAt(i + 1);
+                    if (next == '|' || next == '&' || next == '!' || next == '?') {
+                        builder.append('?').append(next);
+                        i++;
+                        continue;
+                    }
+                }
+
+                // 检查单独的 ? 操作符（PostgreSQL JSONB/数组操作符）
+                // 格式：column ? 'key' 或 column ? array[...]
+                // 判断条件：前面是标识符字符，后面是空格+单引号或 array
+                if (isPostgresOperator(sql, i)) {
+                    builder.append('?');
+                    continue;
+                }
+            }
+
+            // --- 在这里替换 '?' 参数 -------------------------------------------
+            if (c == '?') {
+                replacer.accept(index++, builder);
+                continue;
+            }
+
+            // 默认追加
+            builder.append(c);
         }
-        return builder.toString();
+
+        return builder;
+    }
+
+    /**
+     * 判断当前位置的 '?' 是否是 PostgreSQL 操作符（如 JSONB 的 ? 操作符）
+     * <p>
+     * PostgreSQL 操作符格式：
+     * - jsonb_column ? 'key'
+     * - jsonb_column ? array['key1', 'key2']
+     * <p>
+     * 判断逻辑：
+     * 1. 前面（跳过空格）必须是标识符字符（字母、数字、下划线、右括号、右方括号）
+     * 2. 后面（跳过空格）必须是单引号字符串或 array[
+     *
+     * @param sql   SQL 语句
+     * @param index '?' 的位置
+     * @return 如果是操作符返回 true，否则返回 false
+     */
+    private static boolean isPostgresOperator(String sql, int index) {
+        // 检查前面是否有标识符字符（跳过空格）
+        int prevIndex = index - 1;
+        while (prevIndex >= 0 && Character.isWhitespace(sql.charAt(prevIndex))) {
+            prevIndex--;
+        }
+
+        if (prevIndex < 0) {
+            // 如果 ? 在开头或前面只有空格，不可能是操作符
+            return false;
+        }
+
+        char prev = sql.charAt(prevIndex);
+        // 标识符字符：字母、数字、下划线、右括号、右方括号
+        // 如果不是这些字符，则不是操作符（可能是 =, >, < 等操作符后的参数占位符）
+        if (!(Character.isLetterOrDigit(prev)
+            || prev == '_'
+            || prev == ')'
+            || prev == ']')) {
+            return false;
+        }
+
+        // 检查后面是否是操作符格式
+        if (index + 1 >= sql.length()) {
+            return false;
+        }
+
+        // 跳过空格
+        int nextIndex = index + 1;
+        while (nextIndex < sql.length() && Character.isWhitespace(sql.charAt(nextIndex))) {
+            nextIndex++;
+        }
+
+        if (nextIndex >= sql.length()) {
+            return false;
+        }
+
+        char next = sql.charAt(nextIndex);
+
+        // 检查是否是单引号字符串（'key'）
+        if (next == '\'') {
+            return true;
+        }
+
+        // 检查是否是 array[...]
+        if (nextIndex + 5 <= sql.length()) {
+            String nextStr = sql.substring(nextIndex, Math.min(nextIndex + 5, sql.length()));
+            return nextStr.toLowerCase().startsWith("array");
+        }
+
+        return false;
     }
 }
