@@ -112,7 +112,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             // id
             if (indexSize == 1) {
                 int idx = primaryIndex.get(0);
-                if (vSize > idx && !duplicatePrimary.add(values.get(idx))) {
+                Object idValue = values.get(idx);
+                if (idValue != null && vSize > idx && !duplicatePrimary.add(idValue)) {
                     continue;
                 }
             }
@@ -120,12 +121,13 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             else if (indexSize >= 1) {
                 Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
                 for (Integer i : primaryIndex) {
-                    if (vSize > i) {
-                        dis.add(values.get(i));
+                    Object value = values.get(i);
+                    if (vSize > i && value != null) {
+                        dis.add(value);
                     }
                 }
                 // 存在重复数据 ?
-                if(!duplicatePrimary.add(dis)){
+                if (!duplicatePrimary.add(dis)) {
                     continue;
                 }
             }
