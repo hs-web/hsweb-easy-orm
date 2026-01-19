@@ -60,15 +60,22 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
         if (primaryColumns == null) {
             primaryColumns = new HashSet<>();
         }
-        RDBColumnMetadata idColumn = table
+        Set<RDBColumnMetadata> idColumn = table
             .getColumns()
             .stream()
             .filter(RDBColumnMetadata::isPrimaryKey)
-            .findFirst()
-            .orElse(null);
-        if (idColumn != null) {
-            primaryColumns.add(idColumn.getName());
-            return SqlFragments.of("on conflict (", idColumn.getQuoteName(), ") do ");
+            .collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(idColumn)) {
+            for (RDBColumnMetadata rdbColumnMetadata : idColumn) {
+                primaryColumns.add(rdbColumnMetadata.getName());
+            }
+            return SqlFragments
+                .of("on conflict (",
+                    idColumn
+                        .stream()
+                        .map(c -> c.getQuoteName())
+                        .collect(Collectors.joining(",")),
+                    ") do ");
         }
         RDBIndexMetadata indexMetadata = table
             .getIndexes()
