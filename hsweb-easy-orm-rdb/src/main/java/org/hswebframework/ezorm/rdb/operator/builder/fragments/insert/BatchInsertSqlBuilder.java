@@ -37,6 +37,10 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         return col.isPrimaryKey();
     }
 
+    protected boolean shoudCheckDumplicateKey(List<Integer> primaryIndex,List<Object> values){
+        return true;
+    }
+
     @Override
     public SqlRequest build(InsertOperatorParameter parameter) {
 //        PrepareSqlFragments fragments = beforeBuild(parameter, PrepareSqlFragments.of()).addSql("(");
@@ -109,26 +113,29 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
         for (List<Object> values : valueList) {
             int indexSize = primaryIndex.size();
             int vSize = values.size();
-            // id
-            if (indexSize == 1) {
-                int idx = primaryIndex.get(0);
-                Object idValue = values.get(idx);
-                if (idValue != null && vSize > idx && !duplicatePrimary.add(idValue)) {
-                    continue;
-                }
-            }
-            // 唯一索引?
-            else if (indexSize >= 1) {
-                Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
-                for (Integer i : primaryIndex) {
-                    Object value = values.get(i);
-                    if (vSize > i && value != null) {
-                        dis.add(value);
+
+            if(shoudCheckDumplicateKey(primaryIndex,values)){
+                // id
+                if (indexSize == 1) {
+                    int idx = primaryIndex.get(0);
+                    Object idValue = values.get(idx);
+                    if (idValue != null && vSize > idx && !duplicatePrimary.add(idValue)) {
+                        continue;
                     }
                 }
-                // 存在重复数据 ?
-                if (!duplicatePrimary.add(dis)) {
-                    continue;
+                // 唯一索引?
+                else if (indexSize >= 1) {
+                    Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
+                    for (Integer i : primaryIndex) {
+                        Object value = values.get(i);
+                        if (vSize > i && value != null) {
+                            dis.add(value);
+                        }
+                    }
+                    // 存在重复数据 ?
+                    if (!duplicatePrimary.add(dis)) {
+                        continue;
+                    }
                 }
             }
 

@@ -57,9 +57,8 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
     }
 
     SqlFragments createOnConflict() {
-        if (primaryColumns == null) {
-            primaryColumns = new HashSet<>();
-        }
+        Set<String> primaryColumns = new HashSet<>();
+
         Set<RDBColumnMetadata> idColumn = table
             .getColumns()
             .stream()
@@ -69,6 +68,7 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
             for (RDBColumnMetadata rdbColumnMetadata : idColumn) {
                 primaryColumns.add(rdbColumnMetadata.getName());
             }
+            this.primaryColumns = primaryColumns;
             return SqlFragments
                 .of("on conflict (",
                     idColumn
@@ -95,7 +95,7 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                     return c.getQuoteName();
                 })
                 .collect(Collectors.joining(","));
-
+            this.primaryColumns = primaryColumns;
             return SqlFragments.of("on conflict( ", columns, ") do ");
         }
         return EmptySqlFragments.INSTANCE;
@@ -156,6 +156,13 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                 return true;
             }
             return super.isPrimaryKey(col);
+        }
+
+        @Override
+        protected boolean shoudCheckDumplicateKey(List<Integer> primaryIndex, List<Object> values) {
+            getOrCreateOnConflict();
+            // 传入了所有主键才对主键去重
+            return primaryIndex.size() == primaryColumns.size();
         }
 
         @Override
