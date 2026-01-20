@@ -165,7 +165,7 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
         @Override
         protected AppendableSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, AppendableSqlFragments sql) {
-            sql.add(createOnConflict());
+            sql.add(getOrCreateOnConflict());
 
             if (((PostgresqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 sql.addSql("nothing");
