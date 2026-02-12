@@ -24,7 +24,7 @@ class R2dbcSqlRequest extends PrepareSqlRequest {
 
     @Override
     public boolean isEmpty() {
-        return sql.isEmpty();
+        return sql == null || sql.isEmpty();
     }
 
     @Override
