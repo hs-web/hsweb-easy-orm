@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
+import org.hswebframework.ezorm.rdb.supports.kingbase.mysql.KingbaseMysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
@@ -94,5 +95,6 @@ public interface Dialect extends Feature {
     Dialect H2 = new H2Dialect();
     Dialect MSSQL = new SqlServerDialect();
     Dialect POSTGRES = new PostgresqlDialect();
+    Dialect KINGBASE_MYSQL = new KingbaseMysqlDialect();
 
 }
