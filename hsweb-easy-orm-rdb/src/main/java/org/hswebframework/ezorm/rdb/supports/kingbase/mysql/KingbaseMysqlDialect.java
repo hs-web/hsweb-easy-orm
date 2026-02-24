@@ -16,7 +16,7 @@ import java.sql.JDBCType;
  * 因此：
  * <ul>
  *   <li>数据类型映射：复用 MySQL 的类型映射</li>
- *   <li>标识符引用：使用双引号（PostgreSQL 风格），因为驱动层是 r2dbc-postgresql</li>
+ *   <li>标识符引用：使用反引号（MySQL 风格），KingbaseES MySQL 兼容模式不支持双引号</li>
  * </ul>
  *
  * @since 4.2
@@ -66,12 +66,12 @@ public class KingbaseMysqlDialect extends DefaultDialect {
 
     @Override
     public String getQuoteStart() {
-        return "\"";
+        return "`";
     }
 
     @Override
     public String getQuoteEnd() {
-        return "\"";
+        return "`";
     }
 
     @Override
