@@ -12,16 +12,18 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragmen
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexParameter;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
-import org.hswebframework.ezorm.rdb.supports.mysql.MysqlCreateTableSqlBuilder;
+
+import static org.hswebframework.ezorm.rdb.executor.SqlRequests.of;
 
 /**
  * KingbaseES MySQL 兼容模式的建表 SQL 构建器.
  * <p>
- * 与 {@link MysqlCreateTableSqlBuilder} 的区别：
+ * 与 {@link org.hswebframework.ezorm.rdb.supports.mysql.MysqlCreateTableSqlBuilder} 的区别：
  * <ul>
  *   <li>去掉了 {@code ENGINE=InnoDB DEFAULT CHARSET=utf8mb4} 等 MySQL 特有子句</li>
+ *   <li>comment 使用 PostgreSQL 标准的 {@code COMMENT ON COLUMN/TABLE} 语法，
+ *       而非 MySQL 的内联 {@code comment 'xxx'}</li>
  *   <li>保留了 {@code auto_increment}（KingbaseES MySQL 兼容版支持）</li>
- *   <li>保留了 {@code comment} 语法</li>
  * </ul>
  *
  * @since 4.2
@@ -61,18 +63,21 @@ public class KingbaseMysqlCreateTableSqlBuilder implements CreateTableSqlBuilder
                         createTable.addSql("default", ((NativeSql) defaultValue).getSql());
                     }
                 }
-                if (column.getComment() != null) {
-                    createTable.addSql(" comment ",
-                                       StringUtils.concat("'", column.getComment(), "'"));
-                }
+            }
+            // 使用 PostgreSQL 标准的 COMMENT ON COLUMN 语法（作为单独的批量 SQL）
+            if (column.getComment() != null) {
+                sql.addBatch(of(String.format("comment on column %s is '%s'",
+                        column.getFullTableName(), column.getComment())));
             }
         }
 
         // KingbaseES 不支持 ENGINE= 和 DEFAULT CHARSET=，直接关闭括号
         createTable.addSql(")");
 
+        // 使用 PostgreSQL 标准的 COMMENT ON TABLE 语法
         if (table.getComment() != null) {
-            createTable.addSql("COMMENT=", StringUtils.concat("'", table.getComment(), "'"));
+            sql.addBatch(of(String.format("comment on table %s is '%s'",
+                    table.getFullName(), table.getComment())));
         }
 
         sql.setSql(createTable.toRequest().getSql());

@@ -4,10 +4,10 @@ import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
-import org.hswebframework.ezorm.rdb.supports.mysql.MysqlAlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlIndexMetadataParser;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlPaginator;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlAlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlR2DBCExceptionTranslation;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
@@ -16,11 +16,12 @@ import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
  * <p>
  * KingbaseES 底层使用 PostgreSQL 协议通信，但 SQL 语法兼容 MySQL。因此：
  * <ul>
- *   <li>DDL 构建器：使用 KingbaseES 适配版（去掉 ENGINE=/CHARSET=）</li>
+ *   <li>DDL 构建器：使用 KingbaseES 适配版（去掉 ENGINE=/CHARSET=，COMMENT ON 语法）</li>
+ *   <li>ALTER TABLE：使用 PostgreSQL 风格（避免 MySQL 内联 comment 不兼容问题）</li>
  *   <li>分页器：复用 MySQL 的 LIMIT ?,? 语法</li>
- *   <li>元数据解析器：复用 MySQL information_schema 查询</li>
+ *   <li>元数据解析器：基于 MySQL information_schema 查询，增加 CAST 转换</li>
  *   <li>异常翻译：使用 <b>PostgreSQL</b> 异常翻译（因为驱动层是 r2dbc-postgresql）</li>
- *   <li>方言：使用 {@link KingbaseMysqlDialect}（MySQL 类型映射 + 双引号引用）</li>
+ *   <li>方言：使用 {@link KingbaseMysqlDialect}（MySQL 类型映射 + 反引号引用）</li>
  * </ul>
  *
  * @since 4.2
@@ -30,9 +31,9 @@ public class KingbaseMysqlSchemaMetadata extends RDBSchemaMetadata {
     public KingbaseMysqlSchemaMetadata(String name) {
         super(name);
 
-        // DDL 构建器 - 去掉 ENGINE=/CHARSET=
+        // DDL 构建器 - 去掉 ENGINE=/CHARSET=，使用 COMMENT ON 语法
         addFeature(new KingbaseMysqlCreateTableSqlBuilder());
-        addFeature(new MysqlAlterTableSqlBuilder());
+        addFeature(new PostgresqlAlterTableSqlBuilder());
 
         // 分页器 - 复用 MySQL 的 LIMIT ?,? 语法
         addFeature(new MysqlPaginator());
