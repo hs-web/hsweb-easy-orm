@@ -183,6 +183,9 @@ public class EnumValueCodec implements ValueCodec<Object, Object> {
         }
         long value = 0L;
         for (Enum<?> e : enums) {
+            if (e == null) {
+                continue;
+            }
             value |= (1L << e.ordinal());
         }
         return value;
