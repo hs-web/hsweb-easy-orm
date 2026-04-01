@@ -7,7 +7,6 @@ import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 /**
@@ -43,6 +42,15 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder("json", meta -> "json");
         addDataTypeBuilder("jsonb", meta -> "jsonb");
 
+        addDataTypeBuilder("vector", meta -> StringUtils.concat("vector(", meta.getLength(512), ")"));
+        addDataTypeBuilder("halfvec", meta -> StringUtils.concat("halfvec(", meta.getLength(512), ")"));
+        addDataTypeBuilder("sparsevec", meta -> StringUtils.concat("sparsevec(", meta.getLength(512), ")"));
+
+
+        registerDataType("vector", VectorType.VECTOR);
+        registerDataType("halfvec", VectorType.HALF_VECTOR);
+        registerDataType("sparsevec", VectorType.SPARSE_VECTOR);
+
 
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
@@ -68,6 +76,17 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("year", JdbcDataType.of(JDBCType.TIME, String.class));
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, String.class));
         registerDataType("text", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
+
+    }
+
+    @Override
+    protected DataType convertDataType(String type, int length, int scale) {
+        DataType staticType = dataTypeMapping.get(type);
+        if (staticType instanceof VectorType vectorType) {
+            vectorType.setLength(length);
+            return vectorType;
+        }
+        return super.convertDataType(type, length, scale);
 
     }
 
