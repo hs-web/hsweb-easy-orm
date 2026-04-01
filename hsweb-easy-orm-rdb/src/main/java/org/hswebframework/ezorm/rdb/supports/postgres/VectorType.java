@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.LengthSupport;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
+import org.postgresql.util.PGobject;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -72,6 +73,9 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, LengthS
         }
         if (data instanceof Vector vector) {
             return toFloatArray(vector.getVector());
+        }
+        if (data instanceof PGobject vector) {
+            return toFloatArray(vector.getValue());
         }
         return toFloatArray(data);
     }

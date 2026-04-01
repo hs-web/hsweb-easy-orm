@@ -1,8 +1,10 @@
 package org.hswebframework.ezorm.rdb;
 
+import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.time.Duration;
 
@@ -28,6 +30,21 @@ public class Containers {
                 .withExposedPorts(5432)
                 .waitingFor(Wait.forListeningPort());
 //                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*",1));
+    }
+
+    @SneakyThrows
+    public static GenericContainer<?> newVectorPostgresql(String version) {
+        return new GenericContainer<>(DockerImageName.parse("timescale/timescaledb-ha:pg" + version))
+            .withEnv("TZ", "Asia/Shanghai")
+            .withEnv("POSTGRES_PASSWORD", "admin")
+            .withEnv("POSTGRES_DB", "ezorm")
+            .withCommand("postgres", "-c", "port=5433", "-c", "max_connections=2048")
+            .withExposedPorts(5433)
+            .withCopyFileToContainer(
+                MountableFile.forClasspathResource("sql/init-vector.sql"),
+                "/docker-entrypoint-initdb.d/init-vector.sql"
+            )
+            .waitingFor(Wait.forListeningPort());
     }
 
     public static GenericContainer<?> newOracle() {
