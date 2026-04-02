@@ -7,15 +7,20 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.AbstractTermFragmentBuilder;
 
-public class PostgresqlVectorFragmentBuilder extends AbstractTermFragmentBuilder {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static PostgresqlVectorFragmentBuilder vector_l2 = new PostgresqlVectorFragmentBuilder(VectorTermType.vector_l2);
-    public static PostgresqlVectorFragmentBuilder vector_cos = new PostgresqlVectorFragmentBuilder(VectorTermType.vector_cos);
-    public static PostgresqlVectorFragmentBuilder vector_ip = new PostgresqlVectorFragmentBuilder(VectorTermType.vector_ip);
+public class PostgresqlVectorFragmentBuilder extends AbstractTermFragmentBuilder {
+    public static final List<PostgresqlVectorFragmentBuilder> ALL = new ArrayList<>();
+    static {
+        for (VectorTermType value : VectorTermType.values()) {
+            ALL.add(new PostgresqlVectorFragmentBuilder(value));
+        }
+    }
 
     private final VectorTermType type;
 
-    PostgresqlVectorFragmentBuilder(VectorTermType type) {
+    public PostgresqlVectorFragmentBuilder(VectorTermType type) {
         super(type.name(), "向量查询");
         this.type = type;
     }

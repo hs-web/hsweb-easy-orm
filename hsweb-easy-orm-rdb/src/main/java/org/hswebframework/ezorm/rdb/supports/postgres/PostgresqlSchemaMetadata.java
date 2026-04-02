@@ -54,9 +54,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(PostgresqlEnumInFragmentBuilder.notIn);
             }
             if (column.getValueCodec() instanceof VectorType) {
-                column.addFeature(PostgresqlVectorFragmentBuilder.vector_l2);
-                column.addFeature(PostgresqlVectorFragmentBuilder.vector_cos);
-                column.addFeature(PostgresqlVectorFragmentBuilder.vector_ip);
+                PostgresqlVectorFragmentBuilder.ALL.forEach(column::addFeature);
             }
         });
         return metadata;
