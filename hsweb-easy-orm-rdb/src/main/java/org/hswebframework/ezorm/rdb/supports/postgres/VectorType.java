@@ -3,11 +3,9 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 import io.r2dbc.postgresql.codec.Vector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
-import org.hswebframework.ezorm.rdb.metadata.LengthSupport;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.postgresql.util.PGobject;
@@ -22,7 +20,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor(staticName = "of")
-public class VectorType implements DataType, ValueCodec<Object, Object>, LengthSupport, DataTypeBuilder {
+public class VectorType implements DataType, ValueCodec<Object, Object>, DataTypeBuilder {
 
     public static final VectorType VECTOR = VectorType.of("vector");
 
@@ -31,8 +29,6 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, LengthS
     public static final VectorType SPARSE_VECTOR = VectorType.of("sparsevec");
 
     private final String name;
-    @Setter
-    private int length;
 
     @Override
     public String getId() {
@@ -80,7 +76,7 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, LengthS
         return toFloatArray(data);
     }
 
-    private Float[] toFloatArray(Object value) {
+    public static Float[] toFloatArray(Object value) {
         if (value == null) {
             return null;
         }
@@ -111,7 +107,7 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, LengthS
         return null;
     }
 
-    private Float[] parseVector(String vector) {
+    private static Float[] parseVector(String vector) {
         if (vector == null) {
             return null;
         }
@@ -135,7 +131,7 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, LengthS
         return result;
     }
 
-    private Float parseFloat(Object value) {
+    private static Float parseFloat(Object value) {
         if (value == null) {
             return null;
         }
@@ -153,30 +149,15 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, LengthS
     }
 
     @Override
-    public int getLength() {
-        return length;
-    }
-
-    @Override
-    public int getScale() {
-        return 0;
-    }
-
-    @Override
-    public int getPrecision() {
-        return 0;
-    }
-
-    @Override
     public String createColumnDataType(RDBColumnMetadata columnMetaData) {
-        switch (name) {
-            case "vector":
-                return org.hswebframework.ezorm.core.utils.StringUtils.concat("vector(", columnMetaData.getLength(512), ")");
-            case "halfvec":
-                return org.hswebframework.ezorm.core.utils.StringUtils.concat("halfvec(", columnMetaData.getLength(512), ")");
-            case "sparsevec":
-                return org.hswebframework.ezorm.core.utils.StringUtils.concat("sparsevec(", columnMetaData.getLength(512), ")");
-        }
-        return name;
+        return switch (name) {
+            case "vector" ->
+                org.hswebframework.ezorm.core.utils.StringUtils.concat("vector(", columnMetaData.getLength(512), ")");
+            case "halfvec" ->
+                org.hswebframework.ezorm.core.utils.StringUtils.concat("halfvec(", columnMetaData.getLength(512), ")");
+            case "sparsevec" ->
+                org.hswebframework.ezorm.core.utils.StringUtils.concat("sparsevec(", columnMetaData.getLength(512), ")");
+            default -> name;
+        };
     }
 }

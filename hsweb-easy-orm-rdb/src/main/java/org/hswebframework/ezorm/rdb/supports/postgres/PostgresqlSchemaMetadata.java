@@ -2,7 +2,10 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
-import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.metadata.DefaultValueCodecFactory;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.ValueCodecFactory;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
@@ -49,6 +52,11 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
             if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
                 column.addFeature(PostgresqlEnumInFragmentBuilder.in);
                 column.addFeature(PostgresqlEnumInFragmentBuilder.notIn);
+            }
+            if (column.getValueCodec() instanceof VectorType) {
+                column.addFeature(PostgresqlVectorFragmentBuilder.vector_l2);
+                column.addFeature(PostgresqlVectorFragmentBuilder.vector_cos);
+                column.addFeature(PostgresqlVectorFragmentBuilder.vector_ip);
             }
         });
         return metadata;

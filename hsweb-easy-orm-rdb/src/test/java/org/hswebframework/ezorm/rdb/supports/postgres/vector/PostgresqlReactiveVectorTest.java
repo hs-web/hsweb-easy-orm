@@ -23,6 +23,7 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.postgres.VectorTermType;
 import org.junit.Assert;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
@@ -118,9 +119,40 @@ public class PostgresqlReactiveVectorTest {
                       .as(StepVerifier::create)
                       .assertNext(loaded -> Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed()))
                       .verifyComplete();
+
+            repository
+                .createQuery()
+                .and(PostgresqlVectorTest.BasicVectorEntity::getEmbed,
+                     VectorTermType.vector_l2.name(),
+                     new Float[]{1F, 2F, 3F})
+                .fetch()
+                .as(StepVerifier::create)
+                .assertNext(loaded -> Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed()))
+                .verifyComplete();
+
+            repository
+                .createQuery()
+                .and(PostgresqlVectorTest.BasicVectorEntity::getEmbed,
+                     VectorTermType.vector_cos.name(),
+                     new Float[]{1F, 2F, 3F})
+                .fetch()
+                .as(StepVerifier::create)
+                .assertNext(loaded -> Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed()))
+                .verifyComplete();
+
+            repository
+                .createQuery()
+                .and(PostgresqlVectorTest.BasicVectorEntity::getEmbed,
+                     VectorTermType.vector_ip.name(),
+                     new Float[]{1F, 2F, 3F})
+                .fetch()
+                .as(StepVerifier::create)
+                .assertNext(loaded -> Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed()))
+                .verifyComplete();
+
         } finally {
             try {
-                getReactiveSqlExecutor().execute(Mono.just(SqlRequests.of("drop table test_vector_reactive"))).block();
+                getReactiveSqlExecutor().execute(Mono.just(SqlRequests.of("drop table test_vector_basic"))).block();
             } catch (Exception ignore) {
             }
         }

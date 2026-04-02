@@ -22,6 +22,7 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.postgres.VectorTermType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -105,8 +106,45 @@ public class PostgresqlVectorTest {
 
             repository.insert(entity);
 
-            BasicVectorEntity loaded = repository.findById("vec-sync").orElseThrow(NullPointerException::new);
-            Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed());
+            {
+                BasicVectorEntity loaded = repository.findById("vec-sync").orElseThrow(NullPointerException::new);
+                Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed());
+            }
+
+            {
+                BasicVectorEntity loaded = repository
+                    .createQuery()
+                    .and(PostgresqlVectorTest.BasicVectorEntity::getEmbed,
+                         VectorTermType.vector_l2.name(),
+                         new Float[]{1F, 2F, 3F})
+                    .fetchOne()
+                    .orElseThrow(NullPointerException::new);
+                Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed());
+            }
+
+            {
+                BasicVectorEntity loaded = repository
+                    .createQuery()
+                    .and(PostgresqlVectorTest.BasicVectorEntity::getEmbed,
+                         VectorTermType.vector_cos.name(),
+                         new Float[]{1F, 2F, 3F})
+                    .fetchOne()
+                    .orElseThrow(NullPointerException::new);
+                Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed());
+            }
+
+            {
+                BasicVectorEntity loaded = repository
+                    .createQuery()
+                    .and(PostgresqlVectorTest.BasicVectorEntity::getEmbed,
+                         VectorTermType.vector_ip.name(),
+                         new Float[]{1F, 2F, 3F})
+                    .fetchOne()
+                    .orElseThrow(NullPointerException::new);
+                Assert.assertArrayEquals(new Float[]{1F, 2F, 3F}, loaded.getEmbed());
+            }
+
+
         } finally {
             try {
                 getSqlExecutor().execute(org.hswebframework.ezorm.rdb.executor.SqlRequests.of("drop table test_vector_basic"));

@@ -80,17 +80,6 @@ public class PostgresqlDialect extends DefaultDialect {
     }
 
     @Override
-    protected DataType convertDataType(String type, int length, int scale) {
-        DataType staticType = dataTypeMapping.get(type);
-        if (staticType instanceof VectorType vectorType) {
-            vectorType.setLength(length);
-            return vectorType;
-        }
-        return super.convertDataType(type, length, scale);
-
-    }
-
-    @Override
     public String getQuoteStart() {
         return "\"";
     }
