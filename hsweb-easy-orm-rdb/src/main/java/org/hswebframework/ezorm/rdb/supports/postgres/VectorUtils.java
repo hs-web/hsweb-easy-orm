@@ -19,8 +19,10 @@ public class VectorUtils {
     public static String getVectorColumn(String columnFullName, VectorTermType type, Float[] vector) {
         return PrepareSqlFragments
             .of(columnFullName)
-            .addSql(type.getOperation(), "'" + toVectorLiteral(vector) + "'")
-            .toString();
+            .addSql(type.getOperation(),"?")
+            .addParameter(toVectorLiteral(vector))
+            .toRequest()
+            .toNativeSql();
     }
 
     public static String toVectorLiteral(Float[] vector) {
