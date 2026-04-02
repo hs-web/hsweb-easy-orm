@@ -7,14 +7,15 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.AbstractTermFragmentBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PostgresqlVectorFragmentBuilder extends AbstractTermFragmentBuilder {
-    public static final List<PostgresqlVectorFragmentBuilder> ALL = new ArrayList<>();
+    public static final Map<VectorTermType, PostgresqlVectorFragmentBuilder> ALL = new HashMap<>();
+
     static {
         for (VectorTermType value : VectorTermType.values()) {
-            ALL.add(new PostgresqlVectorFragmentBuilder(value));
+            ALL.put(value, new PostgresqlVectorFragmentBuilder(value));
         }
     }
 
