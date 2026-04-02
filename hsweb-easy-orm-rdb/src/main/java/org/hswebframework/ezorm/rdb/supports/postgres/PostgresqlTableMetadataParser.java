@@ -12,6 +12,7 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
      * <pre>{@code
      * select column_name::varchar                            as "name",
      *        udt_name::varchar                               as "data_type",
+     *        case when udt_name in ('vector','halfvec','sparsevec') then format_type(a.atttypid,a.atttypmod)::varchar else null end as "column_type"
      *        character_maximum_length::int4                  as "data_length",
      *        numeric_precision::int4                         as "data_precision",
      *        numeric_scale::int4                             as "data_scale",
@@ -37,6 +38,7 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
             String.join(" ",
                         "select column_name::varchar as \"name\"",
                         ", udt_name::varchar as \"data_type\"",
+                        ", case when udt_name in ('vector','halfvec','sparsevec') then format_type(a.atttypid,a.atttypmod)::varchar else null end as \"column_type\"",
                         ", character_maximum_length::int4 as \"data_length\"",
                         ", numeric_precision::int4 as \"data_precision\"",
                         ", numeric_scale::int4 as \"data_scale\"",
