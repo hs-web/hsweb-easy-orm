@@ -10,26 +10,26 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.AbstractTerm
 import java.util.HashMap;
 import java.util.Map;
 
-public class PostgresqlVectorFragmentBuilder extends AbstractTermFragmentBuilder {
-    public static final Map<VectorTermType, PostgresqlVectorFragmentBuilder> ALL = new HashMap<>();
+public class PostgresqlVectorDistanceTermFragmentBuilder extends AbstractTermFragmentBuilder {
+    public static final Map<VectorTermType, PostgresqlVectorDistanceTermFragmentBuilder> ALL = new HashMap<>();
 
     static {
         for (VectorTermType value : VectorTermType.values()) {
-            ALL.put(value, new PostgresqlVectorFragmentBuilder(value));
+            ALL.put(value, new PostgresqlVectorDistanceTermFragmentBuilder(value));
         }
     }
 
     private final VectorTermType type;
 
-    public PostgresqlVectorFragmentBuilder(VectorTermType type) {
-        super(type.name(), "向量查询");
+    public PostgresqlVectorDistanceTermFragmentBuilder(VectorTermType type) {
+        super(type.name(), "向量距离查询");
         this.type = type;
     }
 
     @Override
     public SqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
         VectorQueryParam vectorTerm = VectorQueryParam.of(term.getValue());
-        String vectorColumn = VectorUtils.getVectorColumn(columnFullName, type, vectorTerm.getVector());
+        String vectorColumn = VectorUtils.getVectorDistanceColumn(columnFullName, type, vectorTerm.getVector());
         return createTermFragments(column, vectorColumn, vectorTerm.getTerm(type, term.getColumn()));
     }
 

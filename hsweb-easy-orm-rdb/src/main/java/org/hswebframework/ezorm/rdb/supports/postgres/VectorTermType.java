@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import reactor.util.annotation.Nullable;
 
 @Getter
 @AllArgsConstructor
@@ -45,9 +46,20 @@ public enum VectorTermType {
     /**
      * 将统一 distance（0~1）转换为 SQL 条件值
      *
-     * @param alpha 该l2模型距离分布的中位数
+     * @param alpha    该l2模型距离分布的中位数
      * @param distance 距离 （0~1） 0最相似
      * @return 值
      */
     public abstract Float toSqlValue(int alpha, Float distance);
+
+    @Nullable
+    public static VectorTermType of(Object value) {
+        if (value instanceof VectorTermType) {
+            return (VectorTermType) value;
+        }
+        if (value instanceof String) {
+            return VectorTermType.valueOf((String) value);
+        }
+        return null;
+    }
 }

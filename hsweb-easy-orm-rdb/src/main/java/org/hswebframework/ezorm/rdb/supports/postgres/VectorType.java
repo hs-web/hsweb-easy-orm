@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.postgresql.util.PGobject;
+import reactor.util.annotation.Nullable;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -64,9 +65,6 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, DataTyp
         if (data == null) {
             return null;
         }
-        if (data instanceof Float[] values) {
-            return values;
-        }
         if (data instanceof Vector vector) {
             return toFloatArray(vector.getVector());
         }
@@ -76,6 +74,7 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, DataTyp
         return toFloatArray(data);
     }
 
+    @Nullable
     public static Float[] toFloatArray(Object value) {
         if (value == null) {
             return null;
