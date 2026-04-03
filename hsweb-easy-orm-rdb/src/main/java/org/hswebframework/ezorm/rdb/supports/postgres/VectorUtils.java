@@ -16,7 +16,7 @@ public class VectorUtils {
      * @param vector         目标向量值
      * @return 向量距离计算字段
      */
-    public static String getVectorColumn(String columnFullName, VectorTermType type, Float[] vector) {
+    public static String getVectorDistanceColumn(String columnFullName, VectorTermType type, Float[] vector) {
         return PrepareSqlFragments
             .of(columnFullName)
             .addSql(type.getOperation(),"?")
