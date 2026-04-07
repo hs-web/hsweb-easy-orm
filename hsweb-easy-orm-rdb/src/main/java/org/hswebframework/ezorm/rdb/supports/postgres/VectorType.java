@@ -61,14 +61,17 @@ public class VectorType implements DataType, ValueCodec<Object, Object>, DataTyp
         return toFloat(data);
     }
 
+    private static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
+    private static final String R2DBC_PG_OBJECT_CLASS = "io.r2dbc.postgresql.codec.Vector";
+
     private Float[] toFloat(Object data) {
         if (data == null) {
             return null;
         }
-        if (data instanceof Vector vector) {
+        if (R2DBC_PG_OBJECT_CLASS.equals(data.getClass().getName()) && data instanceof Vector vector) {
             return toFloatArray(vector.getVector());
         }
-        if (data instanceof PGobject vector) {
+        if (PG_OBJECT_CLASS.equals(data.getClass().getName()) && data instanceof PGobject vector) {
             return toFloatArray(vector.getValue());
         }
         return toFloatArray(data);
