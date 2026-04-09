@@ -25,7 +25,8 @@ public class ValueByTimeFunctionFragmentBuilder implements FunctionFragmentBuild
 
     private final SqlFragments FUNCTION;
 
-    private static final List<SQLType> timeTypes = Lists.newArrayList(JDBCType.TIMESTAMP, JDBCType.DATE, JDBCType.TIME);
+    private static final List<SQLType> timeTypes = Lists.newArrayList(JDBCType.TIMESTAMP, JDBCType.DATE, JDBCType.TIME,
+                                                                      JDBCType.TIME_WITH_TIMEZONE, JDBCType.TIMESTAMP_WITH_TIMEZONE);
 
     public ValueByTimeFunctionFragmentBuilder(String function, String alias, String name) {
         this.function = function;
@@ -49,24 +50,22 @@ public class ValueByTimeFunctionFragmentBuilder implements FunctionFragmentBuild
             fullTimeColumn = metadata.getDialect().buildColumnFullName(table, timeColumn);
         } else {
             //优先获取时间类型字段、其次获取数字类型字段
-            RDBColumnMetadata numberBack;
+            RDBColumnMetadata numberBack = null;
             for (RDBColumnMetadata column : metadata.getOwner().getColumns()) {
                 if (timeTypes.contains(column.getSqlType())) {
                     fullTimeColumn = column.getFullName();
                     break;
                 }
-            }
-            if (fullTimeColumn == null) {
-                for (RDBColumnMetadata column : metadata.getOwner().getColumns()) {
-                    if (column.getJavaType() != null && Number.class.isAssignableFrom(column.getJavaType())) {
-                        fullTimeColumn = column.getFullName();
-                        break;
-                    }
+                if (numberBack == null && column.getJavaType() != null && Number.class.isAssignableFrom(column.getJavaType())) {
+                    numberBack = column;
                 }
+            }
+            if (fullTimeColumn == null && numberBack != null) {
+                fullTimeColumn = numberBack.getFullName();
             }
         }
         if (fullTimeColumn == null) {
-            fullTimeColumn = metadata.getDialect().buildColumnFullName(table, "timestamp");
+            throw new IllegalArgumentException("No time columns");
         }
         if (columnFullName == null) {
             return EmptySqlFragments.INSTANCE;
