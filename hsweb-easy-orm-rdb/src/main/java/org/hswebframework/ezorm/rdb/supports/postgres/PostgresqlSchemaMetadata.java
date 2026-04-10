@@ -28,6 +28,12 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
                 .add(FeatureUtils.r2dbcIsAlive(), () -> PostgresqlR2DBCExceptionTranslation.of(this))
         );
 
+        ValueByTimeFunctionFragmentBuilder last = new ValueByTimeFunctionFragmentBuilder("last", "最后一值");
+        ValueByTimeFunctionFragmentBuilder first = new ValueByTimeFunctionFragmentBuilder("first", "第一个值");
+
+        addFeature(last);
+        addFeature(first);
+
         addFeature((ValueCodecFactory) column -> {
             if(column.getType() instanceof ValueCodec){
                 return Optional.of(
