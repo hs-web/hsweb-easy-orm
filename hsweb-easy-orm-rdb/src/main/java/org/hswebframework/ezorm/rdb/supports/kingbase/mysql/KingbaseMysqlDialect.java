@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.kingbase.mysql;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
+import org.hswebframework.ezorm.rdb.metadata.LiteralDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 
@@ -62,6 +63,20 @@ public class KingbaseMysqlDialect extends DefaultDialect {
         registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
         registerDataType("year", JdbcDataType.of(JDBCType.DATE, Date.class));
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, Date.class));
+    }
+
+    @Override
+    public DataType convertDataType(String dataType) {
+        String rawType = dataType.trim();
+        String type = rawType;
+        if (type.contains("(")) {
+            type = type.substring(0, type.indexOf("("));
+        }
+        type = normalizeType(type);
+        if ("enum".equals(type) || "set".equals(type)) {
+            return LiteralDataType.of(type, rawType, JDBCType.VARCHAR, String.class, false, false);
+        }
+        return super.convertDataType(rawType);
     }
 
     @Override
