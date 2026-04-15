@@ -12,9 +12,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Slf4j
 public abstract class DefaultDialect implements Dialect {
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("[-+]?\\d+");
+
     protected Map<String, DataTypeBuilder> dataTypeMappers = new HashMap<>();
 
     protected DataTypeBuilder defaultDataTypeBuilder;
@@ -132,24 +135,33 @@ public abstract class DefaultDialect implements Dialect {
 
     @Override
     public DataType convertDataType(String dataType) {
-        String type = dataType;
+        String type = dataType.trim();
         //length
-        if (type.contains("(")) {
-            type = type.substring(0, type.indexOf("("));
-            String[] arr = dataType
-                .substring(dataType.indexOf("(") + 1, dataType.lastIndexOf(")"))
+        if (type.contains("(") && type.endsWith(")")) {
+            String rawType = type;
+            type = normalizeType(type.substring(0, type.indexOf("(")));
+            String[] arr = rawType
+                .substring(rawType.indexOf("(") + 1, rawType.lastIndexOf(")"))
                 .split(",");
-            int length = Integer.parseInt(arr[0].trim());
-            int scale = arr.length > 1 ? Integer.parseInt(arr[1].trim()) : 0;
-            return convertDataType(type, length, scale);
+            if (isNumericArgs(arr)) {
+                int length = Integer.parseInt(arr[0].trim());
+                int scale = arr.length > 1 ? Integer.parseInt(arr[1].trim()) : 0;
+                return convertDataType(rawType, type, length, scale);
+            }
+            return convertParameterizedDataType(rawType, type);
         }
-        return dataTypeMapping.getOrDefault(type.toLowerCase(), convertUnknownDataType(dataType));
+        type = normalizeType(type);
+        return dataTypeMapping.getOrDefault(type, convertUnknownDataType(dataType));
     }
 
     protected DataType convertDataType(String type, int length, int scale) {
+        return convertDataType(type, normalizeType(type), length, scale);
+    }
+
+    protected DataType convertDataType(String dataType, String type, int length, int scale) {
         DataType staticType = dataTypeMapping.get(type);
         if (staticType == null) {
-            return convertUnknownDataType(type);
+            return convertUnknownDataType(dataType);
         } else {
             return new LengthSupportDataType(
                 staticType,
@@ -158,6 +170,26 @@ public abstract class DefaultDialect implements Dialect {
                 scale
             );
         }
+    }
+
+    protected DataType convertParameterizedDataType(String dataType, String type) {
+        return dataTypeMapping.getOrDefault(type, convertUnknownDataType(dataType));
+    }
+
+    protected String normalizeType(String type) {
+        return type == null ? null : type.trim().toLowerCase();
+    }
+
+    protected boolean isNumericArgs(String[] args) {
+        if (args.length == 0) {
+            return false;
+        }
+        for (String arg : args) {
+            if (!INTEGER_PATTERN.matcher(arg.trim()).matches()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     protected DataType convertUnknownDataType(String dataType) {
