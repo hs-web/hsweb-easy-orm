@@ -38,9 +38,6 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
             PrepareSqlFragments fragments = PrepareSqlFragments.of();
             fragments.addSql(columnFullName, operator);
             Object value = term.getValue();
-            if (value instanceof NativeSql nativeSql) {
-                return fragments.addSql(nativeSql.getSql()).addParameter(nativeSql.getParameters());
-            }
             return appendPrepareOrNative(fragments, convertObjectValue(column, value));
         }
         if (!Operator.base.equals(operator)) {
@@ -65,6 +62,9 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
 
     @SneakyThrows
     private Object convertObjectValue(RDBColumnMetadata column, Object value) {
+        if (value instanceof NativeSql) {
+            return value;
+        }
         if (column.getValueCodec() != null) {
             return column.getValueCodec().encode(value);
         }
