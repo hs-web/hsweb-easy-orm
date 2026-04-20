@@ -63,6 +63,9 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(new PostgresqlVectorDistanceFunctionFragmentBuilder());
                 PostgresqlVectorDistanceTermFragmentBuilder.ALL.values().forEach(column::addFeature);
             }
+            if (column.getType() instanceof JsonbType) {
+                column.addFeature(PostgresqlJsonbExistTermFragmentBuilder.exist);
+            }
         });
         return metadata;
     }

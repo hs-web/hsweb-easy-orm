@@ -291,8 +291,8 @@ public class SqlUtils {
      * - jsonb_column ? array['key1', 'key2']
      * <p>
      * 判断逻辑：
-     * 1. 前面（跳过空格）必须是标识符字符（字母、数字、下划线、右括号、右方括号）
-     * 2. 后面（跳过空格）必须是单引号字符串或 array[
+     * 1. 前面（跳过空格）必须是标识符字符（字母、数字、下划线、右括号、右方括号或字段名引号）
+     * 2. 后面（跳过空格）必须是单引号字符串、参数占位符?或 array[
      *
      * @param sql   SQL 语句
      * @param index '?' 的位置
@@ -311,9 +311,10 @@ public class SqlUtils {
         }
 
         char prev = sql.charAt(prevIndex);
-        // 标识符字符：字母、数字、下划线、右括号、右方括号
+        // 标识符字符：字母、数字、下划线、右括号、右方括号、引号
         // 如果不是这些字符，则不是操作符（可能是 =, >, < 等操作符后的参数占位符）
         if (!(Character.isLetterOrDigit(prev)
+            || prev == '"'
             || prev == '_'
             || prev == ')'
             || prev == ']')) {
@@ -337,8 +338,8 @@ public class SqlUtils {
 
         char next = sql.charAt(nextIndex);
 
-        // 检查是否是单引号字符串（'key'）
-        if (next == '\'') {
+        // 检查是否是单引号字符串（'key'）或 参数占位符 （?）
+        if (next == '\'' || next == '?') {
             return true;
         }
 
