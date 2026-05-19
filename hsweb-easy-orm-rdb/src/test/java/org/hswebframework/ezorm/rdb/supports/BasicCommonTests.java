@@ -217,17 +217,21 @@ public abstract class BasicCommonTests {
 
         Assert.assertEquals(2, repository.save(e1, e2).getTotal());
 
-        getSqlExecutor()
-            .select("select * from entity_test_table where id in(?,?)",e1.getId(),e2.getId())
-            .forEach(System.out::println);
-
-        repository
+        List<BasicTestEntity> saved = repository
             .createQuery()
-            .select("id","tags")
+            .select("*")
             .where()
             .in("id", Arrays.asList(e1.getId(), e2.getId()))
-            .fetch()
-            .forEach(System.out::println);
+            .fetch();
+
+        Assert.assertEquals(2, saved.size());
+
+        java.util.Map<String, BasicTestEntity> entityMap = saved
+            .stream()
+            .collect(Collectors.toMap(BasicTestEntity::getId, entity -> entity));
+
+        Assert.assertEquals(e1.getTags(), entityMap.get(e1.getId()).getTags());
+        Assert.assertNull(entityMap.get(e2.getId()).getTags());
 
     }
 
