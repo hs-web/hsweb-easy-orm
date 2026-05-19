@@ -19,6 +19,7 @@ import org.hswebframework.ezorm.rdb.mapping.SyncRepository;
 import org.hswebframework.ezorm.rdb.mapping.annotation.ColumnType;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.defaults.DefaultSyncRepository;
+import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.mapping.jpa.JpaEntityTableMetadataParser;
 import org.hswebframework.ezorm.rdb.mapping.wrapper.EntityResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
@@ -32,13 +33,17 @@ import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlConnectionProvider;
 import org.junit.Assert;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class PostgresqlArrayTest {
@@ -75,6 +80,83 @@ public class PostgresqlArrayTest {
                 .fetchOne()
                 .orElseThrow(NullPointerException::new);
             Assert.assertEquals("arr-sync", byKeywords.getId());
+        } finally {
+            try {
+                executor.execute(SqlRequests.of("drop table test_pg_array_basic"));
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Test
+    public void testSyncRepositoryCrud() {
+        RDBDatabaseMetadata database = getSyncDatabase();
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+        SyncSqlExecutor executor = getSyncSqlExecutor();
+        try {
+            SyncRepository<ArrayEntity, String> repository = createSyncRepository(database, operator);
+
+            SaveResult initial = repository.save(Arrays.asList(
+                entity("sync-save-1", new Short[]{1, 2}, new String[]{"person", "white shirt"}),
+                entity("sync-save-2", new Short[]{2, 3}, new String[]{"vehicle", "white car"})
+            ));
+            Assert.assertEquals(2, initial.getTotal());
+
+            SaveResult updated = repository.save(Arrays.asList(
+                entity("sync-save-1", new Short[]{7, 8}, new String[]{"person", "glasses"}),
+                entity("sync-save-3", new Short[]{3, 4}, new String[]{"event", "night"})
+            ));
+            Assert.assertEquals(2, updated.getTotal());
+
+            Assert.assertArrayEquals(
+                new Short[]{7, 8},
+                repository.findById("sync-save-1").orElseThrow(NullPointerException::new).getTags()
+            );
+
+            Assert.assertEquals(2, repository.insertBatch(Arrays.asList(
+                entity("sync-batch-1", new Short[]{8, 9}, new String[]{"batch", "one"}),
+                entity("sync-batch-2", new Short[]{9, 10}, new String[]{"batch", "two"})
+            )));
+
+            Assert.assertEquals(1, repository.updateById(
+                "sync-save-2",
+                entity("sync-save-2", new Short[]{5, 6}, new String[]{"vehicle", "updated"})
+            ));
+
+            Assert.assertArrayEquals(
+                new String[]{"vehicle", "updated"},
+                repository.findById("sync-save-2").orElseThrow(NullPointerException::new).getKeywords()
+            );
+
+            List<String> pagedIds = repository
+                .createQuery()
+                .where(ArrayEntity::getTags, new Short[]{8, 9})
+                .fetch()
+                .stream()
+                .map(ArrayEntity::getId)
+                .collect(Collectors.toList());
+            Assert.assertEquals(List.of("sync-batch-1"), pagedIds);
+
+            Assert.assertEquals(1, repository
+                .createUpdate()
+                .set(ArrayEntity::getKeywords, new String[]{"dsl", "updated"})
+                .where(ArrayEntity::getId, "sync-batch-2")
+                .execute());
+
+            Assert.assertArrayEquals(
+                new String[]{"dsl", "updated"},
+                repository.findById("sync-batch-2").orElseThrow(NullPointerException::new).getKeywords()
+            );
+
+            Assert.assertEquals(1, repository
+                .createDelete()
+                .where(ArrayEntity::getId, "sync-batch-1")
+                .execute());
+
+            Assert.assertTrue(repository.findById("sync-batch-1").isEmpty());
+            Assert.assertEquals(2, repository.deleteById(Arrays.asList("sync-save-1", "sync-save-3")));
+            Assert.assertEquals(1, repository.deleteById("sync-save-2"));
+            Assert.assertEquals(1, repository.deleteById("sync-batch-2"));
         } finally {
             try {
                 executor.execute(SqlRequests.of("drop table test_pg_array_basic"));
@@ -122,6 +204,119 @@ public class PostgresqlArrayTest {
             } catch (Exception ignore) {
             }
         }
+    }
+
+    @Test
+    public void testReactiveRepositoryCrud() {
+        RDBDatabaseMetadata database = getReactiveDatabase();
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+        ReactiveSqlExecutor executor = getReactiveSqlExecutor();
+        try {
+            ReactiveRepository<ArrayEntity, String> repository = createReactiveRepository(database, operator);
+
+            repository.save(Arrays.asList(
+                          entity("reactive-save-1", new Short[]{11, 12}, new String[]{"person", "hat"}),
+                          entity("reactive-save-2", new Short[]{12, 13}, new String[]{"vehicle", "black"})
+                      ))
+                      .as(StepVerifier::create)
+                      .assertNext(result -> Assert.assertEquals(2, result.getTotal()))
+                      .verifyComplete();
+
+            repository.save(Arrays.asList(
+                          entity("reactive-save-1", new Short[]{21, 22}, new String[]{"person", "updated"}),
+                          entity("reactive-save-3", new Short[]{13, 14}, new String[]{"event", "gate"})
+                      ))
+                      .as(StepVerifier::create)
+                      .assertNext(result -> Assert.assertEquals(2, result.getTotal()))
+                      .verifyComplete();
+
+            repository.findById("reactive-save-1")
+                      .as(StepVerifier::create)
+                      .assertNext(entity -> Assert.assertArrayEquals(new Short[]{21, 22}, entity.getTags()))
+                      .verifyComplete();
+
+            repository.insertBatch(Arrays.asList(
+                          entity("reactive-batch-1", new Short[]{31, 32}, new String[]{"batch", "reactive-1"}),
+                          entity("reactive-batch-2", new Short[]{32, 33}, new String[]{"batch", "reactive-2"})
+                      ))
+                      .as(StepVerifier::create)
+                      .expectNext(2)
+                      .verifyComplete();
+
+            repository.updateById("reactive-save-2",
+                                  Mono.just(entity("reactive-save-2",
+                                                   new Short[]{15, 16},
+                                                   new String[]{"vehicle", "updated"})))
+                      .as(StepVerifier::create)
+                      .expectNext(1)
+                      .verifyComplete();
+
+            repository.findById("reactive-save-2")
+                      .as(StepVerifier::create)
+                      .assertNext(entity -> Assert.assertArrayEquals(
+                          new String[]{"vehicle", "updated"},
+                          entity.getKeywords()))
+                      .verifyComplete();
+
+            repository
+                .createQuery()
+                .where(ArrayEntity::getTags, new Short[]{31, 32})
+                .fetch()
+                .map(ArrayEntity::getId)
+                .collectList()
+                .as(StepVerifier::create)
+                .assertNext(ids -> Assert.assertEquals(List.of("reactive-batch-1"), ids))
+                .verifyComplete();
+
+            repository.createUpdate()
+                      .set(ArrayEntity::getKeywords, new String[]{"dsl", "reactive"})
+                      .where(ArrayEntity::getId, "reactive-batch-2")
+                      .execute()
+                      .as(StepVerifier::create)
+                      .expectNext(1)
+                      .verifyComplete();
+
+            repository.findById("reactive-batch-2")
+                      .as(StepVerifier::create)
+                      .assertNext(entity -> Assert.assertArrayEquals(
+                          new String[]{"dsl", "reactive"},
+                          entity.getKeywords()))
+                      .verifyComplete();
+
+            repository.createDelete()
+                      .where(ArrayEntity::getId, "reactive-batch-1")
+                      .execute()
+                      .as(StepVerifier::create)
+                      .expectNext(1)
+                      .verifyComplete();
+
+            repository.findById("reactive-batch-1")
+                      .as(StepVerifier::create)
+                      .verifyComplete();
+
+            repository.deleteById(Flux.just("reactive-save-1", "reactive-save-3"))
+                      .as(StepVerifier::create)
+                      .expectNext(2)
+                      .verifyComplete();
+
+            repository.deleteById(Arrays.asList("reactive-save-2", "reactive-batch-2"))
+                      .as(StepVerifier::create)
+                      .expectNext(2)
+                      .verifyComplete();
+        } finally {
+            try {
+                executor.execute(Mono.just(SqlRequests.of("drop table test_pg_array_basic"))).block();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private ArrayEntity entity(String id, Short[] tags, String[] keywords) {
+        ArrayEntity entity = new ArrayEntity();
+        entity.setId(id);
+        entity.setTags(tags);
+        entity.setKeywords(keywords);
+        return entity;
     }
 
     private SyncRepository<ArrayEntity, String> createSyncRepository(RDBDatabaseMetadata database, DatabaseOperator operator) {
