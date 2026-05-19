@@ -1,9 +1,11 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
+import io.r2dbc.postgresql.codec.PostgresqlObjectId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
@@ -22,17 +24,21 @@ import java.util.List;
 @RequiredArgsConstructor(staticName = "of")
 public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>, DataTypeBuilder {
 
-    public static final PostgresqlArrayType VARCHAR_ARRAY = PostgresqlArrayType.of("varchar[]", String.class, String[].class);
+    public static final PostgresqlArrayType VARCHAR_ARRAY = PostgresqlArrayType.of("varchar[]", "varchar", PostgresqlObjectId.VARCHAR_ARRAY, String.class, String[].class);
 
-    public static final PostgresqlArrayType TEXT_ARRAY = PostgresqlArrayType.of("text[]", String.class, String[].class);
+    public static final PostgresqlArrayType TEXT_ARRAY = PostgresqlArrayType.of("text[]", "text", PostgresqlObjectId.TEXT_ARRAY, String.class, String[].class);
 
-    public static final PostgresqlArrayType SMALLINT_ARRAY = PostgresqlArrayType.of("smallint[]", Short.class, Short[].class);
+    public static final PostgresqlArrayType SMALLINT_ARRAY = PostgresqlArrayType.of("smallint[]", "int2", PostgresqlObjectId.INT2_ARRAY, Short.class, Short[].class);
 
-    public static final PostgresqlArrayType INTEGER_ARRAY = PostgresqlArrayType.of("integer[]", Integer.class, Integer[].class);
+    public static final PostgresqlArrayType INTEGER_ARRAY = PostgresqlArrayType.of("integer[]", "int4", PostgresqlObjectId.INT4_ARRAY, Integer.class, Integer[].class);
 
-    public static final PostgresqlArrayType BIGINT_ARRAY = PostgresqlArrayType.of("bigint[]", Long.class, Long[].class);
+    public static final PostgresqlArrayType BIGINT_ARRAY = PostgresqlArrayType.of("bigint[]", "int8", PostgresqlObjectId.INT8_ARRAY, Long.class, Long[].class);
 
     private final String name;
+
+    private final String jdbcElementType;
+
+    private final PostgresqlObjectId r2dbcArrayType;
 
     private final Class<?> componentType;
 
@@ -51,6 +57,11 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
     @Override
     public Object encode(Object value) {
         return convert(value);
+    }
+
+    @Override
+    public Object encode(Object value, ColumnMetadata column) {
+        return PostgresqlArrayParameter.of(this, convert(value));
     }
 
     @Override

@@ -112,7 +112,7 @@ public class PostgresqlTableMetaParserTest {
 
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "json");
-                Assert.assertEquals(column.getSqlType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getSqlType(), JDBCType.OTHER);
                 Assert.assertEquals(column.getJavaType(), String.class);
             }
             //jsonb
@@ -122,7 +122,7 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "jsonb");
                 Assert.assertEquals(column.getType().getId(), "jsonb");
-                Assert.assertEquals(column.getSqlType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getSqlType(), JDBCType.OTHER);
                 Assert.assertEquals(column.getJavaType(), String.class);
             }
             //varchar[]
