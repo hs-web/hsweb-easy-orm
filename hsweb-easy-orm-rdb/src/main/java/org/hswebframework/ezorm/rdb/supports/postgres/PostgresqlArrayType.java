@@ -9,7 +9,6 @@ import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
-import org.postgresql.util.PGobject;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -23,6 +22,8 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor(staticName = "of")
 public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>, DataTypeBuilder {
+
+    private static final String JDBC_PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
 
     public static final PostgresqlArrayType VARCHAR_ARRAY = PostgresqlArrayType.of("varchar[]", "varchar", PostgresqlObjectId.VARCHAR_ARRAY, String.class, String[].class);
 
@@ -84,8 +85,8 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
         if (value instanceof java.sql.Array sqlArray) {
             return convertSqlArray(sqlArray);
         }
-        if (value instanceof PGobject pgObject) {
-            return convert(pgObject.getValue());
+        if (isJdbcPgObject(value)) {
+            return convert(extractJdbcPgObjectValue(value));
         }
         if (value instanceof Collection<?> collection) {
             return convertCollection(collection);
@@ -97,6 +98,18 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
             return parseArrayLiteral(sequence.toString());
         }
         return newArray(convertElement(value));
+    }
+
+    private boolean isJdbcPgObject(Object value) {
+        return value != null && JDBC_PG_OBJECT_CLASS.equals(value.getClass().getName());
+    }
+
+    private Object extractJdbcPgObjectValue(Object value) {
+        try {
+            return value.getClass().getMethod("getValue").invoke(value);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to read PostgreSQL PGobject value", e);
+        }
     }
 
     private Object convertSqlArray(java.sql.Array sqlArray) {
