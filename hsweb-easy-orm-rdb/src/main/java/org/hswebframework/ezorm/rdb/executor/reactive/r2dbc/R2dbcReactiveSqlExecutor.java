@@ -9,6 +9,7 @@ import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
+import org.hswebframework.ezorm.rdb.executor.R2dbcParameterBinder;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -251,6 +252,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         for (Object parameter : request.getParameters()) {
             if (parameter == null) {
                 bindNull(statement, index, String.class);
+            } else if (parameter instanceof R2dbcParameterBinder binder) {
+                binder.bind(statement, getBindSymbol() + (index + getBindFirstIndex()));
             } else if (parameter instanceof NullValue nullValue) {
                 Class<?> javaType = nullValue.getType();
                 if (javaType == LongCharSequence.class) {

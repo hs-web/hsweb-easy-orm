@@ -114,22 +114,26 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             int indexSize = primaryIndex.size();
             int vSize = values.size();
 
-            if(shoudCheckDumplicateKey(primaryIndex,values)){
+            if (shoudCheckDumplicateKey(primaryIndex, values)) {
                 // id
                 if (indexSize == 1) {
                     int idx = primaryIndex.get(0);
-                    Object idValue = values.get(idx);
-                    if (idValue != null && vSize > idx && !duplicatePrimary.add(idValue)) {
-                        continue;
+                    if (idx < vSize) {
+                        Object idValue = values.get(idx);
+                        if (idValue != null && !duplicatePrimary.add(idValue)) {
+                            continue;
+                        }
                     }
                 }
                 // 唯一索引?
                 else if (indexSize >= 1) {
                     Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
                     for (Integer i : primaryIndex) {
-                        Object value = values.get(i);
-                        if (vSize > i && value != null) {
-                            dis.add(value);
+                        if (i < vSize) {
+                            Object value = values.get(i);
+                            if (value != null) {
+                                dis.add(value);
+                            }
                         }
                     }
                     // 存在重复数据 ?

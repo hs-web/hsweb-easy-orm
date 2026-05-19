@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.executor.jdbc;
 
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
+import org.hswebframework.ezorm.rdb.executor.JdbcParameterBinder;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 
 import java.io.ByteArrayInputStream;
@@ -37,8 +38,14 @@ public class JdbcSqlExecutorHelper {
         for (Object object : parameter) {
             if (object == null) {
                 statement.setNull(index++, Types.NULL);
+            } else if (object instanceof JdbcParameterBinder binder) {
+                binder.bind(statement, index++);
             } else if (object instanceof NullValue nullValue) {
-                statement.setNull(index++, nullValue.getDataType().getSqlType().getVendorTypeNumber());
+                int sqlType = nullValue.getDataType().getSqlType().getVendorTypeNumber();
+                if (nullValue.getType() == LongCharSequence.class) {
+                    sqlType = Types.LONGVARCHAR;
+                }
+                statement.setNull(index++, sqlType);
             } else if (object instanceof Date) {
                 statement.setTimestamp(index++, new java.sql.Timestamp(((Date) object).getTime()));
             } else if (object instanceof byte[] b) {

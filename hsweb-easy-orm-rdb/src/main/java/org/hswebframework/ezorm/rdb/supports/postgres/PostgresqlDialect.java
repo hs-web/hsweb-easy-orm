@@ -51,6 +51,20 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("halfvec", VectorType.HALF_VECTOR);
         registerDataType("sparsevec", VectorType.SPARSE_VECTOR);
 
+        registerDataType("varchar[]", PostgresqlArrayType.VARCHAR_ARRAY);
+        registerDataType("text[]", PostgresqlArrayType.TEXT_ARRAY);
+        registerDataType("smallint[]", PostgresqlArrayType.SMALLINT_ARRAY);
+        registerDataType("integer[]", PostgresqlArrayType.INTEGER_ARRAY);
+        registerDataType("bigint[]", PostgresqlArrayType.BIGINT_ARRAY);
+        registerDataType("int2[]", PostgresqlArrayType.SMALLINT_ARRAY);
+        registerDataType("int4[]", PostgresqlArrayType.INTEGER_ARRAY);
+        registerDataType("int8[]", PostgresqlArrayType.BIGINT_ARRAY);
+        registerDataType("_varchar", PostgresqlArrayType.VARCHAR_ARRAY);
+        registerDataType("_text", PostgresqlArrayType.TEXT_ARRAY);
+        registerDataType("_int2", PostgresqlArrayType.SMALLINT_ARRAY);
+        registerDataType("_int4", PostgresqlArrayType.INTEGER_ARRAY);
+        registerDataType("_int8", PostgresqlArrayType.BIGINT_ARRAY);
+        registerDataType("character varying[]", PostgresqlArrayType.VARCHAR_ARRAY);
 
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
