@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.core.meta.ObjectMetadata;
+import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
@@ -166,6 +167,88 @@ public class PostgresqlArrayTest {
     }
 
     @Test
+    public void testSyncArrayTerms() {
+        RDBDatabaseMetadata database = getSyncDatabase();
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+        SyncSqlExecutor executor = getSyncSqlExecutor();
+        try {
+            SyncRepository<ArrayEntity, String> repository = createSyncRepository(database, operator);
+            repository.insertBatch(Arrays.asList(
+                entity("term-sync-1", new Short[]{1, 2, 3}, new String[]{"person", "white shirt", "glasses"}),
+                entity("term-sync-2", new Short[]{2, 4}, new String[]{"person", "black jacket"}),
+                entity("term-sync-3", new Short[]{5}, new String[]{"vehicle", "white"})
+            ));
+
+            assertIds(repository.createQuery()
+                                .contains(ArrayEntity::getTags, new Short[]{1, 2})
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1");
+
+            assertIds(repository.createQuery()
+                                .contained(ArrayEntity::getTags, new Short[]{1, 2, 3, 4})
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1",
+                      "term-sync-2");
+
+            assertIds(repository.createQuery()
+                                .overlap(ArrayEntity::getTags, new Short[]{2, 5})
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1",
+                      "term-sync-2",
+                      "term-sync-3");
+
+            assertIds(repository.createQuery()
+                                .notOverlap(ArrayEntity::getTags, new Short[]{5})
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1",
+                      "term-sync-2");
+
+            assertIds(repository.createQuery()
+                                .in(ArrayEntity::getTags, new Short[]{2, 5})
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1",
+                      "term-sync-2",
+                      "term-sync-3");
+
+            assertIds(repository.createQuery()
+                                .and("tags", TermType.in + "$all", new Short[]{1, 2})
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1");
+
+            assertIds(repository.createQuery()
+                                .contains(ArrayEntity::getKeywords, "white shirt")
+                                .fetch()
+                                .stream()
+                                .map(ArrayEntity::getId)
+                                .collect(Collectors.toList()),
+                      "term-sync-1");
+        } finally {
+            try {
+                executor.execute(SqlRequests.of("drop table test_pg_array_basic"));
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Test
     public void testReactiveArrayField() {
         RDBDatabaseMetadata database = getReactiveDatabase();
         DatabaseOperator operator = DefaultDatabaseOperator.of(database);
@@ -311,12 +394,87 @@ public class PostgresqlArrayTest {
         }
     }
 
+    @Test
+    public void testReactiveArrayTerms() {
+        RDBDatabaseMetadata database = getReactiveDatabase();
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+        ReactiveSqlExecutor executor = getReactiveSqlExecutor();
+        try {
+            ReactiveRepository<ArrayEntity, String> repository = createReactiveRepository(database, operator);
+
+            repository.insertBatch(Arrays.asList(
+                          entity("term-reactive-1", new Short[]{1, 2, 3}, new String[]{"person", "white shirt", "glasses"}),
+                          entity("term-reactive-2", new Short[]{2, 4}, new String[]{"person", "black jacket"}),
+                          entity("term-reactive-3", new Short[]{5}, new String[]{"vehicle", "white"})
+                      ))
+                      .as(StepVerifier::create)
+                      .expectNext(3)
+                      .verifyComplete();
+
+            repository.createQuery()
+                      .contains(ArrayEntity::getTags, new Short[]{1, 2})
+                      .fetch()
+                      .map(ArrayEntity::getId)
+                      .collectList()
+                      .as(StepVerifier::create)
+                      .assertNext(ids -> assertIds(ids, "term-reactive-1"))
+                      .verifyComplete();
+
+            repository.createQuery()
+                      .overlap(ArrayEntity::getTags, new Short[]{2, 5})
+                      .fetch()
+                      .map(ArrayEntity::getId)
+                      .collectList()
+                      .as(StepVerifier::create)
+                      .assertNext(ids -> assertIds(ids, "term-reactive-1", "term-reactive-2", "term-reactive-3"))
+                      .verifyComplete();
+
+            repository.createQuery()
+                      .and("tags", TermType.in + "$all", new Short[]{1, 2})
+                      .fetch()
+                      .map(ArrayEntity::getId)
+                      .collectList()
+                      .as(StepVerifier::create)
+                      .assertNext(ids -> assertIds(ids, "term-reactive-1"))
+                      .verifyComplete();
+
+            repository.createQuery()
+                      .in(ArrayEntity::getTags, new Short[]{2, 5})
+                      .fetch()
+                      .map(ArrayEntity::getId)
+                      .collectList()
+                      .as(StepVerifier::create)
+                      .assertNext(ids -> assertIds(ids, "term-reactive-1", "term-reactive-2", "term-reactive-3"))
+                      .verifyComplete();
+
+            repository.createQuery()
+                      .contains(ArrayEntity::getKeywords, "white shirt")
+                      .fetch()
+                      .map(ArrayEntity::getId)
+                      .collectList()
+                      .as(StepVerifier::create)
+                      .assertNext(ids -> assertIds(ids, "term-reactive-1"))
+                      .verifyComplete();
+        } finally {
+            try {
+                executor.execute(Mono.just(SqlRequests.of("drop table test_pg_array_basic"))).block();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
     private ArrayEntity entity(String id, Short[] tags, String[] keywords) {
         ArrayEntity entity = new ArrayEntity();
         entity.setId(id);
         entity.setTags(tags);
         entity.setKeywords(keywords);
         return entity;
+    }
+
+    private void assertIds(List<String> ids, String... expected) {
+        List<String> actual = ids.stream().sorted().collect(Collectors.toList());
+        List<String> expect = Arrays.stream(expected).sorted().collect(Collectors.toList());
+        Assert.assertEquals(expect, actual);
     }
 
     private SyncRepository<ArrayEntity, String> createSyncRepository(RDBDatabaseMetadata database, DatabaseOperator operator) {

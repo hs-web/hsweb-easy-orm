@@ -55,6 +55,16 @@ public class QueryTest {
             assertSingleCondition(query -> query.in(TestEntity::getId, Arrays.asList(1, 2, 3)), "in",  Arrays.asList(1, 2, 3));
         }
 
+        //array-like terms
+        {
+            assertSingleCondition(query -> query.contains(TestEntity::getId, 1), "contains", 1);
+            assertSingleCondition(query -> query.notContains(TestEntity::getId, 1), "ncontains", 1);
+            assertSingleCondition(query -> query.contained(TestEntity::getId, 1), "contained", 1);
+            assertSingleCondition(query -> query.notContained(TestEntity::getId, 1), "ncontained", 1);
+            assertSingleCondition(query -> query.overlap(TestEntity::getId, 1), "overlap", 1);
+            assertSingleCondition(query -> query.notOverlap(TestEntity::getId, 1), "noverlap", 1);
+        }
+
         //gt lt
         {
             assertSingleCondition(query -> query.gt(TestEntity::getId, 1), "gt", 1);

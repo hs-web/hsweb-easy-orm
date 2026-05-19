@@ -870,6 +870,132 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
     }
 
     /**
+     * 追加包含条件（静态方法引用方式）: column contains ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T contains(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.contains, value);
+    }
+
+    /**
+     * 追加包含条件（方法引用方式）: column contains ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T contains(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.contains);
+    }
+
+    /**
+     * 追加不包含条件（静态方法引用方式）: column not contains ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T notContains(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.ncontains, value);
+    }
+
+    /**
+     * 追加不包含条件（方法引用方式）: column not contains ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T notContains(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.ncontains);
+    }
+
+    /**
+     * 追加被包含条件（静态方法引用方式）: column contained by ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T contained(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.contained, value);
+    }
+
+    /**
+     * 追加被包含条件（方法引用方式）: column contained by ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T contained(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.contained);
+    }
+
+    /**
+     * 追加不被包含条件（静态方法引用方式）: column not contained by ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T notContained(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.ncontained, value);
+    }
+
+    /**
+     * 追加不被包含条件（方法引用方式）: column not contained by ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T notContained(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.ncontained);
+    }
+
+    /**
+     * 追加相交条件（静态方法引用方式）: column overlap ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T overlap(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.overlap, value);
+    }
+
+    /**
+     * 追加相交条件（方法引用方式）: column overlap ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T overlap(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.overlap);
+    }
+
+    /**
+     * 追加不相交条件（静态方法引用方式）: column not overlap ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T notOverlap(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.noverlap, value);
+    }
+
+    /**
+     * 追加不相交条件（方法引用方式）: column not overlap ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T notOverlap(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.noverlap);
+    }
+
+    /**
      * 追加为空条件（静态方法引用方式）: column = ''
      *
      * @param column 列引用
