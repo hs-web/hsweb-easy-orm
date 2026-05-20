@@ -128,16 +128,23 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 // 唯一索引?
                 else if (indexSize >= 1) {
                     Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
+                    boolean allKeyPresent = true;
                     for (Integer i : primaryIndex) {
                         if (i < vSize) {
                             Object value = values.get(i);
                             if (value != null) {
                                 dis.add(value);
+                            } else {
+                                allKeyPresent = false;
+                                break;
                             }
+                        } else {
+                            allKeyPresent = false;
+                            break;
                         }
                     }
                     // 存在重复数据 ?
-                    if (!duplicatePrimary.add(dis)) {
+                    if (allKeyPresent && !duplicatePrimary.add(dis)) {
                         continue;
                     }
                 }
