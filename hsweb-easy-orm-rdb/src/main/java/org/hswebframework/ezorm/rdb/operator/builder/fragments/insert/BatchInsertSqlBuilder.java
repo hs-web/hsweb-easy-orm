@@ -1,7 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
@@ -129,7 +128,7 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 }
                 // 唯一索引?
                 else if (indexSize >= 1) {
-                    Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
+                    List<Object> dis = new ArrayList<>(indexSize);
                     boolean allKeyPresent = true;
                     for (Integer i : primaryIndex) {
                         if (i < vSize) {
