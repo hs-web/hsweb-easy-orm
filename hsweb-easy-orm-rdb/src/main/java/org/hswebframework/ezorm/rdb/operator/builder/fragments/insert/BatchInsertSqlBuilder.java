@@ -77,10 +77,10 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 //忽略null的列
                 if (ignoreNullColumn) {
                     List<Object> values = parameter.getValues().get(0);
-                    if (index >= values.size()
-                        || values.get(index) instanceof NullValue
-                        //为空并且没有默认值
-                        || (values.get(index) == null && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue))) {
+                    Object value = index >= values.size() ? null : values.get(index);
+                    //为空并且没有默认值
+                    if ((index >= values.size() || value == null || value instanceof NullValue)
+                        && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue)) {
                         index++;
                         continue;
                     }
@@ -118,8 +118,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 // id
                 if (indexSize == 1) {
                     int idx = primaryIndex.get(0);
-                    Object idValue = values.get(idx);
-                    if (idValue != null && vSize > idx && !duplicatePrimary.add(idValue)) {
+                    Object idValue = vSize > idx ? values.get(idx) : null;
+                    if (idValue != null && !(idValue instanceof NullValue) && !duplicatePrimary.add(idValue)) {
                         continue;
                     }
                 }
@@ -127,13 +127,13 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 else if (indexSize >= 1) {
                     Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
                     for (Integer i : primaryIndex) {
-                        Object value = values.get(i);
-                        if (vSize > i && value != null) {
+                        Object value = vSize > i ? values.get(i) : null;
+                        if (value != null && !(value instanceof NullValue)) {
                             dis.add(value);
                         }
                     }
                     // 存在重复数据 ?
-                    if (!duplicatePrimary.add(dis)) {
+                    if (dis.size() == indexSize && !duplicatePrimary.add(dis)) {
                         continue;
                     }
                 }

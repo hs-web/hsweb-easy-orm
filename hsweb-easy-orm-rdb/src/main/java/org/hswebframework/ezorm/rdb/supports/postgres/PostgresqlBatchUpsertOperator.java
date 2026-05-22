@@ -43,10 +43,11 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
+        UpsertOperatorParameter upsertParameter = UpsertOperatorParameters.ensureRuntimeDefaultPrimaryKey(parameter, table);
         if (getOrCreateOnConflict().isEmpty()) {
-            return fallback.execute(parameter);
+            return fallback.execute(upsertParameter);
         }
-        return new PostgresqlSaveResultOperator(() -> builder.build(new PostgresqlUpsertOperatorParameter(parameter)));
+        return new PostgresqlSaveResultOperator(() -> builder.build(new PostgresqlUpsertOperatorParameter(upsertParameter)));
     }
 
     SqlFragments getOrCreateOnConflict() {

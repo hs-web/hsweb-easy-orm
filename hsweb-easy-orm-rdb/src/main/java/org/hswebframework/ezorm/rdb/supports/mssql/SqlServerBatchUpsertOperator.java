@@ -94,7 +94,7 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
             if (hasIdValue(values, idIndex)) {
                 upsertParameter.getValues().add(values);
             } else {
-                insertParameter.getValues().add(removeValue(values, idIndex));
+                insertParameter.getValues().add(createInsertValues(values, idIndex));
             }
         }
         return new UpsertParameterSplit(insertParameter, upsertParameter);
@@ -125,14 +125,47 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
         org.hswebframework.ezorm.rdb.operator.dml.upsert.UpsertOperatorParameter parameter,
         int idIndex) {
         InsertOperatorParameter insertParameter = new InsertOperatorParameter();
+        boolean keepRuntimeDefaultId = useRuntimeDefaultId();
+        if (idIndex < 0 && keepRuntimeDefaultId) {
+            insertParameter.getColumns().add(InsertColumn.of(idColumn.getName()));
+        }
         int index = 0;
         for (UpsertColumn column : parameter.getColumns()) {
-            if (index++ == idIndex) {
+            if (index++ == idIndex && !keepRuntimeDefaultId) {
                 continue;
             }
             insertParameter.getColumns().add(column);
         }
         return insertParameter;
+    }
+
+    private List<Object> createInsertValues(List<Object> values, int idIndex) {
+        if (!useRuntimeDefaultId()) {
+            return removeValue(values, idIndex);
+        }
+        if (idIndex >= 0) {
+            List<Object> newValues = new ArrayList<>(Math.max(values.size(), idIndex + 1));
+            newValues.addAll(values);
+            while (newValues.size() <= idIndex) {
+                newValues.add(null);
+            }
+            if (newValues.get(idIndex) == null || newValues.get(idIndex) instanceof NullValue) {
+                newValues.set(idIndex, createRuntimeDefaultId());
+            }
+            return newValues;
+        }
+        List<Object> newValues = new ArrayList<>(values.size() + 1);
+        newValues.add(createRuntimeDefaultId());
+        newValues.addAll(values);
+        return newValues;
+    }
+
+    private boolean useRuntimeDefaultId() {
+        return idColumn != null && idColumn.getDefaultValue() instanceof RuntimeDefaultValue;
+    }
+
+    private Object createRuntimeDefaultId() {
+        return ((RuntimeDefaultValue) idColumn.getDefaultValue()).get();
     }
 
     private List<Object> removeValue(List<Object> values, int idIndex) {

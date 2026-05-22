@@ -73,11 +73,12 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
+        UpsertOperatorParameter upsertParameter = UpsertOperatorParameters.ensureRuntimeDefaultPrimaryKey(parameter, table);
         if (doFallback()) {
-            return fallback.execute(parameter);
+            return fallback.execute(upsertParameter);
         }
         return new MysqlSaveResultOperator(() -> builder
-                .build(new MysqlUpsertOperatorParameter(parameter)), parameter.getValues().size());
+                .build(new MysqlUpsertOperatorParameter(upsertParameter)), upsertParameter.getValues().size());
     }
 
     class MysqlUpsertOperatorParameter extends InsertOperatorParameter {
