@@ -28,8 +28,8 @@ public class Containers {
                 .withEnv("POSTGRES_DB", "ezorm")
                 .withCommand("postgres", "-c", "max_connections=500")
                 .withExposedPorts(5432)
-                .waitingFor(Wait.forListeningPort());
-//                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*",1));
+                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\n", 2)
+                                .withStartupTimeout(Duration.ofMinutes(2)));
     }
 
     @SneakyThrows

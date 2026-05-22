@@ -120,4 +120,46 @@ public interface TermType {
      */
     String nbtw    = "nbtw";
 
+    /**
+     * contains
+     *
+     * @since 4.2
+     */
+    String contains = "contains";
+
+    /**
+     * not contains
+     *
+     * @since 4.2
+     */
+    String ncontains = "ncontains";
+
+    /**
+     * contained by
+     *
+     * @since 4.2
+     */
+    String contained = "contained";
+
+    /**
+     * not contained by
+     *
+     * @since 4.2
+     */
+    String ncontained = "ncontained";
+
+    /**
+     * overlap
+     *
+     * @since 4.2
+     */
+    String overlap = "overlap";
+
+    /**
+     * not overlap
+     *
+     * @since 4.2
+     */
+    String noverlap = "noverlap";
+
 }

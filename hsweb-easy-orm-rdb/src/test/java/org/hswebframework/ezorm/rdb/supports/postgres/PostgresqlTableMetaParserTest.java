@@ -58,7 +58,12 @@ public class PostgresqlTableMetaParserTest {
                                                 "name varchar(128) not null," +
                                                 "age int4," +
                                                 "json1 json," +
-                                                "json2 jsonb" +
+                                                "json2 jsonb," +
+                                                "tags varchar[]," +
+                                                "keywords text[]," +
+                                                "codes smallint[]," +
+                                                "nums int4[]," +
+                                                "ids int8[]" +
                                                 ")"));
         try {
             RDBTableMetadata metaData = parser.parseByName("test_table").orElseThrow(NullPointerException::new);
@@ -107,7 +112,7 @@ public class PostgresqlTableMetaParserTest {
 
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "json");
-                Assert.assertEquals(column.getSqlType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getSqlType(), JDBCType.OTHER);
                 Assert.assertEquals(column.getJavaType(), String.class);
             }
             //jsonb
@@ -117,8 +122,58 @@ public class PostgresqlTableMetaParserTest {
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getDataType(), "jsonb");
                 Assert.assertEquals(column.getType().getId(), "jsonb");
-                Assert.assertEquals(column.getSqlType(), JDBCType.CLOB);
+                Assert.assertEquals(column.getSqlType(), JDBCType.OTHER);
                 Assert.assertEquals(column.getJavaType(), String.class);
+            }
+            //varchar[]
+            {
+                RDBColumnMetadata column = metaData.getColumn("tags").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "varchar[]");
+                Assert.assertEquals(column.getType().getId(), "varchar[]");
+                Assert.assertEquals(column.getSqlType(), JDBCType.ARRAY);
+                Assert.assertEquals(column.getJavaType(), String[].class);
+            }
+            //text[]
+            {
+                RDBColumnMetadata column = metaData.getColumn("keywords").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "text[]");
+                Assert.assertEquals(column.getType().getId(), "text[]");
+                Assert.assertEquals(column.getSqlType(), JDBCType.ARRAY);
+                Assert.assertEquals(column.getJavaType(), String[].class);
+            }
+            //smallint[]
+            {
+                RDBColumnMetadata column = metaData.getColumn("codes").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "smallint[]");
+                Assert.assertEquals(column.getType().getId(), "smallint[]");
+                Assert.assertEquals(column.getSqlType(), JDBCType.ARRAY);
+                Assert.assertEquals(column.getJavaType(), Short[].class);
+            }
+            //int4[]
+            {
+                RDBColumnMetadata column = metaData.getColumn("nums").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "integer[]");
+                Assert.assertEquals(column.getType().getId(), "integer[]");
+                Assert.assertEquals(column.getSqlType(), JDBCType.ARRAY);
+                Assert.assertEquals(column.getJavaType(), Integer[].class);
+            }
+            //int8[]
+            {
+                RDBColumnMetadata column = metaData.getColumn("ids").orElseThrow(NullPointerException::new);
+
+                Assert.assertNotNull(column);
+                Assert.assertEquals(column.getDataType(), "bigint[]");
+                Assert.assertEquals(column.getType().getId(), "bigint[]");
+                Assert.assertEquals(column.getSqlType(), JDBCType.ARRAY);
+                Assert.assertEquals(column.getJavaType(), Long[].class);
             }
         } finally {
             executor.execute(prepare("drop table test_table"));
