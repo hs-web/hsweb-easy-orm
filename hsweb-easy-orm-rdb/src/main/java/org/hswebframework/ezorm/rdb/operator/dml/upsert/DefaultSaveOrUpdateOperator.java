@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.operator.dml.upsert;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
@@ -72,6 +73,7 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
     }
 
     protected Upsert createUpsert(UpsertOperatorParameter parameter) {
+        parameter = UpsertOperatorParameters.ensureRuntimeDefaultPrimaryKey(parameter, table);
         Map<String, InsertColumn> mapping = parameter.getColumns().stream()
                                                      .collect(Collectors.toMap(InsertColumn::getColumn, Function.identity()));
         InsertSqlBuilder insertSqlBuilder = table.findFeatureNow(InsertSqlBuilder.ID);
@@ -97,8 +99,8 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                     int index = 0;
                     for (UpsertColumn column : columns) {
                         if (column.getColumn().equals(id.getColumn())) {
-                            Object idValue = value.get(index);
-                            if (idValue == null) {//ID未指定则新增
+                            Object idValue = value.size() > index ? value.get(index) : null;
+                            if (idValue == null || idValue instanceof NullValue) {//ID未指定则新增
                                 insertParameter.getValues().add(value);
                                 continue V;
                             }

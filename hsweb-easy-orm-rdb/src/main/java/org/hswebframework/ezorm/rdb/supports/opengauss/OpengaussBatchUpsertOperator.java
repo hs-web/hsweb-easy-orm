@@ -49,10 +49,11 @@ public class OpengaussBatchUpsertOperator implements SaveOrUpdateOperator {
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
+        UpsertOperatorParameter upsertParameter = UpsertOperatorParameters.ensureRuntimeDefaultPrimaryKey(parameter, table);
         if (getOrCreateOnConflict().isEmpty()) {
-            return fallback.execute(parameter);
+            return fallback.execute(upsertParameter);
         }
-        return new OpengaussSaveResultOperator(() -> builder.build(new OpengaussUpsertOperatorParameter(parameter)));
+        return new OpengaussSaveResultOperator(() -> builder.build(new OpengaussUpsertOperatorParameter(upsertParameter)));
     }
 
     SqlFragments getOrCreateOnConflict() {

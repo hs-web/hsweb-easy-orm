@@ -1,7 +1,6 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.insert;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
@@ -77,10 +76,10 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 //忽略null的列
                 if (ignoreNullColumn) {
                     List<Object> values = parameter.getValues().get(0);
-                    if (index >= values.size()
-                        || values.get(index) instanceof NullValue
-                        //为空并且没有默认值
-                        || (values.get(index) == null && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue))) {
+                    Object value = index >= values.size() ? null : values.get(index);
+                    //为空并且没有默认值
+                    if ((index >= values.size() || value == null || value instanceof NullValue)
+                        && !(columnMetadata.getDefaultValue() instanceof RuntimeDefaultValue)) {
                         index++;
                         continue;
                     }
@@ -120,19 +119,21 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                     int idx = primaryIndex.get(0);
                     if (idx < vSize) {
                         Object idValue = values.get(idx);
-                        if (idValue != null && !duplicatePrimary.add(idValue)) {
+                        if (idValue != null
+                            && !(idValue instanceof NullValue)
+                            && !duplicatePrimary.add(idValue)) {
                             continue;
                         }
                     }
                 }
                 // 唯一索引?
                 else if (indexSize >= 1) {
-                    Set<Object> dis = Sets.newHashSetWithExpectedSize(indexSize);
+                    List<Object> dis = new ArrayList<>(indexSize);
                     boolean allKeyPresent = true;
                     for (Integer i : primaryIndex) {
                         if (i < vSize) {
                             Object value = values.get(i);
-                            if (value != null) {
+                            if (value != null && !(value instanceof NullValue)) {
                                 dis.add(value);
                             } else {
                                 allKeyPresent = false;
