@@ -1,42 +1,21 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
-import lombok.Getter;
-import org.hswebframework.ezorm.rdb.metadata.DataType;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
+import org.hswebframework.ezorm.rdb.supports.json.JsonCodecSupport;
 
 import java.sql.JDBCType;
-import java.sql.SQLType;
 
-
-@Getter
-public class JsonType implements DataType, DataTypeBuilder {
+public class JsonType extends org.hswebframework.ezorm.rdb.supports.json.JsonType {
 
     public static JsonType INSTANCE = new JsonType();
 
-    @Override
-    public Class<?> getJavaType() {
-        return String.class;
+    public JsonType() {
+        super("json", "json", "json", JDBCType.OTHER);
     }
 
     @Override
-    public String getId() {
-        return "json";
+    public Object encode(Object value) {
+        String json = JsonCodecSupport.toJsonSilently(value);
+        return json == null ? null : NativeSql.of("?::json", json);
     }
-
-    @Override
-    public String getName() {
-        return "json";
-    }
-
-    @Override
-    public SQLType getSqlType() {
-        return JDBCType.OTHER;
-    }
-
-    @Override
-    public String createColumnDataType(RDBColumnMetadata columnMetaData) {
-        return "json";
-    }
-
 }

@@ -1,41 +1,21 @@
 package org.hswebframework.ezorm.rdb.supports.postgres;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.hswebframework.ezorm.rdb.metadata.DataType;
-import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
+import org.hswebframework.ezorm.rdb.supports.json.JsonCodecSupport;
 
 import java.sql.JDBCType;
-import java.sql.SQLType;
 
-@Getter
-@AllArgsConstructor
-public class JsonbType implements DataType , DataTypeBuilder {
+public class JsonbType extends org.hswebframework.ezorm.rdb.supports.json.JsonType {
+
     public static JsonbType INSTANCE = new JsonbType();
 
-    @Override
-    public Class<?> getJavaType() {
-        return String.class;
+    public JsonbType() {
+        super("jsonb", "jsonb", "jsonb", JDBCType.OTHER);
     }
 
     @Override
-    public String getId() {
-        return "jsonb";
-    }
-
-    @Override
-    public String getName() {
-        return "jsonb";
-    }
-
-    @Override
-    public SQLType getSqlType() {
-        return JDBCType.OTHER;
-    }
-
-    @Override
-    public String createColumnDataType(RDBColumnMetadata columnMetaData) {
-        return "jsonb";
+    public Object encode(Object value) {
+        String json = JsonCodecSupport.toJsonSilently(value);
+        return json == null ? null : NativeSql.of("?::jsonb", json);
     }
 }

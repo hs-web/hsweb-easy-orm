@@ -40,6 +40,7 @@ public class OpengaussSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(PostgresqlEnumInFragmentBuilder.in);
                 column.addFeature(PostgresqlEnumInFragmentBuilder.notIn);
             }
+            PostgresqlJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }

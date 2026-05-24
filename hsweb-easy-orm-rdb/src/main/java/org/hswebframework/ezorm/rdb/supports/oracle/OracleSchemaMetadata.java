@@ -33,6 +33,7 @@ public class OracleSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(OracleEnumInFragmentBuilder.in);
                 column.addFeature(OracleEnumInFragmentBuilder.notIn);
             }
+            OracleJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }

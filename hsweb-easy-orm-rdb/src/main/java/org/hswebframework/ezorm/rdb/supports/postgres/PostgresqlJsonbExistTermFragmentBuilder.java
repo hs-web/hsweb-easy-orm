@@ -66,7 +66,8 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
             return value;
         }
         if (column.getValueCodec() != null) {
-            return column.getValueCodec().encode(value);
+            Object encoded = column.getValueCodec().encode(value);
+            return encoded == null || encoded instanceof NativeSql ? encoded : NativeSql.of("?::jsonb", encoded);
         }
         Object obj;
         if (value == null) {
