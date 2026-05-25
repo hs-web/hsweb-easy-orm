@@ -5,7 +5,7 @@ import org.hswebframework.ezorm.core.param.TermType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.AbstractTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.SqlUtils;
@@ -81,7 +81,7 @@ public abstract class AbstractJsonTermFragmentBuilder extends AbstractTermFragme
         Object value = condition.getValue();
         boolean number = isNumberExpression(termType, value);
         JsonScalarExpression expression = createScalarExpression(columnFullName, column, condition, number);
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        BatchSqlFragments fragments = new BatchSqlFragments();
         fragments.addSql(expression.getSql())
                  .addParameter(expression.getParameters());
 
@@ -127,7 +127,7 @@ public abstract class AbstractJsonTermFragmentBuilder extends AbstractTermFragme
         if (values.isEmpty()) {
             return EmptySqlFragments.INSTANCE;
         }
-        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        BatchSqlFragments fragments = new BatchSqlFragments();
         if (not) {
             fragments.addSql("not", "(");
         } else {

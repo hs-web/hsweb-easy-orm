@@ -1,0 +1,2 @@
+org.hswebframework.ezorm.rdb.supports.json.JdbcPostgresqlJsonStringReader
+org.hswebframework.ezorm.rdb.supports.json.R2dbcPostgresqlJsonStringReader

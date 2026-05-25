@@ -1,6 +1,5 @@
 package org.hswebframework.ezorm.rdb.supports.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.rdb.codec.JsonValueCodec;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
@@ -8,19 +7,46 @@ import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class JsonCodecSupport {
 
-    private static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
+    private static final List<JsonStringReader> stringReaders = new CopyOnWriteArrayList<>();
 
-    private static final String R2DBC_POSTGRES_JSON_CLASS = "io.r2dbc.postgresql.codec.Json";
+    static {
+        loadStringReaders();
+    }
 
     private JsonCodecSupport() {
+    }
+
+    public static void registerStringReader(JsonStringReader reader) {
+        if (reader != null) {
+            stringReaders.add(reader);
+        }
+    }
+
+    private static void loadStringReaders() {
+        ServiceLoader<JsonStringReader> loader = ServiceLoader.load(JsonStringReader.class);
+        Iterator<JsonStringReader> iterator = loader.iterator();
+        while (true) {
+            try {
+                if (!iterator.hasNext()) {
+                    return;
+                }
+                registerStringReader(iterator.next());
+            } catch (ServiceConfigurationError ignore) {
+                // Optional database drivers may be absent at runtime. Skip their readers.
+            }
+        }
     }
 
     @SneakyThrows
@@ -42,6 +68,25 @@ public final class JsonCodecSupport {
         }
     }
 
+    public static boolean canReadAsString(Object data) {
+        if (data == null) {
+            return false;
+        }
+        if (data instanceof CharSequence ||
+            data instanceof Clob ||
+            data instanceof Blob ||
+            data instanceof byte[] ||
+            data instanceof ByteBuffer ||
+            data instanceof InputStream ||
+            data instanceof Reader) {
+            return true;
+        }
+        if (findStringReader(data) != null) {
+            return true;
+        }
+        return FeatureUtils.r2dbcIsAlive() && (data instanceof io.r2dbc.spi.Clob || data instanceof io.r2dbc.spi.Blob);
+    }
+
     @SneakyThrows
     public static String readAsString(Object data) {
         if (data == null) {
@@ -50,15 +95,9 @@ public final class JsonCodecSupport {
         if (data instanceof CharSequence) {
             return data.toString();
         }
-        if (PG_OBJECT_CLASS.equals(data.getClass().getName())) {
-            Method method = data.getClass().getMethod("getValue");
-            Object value = method.invoke(data);
-            return value == null ? null : String.valueOf(value);
-        }
-        if (R2DBC_POSTGRES_JSON_CLASS.equals(data.getClass().getName())) {
-            Method method = data.getClass().getMethod("asString");
-            Object value = method.invoke(data);
-            return value == null ? null : String.valueOf(value);
+        JsonStringReader reader = findStringReader(data);
+        if (reader != null) {
+            return reader.read(data);
         }
         if (data instanceof Clob clob) {
             return read(clob.getCharacterStream());
@@ -78,8 +117,8 @@ public final class JsonCodecSupport {
         if (data instanceof InputStream stream) {
             return read(stream);
         }
-        if (data instanceof Reader reader) {
-            return read(reader);
+        if (data instanceof Reader dataReader) {
+            return read(dataReader);
         }
         if (FeatureUtils.r2dbcIsAlive()) {
             String text = tryReadR2dbcLob(data);
@@ -88,6 +127,15 @@ public final class JsonCodecSupport {
             }
         }
         return String.valueOf(data);
+    }
+
+    private static JsonStringReader findStringReader(Object data) {
+        for (JsonStringReader reader : stringReaders) {
+            if (reader.supports(data)) {
+                return reader;
+            }
+        }
+        return null;
     }
 
     @SneakyThrows

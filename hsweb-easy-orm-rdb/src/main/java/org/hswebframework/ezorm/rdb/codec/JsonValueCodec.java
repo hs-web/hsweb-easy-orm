@@ -175,8 +175,7 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
                 target = mapper.readValue(reader, jacksonType);
             } else if (data instanceof ByteBuffer) {
                 return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
-            } else if (data != null && (data.getClass().getName().equals("org.postgresql.util.PGobject") ||
-                data.getClass().getName().equals("io.r2dbc.postgresql.codec.Json"))) {
+            } else if (JsonCodecSupport.canReadAsString(data)) {
                 target = doRead(JsonCodecSupport.readAsString(data));
             } else if (FeatureUtils.r2dbcIsAlive()) {
                 Mono<?> mono = null;
