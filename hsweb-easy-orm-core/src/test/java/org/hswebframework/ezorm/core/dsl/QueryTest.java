@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -63,6 +64,25 @@ public class QueryTest {
             assertSingleCondition(query -> query.notContained(TestEntity::getId, 1), "ncontained", 1);
             assertSingleCondition(query -> query.overlap(TestEntity::getId, 1), "overlap", 1);
             assertSingleCondition(query -> query.notOverlap(TestEntity::getId, 1), "noverlap", 1);
+        }
+
+        //json terms
+        {
+            assertSingleCondition(query -> query.jsonExists("data", "name"), "json_exists", "name");
+            assertSingleCondition(query -> query.jsonContains("data", Collections.singletonMap("name", "JetLinks")),
+                                  "json_contains", Collections.singletonMap("name", "JetLinks"));
+
+            Term term = Query.of()
+                             .jsonValue("data", "age", "gt", 18)
+                             .getParam()
+                             .getTerms()
+                             .get(0);
+            Assert.assertEquals("data", term.getColumn());
+            Assert.assertEquals("json_value", term.getTermType());
+            Assert.assertTrue(term.getValue() instanceof Map);
+            Assert.assertEquals("age", ((Map<?, ?>) term.getValue()).get("path"));
+            Assert.assertEquals("gt", ((Map<?, ?>) term.getValue()).get("termType"));
+            Assert.assertEquals(18, ((Map<?, ?>) term.getValue()).get("value"));
         }
 
         //gt lt
