@@ -38,10 +38,16 @@ public final class JsonCodecSupport {
         ServiceLoader<JsonStringReader> loader = ServiceLoader.load(JsonStringReader.class);
         Iterator<JsonStringReader> iterator = loader.iterator();
         while (true) {
+            boolean hasNext;
             try {
-                if (!iterator.hasNext()) {
-                    return;
-                }
+                hasNext = iterator.hasNext();
+            } catch (ServiceConfigurationError ignore) {
+                return;
+            }
+            if (!hasNext) {
+                return;
+            }
+            try {
                 registerStringReader(iterator.next());
             } catch (ServiceConfigurationError ignore) {
                 // Optional database drivers may be absent at runtime. Skip their readers.

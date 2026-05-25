@@ -16,6 +16,7 @@ import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlSchemaMetadata;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,6 +37,10 @@ public class JsonTermFragmentBuilderTest {
         Assert.assertEquals("( data ::jsonb #> array[?,?] ) is not null", exists.getSql());
         Assert.assertArrayEquals(new Object[]{"detail", "name"}, exists.getParameters());
 
+        SqlRequest isNull = create(column, Term.of("data", JsonTermType.value, JsonValueCondition.of("detail.name", TermType.isnull, null))).toRequest();
+        Assert.assertEquals("(data::jsonb #>> array[?,?]) is null", isNull.getSql());
+        Assert.assertArrayEquals(new Object[]{"detail", "name"}, isNull.getParameters());
+
         SqlRequest contains = create(column, Term.of("data", JsonTermType.contains, Collections.singletonMap("name", "JetLinks"))).toRequest();
         Assert.assertEquals("data ::jsonb @> ?::jsonb", contains.getSql());
         Assert.assertEquals("{\"name\":\"JetLinks\"}", contains.getParameters()[0]);
@@ -52,6 +57,10 @@ public class JsonTermFragmentBuilderTest {
         SqlRequest exists = create(column, Term.of("data", JsonTermType.exists, "name")).toRequest();
         Assert.assertEquals("json_contains_path( data ,'one', ? )", exists.getSql());
         Assert.assertArrayEquals(new Object[]{"$.name"}, exists.getParameters());
+
+        SqlRequest notNull = create(column, Term.of("data", JsonTermType.value, JsonValueCondition.of("name", TermType.notnull, null))).toRequest();
+        Assert.assertEquals("json_unquote(json_extract(data,?)) is not null", notNull.getSql());
+        Assert.assertArrayEquals(new Object[]{"$.name"}, notNull.getParameters());
 
         SqlRequest contains = create(column, Term.of("data", JsonTermType.contains, Collections.singletonMap("name", "JetLinks"))).toRequest();
         Assert.assertEquals("json_contains( data , ? )", contains.getSql());
@@ -78,6 +87,14 @@ public class JsonTermFragmentBuilderTest {
     public void testH2JsonQueryUnsupported() {
         RDBColumnMetadata column = jsonColumn(new org.hswebframework.ezorm.rdb.supports.h2.H2SchemaMetadata("PUBLIC"), JsonType.INSTANCE);
         create(column, Term.of("data", JsonTermType.exists, "name")).toRequest();
+    }
+
+    @Test
+    public void testPathNormalizeAndSegments() {
+        Assert.assertEquals("$.a.b", JsonPathUtils.normalize("a.b"));
+        Assert.assertEquals("$.a[0]", JsonPathUtils.normalize("a[0]"));
+        Assert.assertEquals(Arrays.asList("a", "b"), JsonPathUtils.segments("$.a.b"));
+        Assert.assertEquals(Arrays.asList("a", "0", "name"), JsonPathUtils.segments("$.a[0].name"));
     }
 
     private SqlFragments create(RDBColumnMetadata column, Term term) {
