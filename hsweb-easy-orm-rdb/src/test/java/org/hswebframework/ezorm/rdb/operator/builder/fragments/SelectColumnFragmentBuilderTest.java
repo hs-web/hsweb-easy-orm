@@ -1,12 +1,15 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments;
 
 import org.hswebframework.ezorm.rdb.metadata.*;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.SelectColumnFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.query.NativeSelectColumn;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +24,8 @@ public class SelectColumnFragmentBuilderTest {
 
     SelectColumnFragmentBuilder builder;
 
+    RDBTableMetadata table;
+
     @Before
     public void init() {
         RDBDatabaseMetadata database = new RDBDatabaseMetadata(Dialect.H2);
@@ -30,6 +35,7 @@ public class SelectColumnFragmentBuilderTest {
         database.addSchema(schema);
 
         RDBTableMetadata test =schema.newTable("test");
+        table = test;
         RDBTableMetadata detail = schema.newTable("detail");
         RDBTableMetadata detail2 = schema.newTable("detail2");
 
@@ -178,4 +184,79 @@ public class SelectColumnFragmentBuilderTest {
         Assert.assertTrue(sql.contains("info.comment"));
 
     }
+    @Test
+    public void testDefaultSelectUsesAllColumnsAndAliasExcludes() {
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.getSelectExcludes().add("name");
+
+        SqlFragments fragments = builder.createFragments(parameter);
+        Assert.assertEquals("test.\"ID\" as \"id\"", fragments.toRequest().getSql());
+    }
+
+    @Test
+    public void testNativeSelectColumnPreservesParametersAndAlias() {
+        NativeSelectColumn nativeColumn = new NativeSelectColumn("coalesce(?, test.\"NAME\")", new Object[]{"fallback"});
+        nativeColumn.setAlias("displayName");
+
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setSelect(Collections.singletonList(nativeColumn));
+
+        SqlRequest request = builder.createFragments(parameter).toRequest();
+        Assert.assertEquals("coalesce(?, test.\"NAME\") as \"DISPLAYNAME\"", request.getSql());
+        Assert.assertArrayEquals(new Object[]{"fallback"}, request.getParameters());
+    }
+
+    @Test
+    public void testFunctionBranchesForDistinctUnknownAndEmptyFunction() {
+        table.addFeature(new SimpleFunctionFragmentBuilder("sum", "合计"));
+
+        SelectColumn sum = new SelectColumn();
+        sum.setColumn("id");
+        sum.setAlias("totalId");
+        sum.setFunction("sum");
+        sum.setOpts(Collections.singletonMap("distinct", true));
+
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setSelect(Collections.singletonList(sum));
+        Assert.assertEquals("sum( distinct test.\"ID\" ) as \"totalId\"",
+                            builder.createFragments(parameter).toRequest().getSql());
+
+        SelectColumn unknownFunction = new SelectColumn();
+        unknownFunction.setColumn("id");
+        unknownFunction.setFunction("missing_function");
+        parameter.setSelect(Collections.singletonList(unknownFunction));
+        Assert.assertTrue(builder.createFragments(parameter).isEmpty());
+
+        SelectColumn emptyFunction = new SelectColumn();
+        emptyFunction.setFunction("sum");
+        parameter.setSelect(Collections.singletonList(emptyFunction));
+        try {
+            builder.createFragments(parameter);
+            Assert.fail("empty function fragment should fail fast");
+        } catch (UnsupportedOperationException e) {
+            Assert.assertTrue(e.getMessage().contains("unsupported function"));
+        }
+    }
+
+    @Test
+    public void testJoinWildcardUnknownAliasAndForeignKeyAutoJoinBranches() {
+        Join join = new Join();
+        join.setTarget("detail2");
+        join.setAlias("info");
+
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.getJoins().add(join);
+        parameter.setSelect(Arrays.asList(of("unknown.*"), of("test.*"), of("info.*"), of("detail.comment")));
+        parameter.getSelectExcludes().add("id");
+
+        SqlRequest request = builder.createFragments(parameter).toRequest();
+        String sql = request.getSql();
+        Assert.assertFalse(sql.contains("unknown"));
+        Assert.assertFalse(sql.contains("ID"));
+        Assert.assertTrue(sql.contains("test.\"NAME\" as \"name\""));
+        Assert.assertTrue(sql.contains("info.\"COMMENT\" as \"info.comment\""));
+        Assert.assertTrue(sql.contains("detail.\"COMMENT\" as \"detail.comment\""));
+        Assert.assertFalse(parameter.getJoins().isEmpty());
+    }
+
 }
