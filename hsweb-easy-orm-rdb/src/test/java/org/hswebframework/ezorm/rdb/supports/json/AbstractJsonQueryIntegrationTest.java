@@ -92,6 +92,67 @@ public abstract class AbstractJsonQueryIntegrationTest {
         }
     }
 
+    @Test
+    public void testStrictModeFailsFastOnUnsupportedTerm() {
+        RDBDatabaseMetadata database = new RDBDatabaseMetadata(getDialect());
+        RDBSchemaMetadata schema = getSchema();
+        database.setCurrentSchema(schema);
+        database.addSchema(schema);
+        database.addFeature(getSqlExecutor());
+        DatabaseOperator operator = DefaultDatabaseOperator.of(database);
+        String tableName = "test_json_query_strict";
+
+        try {
+            operator.ddl()
+                    .createOrAlter(tableName)
+                    .addColumn().name("id").varchar(32).primaryKey().commit()
+                    .addColumn().name("data").type(getJsonType()).commit()
+                    .commit()
+                    .sync();
+
+            operator.dml()
+                    .insert(tableName)
+                    .columns("id", "data")
+                    .values("1", json("JetLinks", 18, "ok"))
+                    .execute()
+                    .sync();
+
+            Assert.assertEquals(
+                Collections.singletonList("1"),
+                operator.dml()
+                        .query(tableName)
+                        .context(Collections.singletonMap("easyorm.strict.term", true))
+                        .select("id")
+                        .where(q -> q.and("data", JsonTermType.exists, "name"))
+                        .fetch(ResultWrappers.mapStream())
+                        .sync()
+                        .map(map -> String.valueOf(map.get("id")))
+                        .collect(Collectors.toList())
+            );
+
+            try {
+                operator.dml()
+                        .query(tableName)
+                        .context(Collections.singletonMap("easyorm.strict.term", true))
+                        .select("id")
+                        .where(q -> q.and("id", "json_value", JsonValueCondition.of("age", TermType.gt, 18)))
+                        .fetch(ResultWrappers.mapStream())
+                        .sync()
+                        .count();
+                Assert.fail("should fail fast in strict mode");
+            } catch (RuntimeException e) {
+                Assert.assertTrue(e.getMessage() == null || e.getMessage().contains("Unsupported term"));
+            }
+        } finally {
+            try {
+                operator.sql()
+                        .sync()
+                        .execute(SqlRequests.of("drop table " + tableName));
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
     private List<String> queryIds(DatabaseOperator operator,
                                   String tableName,
                                   String column,
