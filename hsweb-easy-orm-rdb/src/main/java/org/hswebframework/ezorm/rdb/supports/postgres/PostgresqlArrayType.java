@@ -84,7 +84,7 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
         if (value instanceof java.sql.Array sqlArray) {
             return convertSqlArray(sqlArray);
         }
-        if (value instanceof PGobject pgObject) {
+        if (PostgresqlDriverUtils.isPgObject(value) && value instanceof PGobject pgObject) {
             return convert(pgObject.getValue());
         }
         if (value instanceof Collection<?> collection) {
