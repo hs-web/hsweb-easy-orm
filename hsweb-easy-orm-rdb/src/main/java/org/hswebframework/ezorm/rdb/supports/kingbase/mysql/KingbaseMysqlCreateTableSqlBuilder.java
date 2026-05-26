@@ -13,6 +13,9 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexPa
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.hswebframework.ezorm.rdb.executor.SqlRequests.of;
 
 /**
@@ -34,6 +37,7 @@ public class KingbaseMysqlCreateTableSqlBuilder implements CreateTableSqlBuilder
     @Override
     public SqlRequest build(RDBTableMetadata table) {
         DefaultBatchSqlRequest sql = new DefaultBatchSqlRequest();
+        List<SqlRequest> comments = new ArrayList<>();
 
         PrepareSqlFragments createTable = PrepareSqlFragments.of();
 
@@ -66,8 +70,8 @@ public class KingbaseMysqlCreateTableSqlBuilder implements CreateTableSqlBuilder
             }
             // 使用 PostgreSQL 标准的 COMMENT ON COLUMN 语法（作为单独的批量 SQL）
             if (column.getComment() != null) {
-                sql.addBatch(of(String.format("comment on column %s is '%s'",
-                        column.getFullTableName(), column.getComment())));
+                comments.add(of(String.format("comment on column %s is '%s'",
+                                              column.getFullTableName(), column.getComment())));
             }
         }
 
@@ -76,11 +80,12 @@ public class KingbaseMysqlCreateTableSqlBuilder implements CreateTableSqlBuilder
 
         // 使用 PostgreSQL 标准的 COMMENT ON TABLE 语法
         if (table.getComment() != null) {
-            sql.addBatch(of(String.format("comment on table %s is '%s'",
-                    table.getFullName(), table.getComment())));
+            comments.add(of(String.format("comment on table %s is '%s'",
+                                          table.getFullName(), table.getComment())));
         }
 
         sql.setSql(createTable.toRequest().getSql());
+        comments.forEach(sql::addBatch);
 
         table.findFeature(CreateIndexSqlBuilder.ID)
                 .ifPresent(builder -> {

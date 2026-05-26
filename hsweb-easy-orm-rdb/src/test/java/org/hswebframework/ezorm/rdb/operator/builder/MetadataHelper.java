@@ -24,32 +24,26 @@ public class MetadataHelper {
         schema.addTable(table);
         schema.addTable(detail);
 
-        {
-            RDBColumnMetadata id = new RDBColumnMetadata();
-            id.setName("id");
-            id.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
-            id.setLength(32);
+        RDBColumnMetadata id = new RDBColumnMetadata();
+        id.setName("id");
+        id.setType(JdbcDataType.of(JDBCType.VARCHAR, String.class));
+        id.setLength(32);
 
-            RDBColumnMetadata name = new RDBColumnMetadata();
-            name.setName("name");
-            name.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
-            name.setLength(64);
+        RDBColumnMetadata name = new RDBColumnMetadata();
+        name.setName("name");
+        name.setType(JdbcDataType.of(JDBCType.VARCHAR, String.class));
+        name.setLength(64);
 
-            table.addColumn(id);
-            table.addColumn(name);
+        table.addColumn(id);
+        table.addColumn(name);
 
-            detail.addColumn(id.clone());
-        }
-        {
+        RDBColumnMetadata comment = new RDBColumnMetadata();
+        comment.setName("comment");
+        comment.setType(JdbcDataType.of(JDBCType.VARCHAR, String.class));
+        comment.setLength(64);
 
-            RDBColumnMetadata comment = new RDBColumnMetadata();
-            comment.setName("comment");
-            comment.setType(JdbcDataType.of(JDBCType.VARCHAR,String.class));
-            comment.setLength(64);
-
-            detail.addColumn(comment);
-
-        }
+        table.addColumn(comment);
+        detail.addColumn(id.clone());
 
 
         return schema;
