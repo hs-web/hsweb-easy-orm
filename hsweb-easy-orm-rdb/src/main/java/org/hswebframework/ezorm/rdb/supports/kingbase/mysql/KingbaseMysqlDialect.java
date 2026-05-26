@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.LiteralDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 
 import java.sql.Date;
 import java.sql.JDBCType;
@@ -59,6 +60,7 @@ public class KingbaseMysqlDialect extends DefaultDialect {
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "longtext"));
 
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
+        registerDataType("json", JsonType.INSTANCE);
         registerDataType("text", JdbcDataType.of(JDBCType.CLOB, String.class));
         registerDataType("longtext", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
         registerDataType("year", JdbcDataType.of(JDBCType.DATE, Date.class));

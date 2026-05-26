@@ -77,6 +77,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
             if (column.getType() instanceof JsonbType) {
                 column.addFeature(PostgresqlJsonbExistTermFragmentBuilder.exist);
             }
+            PostgresqlJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }

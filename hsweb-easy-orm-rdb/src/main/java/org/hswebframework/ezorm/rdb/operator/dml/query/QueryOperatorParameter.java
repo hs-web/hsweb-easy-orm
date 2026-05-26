@@ -12,6 +12,8 @@ import java.util.*;
 @Setter
 public class QueryOperatorParameter {
 
+    public static final String STRICT_TERM_KEY = "easyorm.strict.term";
+
     private List<SelectColumn> select = new ArrayList<>();
 
     /**
@@ -63,6 +65,16 @@ public class QueryOperatorParameter {
         }
 
         return fromAlias;
+    }
+
+    public boolean isStrictTerm() {
+        if (context != null && context.containsKey(STRICT_TERM_KEY)) {
+            Object value = context.get(STRICT_TERM_KEY);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+        }
+        return false;
     }
 
     @Override

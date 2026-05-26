@@ -10,6 +10,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QueryTermsFragmentBuilder;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
 import org.junit.Assert;
 import org.junit.Before;
@@ -119,6 +120,18 @@ public class QueryTermsFragmentBuilderTest {
                 Query.of().is("test.id", "1").is("test.name", "123"),
                 "test.\"ID\" = ? and test.\"NAME\" = ?"
         );
+    }
+
+    @Test
+    public void testSelectAliasWithStrictTerm() {
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setFrom("test");
+        parameter.setContext(java.util.Collections.singletonMap("easyorm.strict.term", true));
+        parameter.getSelect().add(SelectColumn.of("name", "nickname"));
+        parameter.getWhere().add(Term.of("nickname", "eq", "JetLinks"));
+
+        SqlRequest request = builder.createFragments(parameter).toRequest();
+        Assert.assertEquals("test.\"NAME\" = ?", request.getSql());
     }
 
 

@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlIndexMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlJsonTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlPaginator;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlAlterTableSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlR2DBCExceptionTranslation;
@@ -60,6 +61,7 @@ public class KingbaseMysqlSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(MysqlEnumInFragmentBuilder.in);
                 column.addFeature(MysqlEnumInFragmentBuilder.notIn);
             }
+            MysqlJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }

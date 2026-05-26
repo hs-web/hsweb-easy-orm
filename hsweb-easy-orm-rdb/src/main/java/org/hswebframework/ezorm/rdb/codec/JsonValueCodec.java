@@ -13,6 +13,7 @@ import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.supports.json.JsonCodecSupport;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -174,6 +175,8 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
                 target = mapper.readValue(reader, jacksonType);
             } else if (data instanceof ByteBuffer) {
                 return doRead(new ByteBufferBackedInputStream(((ByteBuffer) data)));
+            } else if (JsonCodecSupport.canReadAsString(data)) {
+                target = doRead(JsonCodecSupport.readAsString(data));
             } else if (FeatureUtils.r2dbcIsAlive()) {
                 Mono<?> mono = null;
                 if (data instanceof io.r2dbc.spi.Clob _clob) {

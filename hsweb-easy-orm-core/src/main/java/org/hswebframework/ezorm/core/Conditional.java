@@ -996,6 +996,68 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
     }
 
     /**
+     * 追加 JSON 路径存在条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @return 当前条件构造器
+     */
+    default T jsonExists(String column, Object path) {
+        return accept(column, "json_exists", path);
+    }
+
+    /**
+     * 追加 JSON 包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonContains(String column, Object value) {
+        return accept(column, "json_contains", value);
+    }
+
+    /**
+     * 追加 JSON 被包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonContained(String column, Object value) {
+        return accept(column, "json_contained", value);
+    }
+
+    /**
+     * 追加 JSON 值条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param termType 条件类型
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonValue(String column, Object path, String termType, Object value) {
+        java.util.Map<String, Object> condition = new java.util.LinkedHashMap<>();
+        condition.put("path", path);
+        condition.put("termType", termType);
+        condition.put("value", value);
+        return accept(column, "json_value", condition);
+    }
+
+    /**
+     * 追加 JSON 值等于条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonValue(String column, Object path, Object value) {
+        return jsonValue(column, path, TermType.eq, value);
+    }
+
+    /**
      * 追加为空条件（静态方法引用方式）: column = ''
      *
      * @param column 列引用

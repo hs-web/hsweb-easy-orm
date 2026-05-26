@@ -812,6 +812,68 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
     }
 
     /**
+     * 追加 JSON 路径存在条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonExists(String column, Object path) {
+        return accept(column, "json_exists", path);
+    }
+
+    /**
+     * 追加 JSON 包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonContains(String column, Object value) {
+        return accept(column, "json_contains", value);
+    }
+
+    /**
+     * 追加 JSON 被包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonContained(String column, Object value) {
+        return accept(column, "json_contained", value);
+    }
+
+    /**
+     * 追加 JSON 值条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param termType 条件类型
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonValue(String column, Object path, String termType, Object value) {
+        java.util.Map<String, Object> condition = new java.util.LinkedHashMap<>();
+        condition.put("path", path);
+        condition.put("termType", termType);
+        condition.put("value", value);
+        return accept(column, "json_value", condition);
+    }
+
+    /**
+     * 追加 JSON 值等于条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonValue(String column, Object path, Object value) {
+        return jsonValue(column, path, TermType.eq, value);
+    }
+
+    /**
      * 追加为空条件（方法引用方式）: column = '' or column is null
      * 
      * @param column 列引用

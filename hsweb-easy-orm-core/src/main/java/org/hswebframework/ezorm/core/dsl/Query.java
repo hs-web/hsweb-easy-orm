@@ -122,6 +122,11 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         return this;
     }
 
+    public Query<T, Q> strictTerm(boolean strictTerm) {
+        this.param.setStrictTerm(strictTerm);
+        return this;
+    }
+
     public <R> R execute(Function<Q, R> function) {
         return function.apply(param);
     }

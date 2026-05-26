@@ -32,6 +32,7 @@ public class SqlServerSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(SqlServerEnumInFragmentBuilder.in);
                 column.addFeature(SqlServerEnumInFragmentBuilder.notIn);
             }
+            SqlServerJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }
