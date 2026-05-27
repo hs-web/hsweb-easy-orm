@@ -37,6 +37,23 @@ public class PostgresqlArraySupportTest {
         Assert.assertArrayEquals(new Long[]{1L, null, 3L}, (Long[]) PostgresqlArrayType.BIGINT_ARRAY.decode("{1,NULL,3}"));
     }
 
+
+    @Test
+    public void testInt2ColumnTypeMapping() {
+        RDBSchemaMetadata schema = createSchema();
+        RDBTableMetadata table = schema.newTable("test_smallint");
+        schema.addTable(table);
+
+        RDBColumnMetadata column = table.newColumn();
+        column.setName("object_type");
+        column.setOwner(table);
+        column.setType(table.getDialect().convertDataType("int2"));
+        table.addColumn(column);
+
+        Assert.assertEquals("int2", column.getDataType());
+        Assert.assertEquals(Short.class, column.getJavaType());
+    }
+
     @Test
     public void testArrayColumnType() {
         RDBSchemaMetadata schema = createSchema();

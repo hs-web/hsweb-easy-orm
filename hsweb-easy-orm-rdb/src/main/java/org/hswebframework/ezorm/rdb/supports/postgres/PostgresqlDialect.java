@@ -79,7 +79,7 @@ public class PostgresqlDialect extends DefaultDialect {
 
         registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT, Long.class));
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
-        registerDataType("int2", JdbcDataType.of(JDBCType.SMALLINT, Byte.class));
+        registerDataType("int2", JdbcDataType.of(JDBCType.SMALLINT, Short.class));
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("float8", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
         registerDataType("float4", JdbcDataType.of(JDBCType.FLOAT, Float.class));
