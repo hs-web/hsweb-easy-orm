@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleTermsFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.junit.Assert;
 import org.junit.Test;
@@ -89,6 +90,99 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         Assert.assertArrayEquals(new Object[]{null}, nullEncoded.getParameters());
     }
 
+
+    @Test
+    public void testJsonbCommonTermTypeDefaults() {
+        RDBColumnMetadata column = jsonbColumn(null);
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("name", "JetLinks");
+
+        SqlRequest contains = PostgresqlJsonbTermFragmentBuilder.contains
+            .createFragments("metadata", column, Term.of("metadata", "contains", value))
+            .toRequest();
+        Assert.assertEquals("metadata @> ?::jsonb", contains.getSql());
+        Assert.assertEquals("{\"name\":\"JetLinks\"}", contains.getParameters()[0]);
+
+        SqlRequest contained = PostgresqlJsonbTermFragmentBuilder.contained
+            .createFragments("metadata", column, Term.of("metadata", "contained", value))
+            .toRequest();
+        Assert.assertEquals("metadata <@ ?::jsonb", contained.getSql());
+        Assert.assertEquals("{\"name\":\"JetLinks\"}", contained.getParameters()[0]);
+
+        SqlRequest in = PostgresqlJsonbTermFragmentBuilder.in
+            .createFragments("metadata", column, Term.of("metadata", "in", Arrays.asList("name", "age")))
+            .toRequest();
+        Assert.assertEquals("jsonb_exists_any ( metadata , array[ ?,? ])", in.getSql());
+        Assert.assertArrayEquals(new Object[]{"name", "age"}, in.getParameters());
+
+        SqlRequest overlap = PostgresqlJsonbTermFragmentBuilder.overlap
+            .createFragments("metadata", column, Term.of("metadata", "overlap", "name,age"))
+            .toRequest();
+        Assert.assertEquals("jsonb_exists_any ( metadata , array[ ?,? ])", overlap.getSql());
+        Assert.assertArrayEquals(new Object[]{"name", "age"}, overlap.getParameters());
+    }
+
+    @Test
+    public void testJsonbCommonTermTypeOptionsOverrideDefaultBehavior() {
+        RDBColumnMetadata column = jsonbColumn(null);
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("name", "JetLinks");
+
+        SqlRequest containsAllKeys = PostgresqlJsonbTermFragmentBuilder.contains
+            .createFragments("metadata", column, Term.of("metadata", "contains", Arrays.asList("name", "age"), "all"))
+            .toRequest();
+        Assert.assertEquals("jsonb_exists_all ( metadata , array[ ?,? ])", containsAllKeys.getSql());
+        Assert.assertArrayEquals(new Object[]{"name", "age"}, containsAllKeys.getParameters());
+
+        SqlRequest inJsonContains = PostgresqlJsonbTermFragmentBuilder.in
+            .createFragments("metadata", column, Term.of("metadata", "in", value, "json"))
+            .toRequest();
+        Assert.assertEquals("metadata @> ?::jsonb", inJsonContains.getSql());
+        Assert.assertEquals("{\"name\":\"JetLinks\"}", inJsonContains.getParameters()[0]);
+
+        SqlRequest containsKey = PostgresqlJsonbTermFragmentBuilder.contains
+            .createFragments("metadata", column, Term.of("metadata", "contains", "name", "key"))
+            .toRequest();
+        Assert.assertEquals("jsonb_exists ( metadata , ? )", containsKey.getSql());
+        Assert.assertArrayEquals(new Object[]{"name"}, containsKey.getParameters());
+
+        SqlRequest negative = PostgresqlJsonbTermFragmentBuilder.notContains
+            .createFragments("metadata", column, Term.of("metadata", "ncontains", value))
+            .toRequest();
+        Assert.assertEquals("( metadata is null or not ( metadata @> ?::jsonb ) )", negative.getSql());
+        Assert.assertEquals("{\"name\":\"JetLinks\"}", negative.getParameters()[0]);
+    }
+
+    @Test
+    public void testJsonbCommonTermTypeRegisteredOnJsonbColumn() {
+        RDBColumnMetadata column = jsonbColumn(null);
+        Assert.assertTrue(column.findFeature(org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId("contains")).isPresent());
+        Assert.assertTrue(column.findFeature(org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId("ncontains")).isPresent());
+        Assert.assertTrue(column.findFeature(org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId("in")).isPresent());
+        Assert.assertTrue(column.findFeature(org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId("overlap")).isPresent());
+    }
+
+
+
+    @Test
+    public void testJsonbCommonTermTypeWorksThroughColumnFeatureLookup() {
+        RDBTableMetadata table = jsonbTable(null);
+
+        Term containsAll = new Term();
+        containsAll.setColumn("metadata$contains$all");
+        containsAll.setValue("name,age");
+        SqlRequest containsAllRequest = SimpleTermsFragmentBuilder.createByTable(table, containsAll).toRequest();
+        Assert.assertEquals("jsonb_exists_all ( \"metadata\" , array[ ?,? ])", containsAllRequest.getSql());
+        Assert.assertArrayEquals(new Object[]{"name", "age"}, containsAllRequest.getParameters());
+
+        Term notOverlap = new Term();
+        notOverlap.setColumn("metadata$noverlap");
+        notOverlap.setValue(Arrays.asList("name", "status"));
+        SqlRequest notOverlapRequest = SimpleTermsFragmentBuilder.createByTable(table, notOverlap).toRequest();
+        Assert.assertEquals("( \"metadata\" is null or not ( jsonb_exists_any ( \"metadata\" , array[ ?,? ]) ) )", notOverlapRequest.getSql());
+        Assert.assertArrayEquals(new Object[]{"name", "status"}, notOverlapRequest.getParameters());
+    }
+
     @Test
     public void testOptionPriorityMatchesRepositoryColumnSyntax() {
         Term term = Term.of("metadata", "exist", Collections.singletonMap("name", "JetLinks"), "any", "all", "contained", "contains");
@@ -107,6 +201,10 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
     }
 
     private static RDBColumnMetadata jsonbColumn(ValueCodec<Object, Object> codec) {
+        return jsonbTable(codec).getColumn("metadata").orElseThrow();
+    }
+
+    private static RDBTableMetadata jsonbTable(ValueCodec<Object, Object> codec) {
         PostgresqlSchemaMetadata schema = new PostgresqlSchemaMetadata("public");
         RDBTableMetadata table = schema.newTable("test_jsonb_exist");
         RDBColumnMetadata column = table.newColumn();
@@ -114,7 +212,7 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         column.setType(JsonbType.INSTANCE);
         column.setValueCodec(codec);
         table.addColumn(column);
-        return column;
+        return table;
     }
 
     private static class TestCodec implements ValueCodec<Object, Object> {

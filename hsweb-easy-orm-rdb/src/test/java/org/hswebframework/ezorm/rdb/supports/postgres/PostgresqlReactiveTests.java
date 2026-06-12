@@ -194,6 +194,66 @@ public class PostgresqlReactiveTests extends BasicReactiveTests {
                     .as(StepVerifier::create)
                     .assertNext(ids -> Assert.assertEquals(Collections.singletonList("1"), ids))
                     .verifyComplete();
+
+            operator.dml()
+                    .query(jsonbTableName)
+                    .select("id")
+                    .where(q -> q.where("data$contains", Collections.singletonMap("name", "JetLinks")))
+                    .fetch(ResultWrappers.mapStream())
+                    .reactive()
+                    .map(map -> String.valueOf(map.get("id")))
+                    .collectList()
+                    .as(StepVerifier::create)
+                    .assertNext(ids -> Assert.assertEquals(Collections.singletonList("1"), ids))
+                    .verifyComplete();
+
+            operator.dml()
+                    .query(jsonbTableName)
+                    .select("id")
+                    .where(q -> q.where("data$contained", containedTarget))
+                    .fetch(ResultWrappers.mapStream())
+                    .reactive()
+                    .map(map -> String.valueOf(map.get("id")))
+                    .collectList()
+                    .as(StepVerifier::create)
+                    .assertNext(ids -> Assert.assertEquals(Collections.singletonList("1"), ids))
+                    .verifyComplete();
+
+            operator.dml()
+                    .query(jsonbTableName)
+                    .select("id")
+                    .where(q -> q.where("data$contains$all", Arrays.asList("name", "age")))
+                    .fetch(ResultWrappers.mapStream())
+                    .reactive()
+                    .map(map -> String.valueOf(map.get("id")))
+                    .collectList()
+                    .as(StepVerifier::create)
+                    .assertNext(ids -> Assert.assertEquals(Collections.singletonList("1"), ids))
+                    .verifyComplete();
+
+            operator.dml()
+                    .query(jsonbTableName)
+                    .select("id")
+                    .where(q -> q.where("data$overlap", Arrays.asList("name", "status")))
+                    .fetch(ResultWrappers.mapStream())
+                    .reactive()
+                    .map(map -> String.valueOf(map.get("id")))
+                    .collectList()
+                    .as(StepVerifier::create)
+                    .assertNext(ids -> Assert.assertEquals(Arrays.asList("1", "2", "3"), ids))
+                    .verifyComplete();
+
+            operator.dml()
+                    .query(jsonbTableName)
+                    .select("id")
+                    .where(q -> q.where("data$ncontains", Collections.singletonMap("name", "JetLinks")))
+                    .fetch(ResultWrappers.mapStream())
+                    .reactive()
+                    .map(map -> String.valueOf(map.get("id")))
+                    .collectList()
+                    .as(StepVerifier::create)
+                    .assertNext(ids -> Assert.assertEquals(Arrays.asList("2", "3"), ids))
+                    .verifyComplete();
         } finally {
             try {
                 operator.sql()

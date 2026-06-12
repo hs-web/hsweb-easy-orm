@@ -76,6 +76,14 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
             }
             if (column.getType() instanceof JsonbType) {
                 column.addFeature(PostgresqlJsonbExistTermFragmentBuilder.exist);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.in);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.notIn);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.contains);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.notContains);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.contained);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.notContained);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.overlap);
+                column.addFeature(PostgresqlJsonbTermFragmentBuilder.notOverlap);
             }
             PostgresqlJsonTermFragmentBuilder.addJsonFeatures(column);
         });
