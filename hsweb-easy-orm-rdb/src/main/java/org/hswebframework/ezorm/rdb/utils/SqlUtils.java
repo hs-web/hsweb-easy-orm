@@ -251,10 +251,23 @@ public class SqlUtils {
 
             // --- 跳过 PostgreSQL 操作符 ------------------------------------
             if (c == '?') {
+                // 检查 JDBC 风格转义操作符：??、??|、??&、??!。
+                // PostgreSQL JDBC 用 ?? 表示字面量 ?，R2DBC 占位符转换和日志渲染
+                // 需要还原为 PostgreSQL 实际操作符，避免发送不存在的 ?? 操作符。
+                if (i + 1 < sql.length() && sql.charAt(i + 1) == '?') {
+                    if (isEscapedPostgresOperator(sql, i)) {
+                        builder.append('?');
+                    } else {
+                        builder.append("??");
+                    }
+                    i++;
+                    continue;
+                }
+
                 // 检查多字符操作符：?| ?& ?!
                 if (i + 1 < sql.length()) {
                     char next = sql.charAt(i + 1);
-                    if (next == '|' || next == '&' || next == '!' || next == '?') {
+                    if (next == '|' || next == '&' || next == '!') {
                         builder.append('?').append(next);
                         i++;
                         continue;
@@ -283,6 +296,22 @@ public class SqlUtils {
         return builder;
     }
 
+    private static boolean isEscapedPostgresOperator(String sql, int index) {
+        if (index + 1 >= sql.length() || sql.charAt(index + 1) != '?') {
+            return false;
+        }
+        if (!hasPostgresOperatorLeft(sql, index)) {
+            return false;
+        }
+        if (index + 2 < sql.length()) {
+            char next = sql.charAt(index + 2);
+            if (next == '|' || next == '&' || next == '!') {
+                return true;
+            }
+        }
+        return hasPostgresOperatorRight(sql, index + 2);
+    }
+
     /**
      * 判断当前位置的 '?' 是否是 PostgreSQL 操作符（如 JSONB 的 ? 操作符）
      * <p>
@@ -299,6 +328,10 @@ public class SqlUtils {
      * @return 如果是操作符返回 true，否则返回 false
      */
     private static boolean isPostgresOperator(String sql, int index) {
+        return hasPostgresOperatorLeft(sql, index) && hasPostgresOperatorRight(sql, index + 1);
+    }
+
+    private static boolean hasPostgresOperatorLeft(String sql, int index) {
         // 检查前面是否有标识符字符（跳过空格）
         int prevIndex = index - 1;
         while (prevIndex >= 0 && Character.isWhitespace(sql.charAt(prevIndex))) {
@@ -313,21 +346,20 @@ public class SqlUtils {
         char prev = sql.charAt(prevIndex);
         // 标识符字符：字母、数字、下划线、右括号、右方括号、引号
         // 如果不是这些字符，则不是操作符（可能是 =, >, < 等操作符后的参数占位符）
-        if (!(Character.isLetterOrDigit(prev)
+        return Character.isLetterOrDigit(prev)
             || prev == '"'
             || prev == '_'
             || prev == ')'
-            || prev == ']')) {
-            return false;
-        }
+            || prev == ']';
+    }
 
-        // 检查后面是否是操作符格式
-        if (index + 1 >= sql.length()) {
+    private static boolean hasPostgresOperatorRight(String sql, int index) {
+        if (index >= sql.length()) {
             return false;
         }
 
         // 跳过空格
-        int nextIndex = index + 1;
+        int nextIndex = index;
         while (nextIndex < sql.length() && Character.isWhitespace(sql.charAt(nextIndex))) {
             nextIndex++;
         }
@@ -351,4 +383,5 @@ public class SqlUtils {
 
         return false;
     }
+
 }

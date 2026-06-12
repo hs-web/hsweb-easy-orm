@@ -23,6 +23,9 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
         String contained = "contained";
         String all = "all";
         String any = "any";
+        String key = "key";
+        String keys = "keys";
+        String json = "json";
     }
 
 
@@ -33,35 +36,65 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
 
     @Override
     public SqlFragments createFragments(String columnFullName, RDBColumnMetadata column, Term term) {
-        String operator = getOperator(term);
-        if (Operator.needObject(operator)) {
-            PrepareSqlFragments fragments = PrepareSqlFragments.of();
-            fragments.addSql(columnFullName, operator);
-            Object value = term.getValue();
-            return appendPrepareOrNative(fragments, convertObjectValue(column, value));
-        }
-        if (!Operator.base.equals(operator)) {
-            //转换值
-            List<Object> values = convertList(term.getValue());
-            if (values.isEmpty()) {
-                return EmptySqlFragments.INSTANCE;
-            }
-            return new BatchSqlFragments(4, 1)
-                .addSql(operator, "(", columnFullName, ",")
-                .addSql("array[")
-                .add(SqlUtils.createQuestionMarks(values.size()))
-                .addSql("])")
-                .addParameter(values);
-        }
+        return createFragments(columnFullName, column, getOperation(term), term.getValue());
+    }
 
+    static SqlFragments createFragments(String columnFullName,
+                                        RDBColumnMetadata column,
+                                        PostgresqlJsonbTermFragmentBuilder.JsonbOperation operation,
+                                        Object value) {
+        return switch (operation) {
+            case contains -> createObjectFragments(columnFullName, column, Operator.contains, value);
+            case contained -> createObjectFragments(columnFullName, column, Operator.contained, value);
+            case existsAll -> createArrayFragments(columnFullName, Operator.all, value);
+            case existsAny -> createArrayFragments(columnFullName, Operator.any, value);
+            case exists -> createBaseFragments(columnFullName, value);
+        };
+    }
+
+    private static SqlFragments createObjectFragments(String columnFullName,
+                                                      RDBColumnMetadata column,
+                                                      String operator,
+                                                      Object value) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
-        fragments.addSql(Operator.base, "(", columnFullName, ",");
-        appendPrepareOrNative(fragments, term.getValue());
-        return fragments.addSql(")");
+        fragments.addSql(columnFullName, operator);
+        return appendPrepareOrNativeValue(fragments, convertObjectValue(column, value));
+    }
+
+    private static SqlFragments createArrayFragments(String columnFullName, String operator, Object value) {
+        //转换值
+        List<Object> values = convertList(value);
+        if (values.isEmpty()) {
+            return EmptySqlFragments.INSTANCE;
+        }
+        return new BatchSqlFragments(4, 1)
+            .addSql(columnFullName, operator)
+            .addSql("array[")
+            .add(SqlUtils.createQuestionMarks(values.size()))
+            .addSql("]")
+            .addParameter(values);
+    }
+
+    private static SqlFragments createBaseFragments(String columnFullName, Object value) {
+        PrepareSqlFragments fragments = PrepareSqlFragments.of();
+        fragments.addSql(columnFullName, Operator.base);
+        return appendPrepareOrNativeValue(fragments, value);
+    }
+
+    private static <T extends AppendableSqlFragments> T appendPrepareOrNativeValue(T sql, Object value) {
+        if (value instanceof NativeSql) {
+            NativeSql nativeSql = ((NativeSql) value);
+            sql.addSql(nativeSql.getSql())
+               .addParameter(nativeSql.getParameters());
+        } else {
+            sql.add(SqlFragments.QUESTION_MARK)
+               .addParameter(value);
+        }
+        return sql;
     }
 
     @SneakyThrows
-    private Object convertObjectValue(RDBColumnMetadata column, Object value) {
+    private static Object convertObjectValue(RDBColumnMetadata column, Object value) {
         if (value instanceof NativeSql) {
             return value;
         }
@@ -82,7 +115,7 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
     }
 
 
-    private List<Object> convertList(Object value) {
+    private static List<Object> convertList(Object value) {
         if (value == null) {
             return Collections.emptyList();
         }
@@ -99,32 +132,44 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
     }
 
     public static String getOperator(Term term) {
+        return toOperator(getOperation(term));
+    }
+
+    private static PostgresqlJsonbTermFragmentBuilder.JsonbOperation getOperation(Term term) {
         List<String> options = term.getOptions();
         if (options.contains(Options.contains)) {
-            return Operator.contains;
+            return PostgresqlJsonbTermFragmentBuilder.JsonbOperation.contains;
         }
         if (options.contains(Options.contained)) {
-            return Operator.contained;
+            return PostgresqlJsonbTermFragmentBuilder.JsonbOperation.contained;
         }
         if (options.contains(Options.all)) {
-            return Operator.all;
+            return PostgresqlJsonbTermFragmentBuilder.JsonbOperation.existsAll;
         }
-        if (options.contains(Options.any)) {
-            return Operator.any;
+        if (options.contains(Options.any) || options.contains(Options.keys)) {
+            return PostgresqlJsonbTermFragmentBuilder.JsonbOperation.existsAny;
         }
-        return Operator.base;
+        return PostgresqlJsonbTermFragmentBuilder.JsonbOperation.exists;
+    }
+
+    private static String toOperator(PostgresqlJsonbTermFragmentBuilder.JsonbOperation operation) {
+        return switch (operation) {
+            case contains -> Operator.contains;
+            case contained -> Operator.contained;
+            case existsAll -> Operator.all;
+            case existsAny -> Operator.any;
+            default -> Operator.base;
+        };
     }
 
     private interface Operator {
-        //用函数规避SimpleParameterList#checkAllParametersSet的检查
-        String base = "jsonb_exists";
-        String all = "jsonb_exists_all";
-        String any = "jsonb_exists_any";
+        // PostgreSQL JDBC 使用 ?? 转义 JSONB ? 操作符，实际发送到数据库的是 ?、?|、?&。
+        // 这样可以匹配 jsonb_ops GIN 索引支持的操作符，而不是函数调用。
+        String base = "??";
+        String all = "??&";
+        String any = "??|";
         String contains = "@>";
         String contained = "<@";
 
-        static boolean needObject(String operator) {
-            return contains.equals(operator) || contained.equals(operator);
-        }
     }
 }
