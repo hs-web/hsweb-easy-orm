@@ -114,11 +114,61 @@ public class PostgresqlBasicTest extends BasicCommonTests {
                                                 .map(map -> String.valueOf(map.get("id")))
                                                 .collect(Collectors.toList());
 
+            List<String> commonContainsIds = operator.dml()
+                                                    .query(jsonbTableName)
+                                                    .select("id")
+                                                    .where(q -> q.where("data$contains", Collections.singletonMap("name", "JetLinks")))
+                                                    .fetch(ResultWrappers.mapStream())
+                                                    .sync()
+                                                    .map(map -> String.valueOf(map.get("id")))
+                                                    .collect(Collectors.toList());
+
+            List<String> commonContainedIds = operator.dml()
+                                                     .query(jsonbTableName)
+                                                     .select("id")
+                                                     .where(q -> q.where("data$contained", containedTarget))
+                                                     .fetch(ResultWrappers.mapStream())
+                                                     .sync()
+                                                     .map(map -> String.valueOf(map.get("id")))
+                                                     .collect(Collectors.toList());
+
+            List<String> commonAllKeyIds = operator.dml()
+                                                  .query(jsonbTableName)
+                                                  .select("id")
+                                                  .where(q -> q.where("data$contains$all", Arrays.asList("name", "age")))
+                                                  .fetch(ResultWrappers.mapStream())
+                                                  .sync()
+                                                  .map(map -> String.valueOf(map.get("id")))
+                                                  .collect(Collectors.toList());
+
+            List<String> commonOverlapIds = operator.dml()
+                                                  .query(jsonbTableName)
+                                                  .select("id")
+                                                  .where(q -> q.where("data$overlap", Arrays.asList("name", "status")))
+                                                  .fetch(ResultWrappers.mapStream())
+                                                  .sync()
+                                                  .map(map -> String.valueOf(map.get("id")))
+                                                  .collect(Collectors.toList());
+
+            List<String> commonNotContainsIds = operator.dml()
+                                                      .query(jsonbTableName)
+                                                      .select("id")
+                                                      .where(q -> q.where("data$ncontains", Collections.singletonMap("name", "JetLinks")))
+                                                      .fetch(ResultWrappers.mapStream())
+                                                      .sync()
+                                                      .map(map -> String.valueOf(map.get("id")))
+                                                      .collect(Collectors.toList());
+
             Assert.assertEquals(Arrays.asList("1", "2"), existsIds);
             Assert.assertEquals(Arrays.asList("1", "2", "3"), anyIds);
             Assert.assertEquals(List.of("1"), allIds);
             Assert.assertEquals(List.of("1"), containsIds);
             Assert.assertEquals(List.of("1"), containedIds);
+            Assert.assertEquals(List.of("1"), commonContainsIds);
+            Assert.assertEquals(List.of("1"), commonContainedIds);
+            Assert.assertEquals(List.of("1"), commonAllKeyIds);
+            Assert.assertEquals(Arrays.asList("1", "2", "3"), commonOverlapIds);
+            Assert.assertEquals(Arrays.asList("2", "3"), commonNotContainsIds);
         } finally {
             try {
                 operator.sql()
