@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDriverUtils;
 import org.slf4j.Logger;
 import reactor.core.Disposable;
 import reactor.core.Disposables;
@@ -43,7 +44,7 @@ public abstract class JdbcSqlExecutor {
         try {
             int count = 0;
             if (!request.isEmpty()) {
-                statement = connection.prepareStatement(request.getSql());
+                statement = createStatement(connection, request.getSql());
                 preparedStatementParameter(statement, request.getParameters());
                 count += statement.executeUpdate();
                 logger.debug("==>    Updated: {}", count);
@@ -57,7 +58,7 @@ public abstract class JdbcSqlExecutor {
                             releaseStatement(statement);
                         }
                         printSql(logger, batch);
-                        statement = connection.prepareStatement(batch.getSql());
+                        statement = createStatement(connection, batch.getSql());
                         preparedStatementParameter(statement, batch.getParameters());
                         int rows = statement.executeUpdate();
                         count += rows;
@@ -90,7 +91,7 @@ public abstract class JdbcSqlExecutor {
         try {
             if (!request.isEmpty()) {
                 printSql(logger, request);
-                statement = connection.prepareStatement(request.getSql());
+                statement = createStatement(connection, request.getSql());
                 preparedStatementParameter(statement, request.getParameters());
                 statement.execute();
             }
@@ -102,7 +103,7 @@ public abstract class JdbcSqlExecutor {
                             releaseStatement(statement);
                         }
                         printSql(logger, batch);
-                        statement = connection.prepareStatement(batch.getSql());
+                        statement = createStatement(connection, batch.getSql());
                         preparedStatementParameter(statement, batch.getParameters());
                         statement.execute();
                     }
@@ -146,7 +147,7 @@ public abstract class JdbcSqlExecutor {
 
     @SneakyThrows
     protected PreparedStatement createStatement(Connection connection, String sql) {
-        return connection.prepareStatement(sql);
+        return connection.prepareStatement(PostgresqlDriverUtils.escapeJdbcQuestionOperator(connection, sql));
     }
 
     @SneakyThrows

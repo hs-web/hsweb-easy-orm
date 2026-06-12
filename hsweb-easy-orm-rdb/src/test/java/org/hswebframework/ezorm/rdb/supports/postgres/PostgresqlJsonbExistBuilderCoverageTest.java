@@ -25,11 +25,11 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         RDBColumnMetadata column = jsonbColumn(null);
 
         SqlRequest nativePath = create(column, Term.of("metadata", "exist", NativeSql.of("lower(?)", "name"))).toRequest();
-        Assert.assertEquals("jsonb_exists ( metadata , lower(?) )", nativePath.getSql());
+        Assert.assertEquals("metadata ? lower(?)", nativePath.getSql());
         Assert.assertArrayEquals(new Object[]{"name"}, nativePath.getParameters());
 
         SqlRequest plainPath = create(column, Term.of("metadata", "exist", "profile.name")).toRequest();
-        Assert.assertEquals("jsonb_exists ( metadata , ? )", plainPath.getSql());
+        Assert.assertEquals("metadata ? ?", plainPath.getSql());
         Assert.assertArrayEquals(new Object[]{"profile.name"}, plainPath.getParameters());
     }
 
@@ -38,15 +38,15 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         RDBColumnMetadata column = jsonbColumn(null);
 
         SqlRequest allFromString = create(column, Term.of("metadata", "exist", "name,age", "all")).toRequest();
-        Assert.assertEquals("jsonb_exists_all ( metadata , array[ ?,? ])", allFromString.getSql());
+        Assert.assertEquals("metadata ?& array[ ?,? ]", allFromString.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, allFromString.getParameters());
 
         SqlRequest anyFromArray = create(column, Term.of("metadata", "exist", new Object[]{"name", "age"}, "any")).toRequest();
-        Assert.assertEquals("jsonb_exists_any ( metadata , array[ ?,? ])", anyFromArray.getSql());
+        Assert.assertEquals("metadata ?| array[ ?,? ]", anyFromArray.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, anyFromArray.getParameters());
 
         SqlRequest anyFromCollection = create(column, Term.of("metadata", "exist", Arrays.asList("name", "age"), "any")).toRequest();
-        Assert.assertEquals("jsonb_exists_any ( metadata , array[ ?,? ])", anyFromCollection.getSql());
+        Assert.assertEquals("metadata ?| array[ ?,? ]", anyFromCollection.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, anyFromCollection.getParameters());
 
         Assert.assertTrue(create(column, Term.of("metadata", "exist", null, "all")).isEmpty());
@@ -112,13 +112,13 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         SqlRequest in = PostgresqlJsonbTermFragmentBuilder.in
             .createFragments("metadata", column, Term.of("metadata", "in", Arrays.asList("name", "age")))
             .toRequest();
-        Assert.assertEquals("jsonb_exists_any ( metadata , array[ ?,? ])", in.getSql());
+        Assert.assertEquals("metadata ?| array[ ?,? ]", in.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, in.getParameters());
 
         SqlRequest overlap = PostgresqlJsonbTermFragmentBuilder.overlap
             .createFragments("metadata", column, Term.of("metadata", "overlap", "name,age"))
             .toRequest();
-        Assert.assertEquals("jsonb_exists_any ( metadata , array[ ?,? ])", overlap.getSql());
+        Assert.assertEquals("metadata ?| array[ ?,? ]", overlap.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, overlap.getParameters());
     }
 
@@ -131,7 +131,7 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         SqlRequest containsAllKeys = PostgresqlJsonbTermFragmentBuilder.contains
             .createFragments("metadata", column, Term.of("metadata", "contains", Arrays.asList("name", "age"), "all"))
             .toRequest();
-        Assert.assertEquals("jsonb_exists_all ( metadata , array[ ?,? ])", containsAllKeys.getSql());
+        Assert.assertEquals("metadata ?& array[ ?,? ]", containsAllKeys.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, containsAllKeys.getParameters());
 
         SqlRequest inJsonContains = PostgresqlJsonbTermFragmentBuilder.in
@@ -143,7 +143,7 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         SqlRequest containsKey = PostgresqlJsonbTermFragmentBuilder.contains
             .createFragments("metadata", column, Term.of("metadata", "contains", "name", "key"))
             .toRequest();
-        Assert.assertEquals("jsonb_exists ( metadata , ? )", containsKey.getSql());
+        Assert.assertEquals("metadata ? ?", containsKey.getSql());
         Assert.assertArrayEquals(new Object[]{"name"}, containsKey.getParameters());
 
         SqlRequest negative = PostgresqlJsonbTermFragmentBuilder.notContains
@@ -172,14 +172,14 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         containsAll.setColumn("metadata$contains$all");
         containsAll.setValue("name,age");
         SqlRequest containsAllRequest = SimpleTermsFragmentBuilder.createByTable(table, containsAll).toRequest();
-        Assert.assertEquals("jsonb_exists_all ( \"metadata\" , array[ ?,? ])", containsAllRequest.getSql());
+        Assert.assertEquals("\"metadata\" ?& array[ ?,? ]", containsAllRequest.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, containsAllRequest.getParameters());
 
         Term notOverlap = new Term();
         notOverlap.setColumn("metadata$noverlap");
         notOverlap.setValue(Arrays.asList("name", "status"));
         SqlRequest notOverlapRequest = SimpleTermsFragmentBuilder.createByTable(table, notOverlap).toRequest();
-        Assert.assertEquals("( \"metadata\" is null or not ( jsonb_exists_any ( \"metadata\" , array[ ?,? ]) ) )", notOverlapRequest.getSql());
+        Assert.assertEquals("( \"metadata\" is null or not ( \"metadata\" ?| array[ ?,? ] ) )", notOverlapRequest.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "status"}, notOverlapRequest.getParameters());
     }
 
@@ -192,7 +192,7 @@ public class PostgresqlJsonbExistBuilderCoverageTest {
         columnSyntax.setColumn("metadata$exist$all");
         columnSyntax.setValue("name,age");
         SqlRequest request = create(jsonbColumn(null), columnSyntax).toRequest();
-        Assert.assertEquals("jsonb_exists_all ( metadata , array[ ?,? ])", request.getSql());
+        Assert.assertEquals("metadata ?& array[ ?,? ]", request.getSql());
         Assert.assertArrayEquals(new Object[]{"name", "age"}, request.getParameters());
     }
 
