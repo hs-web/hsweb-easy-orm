@@ -414,6 +414,7 @@ public class SqlUtilsTest {
         assertEquals("SELECT * FROM user WHERE jsonb_extract_path(data, 'path') ? 'key' AND id = 1", result);
     }
 
+
     // ========== 函数参数预编译测试 ==========
 
     @Test

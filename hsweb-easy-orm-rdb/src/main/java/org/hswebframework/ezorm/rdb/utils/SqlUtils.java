@@ -284,6 +284,112 @@ public class SqlUtils {
     }
 
     /**
+     * 将 PostgreSQL JSONB ? / ?| / ?& 操作符转义为 PostgreSQL JDBC PreparedStatement 能识别的形式。
+     */
+    public static String escapePostgresqlJdbcQuestionOperator(String sql) {
+        StringBuilder builder = new StringBuilder(sql.length());
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        boolean inLineComment = false;
+        boolean inBlockComment = false;
+
+        for (int i = 0; i < sql.length(); i++) {
+            char c = sql.charAt(i);
+
+            if (inLineComment) {
+                builder.append(c);
+                if (c == '\n') {
+                    inLineComment = false;
+                }
+                continue;
+            }
+
+            if (inBlockComment) {
+                builder.append(c);
+                if (c == '*' && i + 1 < sql.length() && sql.charAt(i + 1) == '/') {
+                    builder.append('/');
+                    i++;
+                    inBlockComment = false;
+                }
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '-' && i + 1 < sql.length() && sql.charAt(i + 1) == '-') {
+                    builder.append("--");
+                    i++;
+                    inLineComment = true;
+                    continue;
+                }
+                if (c == '/' && i + 1 < sql.length() && sql.charAt(i + 1) == '*') {
+                    builder.append("/*");
+                    i++;
+                    inBlockComment = true;
+                    continue;
+                }
+            }
+
+            if (!inDoubleQuote && c == '\'') {
+                if (inSingleQuote && i + 1 < sql.length() && sql.charAt(i + 1) == '\'') {
+                    builder.append("''");
+                    i++;
+                    continue;
+                }
+                inSingleQuote = !inSingleQuote;
+                builder.append(c);
+                continue;
+            }
+
+            if (!inSingleQuote && c == '"') {
+                if (inDoubleQuote && i + 1 < sql.length() && sql.charAt(i + 1) == '"') {
+                    builder.append("\"\"");
+                    i++;
+                    continue;
+                }
+                inDoubleQuote = !inDoubleQuote;
+                builder.append(c);
+                continue;
+            }
+
+            if (inSingleQuote || inDoubleQuote) {
+                builder.append(c);
+                continue;
+            }
+
+            if (c == '?') {
+                if (i + 1 < sql.length() && sql.charAt(i + 1) == '?') {
+                    builder.append("??");
+                    i++;
+                    continue;
+                }
+                if (i + 1 < sql.length()) {
+                    char next = sql.charAt(i + 1);
+                    if (next == '|' || next == '&' || next == '!') {
+                        builder.append("??").append(next);
+                        i++;
+                        continue;
+                    }
+                }
+                if (isPostgresOperator(sql, i)) {
+                    builder.append("??");
+                    continue;
+                }
+            }
+
+            builder.append(c);
+        }
+        return builder.toString();
+    }
+
+    private static boolean isPostgresOperatorLeftChar(char prev) {
+        return Character.isLetterOrDigit(prev)
+            || prev == '"'
+            || prev == '_'
+            || prev == ')'
+            || prev == ']';
+    }
+
+    /**
      * 判断当前位置的 '?' 是否是 PostgreSQL 操作符（如 JSONB 的 ? 操作符）
      * <p>
      * PostgreSQL 操作符格式：
@@ -313,11 +419,7 @@ public class SqlUtils {
         char prev = sql.charAt(prevIndex);
         // 标识符字符：字母、数字、下划线、右括号、右方括号、引号
         // 如果不是这些字符，则不是操作符（可能是 =, >, < 等操作符后的参数占位符）
-        if (!(Character.isLetterOrDigit(prev)
-            || prev == '"'
-            || prev == '_'
-            || prev == ')'
-            || prev == ']')) {
+        if (!isPostgresOperatorLeftChar(prev)) {
             return false;
         }
 

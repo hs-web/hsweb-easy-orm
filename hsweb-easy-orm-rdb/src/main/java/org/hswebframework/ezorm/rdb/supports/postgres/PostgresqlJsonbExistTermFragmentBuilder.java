@@ -68,18 +68,16 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
             return EmptySqlFragments.INSTANCE;
         }
         return new BatchSqlFragments(4, 1)
-            .addSql(operator, "(", columnFullName, ",")
-            .addSql("array[")
+            .addSql(columnFullName, operator, "array[")
             .add(SqlUtils.createQuestionMarks(values.size()))
-            .addSql("])")
+            .addSql("]")
             .addParameter(values);
     }
 
     private static SqlFragments createBaseFragments(String columnFullName, Object value) {
         PrepareSqlFragments fragments = PrepareSqlFragments.of();
-        fragments.addSql(Operator.base, "(", columnFullName, ",");
-        appendPrepareOrNativeValue(fragments, value);
-        return fragments.addSql(")");
+        fragments.addSql(columnFullName, Operator.base);
+        return appendPrepareOrNativeValue(fragments, value);
     }
 
     private static <T extends AppendableSqlFragments> T appendPrepareOrNativeValue(T sql, Object value) {
@@ -164,10 +162,9 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
     }
 
     private interface Operator {
-        //用函数规避SimpleParameterList#checkAllParametersSet的检查
-        String base = "jsonb_exists";
-        String all = "jsonb_exists_all";
-        String any = "jsonb_exists_any";
+        String base = "?";
+        String all = "?&";
+        String any = "?|";
         String contains = "@>";
         String contained = "<@";
 

@@ -47,6 +47,17 @@ public class SqlUtilsCoverageTest {
     }
 
     @Test
+    public void testEscapePostgresqlJdbcQuestionOperator() {
+        Assert.assertEquals("x ?? 'a'", SqlUtils.escapePostgresqlJdbcQuestionOperator("x ? 'a'"));
+        Assert.assertEquals("x ?? ?", SqlUtils.escapePostgresqlJdbcQuestionOperator("x ? ?"));
+        Assert.assertEquals("x ??| array[?,?]", SqlUtils.escapePostgresqlJdbcQuestionOperator("x ?| array[?,?]"));
+        Assert.assertEquals("x ??& array[?,?]", SqlUtils.escapePostgresqlJdbcQuestionOperator("x ?& array[?,?]"));
+        Assert.assertEquals("x ?? y", SqlUtils.escapePostgresqlJdbcQuestionOperator("x ?? y"));
+        Assert.assertEquals("x '?' ?", SqlUtils.escapePostgresqlJdbcQuestionOperator("x '?' ?"));
+        Assert.assertEquals("x /* ? */ ? 'a'", SqlUtils.escapePostgresqlJdbcQuestionOperator("x /* ? */ ? 'a'"));
+    }
+
+    @Test
     public void testCreateQuestionMarksBoundaryBranches() throws Exception {
         java.lang.reflect.Field field = SqlUtils.class.getDeclaredField("Q_M_CACHE");
         field.setAccessible(true);
