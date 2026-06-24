@@ -283,6 +283,123 @@ public class SqlUtils {
         return builder;
     }
 
+    public static boolean hasTopLevelOrderBy(String sql) {
+        if (sql == null || sql.isEmpty()) {
+            return false;
+        }
+
+        int depth = 0;
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        boolean inBracketQuote = false;
+        boolean inLineComment = false;
+        boolean inBlockComment = false;
+        boolean seenOrder = false;
+        StringBuilder token = new StringBuilder();
+
+        for (int i = 0; i < sql.length(); i++) {
+            char c = sql.charAt(i);
+
+            if (inLineComment) {
+                if (c == '\n' || c == '\r') {
+                    inLineComment = false;
+                }
+                continue;
+            }
+
+            if (inBlockComment) {
+                if (c == '*' && i + 1 < sql.length() && sql.charAt(i + 1) == '/') {
+                    i++;
+                    inBlockComment = false;
+                }
+                continue;
+            }
+
+            if (inSingleQuote) {
+                if (c == '\'' && i + 1 < sql.length() && sql.charAt(i + 1) == '\'') {
+                    i++;
+                    continue;
+                }
+                if (c == '\'') {
+                    inSingleQuote = false;
+                }
+                continue;
+            }
+
+            if (inDoubleQuote) {
+                if (c == '"' && i + 1 < sql.length() && sql.charAt(i + 1) == '"') {
+                    i++;
+                    continue;
+                }
+                if (c == '"') {
+                    inDoubleQuote = false;
+                }
+                continue;
+            }
+
+            if (inBracketQuote) {
+                if (c == ']') {
+                    inBracketQuote = false;
+                }
+                continue;
+            }
+
+            if (depth == 0 && Character.isLetter(c)) {
+                token.append(Character.toLowerCase(c));
+                continue;
+            }
+
+            if (depth == 0 && token.length() > 0) {
+                String keyword = token.toString();
+                token.setLength(0);
+                if (seenOrder && "by".equals(keyword)) {
+                    return true;
+                }
+                seenOrder = "order".equals(keyword);
+            }
+
+            if (c == '-' && i + 1 < sql.length() && sql.charAt(i + 1) == '-') {
+                i++;
+                inLineComment = true;
+                continue;
+            }
+
+            if (c == '/' && i + 1 < sql.length() && sql.charAt(i + 1) == '*') {
+                i++;
+                inBlockComment = true;
+                continue;
+            }
+
+            if (c == '\'') {
+                inSingleQuote = true;
+                continue;
+            }
+
+            if (c == '"') {
+                inDoubleQuote = true;
+                continue;
+            }
+
+            if (c == '[') {
+                inBracketQuote = true;
+                continue;
+            }
+
+            if (c == '(') {
+                depth++;
+                continue;
+            }
+
+            if (c == ')' && depth > 0) {
+                depth--;
+            }
+        }
+
+        return token.length() > 0
+            && seenOrder
+            && "by".equals(token.toString());
+    }
+
     /**
      * 将 PostgreSQL JSONB ? / ?| / ?& 操作符转义为 PostgreSQL JDBC PreparedStatement 能识别的形式。
      */
