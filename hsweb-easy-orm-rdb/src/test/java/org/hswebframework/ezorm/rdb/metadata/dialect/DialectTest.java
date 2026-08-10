@@ -5,6 +5,8 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.supports.kingbase.mysql.KingbaseMysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,6 +47,38 @@ public class DialectTest {
         Assert.assertEquals(10, column.getPrecision());
         Assert.assertEquals(2, column.getScale());
         Assert.assertEquals(JDBCType.DECIMAL, column.getSqlType());
+    }
+
+    @Test
+    public void testLikeAndConcat() {
+        SqlFragments parameter = PrepareSqlFragments.of()
+            .add(SqlFragments.QUESTION_MARK)
+            .addParameter("value");
+
+        SqlFragments like = Dialect.H2.buildLike(
+            SqlFragments.of("name"),
+            parameter,
+            false,
+            true
+        );
+        Assert.assertEquals("lower( name ) like lower( ? )", like.toRequest().getSql());
+        Assert.assertEquals("value", like.getParameters().get(0));
+
+        Assert.assertEquals(
+            "name",
+            Dialect.ORACLE.buildConcat(SqlFragments.of("name"))
+                         .toRequest()
+                         .getSql()
+        );
+        Assert.assertEquals(
+            "concat( concat( '%' , name ) , '%' )",
+            Dialect.ORACLE.buildConcat(
+                              SqlFragments.of("'%'"),
+                              SqlFragments.of("name"),
+                              SqlFragments.of("'%'"))
+                         .toRequest()
+                         .getSql()
+        );
     }
 
     private void assertMysqlLiteralEnumType(DataType type) {

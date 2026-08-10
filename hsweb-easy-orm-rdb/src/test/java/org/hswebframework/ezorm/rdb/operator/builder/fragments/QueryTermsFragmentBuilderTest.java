@@ -134,6 +134,28 @@ public class QueryTermsFragmentBuilderTest {
         Assert.assertEquals("test.\"NAME\" = ?", request.getSql());
     }
 
+    @Test
+    public void testLikeIgnoreCase() {
+        Term term = new Term();
+        term.setColumn("name$like$ignoreCase");
+        term.setValue("AbC");
+
+        Assert.assertEquals(
+                "lower( test.\"NAME\" ) like lower( ? )",
+                createSqlRequest(Collections.singletonList(term)).getSql()
+        );
+    }
+
+    @Test
+    public void testNotLikeIgnoreCaseKeepsNull() {
+        Term term = Term.of("name", "nlike$ignoreCase", "AbC");
+
+        Assert.assertEquals(
+                "( test.\"NAME\" is null or lower( test.\"NAME\" ) not like lower( ? ) )",
+                createSqlRequest(Collections.singletonList(term)).getSql()
+        );
+    }
+
 
     @Test
     public void testNest() {
