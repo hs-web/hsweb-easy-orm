@@ -4,6 +4,8 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.core.utils.StringUtils;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -91,6 +93,22 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, String.class));
         registerDataType("text", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
 
+    }
+
+    @Override
+    public SqlFragments buildLike(SqlFragments left,
+                                  SqlFragments right,
+                                  boolean not,
+                                  boolean ignoreCase) {
+        BatchSqlFragments fragments = new BatchSqlFragments(3,
+                                                              left.getParameters().size() + right.getParameters().size());
+        fragments.add(left);
+        if (not) {
+            fragments.add(SqlFragments.NOT);
+        }
+        return fragments
+            .addSql(ignoreCase ? "ilike" : "like")
+            .add(right);
     }
 
     @Override

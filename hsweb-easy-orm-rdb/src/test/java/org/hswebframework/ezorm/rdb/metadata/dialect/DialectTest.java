@@ -5,12 +5,14 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.supports.kingbase.mysql.KingbaseMysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.opengauss.OpengaussDialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.Arrays;
 
 public class DialectTest {
 
@@ -82,6 +84,44 @@ public class DialectTest {
     }
 
     @Test
+    public void testDialectLikeOperators() {
+        Assert.assertEquals(
+            "name ilike ?",
+            Dialect.POSTGRES.buildLike(SqlFragments.of("name"), parameter(), false, true)
+                             .toRequest()
+                             .getSql()
+        );
+        Assert.assertEquals(
+            "name not ilike ?",
+            new OpengaussDialect().buildLike(SqlFragments.of("name"), parameter(), true, true)
+                                  .toRequest()
+                                  .getSql()
+        );
+        Assert.assertEquals(
+            "name like ?",
+            Dialect.POSTGRES.buildLike(SqlFragments.of("name"), parameter(), false, false)
+                             .toRequest()
+                             .getSql()
+        );
+
+        for (Dialect dialect : Arrays.asList(
+            Dialect.H2,
+            Dialect.MYSQL,
+            Dialect.ORACLE,
+            Dialect.MSSQL,
+            Dialect.KINGBASE_MYSQL
+        )) {
+            Assert.assertEquals(
+                dialect.getName(),
+                "lower( name ) like lower( ? )",
+                dialect.buildLike(SqlFragments.of("name"), parameter(), false, true)
+                       .toRequest()
+                       .getSql()
+            );
+        }
+    }
+
+    @Test
     public void testEmptyLikeExpressions() {
         Assert.assertTrue(Dialect.H2.buildLower(null).isEmpty());
         Assert.assertTrue(Dialect.H2.buildLower(SqlFragments.of()).isEmpty());
@@ -101,6 +141,12 @@ public class DialectTest {
         Assert.assertEquals(JDBCType.VARCHAR, column.getSqlType());
         Assert.assertEquals(String.class, column.getJavaType());
         Assert.assertFalse(column.getType().isLengthSupport());
+    }
+
+    private SqlFragments parameter() {
+        return PrepareSqlFragments.of()
+            .add(SqlFragments.QUESTION_MARK)
+            .addParameter("value");
     }
 
 }

@@ -282,6 +282,41 @@ public abstract class BasicCommonTests {
     }
 
     @Test
+    public void testLikeIgnoreCase() {
+        BasicTestEntity entity = BasicTestEntity
+            .builder()
+            .id("like_ignore_case")
+            .name("Alpha")
+            .state((byte) 1)
+            .addressId("like_ignore_case")
+            .build();
+
+        addressRepository.insert(Record.newRecord()
+                                      .putValue("id", "like_ignore_case")
+                                      .putValue("name", "like-ignore-case"));
+        repository.insert(entity);
+
+        Assert.assertEquals(
+            1,
+            repository.createQuery()
+                      .where("name$like$ignoreCase", "alpha")
+                      .fetch()
+                      .size()
+        );
+
+        org.hswebframework.ezorm.core.param.Term reversal =
+            Terms.Like.reversal("name", "contains alpha", true, true);
+        reversal.getOptions().add("ignoreCase");
+        Assert.assertEquals(
+            1,
+            repository.createQuery()
+                      .accept(reversal)
+                      .fetch()
+                      .size()
+        );
+    }
+
+    @Test
     public void testEnums() {
         BasicTestEntity entity = BasicTestEntity
             .builder()
