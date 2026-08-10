@@ -81,6 +81,14 @@ public class DialectTest {
         );
     }
 
+    @Test
+    public void testEmptyLikeExpressions() {
+        Assert.assertTrue(Dialect.H2.buildLower(null).isEmpty());
+        Assert.assertTrue(Dialect.H2.buildLower(SqlFragments.of()).isEmpty());
+        Assert.assertTrue(Dialect.H2.buildConcat((SqlFragments[]) null).isEmpty());
+        Assert.assertTrue(Dialect.H2.buildConcat().isEmpty());
+    }
+
     private void assertMysqlLiteralEnumType(DataType type) {
         MysqlSchemaMetadata schema = new MysqlSchemaMetadata("test");
         RDBTableMetadata table = schema.newTable("test");
