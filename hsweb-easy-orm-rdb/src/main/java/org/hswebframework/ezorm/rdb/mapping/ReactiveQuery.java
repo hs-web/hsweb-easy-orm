@@ -26,6 +26,15 @@ public interface ReactiveQuery<T> extends DSLQuery<ReactiveQuery<T>> {
     Mono<Integer> count();
 
     /**
+     * 执行count查询,并返回count查询结果.
+     *
+     * @return count结果
+     */
+    default Mono<Long> countLong(){
+        return count().map(Integer::longValue);
+    }
+
+    /**
      * 执行查询并返回单个数据
      *
      * @return 如果未查询到结果将返回{@link Mono#empty()}

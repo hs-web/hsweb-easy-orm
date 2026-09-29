@@ -259,7 +259,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             return current;
         }
         if (owner != null) {
-            return owner.findFeatureOrElse(id, null);
+            return owner.findFeatureOrElse(id, orElse);
         }
         return orElse == null ? null : orElse.get();
     }
