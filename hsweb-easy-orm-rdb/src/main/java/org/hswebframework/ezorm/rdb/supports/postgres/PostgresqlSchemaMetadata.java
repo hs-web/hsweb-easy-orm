@@ -47,6 +47,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
 
     @Override
     public void addTable(RDBTableMetadata metadata) {
+        metadata.addFeature(PostgresqlSelectColumnFragmentBuilder.of(metadata));
         metadata.addFeature(new PostgresqlBatchUpsertOperator(metadata));
         super.addTable(metadata);
     }
@@ -54,6 +55,7 @@ public class PostgresqlSchemaMetadata extends RDBSchemaMetadata {
     @Override
     public RDBTableMetadata newTable(String name) {
         RDBTableMetadata metadata = super.newTable(name);
+        metadata.addFeature(PostgresqlSelectColumnFragmentBuilder.of(metadata));
         metadata.addFeature(new PostgresqlBatchUpsertOperator(metadata));
         metadata.setOnColumnAdded(column->{
             if(column.getValueCodec() instanceof EnumValueCodec &&((EnumValueCodec) column.getValueCodec()).isToMask()){
