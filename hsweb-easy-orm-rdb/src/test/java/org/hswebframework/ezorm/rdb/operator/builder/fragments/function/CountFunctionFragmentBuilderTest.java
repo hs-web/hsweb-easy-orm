@@ -3,6 +3,8 @@ package org.hswebframework.ezorm.rdb.operator.builder.fragments.function;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBFeatures;
+import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
@@ -13,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.Collections;
 
 public class CountFunctionFragmentBuilderTest {
 
@@ -28,8 +31,8 @@ public class CountFunctionFragmentBuilderTest {
         database.setCurrentSchema(schema);
 
         table = schema.newTable("metrics");
-        addColumn("id", true);
-        addColumn("value", false);
+        addColumn(table, "id", true);
+        addColumn(table, "value", false);
         schema.addTable(table);
     }
 
@@ -53,6 +56,20 @@ public class CountFunctionFragmentBuilderTest {
         String sql = querySql(countRows);
         Assert.assertTrue(sql, sql.contains("count( " + table.getColumnNow("value").getFullName() + " ) as \"total\""));
         Assert.assertFalse(sql, sql.contains("count(*)"));
+    }
+
+    @Test
+    public void shouldRequireEnabledOptionAndResolvedColumn() {
+        SelectColumn disabled = count("id", "total");
+        disabled.option(CountFunctionFragmentBuilder.COUNT_ROWS, false);
+        String disabledSql = querySql(disabled);
+        Assert.assertTrue(disabledSql, disabledSql.contains("count( " + table.getColumnNow("id").getFullName() + " )"));
+
+        Assert.assertTrue(RDBFeatures.count
+                              .create(null,
+                                      table.getColumnNow("id"),
+                                      Collections.singletonMap(CountFunctionFragmentBuilder.COUNT_ROWS, true))
+                              .isEmpty());
     }
 
     @Test
@@ -94,6 +111,35 @@ public class CountFunctionFragmentBuilderTest {
         Assert.assertFalse(sql, sql.contains("count(*)"));
     }
 
+    @Test
+    public void shouldKeepOptInBehaviorForOtherDialects() {
+        RDBDatabaseMetadata h2Database = new RDBDatabaseMetadata(Dialect.H2);
+        RDBSchemaMetadata h2Schema = new RDBSchemaMetadata("PUBLIC");
+        h2Database.addSchema(h2Schema);
+        h2Database.setCurrentSchema(h2Schema);
+        RDBTableMetadata h2Table = h2Schema.newTable("metrics");
+        addColumn(h2Table, "id", true);
+        h2Schema.addTable(h2Table);
+
+        String normalSql = DefaultDatabaseOperator.of(h2Database)
+                                                  .dml()
+                                                  .query("metrics")
+                                                  .select(count("id", "total"))
+                                                  .getSql()
+                                                  .getSql();
+        Assert.assertTrue(normalSql, normalSql.contains("count( " + h2Table.getColumnNow("id").getFullName() + " )"));
+
+        SelectColumn countRows = count("id", "total");
+        countRows.option(CountFunctionFragmentBuilder.COUNT_ROWS, true);
+        String rowsSql = DefaultDatabaseOperator.of(h2Database)
+                                                .dml()
+                                                .query("metrics")
+                                                .select(countRows)
+                                                .getSql()
+                                                .getSql();
+        Assert.assertTrue(rowsSql, rowsSql.contains("count(*)"));
+    }
+
     private String querySql(SelectColumn column) {
         return DefaultDatabaseOperator.of(database)
                                       .dml()
@@ -109,11 +155,11 @@ public class CountFunctionFragmentBuilderTest {
         return column;
     }
 
-    private void addColumn(String name, boolean notNull) {
-        RDBColumnMetadata column = table.newColumn();
+    private void addColumn(RDBTableMetadata target, String name, boolean notNull) {
+        RDBColumnMetadata column = target.newColumn();
         column.setName(name);
         column.setType(JdbcDataType.of(JDBCType.VARCHAR, String.class));
         column.setNotNull(notNull);
-        table.addColumn(column);
+        target.addColumn(column);
     }
 }
