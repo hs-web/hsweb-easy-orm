@@ -73,14 +73,42 @@ public class CountFunctionFragmentBuilderTest {
     }
 
     @Test
-    public void shouldKeepDistinctAndArgOptions() {
+    public void shouldPreferCountRowsOverDistinctAndArg() {
         SelectColumn distinct = count("id", "total");
         distinct.option(CountFunctionFragmentBuilder.COUNT_ROWS, true);
+        distinct.option("distinct", true);
+        String distinctSql = querySql(distinct);
+        Assert.assertTrue(distinctSql, distinctSql.contains("count(*) as \"total\""));
+
+        SelectColumn arg = count("id", "total");
+        arg.option(CountFunctionFragmentBuilder.COUNT_ROWS, true);
+        arg.option("arg", 1);
+        String argSql = querySql(arg);
+        Assert.assertTrue(argSql, argSql.contains("count(*) as \"total\""));
+    }
+
+    @Test
+    public void shouldKeepDistinctAndArgWithoutCountRows() {
+        SelectColumn distinct = count("id", "total");
         distinct.option("distinct", true);
         String distinctSql = querySql(distinct);
         Assert.assertTrue(distinctSql, distinctSql.contains("count( distinct " + table.getColumnNow("id").getFullName() + " )"));
 
         SelectColumn arg = count("id", "total");
+        arg.option("arg", 1);
+        String argSql = querySql(arg);
+        Assert.assertTrue(argSql, argSql.contains("count( 1 ) as \"total\""));
+    }
+
+    @Test
+    public void shouldUseOriginalOptionsForNullableColumn() {
+        SelectColumn distinct = count("value", "total");
+        distinct.option(CountFunctionFragmentBuilder.COUNT_ROWS, true);
+        distinct.option("distinct", true);
+        String distinctSql = querySql(distinct);
+        Assert.assertTrue(distinctSql, distinctSql.contains("count( distinct " + table.getColumnNow("value").getFullName() + " )"));
+
+        SelectColumn arg = count("value", "total");
         arg.option(CountFunctionFragmentBuilder.COUNT_ROWS, true);
         arg.option("arg", 1);
         String argSql = querySql(arg);

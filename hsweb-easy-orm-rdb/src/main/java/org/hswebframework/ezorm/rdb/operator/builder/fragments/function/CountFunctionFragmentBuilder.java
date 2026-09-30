@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * 内置 count 函数。调用方明确启用 countRows，且查询不会使非空列因关联变为 NULL 时，
- * 可以将列计数生成为行数计数；其他情况沿用普通 count 的行为。
+ * 可以将列计数生成为行数计数，并优先于 distinct、arg 等选项；其他情况沿用普通 count 的行为。
  */
 public class CountFunctionFragmentBuilder extends SimpleFunctionFragmentBuilder {
 

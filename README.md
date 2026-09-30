@@ -42,4 +42,4 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 ## 聚合计数
 
-内置 `count` 函数默认生成 `count(列)`。查询方可通过 `SelectColumn.option("countRows", true)` 显式请求行数计数；表元数据确认目标列非空且没有其他函数选项时生成 `count(*)`，其他情况沿用原有生成逻辑。调用方需确保关联查询不会将目标列扩展为 NULL。自定义 `count` 函数仍按其自身实现处理该选项；旧版本不识别 `countRows` 时继续生成 `count(列)`。实际性能取决于索引和执行计划。
+内置 `count` 函数默认生成 `count(列)`。查询方可通过 `SelectColumn.option("countRows", true)` 显式请求行数计数；表元数据确认目标列非空时生成 `count(*)`，此时 `countRows` 优先于 `distinct`、`arg` 等选项，其他情况沿用原有生成逻辑。调用方需确保关联查询不会将目标列扩展为 NULL。自定义 `count` 函数仍按其自身实现处理该选项；旧版本不识别 `countRows` 时继续按原有选项生成 SQL。实际性能取决于索引和执行计划。
