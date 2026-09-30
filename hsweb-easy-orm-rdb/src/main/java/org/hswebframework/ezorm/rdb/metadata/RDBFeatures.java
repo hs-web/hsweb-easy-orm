@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.metadata;
 
 import org.hswebframework.ezorm.core.FeatureId;
 import org.hswebframework.ezorm.core.param.TermType;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.CountFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.SimpleFunctionFragmentBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlFragmentBuilder;
@@ -51,7 +52,7 @@ public interface RDBFeatures {
     /*===============函数==============*/
 
     /*==聚合函数==*/
-    SimpleFunctionFragmentBuilder count = new SimpleFunctionFragmentBuilder("count", "计数");
+    SimpleFunctionFragmentBuilder count = new CountFunctionFragmentBuilder();
     SimpleFunctionFragmentBuilder sum = new SimpleFunctionFragmentBuilder("sum", "求和");
     SimpleFunctionFragmentBuilder avg = new SimpleFunctionFragmentBuilder("avg", "平均值");
     SimpleFunctionFragmentBuilder max = new SimpleFunctionFragmentBuilder("max", "最大值");

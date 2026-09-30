@@ -40,6 +40,6 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 建议配合[hsweb4](https://github.com/hs-web/hsweb-framework/tree/4.0.x)使用.
 
-## PostgreSQL 聚合计数
+## 聚合计数
 
-PostgreSQL 方言对无关联查询中的普通 `count(列)`，在表元数据确认该列非空且使用内置 `count` 函数时生成等价的 `count(*)`，保留原聚合别名。可空列、未知列、带函数选项或使用自定义 `count` 函数的计数，以及显式或可能由逻辑外键引入关联的查询继续使用原有 SQL 生成逻辑。其他数据库方言不应用此优化；实际性能取决于索引和执行计划。
+内置 `count` 函数默认生成 `count(列)`。查询方可通过 `SelectColumn.option("countRows", true)` 显式请求行数计数；表元数据确认目标列非空且没有其他函数选项时生成 `count(*)`，其他情况沿用原有生成逻辑。调用方需确保关联查询不会将目标列扩展为 NULL。自定义 `count` 函数仍按其自身实现处理该选项；旧版本不识别 `countRows` 时继续生成 `count(列)`。实际性能取决于索引和执行计划。
