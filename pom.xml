@@ -48,12 +48,12 @@
         <project.build.locales>zh_CN</project.build.locales>
         <project.build.jdk>17</project.build.jdk>
         <junit.version>4.13.2</junit.version>
-        <slf4j.version>1.7.21</slf4j.version>
-        <log4j.version>2.17.0</log4j.version>
-        <logback.version>1.2.13</logback.version>
-        <fastjson.version>1.2.83</fastjson.version>
+        <log4j.version>2.25.3</log4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <logback.version>1.5.25</logback.version>
+        <fastjson.version>1.2.83_noneautotype</fastjson.version>
         <hsweb.expands.version>3.0.2</hsweb.expands.version>
-        <reactor.version>2024.0.4</reactor.version>
+        <reactor.version>2024.0.18</reactor.version>
         <r2dbc.version>Borca-SR2</r2dbc.version>
     </properties>
 
