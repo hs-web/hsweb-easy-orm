@@ -82,7 +82,8 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
-            <version>1.0.7.RELEASE</version>
+            <!-- -Pkingbase-r2dbc selects the local fork that registers r2dbc:kingbase. -->
+            <version>${r2dbc.postgresql.version}</version>
             <optional>true</optional>
         </dependency>
 

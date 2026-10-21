@@ -55,9 +55,21 @@
         <hsweb.expands.version>3.0.2</hsweb.expands.version>
         <reactor.version>2024.0.4</reactor.version>
         <r2dbc.version>Borca-SR2</r2dbc.version>
+        <r2dbc.postgresql.version>1.0.7.RELEASE</r2dbc.postgresql.version>
+        <kingbase.r2dbc.driver.version>1.2.0.BUILD-SNAPSHOT</kingbase.r2dbc.driver.version>
     </properties>
 
     <profiles>
+        <profile>
+            <id>kingbase-r2dbc</id>
+            <properties>
+                <!--
+                    This local fork supplies the r2dbc:kingbase SPI provider.
+                    Enable it only after publishing the artifact to a repository available to the build.
+                -->
+                <r2dbc.postgresql.version>${kingbase.r2dbc.driver.version}</r2dbc.postgresql.version>
+            </properties>
+        </profile>
         <profile>
             <id>release</id>
             <build>
