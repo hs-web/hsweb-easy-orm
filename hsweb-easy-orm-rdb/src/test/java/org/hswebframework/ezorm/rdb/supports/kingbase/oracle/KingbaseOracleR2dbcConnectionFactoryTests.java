@@ -4,14 +4,21 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import io.r2dbc.spi.R2dbcNonTransientResourceException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 
+import static io.r2dbc.spi.ConnectionFactoryOptions.CONNECT_TIMEOUT;
 import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
 import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
@@ -70,6 +77,44 @@ public class KingbaseOracleR2dbcConnectionFactoryTests {
             Assert.assertEquals(Integer.valueOf(42), answer);
         } finally {
             Mono.from(connection.close()).block(TIMEOUT);
+        }
+    }
+
+    @Test
+    public void shouldFailWhenConnectionPortIsNotListening() throws IOException {
+        // Reserve a local TCP port without listening, so no database is needed.
+        try (Socket endpoint = new Socket()) {
+            endpoint.bind(new InetSocketAddress("127.0.0.1", 0));
+            String url = "r2dbc:kingbase://127.0.0.1:" + endpoint.getLocalPort() + "/test?mode=oracle";
+            ConnectionFactoryOptions options = ConnectionFactoryOptions
+                .parse(url)
+                .mutate()
+                .option(USER, "connection-test")
+                .option(PASSWORD, "unused")
+                .option(CONNECT_TIMEOUT, Duration.ofSeconds(2))
+                .build();
+            Assume.assumeTrue("Enable -Pkingbase-r2dbc to load the Kingbase driver",
+                              ConnectionFactories.supports(options));
+            ConnectionFactory factory = ConnectionFactories.get(options);
+            Assert.assertEquals("KingbaseES", factory.getMetadata().getName());
+            System.out.println("[连接异常测试] 模式=oracle，地址=" + url);
+            System.out.println("[连接工厂] 创建成功，驱动=" + factory.getMetadata().getName());
+            System.out.println("[预期结果] 目标端口未监听，建立连接时应报告连接被拒绝");
+
+            StepVerifier.create(Mono.from(factory.create()))
+                .expectErrorSatisfies(error -> {
+                    System.out.println("[实际异常] " + error.getClass().getName() + ": " + error.getMessage());
+                    Assert.assertTrue("Expected an R2DBC connection failure: " + error,
+                                      error instanceof R2dbcNonTransientResourceException);
+                    R2dbcNonTransientResourceException exception = (R2dbcNonTransientResourceException) error;
+                    System.out.println("[错误标识] SQLState=" + exception.getSqlState()
+                        + "，错误码=" + exception.getErrorCode());
+                    System.out.println("[底层原因] " + error.getCause());
+                    Assert.assertTrue("Expected connection refusal: " + error.getCause(),
+                                      error.getCause() instanceof ConnectException);
+                })
+                .verify(TIMEOUT);
+            System.out.println("[验证结果] 已捕获预期的连接拒绝异常，测试通过");
         }
     }
 

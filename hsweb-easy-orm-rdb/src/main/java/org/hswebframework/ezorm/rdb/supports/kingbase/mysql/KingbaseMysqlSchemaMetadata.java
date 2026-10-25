@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlBatchUpsertOperator;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlPaginator;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 /**
@@ -20,6 +21,7 @@ public class KingbaseMysqlSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new KingbaseMysqlCreateTableSqlBuilder());
         addFeature(new KingbaseMysqlAlterTableSqlBuilder());
         addFeature(KingbaseMysqlCreateIndexSqlBuilder.INSTANCE);
+        addFeature(PostgresqlDropIndexSqlBuilder.INSTANCE);
         addFeature(new MysqlPaginator());
 
         addFeature(new KingbaseMysqlIndexMetadataParser(this));

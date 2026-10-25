@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.rdb.supports.oracle.OracleBatchUpsertOperator;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.oracle.OraclePaginator;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 /**
@@ -20,6 +21,7 @@ public class KingbaseOracleSchemaMetadata extends RDBSchemaMetadata {
         addFeature(new KingbaseOracleCreateTableSqlBuilder());
         addFeature(new KingbaseOracleAlterTableSqlBuilder());
         addFeature(KingbaseOracleCreateIndexSqlBuilder.INSTANCE);
+        addFeature(PostgresqlDropIndexSqlBuilder.INSTANCE);
         addFeature(new OraclePaginator());
         addFeature(new KingbaseOracleTableMetadataParser(this));
         addFeature(KingbaseOracleIndexMetadataParser.of(this));

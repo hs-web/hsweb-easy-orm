@@ -11,7 +11,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateIndexSq
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments.of;
 
 /**
- * Uses KingbaseES-supported idempotent index creation syntax.
+ * Renders MySQL-compatible index DDL for KingbaseES.
  */
 public class KingbaseMysqlCreateIndexSqlBuilder implements CreateIndexSqlBuilder {
 
@@ -22,7 +22,7 @@ public class KingbaseMysqlCreateIndexSqlBuilder implements CreateIndexSqlBuilder
         RDBIndexMetadata index = parameter.getIndex();
         RDBTableMetadata table = parameter.getTable();
         PrepareSqlFragments fragments = of()
-            .addSql("create ", index.isUnique() ? "unique" : "", " index if not exists ",
+            .addSql("create ", index.isUnique() ? "unique" : "", " index ",
                     index.getName(), " on ", table.getFullName(), "(");
         int i = 0;
         for (RDBIndexMetadata.IndexColumn column : index.getColumns()) {

@@ -43,12 +43,37 @@ public class KingbaseOracleSchemaMetadataTest {
         table.addColumn(name);
 
         SqlRequest request = schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table);
+        System.out.println("[DDL正常场景] 为 ACCOUNT 表生成建表 SQL，包含主键、字段类型和非空约束");
+        System.out.println("[生成SQL] " + request.getSql().replaceAll("\\s+", " ").trim());
 
         Assert.assertTrue(request instanceof BatchSqlRequest);
         Assert.assertEquals(
             "create table \"public\".ACCOUNT ( \"ID\" number(20,0) not null primary key , \"NAME\" varchar2(64 char) not null )",
             request.getSql().replaceAll("\\s+", " ").trim()
         );
+    }
+
+    @Test
+    public void shouldRejectCreateTableWhenColumnTypeIsMissing() {
+        KingbaseOracleSchemaMetadata schema = new KingbaseOracleSchemaMetadata("public");
+        RDBDatabaseMetadata database = new RDBDatabaseMetadata(schema.getDialect());
+        database.addSchema(schema);
+        database.setCurrentSchema(schema);
+
+        RDBTableMetadata table = schema.newTable("ACCOUNT");
+        RDBColumnMetadata column = new RDBColumnMetadata();
+        column.setName("NAME");
+        table.addColumn(column);
+
+        System.out.println("[DDL异常场景] 表=" + table.getFullName() + "，字段=NAME，未指定字段类型");
+        UnsupportedOperationException exception = Assert.assertThrows(
+            UnsupportedOperationException.class,
+            () -> schema.findFeatureNow(CreateTableSqlBuilder.ID).build(table)
+        );
+        System.out.println("[实际异常] " + exception.getClass().getName() + ": " + exception.getMessage());
+        Assert.assertTrue(exception.getMessage().startsWith("unknown column type : "));
+        Assert.assertTrue(exception.getMessage().contains("NAME"));
+        System.out.println("[验证结果] 建表 SQL 生成失败，异常提示字段类型未知，测试通过");
     }
 
     @Test

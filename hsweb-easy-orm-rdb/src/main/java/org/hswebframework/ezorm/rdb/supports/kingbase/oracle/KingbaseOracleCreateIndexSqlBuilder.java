@@ -23,7 +23,7 @@ public class KingbaseOracleCreateIndexSqlBuilder implements CreateIndexSqlBuilde
         RDBIndexMetadata index = parameter.getIndex();
         RDBTableMetadata table = parameter.getTable();
         PrepareSqlFragments fragments = of()
-            .addSql("create ", index.isUnique() ? "unique" : "", " index if not exists ",
+            .addSql("create ", index.isUnique() ? "unique" : "", " index ",
                     index.getName(), " on ", table.getFullName(), "(");
 
         int position = 0;

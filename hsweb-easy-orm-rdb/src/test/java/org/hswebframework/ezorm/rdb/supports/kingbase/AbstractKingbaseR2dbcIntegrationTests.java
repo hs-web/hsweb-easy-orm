@@ -427,6 +427,7 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
 
     @Test
     public void shouldAllowRepeatedIndexCreationThroughDdl() {
+        System.out.println("[索引结构同步] 模式=" + mode() + "，重复声明已有索引=" + indexName);
         operator.ddl()
             .createOrAlter(tableName)
             .index()
@@ -444,6 +445,45 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             .block(TIMEOUT);
         Assert.assertNotNull(index);
         Assert.assertEquals(indexName, index.getName());
+        Assert.assertEquals(tableName, index.getTableName());
+        Assert.assertEquals(1, index.getColumns().size());
+        Assert.assertEquals("name", index.getColumns().get(0).getColumn());
+        System.out.println("[验证结果] 已有索引结构不变，重复同步成功，索引字段=name");
+    }
+
+    @Test
+    public void shouldRebuildIndexWhenColumnsChange() {
+        // Read the existing index from the database instead of using initialization metadata.
+        RDBSchemaMetadata reloadedSchema = createSchema(schema.getName());
+        RDBDatabaseMetadata reloadedDatabase = new RDBDatabaseMetadata(reloadedSchema.getDialect());
+        reloadedDatabase.addSchema(reloadedSchema);
+        reloadedDatabase.setCurrentSchema(reloadedSchema);
+        reloadedDatabase.addFeature(executor);
+        DatabaseOperator reloadedOperator = DefaultDatabaseOperator.of(reloadedDatabase);
+
+        System.out.println("[索引结构变更] 模式=" + mode() + "，索引=" + indexName
+            + "，字段由 name 改为 position_no");
+        reloadedOperator.ddl()
+            .createOrAlter(tableName)
+            .index()
+            .name(indexName)
+            .column("position_no")
+            .commit()
+            .commit()
+            .reactive()
+            .block(TIMEOUT);
+
+        RDBIndexMetadata index = reloadedSchema
+            .findFeatureNow(IndexMetadataParser.ID)
+            .parseByNameReactive(indexName)
+            .cast(RDBIndexMetadata.class)
+            .block(TIMEOUT);
+        Assert.assertNotNull(index);
+        Assert.assertEquals(indexName, index.getName());
+        Assert.assertEquals(tableName, index.getTableName());
+        Assert.assertEquals(1, index.getColumns().size());
+        Assert.assertEquals("position_no", index.getColumns().get(0).getColumn());
+        System.out.println("[验证结果] 同名索引已按新结构重建，索引字段=position_no");
     }
 
     @Test
