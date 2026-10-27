@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.kingbase.mysql;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
+import org.hswebframework.ezorm.rdb.codec.DateTimeCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
@@ -15,11 +16,39 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Verifies schema-level MySQL-mode SQL generation.
  */
 public class KingbaseMysqlSchemaMetadataTest {
+
+    @Test
+    public void shouldDecodeFractionalTimestampUsingColumnCodec() {
+        KingbaseMysqlSchemaMetadata schema = new KingbaseMysqlSchemaMetadata("public");
+        RDBTableMetadata table = schema.newTable("account");
+        RDBColumnMetadata column = new RDBColumnMetadata();
+        column.setName("created_at");
+        column.setJdbcType(JDBCType.TIMESTAMP, Date.class);
+        column.setValueCodec(new DateTimeCodec("yyyy/MM/dd HH:mm:ss", Date.class));
+        table.addColumn(column);
+
+        Date fractional = (Date) column.decode("2026-07-27 10:30:15.123456");
+        Assert.assertEquals(Timestamp.valueOf("2026-07-27 10:30:15.123456").getTime(), fractional.getTime());
+        Date formatted = (Date) column.decode("2026/07/27 10:30:15");
+        Assert.assertEquals(Timestamp.valueOf("2026-07-27 10:30:15").getTime(), formatted.getTime());
+        Assert.assertSame(formatted, column.decode(formatted));
+        Assert.assertSame(formatted, column.encode(formatted));
+
+        RDBColumnMetadata text = new RDBColumnMetadata();
+        text.setName("date_text");
+        text.setJdbcType(JDBCType.VARCHAR, String.class);
+        text.setValueCodec(new DateTimeCodec("yyyyMMdd", String.class));
+        table.addColumn(text);
+        Assert.assertEquals("2026-07-27 10:30:15.123456", text.decode("2026-07-27 10:30:15.123456"));
+        System.out.println("[验证通过] MySQL 日期字段支持六位小数秒字符串，原有格式、日期对象及编码行为保留");
+    }
 
     @Test
     public void shouldUseKingbaseMysqlDialectAndCreateIndexes() {

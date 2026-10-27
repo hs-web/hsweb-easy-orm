@@ -6,6 +6,9 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
+import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
+import org.hswebframework.ezorm.rdb.supports.kingbase.mysql.KingbaseMysqlSchemaMetadata;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,6 +19,37 @@ import java.sql.JDBCType;
  * public schema metadata API.
  */
 public class KingbaseOracleSchemaMetadataTest {
+
+    @Test
+    public void shouldUseNullPredicatesForOracleEmptyStringConditions() {
+        KingbaseOracleSchemaMetadata oracle = new KingbaseOracleSchemaMetadata("public");
+        RDBDatabaseMetadata database = new RDBDatabaseMetadata(oracle.getDialect());
+        database.addSchema(oracle);
+        database.setCurrentSchema(oracle);
+        RDBTableMetadata table = oracle.newTable("tree_test");
+        RDBColumnMetadata path = new RDBColumnMetadata();
+        path.setName("path");
+        path.setJdbcType(JDBCType.VARCHAR, String.class);
+        path.setLength(128);
+        table.addColumn(path);
+        oracle.addTable(table);
+        for (String type : new String[]{"empty", "notempty", "nempty"}) {
+            String sql = DefaultDatabaseOperator.of(database).dml().query("tree_test")
+                .where(Term.of("path", type, 1)).getSql().getSql().toLowerCase();
+            Assert.assertTrue(type + ": " + sql, sql.contains("empty".equals(type) ? "is null" : "is not null"));
+            Assert.assertFalse(sql.contains("''"));
+        }
+
+        KingbaseMysqlSchemaMetadata mysql = new KingbaseMysqlSchemaMetadata("public");
+        RDBDatabaseMetadata mysqlDatabase = new RDBDatabaseMetadata(mysql.getDialect());
+        mysqlDatabase.addSchema(mysql);
+        mysqlDatabase.setCurrentSchema(mysql);
+        RDBTableMetadata mysqlTable = mysql.newTable("tree_test");
+        mysqlTable.addColumn(path.clone());
+        mysql.addTable(mysqlTable);
+        Assert.assertTrue(DefaultDatabaseOperator.of(mysqlDatabase).dml().query("tree_test")
+            .where(Term.of("path", "nempty", 1)).getSql().getSql().contains("!= ''"));
+    }
 
     @Test
     public void shouldRenderOracleCompatibleCreateTableSql() {

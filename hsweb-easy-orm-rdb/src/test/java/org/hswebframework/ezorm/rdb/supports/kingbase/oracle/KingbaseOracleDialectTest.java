@@ -13,6 +13,27 @@ import java.sql.JDBCType;
 public class KingbaseOracleDialectTest {
 
     @Test
+    public void shouldMapLobAndCharCatalogAliases() {
+        KingbaseOracleDialect dialect = new KingbaseOracleDialect();
+        DataType clob = dialect.convertDataType("text");
+        Assert.assertEquals(JDBCType.LONGVARCHAR, clob.getSqlType());
+        Assert.assertEquals(String.class, clob.getJavaType());
+
+        DataType blob = dialect.convertDataType("bytea");
+        Assert.assertEquals(JDBCType.LONGVARBINARY, blob.getSqlType());
+        Assert.assertEquals(byte[].class, blob.getJavaType());
+
+        DataType character = dialect.convertDataType("bpchar");
+        Assert.assertEquals(JDBCType.CHAR, character.getSqlType());
+        Assert.assertEquals(String.class, character.getJavaType());
+        RDBColumnMetadata column = new RDBColumnMetadata();
+        column.setLength(32);
+        column.setType(character);
+        Assert.assertEquals("char(32)", dialect.buildColumnDataType(column));
+        System.out.println("[验证通过] Oracle 系统目录类型 text、bytea、bpchar 分别识别为 CLOB、BLOB、CHAR 对应类型");
+    }
+
+    @Test
     public void shouldExposeKingbaseOracleDialectAndCharacterVarchar2Mapping() {
         KingbaseOracleDialect dialect = new KingbaseOracleDialect();
 

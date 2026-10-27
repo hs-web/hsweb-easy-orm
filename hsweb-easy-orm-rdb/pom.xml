@@ -80,10 +80,10 @@
         </dependency>
 
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
-            <!-- -Pkingbase-r2dbc selects the local fork that registers r2dbc:kingbase. -->
-            <version>${r2dbc.postgresql.version}</version>
+            <groupId>${r2dbc.driver.groupId}</groupId>
+            <artifactId>${r2dbc.driver.artifactId}</artifactId>
+            <!-- The default kingbase-r2dbc profile selects the driver published by JitPack. -->
+            <version>${r2dbc.driver.version}</version>
             <optional>true</optional>
         </dependency>
 

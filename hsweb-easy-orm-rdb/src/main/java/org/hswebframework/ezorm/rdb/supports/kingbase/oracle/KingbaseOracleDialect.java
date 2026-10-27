@@ -24,6 +24,13 @@ public class KingbaseOracleDialect extends OracleDialect {
             JdbcDataType.of(JDBCType.CHAR, String.class),
             column -> "char(" + column.getLength(255) + ")"
         ));
+        // KES 系统目录使用底层类型名返回 Oracle CLOB、BLOB 和 CHAR。
+        registerDataType("text", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
+        registerDataType("bytea", JdbcDataType.of(JDBCType.LONGVARBINARY, byte[].class));
+        registerDataType("bpchar", DataType.builder(
+            JdbcDataType.of(JDBCType.CHAR, String.class),
+            column -> "char(" + column.getLength(255) + ")"
+        ));
         registerDataType("integer", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("smallint", JdbcDataType.of(JDBCType.SMALLINT, Short.class));
         registerDataType("bigint", JdbcDataType.of(JDBCType.BIGINT, Long.class));
