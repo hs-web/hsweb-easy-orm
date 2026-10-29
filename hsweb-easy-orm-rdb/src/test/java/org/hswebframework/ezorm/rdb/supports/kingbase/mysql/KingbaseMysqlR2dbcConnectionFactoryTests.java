@@ -5,8 +5,10 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.R2dbcNonTransientResourceException;
+import org.hswebframework.ezorm.rdb.supports.kingbase.KingbaseTestContainer;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.ClassRule;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +25,9 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
 import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
 public class KingbaseMysqlR2dbcConnectionFactoryTests {
+
+    @ClassRule
+    public static final KingbaseTestContainer DATABASE = new KingbaseTestContainer("mysql");
 
     private static final Duration TIMEOUT = Duration.ofSeconds(20);
 

@@ -2,8 +2,13 @@ package org.hswebframework.ezorm.rdb.supports.kingbase.mysql;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.kingbase.AbstractKingbaseR2dbcIntegrationTests;
+import org.hswebframework.ezorm.rdb.supports.kingbase.KingbaseTestContainer;
+import org.junit.ClassRule;
 
 public class KingbaseMysqlR2dbcIntegrationTests extends AbstractKingbaseR2dbcIntegrationTests {
+
+    @ClassRule
+    public static final KingbaseTestContainer DATABASE = new KingbaseTestContainer("mysql");
 
     @Override
     protected String mode() {
