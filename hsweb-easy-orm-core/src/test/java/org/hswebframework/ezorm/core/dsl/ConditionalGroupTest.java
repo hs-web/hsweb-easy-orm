@@ -90,6 +90,7 @@ public class ConditionalGroupTest {
     }
 
     private static void assertGrouped(Param param) {
+        // 根条件分组后追加的 nest 与业务 OR 分支保持独立。
         var terms = param.getTerms();
         assertEquals(2, terms.size());
         assertEquals(Term.Type.and, terms.get(0).getType());
@@ -99,6 +100,69 @@ public class ConditionalGroupTest {
         assertEquals("b", terms.get(0).getTerms().get(1).getColumn());
         assertEquals(Term.Type.and, terms.get(1).getType());
         assertEquals("c", terms.get(1).getTerms().get(0).getColumn());
+    }
+
+    @Test
+    public void nestedGroupPreservesOuterOrAndParentReturn() {
+        var query = Query.of().is("outside", 0);
+        var nested = query.orNest().is("a", 1).or("b", 2);
+        assertSame(nested, nested.group());
+        nested.and("c", 3);
+        var term = query.getParam().getTerms().get(1);
+        assertEquals(Term.Type.or, term.getType());
+        assertEquals(2, term.getTerms().size());
+        assertEquals(2, term.getTerms().get(0).getTerms().size());
+        assertEquals(Term.Type.or, term.getTerms().get(0).getTerms().get(1).getType());
+        assertEquals("c", term.getTerms().get(1).getColumn());
+        assertEquals(Term.Type.and, term.getTerms().get(1).getType());
+        assertSame(query, nested.end());
+    }
+
+    @Test
+    public void deepGroupsReturnEachOriginalParent() {
+        var query = Query.of();
+        var outer = query.nest();
+        var inner = outer.nest();
+        assertSame(inner, inner.is("a", 1).or("b", 2).group());
+        assertSame(outer, inner.and("c", 3).end());
+        assertSame(query, outer.end());
+    }
+
+    @Test
+    public void nestedReadOnlyConditionsAllowRepeatedGroupingAndAppend() {
+        for (int size = 0; size <= 2; size++) {
+            var query = Query.of();
+            var nested = query.nest();
+            var term = query.getParam().getTerms().get(0);
+            var source = List.of(Term.of("a", "eq", 1), Term.of("b", "eq", 2)).subList(0, size);
+            term.setTerms(source);
+            nested.group();
+            var grouped = List.copyOf(term.getTerms());
+            nested.group().group();
+            assertEquals(grouped, term.getTerms());
+            assertSame(nested, nested.and("c", 3));
+            assertEquals(size == 0 ? 1 : 2, term.getTerms().size());
+            assertEquals(size, source.size());
+        }
+    }
+
+    @Test
+    public void nestedGroupingKeepsCarrierMetadataAndSnapshotsTheChildList() {
+        var query = Query.of();
+        var outer = query.nest();
+        var nested = outer.orNest("anchor", 7);
+        var term = query.getParam().getTerms().get(0).getTerms().get(0);
+        var source = new ArrayList<>(List.of(Term.of("a", "eq", 1), Term.of("b", "eq", 2)));
+        term.setTerms(source);
+        term.getOptions().add("retained");
+        assertSame(nested, nested.group());
+        source.clear();
+        assertEquals("anchor", term.getColumn());
+        assertEquals(7, term.getValue());
+        assertEquals(Term.Type.or, term.getType());
+        assertEquals(List.of("retained"), term.getOptions());
+        assertEquals(2, term.getTerms().get(0).getTerms().size());
+        assertSame(outer, nested.end());
     }
 
     private static final class UnadaptedConditional implements Conditional<UnadaptedConditional> {

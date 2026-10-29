@@ -121,4 +121,44 @@ public class ConditionalGroupIntegrationTest {
         assertSame(conditional, conditional.group().group().nest().is("state", 1).end());
         return conditional;
     }
+
+    @Test
+    public void nestedGroupingKeepsOuterOrAndIntersectsTheInnerRangeInSql() {
+        if (operation.equals("query")) {
+            List<TestEntity> result = reactive
+                ? nestedSelection(async.createQuery()).fetch().collectList().block()
+                : nestedSelection(sync.createQuery()).fetch();
+            assertEquals(Set.of("allowed", "unselected"),
+                result.stream().map(TestEntity::getId).collect(Collectors.toSet()));
+        } else if (operation.equals("update")) {
+            int changed = reactive
+                ? nestedSelection(async.createUpdate().set("name", "changed").set("state", 7)
+                    .includes("name", "state").excludes("state")).execute().block()
+                : nestedSelection(sync.createUpdate().set("name", "changed").set("state", 7)
+                    .includes("name", "state").excludes("state")).execute();
+            assertEquals(2, changed);
+            for (String id : List.of("allowed", "unselected")) {
+                var updated = sync.findById(id).orElseThrow();
+                assertEquals("changed", updated.getName());
+                assertEquals(Byte.valueOf((byte) 1), updated.getState());
+            }
+        } else {
+            int changed = reactive ? nestedSelection(async.createDelete()).execute().block()
+                : nestedSelection(sync.createDelete()).execute();
+            assertEquals(2, changed);
+            assertFalse(sync.findById("allowed").isPresent());
+            assertFalse(sync.findById("unselected").isPresent());
+        }
+        assertEquals("outside", sync.findById("outside").orElseThrow().getName());
+        assertEquals("shared", sync.findById("same-name").orElseThrow().getName());
+    }
+
+    private static <T extends Conditional<T>> T nestedSelection(T conditional) {
+        var outer = conditional.is("id", "unselected").orNest();
+        var inner = outer.nest();
+        assertSame(inner, inner.is("id", "outside").or("name", "eq", "shared").group());
+        assertSame(outer, inner.and("state", 1).end());
+        assertSame(conditional, outer.end());
+        return conditional;
+    }
 }

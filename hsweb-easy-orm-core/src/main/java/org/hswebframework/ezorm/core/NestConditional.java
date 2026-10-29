@@ -9,8 +9,31 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * 操作当前嵌套层的可变条件，通过 {@link #end()} 返回创建它的父级构造器。
+ * 由父级的 nest/orNest 创建，不保证并发修改安全。
+ *
+ * @param <T> 父级构造器类型
+ * @see SimpleNestConditional
+ */
 @SuppressWarnings("all")
 public interface NestConditional<T extends TermTypeConditionalSupport> extends LogicalOperation<NestConditional<T>>, TermTypeConditionalSupport {
+
+    /**
+     * 将当前层已有子条件整体分组，返回当前嵌套构造器。
+     * <p>例如 {@code is("a", 1).or("b", 2).group().and("c", 3)}
+     * 表示 {@code (a = 1 OR b = 2) AND c = 3}。空条件和单条件不增加嵌套层级，
+     * 连续调用不重复包裹；外层连接符、承载条件的字段和值及父级返回对象保持不变。
+     * <p>自定义实现须显式适配；默认明确拒绝，不能静默跳过分组。
+     *
+     * @return 当前嵌套条件构造器
+     * @throws UnsupportedOperationException 当前实现不支持已有子条件分组
+     * @since 4.2.3
+     * @see Conditional#group()
+     */
+    default NestConditional<T> group() {
+        throw new UnsupportedOperationException("Grouping existing conditions is not supported");
+    }
 
     /**
      * 结束当前嵌套条件并返回父级条件构造器

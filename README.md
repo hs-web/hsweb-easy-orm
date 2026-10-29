@@ -46,6 +46,10 @@ List<Map<String,Object>> dataList= operator.dml().query()
 `query.is("a", 1).or("b", 2).group().nest().is("c", 3).end()`
 表示 `(a = 1 OR b = 2) AND (c = 3)`。空条件和单个条件不额外增加嵌套层级，
 连续分组不会重复包裹；原 `nest()` / `orNest()` 仍只追加新分组。
+`NestConditional.group()` 在当前嵌套层提供相同能力，例如
+`query.nest().is("a", 1).or("b", 2).group().and("c", 3).end()`
+表示 `((a = 1 OR b = 2) AND c = 3)`。仅重组当前层已有子条件，保留外层连接符、
+承载条件的字段和值，以及 `end()` 返回的原父级构造器；支持多层嵌套。
 内置 core、同步及响应式 Query/Update/Delete 均支持此能力，分组保留字段、分页及更新内容，
 兼容只读条件列表。自定义构造器或代理需显式实现或委托 `group()`；默认实现抛出
 `UnsupportedOperationException`，不会静默忽略分组。调用新方法的下游须同步使用支持该接口的 core/RDB 版本。
