@@ -65,6 +65,14 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     }
 
     @Override
+    public ME group() {
+        QueryParam param = toQueryParam();
+        param.group();
+        terms = param.getTerms();
+        return (ME) this;
+    }
+
+    @Override
     public <T extends QueryParam> T toQueryParam(Supplier<T> template) {
         T param = template.get();
         param.setTerms(terms);

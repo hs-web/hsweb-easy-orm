@@ -119,6 +119,12 @@ public class DefaultQuery<T, ME extends DSLQuery<?>> implements DSLQuery<ME> {
         return (ME) this;
     }
 
+    @Override
+    public ME group() {
+        param.group();
+        return (ME) this;
+    }
+
     private boolean isSelectInclude(SelectColumn column) {
         return param.getIncludes().isEmpty() ||
                 param.getIncludes()

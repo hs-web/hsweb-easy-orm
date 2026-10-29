@@ -45,6 +45,12 @@ public final class Update<T, Q extends UpdateParam<T>> implements Conditional<Up
         return param;
     }
 
+    @Override
+    public Update<T, Q> group() {
+        param.group();
+        return this;
+    }
+
     public Update<T, Q> setParam(Q param) {
         this.param = param;
         return this;

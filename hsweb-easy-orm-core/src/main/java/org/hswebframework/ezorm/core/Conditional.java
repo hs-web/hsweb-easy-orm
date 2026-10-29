@@ -31,6 +31,20 @@ import java.util.function.Supplier;
 public interface Conditional<T extends Conditional<?>> extends LogicalOperation<T>, TermTypeConditionalSupport {
 
     /**
+     * 将已有条件整体分组，返回当前构造器。空条件和单个条件不额外增加嵌套层级。
+     * <p>例如 {@code is("a", 1).or("b", 2).group().and("c", 3)}
+     * 表示 {@code (a = 1 OR b = 2) AND c = 3}；不改变 {@link #nest()} 追加新分组的语义。
+     * <p>自定义实现须覆写本方法；默认明确拒绝，不能静默跳过分组。
+     *
+     * @return 当前条件构造器
+     * @throws UnsupportedOperationException 当前实现不支持已有条件分组
+     * @since 4.2.3
+     */
+    default T group() {
+        throw new UnsupportedOperationException("Grouping existing conditions is not supported");
+    }
+
+    /**
      * 创建一个嵌套条件，使用AND连接符。
      * <p>
      * 嵌套构造结束后请调用{@link NestConditional#end()}结束嵌套
