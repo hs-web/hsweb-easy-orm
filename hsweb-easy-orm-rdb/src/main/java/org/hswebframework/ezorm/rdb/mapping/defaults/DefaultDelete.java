@@ -64,6 +64,14 @@ public class DefaultDelete<ME extends DSLDelete<?>> implements DSLDelete<ME> {
     }
 
     @Override
+    public ME group() {
+        QueryParam param = toQueryParam();
+        param.group();
+        terms = param.getTerms();
+        return (ME) this;
+    }
+
+    @Override
     public <T extends QueryParam> T toQueryParam(Supplier<T> template) {
         T param = template.get();
         param.setTerms(terms);

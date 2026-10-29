@@ -24,6 +24,12 @@ public final class Delete<P extends Param> implements Conditional<Delete<P>> {
         return param;
     }
 
+    @Override
+    public Delete<P> group() {
+        param.group();
+        return this;
+    }
+
     public Delete<P> setParam(P param) {
         this.param = param;
         return this;

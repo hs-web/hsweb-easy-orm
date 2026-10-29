@@ -28,6 +28,12 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         return param;
     }
 
+    @Override
+    public Query<T, Q> group() {
+        param.group();
+        return this;
+    }
+
     public Query<T, Q> setParam(Q param) {
         this.param = param;
         return this;

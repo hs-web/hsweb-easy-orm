@@ -40,6 +40,20 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 建议配合[hsweb4](https://github.com/hs-web/hsweb-framework/tree/4.0.x)使用.
 
+## 已有条件分组
+
+`Conditional.group()` 将已有条件整体分组，随后可继续追加条件。例如
+`query.is("a", 1).or("b", 2).group().nest().is("c", 3).end()`
+表示 `(a = 1 OR b = 2) AND (c = 3)`。空条件和单个条件不额外增加嵌套层级，
+连续分组不会重复包裹；原 `nest()` / `orNest()` 仍只追加新分组。
+`NestConditional.group()` 在当前嵌套层提供相同能力，例如
+`query.nest().is("a", 1).or("b", 2).group().and("c", 3).end()`
+表示 `((a = 1 OR b = 2) AND c = 3)`。仅重组当前层已有子条件，保留外层连接符、
+承载条件的字段和值，以及 `end()` 返回的原父级构造器；支持多层嵌套。
+内置 core、同步及响应式 Query/Update/Delete 均支持此能力，分组保留字段、分页及更新内容，
+兼容只读条件列表。自定义构造器或代理需显式实现或委托 `group()`；默认实现抛出
+`UnsupportedOperationException`，不会静默忽略分组。调用新方法的下游须同步使用支持该接口的 core/RDB 版本。
+
 ## 同步 CRUD 事件上下文
 
 `hsweb-easy-orm-rdb` 的同步 Update/Delete DSL 携带 Repository 的 repository、columnMapping 等默认上下文。每次同步执行使用独立的 `EventContext`，before 写入的快照可在同次 after/error 中读取，SQL 结果或原异常也进入该上下文。错误通知再次失败时保留原异常，将通知异常附加为 suppressed。复用 DSL 或结果操作器再次执行时不会残留前次快照、结果或错误；未配置异常转换器时保留 JDBC 原异常。
