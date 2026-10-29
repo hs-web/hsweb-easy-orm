@@ -82,7 +82,7 @@
         <dependency>
             <groupId>${r2dbc.driver.groupId}</groupId>
             <artifactId>${r2dbc.driver.artifactId}</artifactId>
-            <!-- The default kingbase-r2dbc profile selects the driver published by JitPack. -->
+            <!-- Selected by the kingbase-r2dbc or postgresql-r2dbc profile. -->
             <version>${r2dbc.driver.version}</version>
             <optional>true</optional>
         </dependency>

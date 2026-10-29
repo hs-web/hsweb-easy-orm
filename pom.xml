@@ -87,6 +87,15 @@
             </repositories>
         </profile>
         <profile>
+            <id>postgresql-r2dbc</id>
+            <!-- Explicit opt-in to the original driver: -Ppostgresql-r2dbc. -->
+            <properties>
+                <r2dbc.driver.groupId>org.postgresql</r2dbc.driver.groupId>
+                <r2dbc.driver.artifactId>r2dbc-postgresql</r2dbc.driver.artifactId>
+                <r2dbc.driver.version>1.0.7.RELEASE</r2dbc.driver.version>
+            </properties>
+        </profile>
+        <profile>
             <id>release</id>
             <build>
                 <plugins>
