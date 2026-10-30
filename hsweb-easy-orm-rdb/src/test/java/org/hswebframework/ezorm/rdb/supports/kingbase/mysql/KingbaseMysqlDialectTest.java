@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.kingbase.mysql;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,6 +12,30 @@ import java.sql.JDBCType;
  * Verifies the public SQL type mapping exposed for KingbaseES MySQL mode.
  */
 public class KingbaseMysqlDialectTest {
+
+    @Test
+    public void shouldReuseMysqlTypeMappingsAndCustomTypeFallback() {
+        MysqlDialect original = new MysqlDialect();
+        KingbaseMysqlDialect kingbase = new KingbaseMysqlDialect();
+        for (String name : new String[]{"smallint", "integer", "bigint", "boolean", "real", "numeric",
+            "varchar", "varchar(64)", "character", "character(32)",
+            "double precision", "timestamp", "datetime", "time", "timestamp without time zone", "time without time zone", "json", "unknown_type"}) {
+            DataType expected = original.convertDataType(name);
+            DataType actual = kingbase.convertDataType(name);
+            Assert.assertEquals(name, expected.getSqlType(), actual.getSqlType());
+            Assert.assertEquals(name, expected.getJavaType(), actual.getJavaType());
+            RDBColumnMetadata column = new RDBColumnMetadata();
+            column.setPrecision(12);
+            column.setScale(2);
+            column.setType(expected);
+            String expectedSql = original.buildColumnDataType(column);
+            column.setType(actual);
+            Assert.assertEquals(name, expectedSql, kingbase.buildColumnDataType(column));
+            System.out.println("[类型映射对比] MySQL/Kingbase MySQL，类型=" + name
+                + "，JDBC=" + actual.getSqlType() + "，Java=" + actual.getJavaType().getName()
+                + "，DDL=" + expectedSql);
+        }
+    }
 
     @Test
     public void shouldExposeKingbaseMysqlDialectAndVarcharMapping() {
@@ -24,13 +49,13 @@ public class KingbaseMysqlDialectTest {
         Assert.assertEquals("`account`", quotedName);
 
         RDBColumnMetadata column = new RDBColumnMetadata();
-        column.setLength(64);
-        DataType dataType = dialect.convertDataType("character varying");
+        DataType dataType = dialect.convertDataType("character varying(64)");
         Assert.assertNotNull(dataType);
         Assert.assertEquals(JDBCType.VARCHAR, dataType.getSqlType());
         Assert.assertEquals(String.class, dataType.getJavaType());
         column.setType(dataType);
-        System.out.println("[数据库类型识别] 输入=character varying，SQL类型="
+        Assert.assertEquals(64, column.getLength());
+        System.out.println("[数据库类型识别] 输入=character varying(64)，SQL类型="
             + dataType.getSqlType() + "，Java类型=" + dataType.getJavaType().getName());
 
         String columnType = dialect.buildColumnDataType(column);

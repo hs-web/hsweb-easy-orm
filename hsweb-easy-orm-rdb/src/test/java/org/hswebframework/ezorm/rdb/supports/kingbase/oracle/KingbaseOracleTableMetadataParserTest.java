@@ -19,7 +19,7 @@ public class KingbaseOracleTableMetadataParserTest {
 
         parser.apply(column, Record.newRecord()
             .putValue("name", "account_name")
-            .putValue("data_type", "character varying")
+            .putValue("data_type", "varchar")
             .putValue("data_length", 64)
             .putValue("not_null", "1"));
 

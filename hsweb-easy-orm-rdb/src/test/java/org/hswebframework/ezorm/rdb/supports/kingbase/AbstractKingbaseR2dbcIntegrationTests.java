@@ -33,6 +33,8 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.DataType;
+import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
@@ -45,6 +47,8 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.hswebframework.ezorm.rdb.supports.Address;
 import org.hswebframework.ezorm.rdb.supports.BasicTestEntity;
 import org.hswebframework.ezorm.rdb.supports.StateEnum;
+import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -90,13 +94,13 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
 
     private ConnectionFactory connectionFactory;
 
-    private ReactiveSqlExecutor executor;
+    protected ReactiveSqlExecutor executor;
 
     private RDBSchemaMetadata schema;
 
     private DatabaseOperator operator;
 
-    private RDBTableMetadata table;
+    protected RDBTableMetadata table;
 
     private String tableName;
 
@@ -307,23 +311,17 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
                     + "，非空=" + column.isNotNull());
             }
 
-            // MySQL 从 column_type 恢复字符长度，Oracle 从 character_maximum_length 读取。
-            Assert.assertEquals("varchar(32)", id.getDataType());
-            Assert.assertEquals(JDBCType.VARCHAR, id.getSqlType());
-            Assert.assertEquals(String.class, id.getJavaType());
-            Assert.assertEquals(32, id.getLength());
+            // 校验数据库真实定义，同时按当前原生映射规则校验 ORM 回读结果。
+            assertVarcharColumnMetadata(reloaded, "id", 32);
             Assert.assertTrue(id.isNotNull());
 
-            Assert.assertEquals("varchar(128)", name.getDataType());
-            Assert.assertEquals(JDBCType.VARCHAR, name.getSqlType());
-            Assert.assertEquals(String.class, name.getJavaType());
-            Assert.assertEquals(128, name.getLength());
+            assertVarcharColumnMetadata(reloaded, "name", 128);
             Assert.assertTrue(name.isNotNull());
 
             Assert.assertEquals(oracleMode ? JDBCType.NUMERIC : JDBCType.INTEGER, age.getSqlType());
-            Assert.assertEquals(oracleMode ? BigDecimal.class : Integer.class, age.getJavaType());
-            // Oracle 元数据返回 numeric，精度和小数位保存在独立属性中。
-            Assert.assertEquals(oracleMode ? "numeric" : "integer", age.getDataType());
+            // MySQL 的 integer 沿用原生自定义类型回退，Java 类型为 String。
+            Assert.assertEquals(oracleMode ? BigDecimal.class : String.class, age.getJavaType());
+            Assert.assertEquals(oracleMode ? "numeric(10,0)" : "int", age.getDataType());
             // KES MySQL 兼容视图未提供 integer 的精度，当前 ORM 使用 0 表示未获取到精度。
             Assert.assertEquals(oracleMode ? 10 : 0, age.getPrecision());
             Assert.assertEquals(0, age.getScale());
@@ -332,7 +330,7 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             // 显式指定定点数精度和小数位，避免仅用 integer 的缺省值验证数值属性。
             Assert.assertEquals(JDBCType.NUMERIC, amount.getSqlType());
             Assert.assertEquals(BigDecimal.class, amount.getJavaType());
-            Assert.assertEquals(oracleMode ? "numeric" : "decimal(12,2)", amount.getDataType());
+            Assert.assertEquals(oracleMode ? "numeric(12,2)" : "decimal(12,2)", amount.getDataType());
             Assert.assertEquals(12, amount.getPrecision());
             Assert.assertEquals(2, amount.getScale());
             Assert.assertFalse(amount.isNotNull());
@@ -399,7 +397,7 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
                 Assert.assertTrue(tableNames.contains(parsed.getName()));
                 Assert.assertEquals(parsed.getName(), parsed.getRealName());
                 Assert.assertEquals(firstTableName.equals(parsed.getName()) ? 3 : 2, parsed.getColumns().size());
-                Assert.assertEquals(32, parsed.getColumnNow("id").getLength());
+                assertVarcharColumnMetadata(parsed, "id", 32);
                 Assert.assertTrue(parsed.getColumnNow("id").isPrimaryKey());
                 Assert.assertTrue(parsed.getColumnNow("id").isNotNull());
                 Assert.assertEquals(1, parsed.getIndexes().size());
@@ -416,7 +414,7 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
                 .orElseThrow(AssertionError::new);
             Assert.assertTrue(parsedSchema.getTable(secondTableName, false).isPresent());
             Assert.assertEquals(firstTableName, parsed.getRealName());
-            Assert.assertEquals(128, parsed.getColumnNow("name").getLength());
+            assertVarcharColumnMetadata(parsed, "name", 128);
             Assert.assertTrue(parsed.getColumnNow("name").isNotNull());
             Assert.assertEquals(oracleMode ? JDBCType.NUMERIC : JDBCType.INTEGER,
                 parsed.getColumnNow("age").getSqlType());
@@ -1184,15 +1182,15 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
         expectedReadTypes.put("name", JDBCType.VARCHAR);
         expectedReadTypes.put("comment", JDBCType.VARCHAR);
         expectedReadTypes.put("number_test", JDBCType.NUMERIC);
-        expectedReadTypes.put("datetime_test", JDBCType.TIMESTAMP);
+        expectedReadTypes.put("datetime_test", oracleMode ? JDBCType.OTHER : JDBCType.TIMESTAMP);
         expectedReadTypes.put("int_test", oracleMode ? JDBCType.NUMERIC : JDBCType.INTEGER);
         expectedReadTypes.put("bigint_test", oracleMode ? JDBCType.NUMERIC : JDBCType.BIGINT);
-        expectedReadTypes.put("clob_test", oracleMode ? JDBCType.LONGVARCHAR : JDBCType.CLOB);
+        expectedReadTypes.put("clob_test", oracleMode ? JDBCType.OTHER : JDBCType.CLOB);
         expectedReadTypes.put("tinyint_test", oracleMode ? JDBCType.NUMERIC : JDBCType.TINYINT);
-        expectedReadTypes.put("blob_test", oracleMode ? JDBCType.LONGVARBINARY : JDBCType.BLOB);
-        expectedReadTypes.put("char_test", JDBCType.CHAR);
-        expectedReadTypes.put("time_test", oracleMode ? JDBCType.TIMESTAMP : JDBCType.TIME);
-        expectedReadTypes.put("date_test", oracleMode ? JDBCType.TIMESTAMP : JDBCType.DATE);
+        expectedReadTypes.put("blob_test", oracleMode ? JDBCType.OTHER : JDBCType.BLOB);
+        expectedReadTypes.put("char_test", JDBCType.OTHER);
+        expectedReadTypes.put("time_test", oracleMode ? JDBCType.OTHER : JDBCType.TIME);
+        expectedReadTypes.put("date_test", oracleMode ? JDBCType.OTHER : JDBCType.DATE);
 
         System.out.println("[完整 DDL 类型集合] 模式=" + mode() + "，临时 Schema=" + ddlSchemaName);
         executor.execute(SqlRequests.of("create schema " + quotedSchema)).block(TIMEOUT);
@@ -1245,6 +1243,7 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             RDBTableMetadata reloaded = reloadedSchema.getTableReactive(ddlTableName, true).block(TIMEOUT);
             Assert.assertNotNull(reloaded);
             Assert.assertEquals(13, reloaded.getColumns().size());
+            Dialect originalDialect = oracleMode ? new OracleDialect() : new MysqlDialect();
             for (String name : expectedTypes.keySet()) {
                 RDBColumnMetadata column = reloaded.getColumnNow(name);
                 System.out.println("[DDL 实库回读] 模式=" + mode() + "，字段=" + name
@@ -1252,14 +1251,33 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
                     + "，长度=" + column.getLength() + "，精度=" + column.getPrecision()
                     + "，小数位=" + column.getScale());
                 Assert.assertEquals(name, expectedReadTypes.get(name), column.getSqlType());
+                Map<String, Object> raw = readDatabaseColumn(reloaded, column.getName());
+                String databaseType = String.valueOf(value(raw, oracleMode ? "data_type" : "column_type"));
+                String originalTypeName = databaseType.toLowerCase(Locale.ROOT);
+                if (!oracleMode && originalTypeName.startsWith("character varying(")) {
+                    originalTypeName = "varchar" + originalTypeName.substring("character varying".length());
+                }
+                DataType originalType = originalDialect.convertDataType(originalTypeName);
+                Assert.assertEquals(name, originalType.getSqlType(), column.getSqlType());
+                Assert.assertEquals(name, originalType.getJavaType(), column.getJavaType());
+                System.out.println("[类型回读] 模式=" + mode() + "，字段=" + name
+                    + "，数据库类型=" + databaseType + "，JDBC=" + column.getSqlType()
+                    + "，Java=" + column.getJavaType().getSimpleName());
             }
-            Assert.assertEquals(32, reloaded.getColumnNow("id").getLength());
+            assertVarcharColumnMetadata(reloaded, "id", 32);
             Assert.assertTrue(reloaded.getColumnNow("id").isPrimaryKey());
             Assert.assertTrue(reloaded.getColumnNow("name").isNotNull());
-            Assert.assertEquals(64, reloaded.getColumnNow("name").getLength());
+            assertVarcharColumnMetadata(reloaded, "name", 64);
             Assert.assertEquals(4, reloaded.getColumnNow("number_test").getPrecision());
             Assert.assertEquals(0, reloaded.getColumnNow("number_test").getScale());
-            Assert.assertEquals(32, reloaded.getColumnNow("char_test").getLength());
+            Map<String, Object> charDefinition = readDatabaseColumn(reloaded, reloaded.getColumnNow("char_test").getName());
+            if (oracleMode) {
+                Assert.assertEquals("bpchar", value(charDefinition, "data_type"));
+                Assert.assertEquals(32, Integer.parseInt(String.valueOf(value(charDefinition, "character_maximum_length"))));
+            } else {
+                Assert.assertEquals("character(32)", value(charDefinition, "column_type"));
+            }
+            Assert.assertEquals(oracleMode ? 32 : -1, reloaded.getColumnNow("char_test").getLength());
             Assert.assertTrue(reloaded.getIndexes().stream()
                 .anyMatch(index -> "index_types".equals(index.getName())));
         } finally {
@@ -1314,9 +1332,9 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
                 .getTableReactive(ddlTableName, true).block(TIMEOUT);
             Assert.assertNotNull(altered);
             Assert.assertEquals(5, altered.getColumns().size());
-            Assert.assertEquals(128, altered.getColumnNow("name").getLength());
+            assertVarcharColumnMetadata(altered, "name", 128);
             Assert.assertTrue(altered.getColumnNow("name").isNotNull());
-            Assert.assertEquals(32, altered.getColumnNow("test").getLength());
+            assertVarcharColumnMetadata(altered, "test", 32);
             Assert.assertEquals(4, altered.getColumnNow("age").getPrecision());
             Assert.assertEquals(0, altered.getColumnNow("age").getScale());
             Assert.assertTrue(altered.getColumnNow("id").isPrimaryKey());
@@ -1346,7 +1364,7 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             Assert.assertNotNull(dropped);
             Assert.assertEquals(4, dropped.getColumns().size());
             Assert.assertFalse(dropped.getColumn("test").isPresent());
-            Assert.assertEquals(128, dropped.getColumnNow("name").getLength());
+            assertVarcharColumnMetadata(dropped, "name", 128);
             Assert.assertTrue(dropped.getColumnNow("id").isPrimaryKey());
             Assert.assertTrue(dropped.getIndex("index_alter").isPresent());
             Assert.assertEquals("initial", value(executor.select(SqlRequests.of(selectSql, "before"),
@@ -1370,6 +1388,39 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
         database.setCurrentSchema(created);
         database.addFeature(executor);
         return created;
+    }
+
+    private Map<String, Object> readDatabaseColumn(RDBTableMetadata metadata, String columnName) {
+        return executor.select(SqlRequests.of(
+            "select data_type, " + ("mysql".equals(mode()) ? "column_type, " : "")
+                + "character_maximum_length, numeric_precision, numeric_scale, is_nullable "
+                + "from information_schema.columns where table_schema = ? and table_name = ? and column_name = ?",
+            metadata.getSchema().getName(), metadata.getRealName(), columnName
+        ), lowerCase(ResultWrappers.map())).single().block(TIMEOUT);
+    }
+
+    private void assertVarcharColumnMetadata(RDBTableMetadata metadata, String columnName, int databaseLength) {
+        boolean oracleMode = "oracle".equals(mode());
+        RDBColumnMetadata column = metadata.getColumnNow(columnName);
+        Map<String, Object> raw = readDatabaseColumn(metadata, column.getName());
+        Assert.assertNotNull(raw);
+        Assert.assertEquals("varchar", value(raw, "data_type"));
+        if (oracleMode) {
+            Assert.assertEquals(databaseLength,
+                Integer.parseInt(String.valueOf(value(raw, "character_maximum_length"))));
+        } else {
+            // MySQL 兼容视图将实际长度保存在 column_type 中。
+            Assert.assertEquals("character varying(" + databaseLength + ")", value(raw, "column_type"));
+            Assert.assertEquals(-1, Integer.parseInt(String.valueOf(value(raw, "character_maximum_length"))));
+        }
+        Assert.assertEquals(JDBCType.VARCHAR, column.getSqlType());
+        Assert.assertEquals(String.class, column.getJavaType());
+        Assert.assertEquals(databaseLength, column.getLength());
+        Assert.assertEquals("varchar(" + databaseLength + ")", column.getDataType());
+        System.out.println("[字符字段核验] 模式=" + mode() + "，字段=" + columnName
+            + "，数据库定义=" + (oracleMode ? "varchar(" + databaseLength + ")" : value(raw, "column_type"))
+            + "，ORM类型=" + column.getDataType() + "，JDBC=" + column.getSqlType()
+            + "，ORM长度=" + column.getLength());
     }
 
     /**
