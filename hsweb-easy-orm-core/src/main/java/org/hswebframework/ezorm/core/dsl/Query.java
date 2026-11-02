@@ -28,6 +28,12 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
         return param;
     }
 
+    @Override
+    public Query<T, Q> group() {
+        param.group();
+        return this;
+    }
+
     public Query<T, Q> setParam(Q param) {
         this.param = param;
         return this;
@@ -119,6 +125,11 @@ public final class Query<T, Q extends QueryParam> implements Conditional<Query<T
 
     public Query<T, Q> forUpdate() {
         this.param.setForUpdate(true);
+        return this;
+    }
+
+    public Query<T, Q> strictTerm(boolean strictTerm) {
+        this.param.setStrictTerm(strictTerm);
         return this;
     }
 

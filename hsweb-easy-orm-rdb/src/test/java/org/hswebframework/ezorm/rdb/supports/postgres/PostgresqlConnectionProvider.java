@@ -6,7 +6,6 @@ import org.hswebframework.ezorm.rdb.Containers;
 import org.junit.Assert;
 import org.postgresql.Driver;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,8 +17,6 @@ public class PostgresqlConnectionProvider implements ConnectionProvider {
     static {
         Assert.assertTrue(Driver.isRegistered());
         GenericContainer<?> container = Containers.newPostgresql("11");
-
-        container.waitingFor(Wait.forListeningPort());
         container.start();
         port = container.getMappedPort(5432);
     }

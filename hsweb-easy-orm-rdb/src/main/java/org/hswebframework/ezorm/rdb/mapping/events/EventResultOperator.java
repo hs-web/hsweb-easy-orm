@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.events;
 
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
+import org.hswebframework.ezorm.rdb.events.EventContext;
 import org.hswebframework.ezorm.rdb.events.EventListener;
 import org.hswebframework.ezorm.rdb.events.EventType;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -41,24 +42,22 @@ public class EventResultOperator {
 
                     ContextKeyValue<Boolean> isReactive = MappingContextKeys
                         .reactive(Publisher.class.isAssignableFrom(method.getReturnType()));
+                    EventContext syncContext = isReactive.getValue()
+                        ? null
+                        : EventContext.create().set(keyValue).set(isReactive);
                     try {
 
-                        DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
-
-                        tableMetadata.fireEvent(before, ctx -> {
-                            ctx.set(keyValue).set(isReactive);
-                            if (isReactive.getValue()) {
-                                ctx.set(reactiveResult(holder));
-                            }
-                        });
-
                         if (!isReactive.getValue()) {
+                            tableMetadata.fireEvent(before, syncContext);
                             Object result = method.invoke(operator.get(), args);
-                            tableMetadata.fireEvent(after, ctx -> {
-                                ctx.set(keyValue).set(MappingContextKeys.result(result), isReactive);
-                            });
+                            syncContext.set(MappingContextKeys.result(result));
+                            tableMetadata.fireEvent(after, syncContext);
                             return result;
                         }
+                        DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
+                        tableMetadata.fireEvent(before, ctx -> {
+                            ctx.set(keyValue).set(isReactive).set(reactiveResult(holder));
+                        });
                         boolean isMono = Mono.class.isAssignableFrom(method.getReturnType());
                         return holder
                             .doBefore()
@@ -84,9 +83,20 @@ public class EventResultOperator {
                             e = e.getCause();
                         }
                         Throwable error = e;
-                        tableMetadata.fireEvent(after, ctx -> {
-                            ctx.set(keyValue).set(MappingContextKeys.error(error), isReactive);
-                        });
+                        if (syncContext != null) {
+                            syncContext.set(MappingContextKeys.error(error));
+                            try {
+                                tableMetadata.fireEvent(after, syncContext);
+                            } catch (Throwable notificationError) {
+                                if (notificationError != error) {
+                                    error.addSuppressed(notificationError);
+                                }
+                            }
+                        } else {
+                            tableMetadata.fireEvent(after, ctx -> {
+                                ctx.set(keyValue).set(MappingContextKeys.error(error), isReactive);
+                            });
+                        }
                         throw error;
                     }
                 }));

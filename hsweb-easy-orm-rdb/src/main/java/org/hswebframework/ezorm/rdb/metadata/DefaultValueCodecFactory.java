@@ -26,6 +26,9 @@ public class DefaultValueCodecFactory implements ValueCodecFactory {
     public static DefaultValueCodecFactory COMMONS = new DefaultValueCodecFactory();
 
     static {
+        COMMONS.register(column -> column.getType() instanceof ValueCodec,
+                column -> ((ValueCodec) column.getType()));
+
         COMMONS.register(column -> DataTypeUtils.typeIsNumber(column.getType()),
                 column -> new NumberValueCodec(column.getJavaType()));
 

@@ -221,7 +221,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     public Object encode(Object data) {
         if (data == null || data instanceof NullValue) {
             if (valueCodec != null) {
-                Object newVal = valueCodec.encodeNull();
+                Object newVal = valueCodec.encodeNull(this);
                 if (newVal != null) {
                     return newVal;
                 }
@@ -259,7 +259,7 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
             return current;
         }
         if (owner != null) {
-            return owner.findFeatureOrElse(id, null);
+            return owner.findFeatureOrElse(id, orElse);
         }
         return orElse == null ? null : orElse.get();
     }

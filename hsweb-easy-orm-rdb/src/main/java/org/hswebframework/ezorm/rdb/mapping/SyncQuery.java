@@ -11,4 +11,8 @@ public interface SyncQuery<T> extends DSLQuery<SyncQuery<T>> {
 
     int count();
 
+    default long countLong() {
+        return count();
+    }
+
 }

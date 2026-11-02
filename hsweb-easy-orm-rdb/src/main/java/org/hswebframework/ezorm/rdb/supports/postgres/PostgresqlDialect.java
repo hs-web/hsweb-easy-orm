@@ -4,10 +4,11 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.core.utils.StringUtils;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 /**
@@ -43,6 +44,29 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder("json", meta -> "json");
         addDataTypeBuilder("jsonb", meta -> "jsonb");
 
+        addDataTypeBuilder("vector", meta -> StringUtils.concat("vector(", meta.getLength(512), ")"));
+        addDataTypeBuilder("halfvec", meta -> StringUtils.concat("halfvec(", meta.getLength(512), ")"));
+        addDataTypeBuilder("sparsevec", meta -> StringUtils.concat("sparsevec(", meta.getLength(512), ")"));
+
+
+        registerDataType("vector", VectorType.VECTOR);
+        registerDataType("halfvec", VectorType.HALF_VECTOR);
+        registerDataType("sparsevec", VectorType.SPARSE_VECTOR);
+
+        registerDataType("varchar[]", PostgresqlArrayType.VARCHAR_ARRAY);
+        registerDataType("text[]", PostgresqlArrayType.TEXT_ARRAY);
+        registerDataType("smallint[]", PostgresqlArrayType.SMALLINT_ARRAY);
+        registerDataType("integer[]", PostgresqlArrayType.INTEGER_ARRAY);
+        registerDataType("bigint[]", PostgresqlArrayType.BIGINT_ARRAY);
+        registerDataType("int2[]", PostgresqlArrayType.SMALLINT_ARRAY);
+        registerDataType("int4[]", PostgresqlArrayType.INTEGER_ARRAY);
+        registerDataType("int8[]", PostgresqlArrayType.BIGINT_ARRAY);
+        registerDataType("_varchar", PostgresqlArrayType.VARCHAR_ARRAY);
+        registerDataType("_text", PostgresqlArrayType.TEXT_ARRAY);
+        registerDataType("_int2", PostgresqlArrayType.SMALLINT_ARRAY);
+        registerDataType("_int4", PostgresqlArrayType.INTEGER_ARRAY);
+        registerDataType("_int8", PostgresqlArrayType.BIGINT_ARRAY);
+        registerDataType("character varying[]", PostgresqlArrayType.VARCHAR_ARRAY);
 
         registerDataType("json", JsonType.INSTANCE);
         registerDataType("jsonb", JsonbType.INSTANCE);
@@ -57,7 +81,7 @@ public class PostgresqlDialect extends DefaultDialect {
 
         registerDataType("int8", JdbcDataType.of(JDBCType.BIGINT, Long.class));
         registerDataType("int4", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
-        registerDataType("int2", JdbcDataType.of(JDBCType.SMALLINT, Byte.class));
+        registerDataType("int2", JdbcDataType.of(JDBCType.SMALLINT, Short.class));
         registerDataType("int", JdbcDataType.of(JDBCType.INTEGER, Integer.class));
         registerDataType("float8", JdbcDataType.of(JDBCType.DOUBLE, Double.class));
         registerDataType("float4", JdbcDataType.of(JDBCType.FLOAT, Float.class));
@@ -69,6 +93,22 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, String.class));
         registerDataType("text", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
 
+    }
+
+    @Override
+    public SqlFragments buildLike(SqlFragments left,
+                                  SqlFragments right,
+                                  boolean not,
+                                  boolean ignoreCase) {
+        BatchSqlFragments fragments = new BatchSqlFragments(3,
+                                                              left.getParameters().size() + right.getParameters().size());
+        fragments.add(left);
+        if (not) {
+            fragments.add(SqlFragments.NOT);
+        }
+        return fragments
+            .addSql(ignoreCase ? "ilike" : "like")
+            .add(right);
     }
 
     @Override

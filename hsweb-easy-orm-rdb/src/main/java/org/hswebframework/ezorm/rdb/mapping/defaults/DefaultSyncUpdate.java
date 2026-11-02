@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import org.hswebframework.ezorm.rdb.context.ContextHolder;
+import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.SyncUpdate;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
@@ -12,7 +13,15 @@ public class DefaultSyncUpdate<E> extends DefaultUpdate<E, SyncUpdate<E>> implem
     private final Context context;
 
     public DefaultSyncUpdate(RDBTableMetadata table, UpdateOperator operator, EntityColumnMapping mapping, Context context) {
-        super(table, operator, mapping);
+        this(table, operator, mapping, context, new ContextKeyValue<?>[0]);
+    }
+
+    public DefaultSyncUpdate(RDBTableMetadata table,
+                             UpdateOperator operator,
+                             EntityColumnMapping mapping,
+                             Context context,
+                             ContextKeyValue<?>... keyValues) {
+        super(table, operator, mapping, keyValues);
         this.context = context;
     }
 

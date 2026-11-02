@@ -1,7 +1,15 @@
 package org.hswebframework.ezorm.core;
 
+import org.hswebframework.ezorm.core.param.Param;
 import org.hswebframework.ezorm.core.param.Term;
 
+/**
+ * 基于单个 Term 构造嵌套条件，保留承载 Term 与父级构造器的身份。
+ * 分组仅重组当前层子条件；实例可变，不保证并发修改安全。
+ *
+ * @param <T> 父级构造器类型
+ * @see NestConditional
+ */
 public class SimpleNestConditional<T extends TermTypeConditionalSupport>
         implements NestConditional<T> {
     private final Term term;
@@ -11,6 +19,15 @@ public class SimpleNestConditional<T extends TermTypeConditionalSupport>
     public SimpleNestConditional(T target, Term term) {
         this.term = term;
         this.target = target;
+    }
+
+    @Override
+    public NestConditional<T> group() {
+        Param grouped = new Param();
+        grouped.setTerms(term.getTerms());
+        grouped.group();
+        term.setTerms(grouped.getTerms());
+        return this;
     }
 
     @Override

@@ -139,6 +139,20 @@ public interface TableOrViewMetadata extends ObjectMetadata, FeatureSupportedMet
         }
     }
 
+    /**
+     * 使用已有上下文触发事件,便于同一次操作的不同阶段共享上下文.
+     *
+     * @param eventType 事件类型
+     * @param context 操作上下文
+     */
+    default void fireEvent(EventType eventType, EventContext context) {
+        EventListener eventListener = this.findFeatureOrElse(EventListener.ID, null);
+        if (eventListener != null) {
+            context.set(ContextKeys.table, this);
+            eventListener.onEvent(eventType, context);
+        }
+    }
+
     default String getRealName() {
         return getName();
     }

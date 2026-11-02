@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -39,6 +40,7 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "number(1)");
         addDataTypeBuilder(JDBCType.LONGVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
+        addDataTypeBuilder("json", meta -> "clob");
 
         classJDBCTypeMapping.put(Boolean.class,JDBCType.TINYINT);
 
@@ -57,6 +59,7 @@ public class OracleDialect extends DefaultDialect {
 
         registerDataType("date", JdbcDataType.of(JDBCType.TIMESTAMP, Date.class));
         registerDataType("clob", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
+        registerDataType("json", JsonType.CLOB);
         registerDataType("blob", JdbcDataType.of(JDBCType.LONGVARBINARY, byte[].class));
 
     }

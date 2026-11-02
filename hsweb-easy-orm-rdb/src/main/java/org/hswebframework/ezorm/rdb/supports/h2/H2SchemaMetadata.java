@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlR2DBCExceptionTranslation;
+import org.hswebframework.ezorm.rdb.supports.json.UnsupportedJsonTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
 public class H2SchemaMetadata extends RDBSchemaMetadata {
@@ -34,6 +35,7 @@ public class H2SchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(H2EnumInFragmentBuilder.in);
                 column.addFeature(H2EnumInFragmentBuilder.notIn);
             }
+            UnsupportedJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }

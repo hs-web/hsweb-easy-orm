@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 public class QueryParam extends Param implements Serializable, Cloneable {
     private static final long serialVersionUID = 7941767360194797891L;
 
+    public static final String STRICT_TERM_KEY = "easyorm.strict.term";
+
     public static final int DEFAULT_FIRST_PAGE_INDEX = Integer.getInteger("easyorm.page.fist.index", 0);
 
     public static final int DEFAULT_PAGE_SIZE = Integer.getInteger("easyorm.page.size", 25);
@@ -68,6 +70,9 @@ public class QueryParam extends Param implements Serializable, Cloneable {
     @Schema(description = "上下文信息")
     private Map<String, Object> context;
 
+    @Schema(description = "严格条件模式，遇到不支持的 term 直接失败")
+    private boolean strictTerm = false;
+
     public Optional<Object> getContext(String key) {
         if (context == null) {
             return Optional.empty();
@@ -80,6 +85,21 @@ public class QueryParam extends Param implements Serializable, Cloneable {
             context = new HashMap<>();
         }
         context.put(key, value);
+    }
+
+    public void setStrictTerm(boolean strictTerm) {
+        this.strictTerm = strictTerm;
+        context(STRICT_TERM_KEY, strictTerm);
+    }
+
+    public boolean isStrictTerm() {
+        if (context != null && context.containsKey(STRICT_TERM_KEY)) {
+            Object value = context.get(STRICT_TERM_KEY);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+        }
+        return strictTerm;
     }
 
     public Sort orderBy(String column) {

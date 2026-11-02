@@ -21,6 +21,8 @@ public class DefaultUpsertOperator extends UpsertOperator {
 
     private boolean columnValueModel = false;
 
+    private final Set<String> ignoreUpdateColumns = new HashSet<>();
+
     public static DefaultUpsertOperator of(RDBTableMetadata table) {
         DefaultUpsertOperator operator = new DefaultUpsertOperator();
 
@@ -31,6 +33,10 @@ public class DefaultUpsertOperator extends UpsertOperator {
 
     @Override
     public UpsertOperator ignoreUpdate(String... columns) {
+        if (columns == null || columns.length == 0) {
+            return this;
+        }
+        ignoreUpdateColumns.addAll(Arrays.asList(columns));
         for (UpsertColumn column : parameter.getColumns()) {
             for (String col : columns) {
                 if (column.getColumn().equals(col)) {
@@ -44,7 +50,7 @@ public class DefaultUpsertOperator extends UpsertOperator {
     @Override
     public UpsertOperator columns(String... columns) {
         for (String column : columns) {
-            parameter.getColumns().add(UpsertColumn.of(column, false));
+            parameter.getColumns().add(UpsertColumn.of(column, ignoreUpdateColumns.contains(column)));
         }
         columnValueModel = true;
         return this;
@@ -102,7 +108,7 @@ public class DefaultUpsertOperator extends UpsertOperator {
         if (columnValueModel) {
             throw new UnsupportedOperationException("columns or values already set");
         }
-        parameter.getColumns().add(UpsertColumn.of(column, ignoreUpdate));
+        parameter.getColumns().add(UpsertColumn.of(column, ignoreUpdate || ignoreUpdateColumns.contains(column)));
         List<List<Object>> values = parameter.getValues();
         if (values.isEmpty()) {
             values.add(new ArrayList<>());

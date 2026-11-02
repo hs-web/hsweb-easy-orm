@@ -43,10 +43,11 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
 
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
+        UpsertOperatorParameter upsertParameter = UpsertOperatorParameters.ensureRuntimeDefaultPrimaryKey(parameter, table);
         if (getOrCreateOnConflict().isEmpty()) {
-            return fallback.execute(parameter);
+            return fallback.execute(upsertParameter);
         }
-        return new PostgresqlSaveResultOperator(() -> builder.build(new PostgresqlUpsertOperatorParameter(parameter)));
+        return new PostgresqlSaveResultOperator(() -> builder.build(new PostgresqlUpsertOperatorParameter(upsertParameter)));
     }
 
     SqlFragments getOrCreateOnConflict() {
@@ -57,18 +58,25 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
     }
 
     SqlFragments createOnConflict() {
-        if (primaryColumns == null) {
-            primaryColumns = new HashSet<>();
-        }
-        RDBColumnMetadata idColumn = table
+        Set<String> primaryColumns = new HashSet<>();
+
+        Set<RDBColumnMetadata> idColumn = table
             .getColumns()
             .stream()
             .filter(RDBColumnMetadata::isPrimaryKey)
-            .findFirst()
-            .orElse(null);
-        if (idColumn != null) {
-            primaryColumns.add(idColumn.getName());
-            return SqlFragments.of("on conflict (", idColumn.getQuoteName(), ") do ");
+            .collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(idColumn)) {
+            for (RDBColumnMetadata rdbColumnMetadata : idColumn) {
+                primaryColumns.add(rdbColumnMetadata.getName());
+            }
+            this.primaryColumns = primaryColumns;
+            return SqlFragments
+                .of("on conflict (",
+                    idColumn
+                        .stream()
+                        .map(c -> c.getQuoteName())
+                        .collect(Collectors.joining(",")),
+                    ") do ");
         }
         RDBIndexMetadata indexMetadata = table
             .getIndexes()
@@ -88,7 +96,7 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
                     return c.getQuoteName();
                 })
                 .collect(Collectors.joining(","));
-
+            this.primaryColumns = primaryColumns;
             return SqlFragments.of("on conflict( ", columns, ") do ");
         }
         return EmptySqlFragments.INSTANCE;
@@ -152,13 +160,20 @@ public class PostgresqlBatchUpsertOperator implements SaveOrUpdateOperator {
         }
 
         @Override
+        protected boolean shoudCheckDumplicateKey(List<Integer> primaryIndex, List<Object> values) {
+            getOrCreateOnConflict();
+            // 传入了所有主键才对主键去重
+            return primaryIndex.size() == primaryColumns.size();
+        }
+
+        @Override
         protected int computeSqlSize(int columnSize, int valueSize) {
             return super.computeSqlSize(columnSize, valueSize) + columnSize * 3 + 2;
         }
 
         @Override
         protected AppendableSqlFragments afterBuild(Set<InsertColumn> columns, InsertOperatorParameter parameter, AppendableSqlFragments sql) {
-            sql.add(createOnConflict());
+            sql.add(getOrCreateOnConflict());
 
             if (((PostgresqlUpsertOperatorParameter) parameter).doNoThingOnConflict) {
                 sql.addSql("nothing");

@@ -9,8 +9,31 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * 操作当前嵌套层的可变条件，通过 {@link #end()} 返回创建它的父级构造器。
+ * 由父级的 nest/orNest 创建，不保证并发修改安全。
+ *
+ * @param <T> 父级构造器类型
+ * @see SimpleNestConditional
+ */
 @SuppressWarnings("all")
 public interface NestConditional<T extends TermTypeConditionalSupport> extends LogicalOperation<NestConditional<T>>, TermTypeConditionalSupport {
+
+    /**
+     * 将当前层已有子条件整体分组，返回当前嵌套构造器。
+     * <p>例如 {@code is("a", 1).or("b", 2).group().and("c", 3)}
+     * 表示 {@code (a = 1 OR b = 2) AND c = 3}。空条件和单条件不增加嵌套层级，
+     * 连续调用不重复包裹；外层连接符、承载条件的字段和值及父级返回对象保持不变。
+     * <p>自定义实现须显式适配；默认明确拒绝，不能静默跳过分组。
+     *
+     * @return 当前嵌套条件构造器
+     * @throws UnsupportedOperationException 当前实现不支持已有子条件分组
+     * @since 4.2.3
+     * @see Conditional#group()
+     */
+    default NestConditional<T> group() {
+        throw new UnsupportedOperationException("Grouping existing conditions is not supported");
+    }
 
     /**
      * 结束当前嵌套条件并返回父级条件构造器
@@ -683,6 +706,194 @@ public interface NestConditional<T extends TermTypeConditionalSupport> extends L
      */
     default <B> NestConditional<T> notIn(MethodReferenceColumn<B> column) {
         return accept(column, TermType.nin);
+    }
+
+    /**
+     * 追加包含条件（方法引用方式）: column contains ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> contains(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.contains, value);
+    }
+
+    /**
+     * 追加包含条件（方法引用方式）: column contains ?
+     *
+     * @param column 列引用
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> contains(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.contains);
+    }
+
+    /**
+     * 追加不包含条件（方法引用方式）: column not contains ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> notContains(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.ncontains, value);
+    }
+
+    /**
+     * 追加不包含条件（方法引用方式）: column not contains ?
+     *
+     * @param column 列引用
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> notContains(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.ncontains);
+    }
+
+    /**
+     * 追加被包含条件（方法引用方式）: column contained by ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> contained(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.contained, value);
+    }
+
+    /**
+     * 追加被包含条件（方法引用方式）: column contained by ?
+     *
+     * @param column 列引用
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> contained(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.contained);
+    }
+
+    /**
+     * 追加不被包含条件（方法引用方式）: column not contained by ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> notContained(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.ncontained, value);
+    }
+
+    /**
+     * 追加不被包含条件（方法引用方式）: column not contained by ?
+     *
+     * @param column 列引用
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> notContained(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.ncontained);
+    }
+
+    /**
+     * 追加相交条件（方法引用方式）: column overlap ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> overlap(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.overlap, value);
+    }
+
+    /**
+     * 追加相交条件（方法引用方式）: column overlap ?
+     *
+     * @param column 列引用
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> overlap(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.overlap);
+    }
+
+    /**
+     * 追加不相交条件（方法引用方式）: column not overlap ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> notOverlap(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.noverlap, value);
+    }
+
+    /**
+     * 追加不相交条件（方法引用方式）: column not overlap ?
+     *
+     * @param column 列引用
+     * @return 当前嵌套条件构造器
+     */
+    default <B> NestConditional<T> notOverlap(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.noverlap);
+    }
+
+    /**
+     * 追加 JSON 路径存在条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonExists(String column, Object path) {
+        return accept(column, "json_exists", path);
+    }
+
+    /**
+     * 追加 JSON 包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonContains(String column, Object value) {
+        return accept(column, "json_contains", value);
+    }
+
+    /**
+     * 追加 JSON 被包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonContained(String column, Object value) {
+        return accept(column, "json_contained", value);
+    }
+
+    /**
+     * 追加 JSON 值条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param termType 条件类型
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonValue(String column, Object path, String termType, Object value) {
+        java.util.Map<String, Object> condition = new java.util.LinkedHashMap<>();
+        condition.put("path", path);
+        condition.put("termType", termType);
+        condition.put("value", value);
+        return accept(column, "json_value", condition);
+    }
+
+    /**
+     * 追加 JSON 值等于条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param value  条件值
+     * @return 当前嵌套条件构造器
+     */
+    default NestConditional<T> jsonValue(String column, Object path, Object value) {
+        return jsonValue(column, path, TermType.eq, value);
     }
 
     /**

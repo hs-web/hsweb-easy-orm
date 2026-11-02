@@ -36,7 +36,7 @@ public class OracleReactiveTests extends BasicReactiveTests {
     protected ReactiveSqlExecutor getSqlExecutor() {
 
         return new TestJdbcReactiveSqlExecutor(new OracleConnectionProvider());
-
+//
 //        return new TestReactiveSqlExecutor(":",new OracleR2dbcConnectionProvider()){
 //            @Override
 //            protected void bindNull(Statement statement, int index, Class type) {

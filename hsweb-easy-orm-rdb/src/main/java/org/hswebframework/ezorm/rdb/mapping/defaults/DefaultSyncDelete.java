@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.mapping.defaults;
 
 import org.hswebframework.ezorm.rdb.context.ContextHolder;
+import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.mapping.SyncDelete;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
@@ -11,7 +12,14 @@ public class DefaultSyncDelete extends DefaultDelete<SyncDelete> implements Sync
     private final Context context;
 
     public DefaultSyncDelete(RDBTableMetadata table, DeleteOperator operator, Context context) {
-        super(table, operator);
+        this(table, operator, context, new ContextKeyValue<?>[0]);
+    }
+
+    public DefaultSyncDelete(RDBTableMetadata table,
+                             DeleteOperator operator,
+                             Context context,
+                             ContextKeyValue<?>... keyValues) {
+        super(table, operator, keyValues);
         this.context = context;
     }
 

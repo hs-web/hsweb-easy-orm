@@ -11,6 +11,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 @EqualsAndHashCode(callSuper = true)
 public class UpsertColumn extends InsertColumn {
 
+    @EqualsAndHashCode.Exclude
     private boolean updateIgnore;
 
     public static UpsertColumn of(String column,boolean updateIgnore){

@@ -340,7 +340,6 @@ public abstract class RDBTableMetadataParser implements TableMetadataParser {
                           .orElseGet(() -> record
                               .getString("data_type")
                               .orElse(null)))
-                .map(String::toLowerCase)
                 .map(getDialect()::convertDataType)
                 .ifPresent(column::setType);
 

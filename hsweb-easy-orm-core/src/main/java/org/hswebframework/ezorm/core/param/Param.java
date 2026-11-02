@@ -64,6 +64,25 @@ public class Param implements Cloneable, Serializable {
         return nest(null, null);
     }
 
+    /**
+     * 将现有条件整体分组。使用独立可变列表，兼容只读输入且不修改调用方的条件列表。
+     * 连续调用不会重复包裹单个分组；字段、分页等其他参数保持不变。
+     *
+     * @return 当前参数
+     * @since 4.2.3
+     */
+    public <T extends Param> T group() {
+        List<Term> previous = new ArrayList<>(terms);
+        if (previous.size() > 1) {
+            Term group = new Term();
+            group.setTerms(previous);
+            terms = new ArrayList<>(Collections.singletonList(group));
+        } else {
+            terms = previous;
+        }
+        return (T) this;
+    }
+
     public Term orNest() {
         return orNest(null, null);
     }

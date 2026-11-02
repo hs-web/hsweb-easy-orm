@@ -123,4 +123,21 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
             .singleOrEmpty();
     }
 
+    @Override
+    public Mono<Long> countLong() {
+        QueryOperator queryOperator = operator
+            .query(tableMetadata)
+            .select(count1().as("_total"));
+        return this
+            .doFetch(queryOperator, "count", _opt -> _opt
+                .context(param.getContext())
+                .where(param.getTerms())
+                .fetch(column("_total", Number.class::cast))
+                .reactive()
+                .map(Number::longValue)
+                .reduce(Math::addExact)
+                .switchIfEmpty(Mono.just(0L)))
+            .contextWrite(context)
+            .singleOrEmpty();
+    }
 }

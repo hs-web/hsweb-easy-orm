@@ -1,8 +1,11 @@
 package org.hswebframework.ezorm.rdb.supports.oracle;
 
+import io.r2dbc.mssql.codec.ClobCodec;
 import lombok.AllArgsConstructor;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.codec.ClobValueCodec;
+import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
@@ -24,7 +27,9 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.sql.JDBCType;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,14 +44,11 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
 
     private RDBColumnMetadata idColumn;
 
-    private final SaveOrUpdateOperator fallback;
-
     public OracleBatchUpsertOperator(RDBTableMetadata table) {
         this.table = table;
         this.idColumn = table.getColumns()
                              .stream().filter(RDBColumnMetadata::isPrimaryKey)
                              .findFirst().orElse(null);
-        this.fallback = new DefaultSaveOrUpdateOperator(table);
         this.builder = new OracleUpsertBatchInsertSqlBuilder(table);
     }
 
@@ -61,11 +63,138 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                 .orElse(null);
 
             if (this.idColumn == null) {
-                return fallback.execute(parameter);
+                InsertOperatorParameter insertParameter = createInsertParameter(parameter, -1);
+                insertParameter.setValues(parameter.getValues());
+                return new InsertResultOperatorImpl(() -> createInsertSql(insertParameter));
             }
         }
 
-        return new PostgresqlSaveResultOperator(() -> builder.build(new OracleUpsertOperatorParameter(parameter)));
+        UpsertParameterSplit split = splitParameter(parameter);
+
+        if (split.upsertParameter.getValues().isEmpty()) {
+            return new InsertResultOperatorImpl(() -> createInsertSql(split.insertParameter));
+        }
+        if (split.insertParameter.getValues().isEmpty()) {
+            return new OracleSaveResultOperator(() -> builder.build(new OracleUpsertOperatorParameter(split.upsertParameter)));
+        }
+
+        return new InsertAndUpsertResultOperatorImpl(
+            () -> createInsertSql(split.insertParameter),
+            () -> builder.build(new OracleUpsertOperatorParameter(split.upsertParameter)));
+    }
+
+    private UpsertParameterSplit splitParameter(UpsertOperatorParameter parameter) {
+        int idIndex = indexOfIdColumn(parameter.getColumns());
+        UpsertOperatorParameter upsertParameter = new UpsertOperatorParameter();
+        upsertParameter.setColumns(new LinkedHashSet<>(parameter.getColumns()));
+        upsertParameter.setWhere(parameter.getWhere());
+        upsertParameter.setDoNothingOnConflict(parameter.isDoNothingOnConflict());
+
+        InsertOperatorParameter insertParameter = createInsertParameter(parameter, idIndex);
+
+        for (List<Object> values : parameter.getValues()) {
+            if (hasIdValue(values, idIndex)) {
+                upsertParameter.getValues().add(values);
+            } else {
+                insertParameter.getValues().add(createInsertValues(values, idIndex));
+            }
+        }
+        return new UpsertParameterSplit(insertParameter, upsertParameter);
+    }
+
+    private int indexOfIdColumn(Set<UpsertColumn> columns) {
+        if (idColumn == null) {
+            return -1;
+        }
+        int index = 0;
+        for (UpsertColumn column : columns) {
+            if (idColumn.equalsNameOrAlias(column.getColumn())) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    private boolean hasIdValue(List<Object> values, int idIndex) {
+        return idIndex >= 0
+            && values.size() > idIndex
+            && values.get(idIndex) != null
+            && !(values.get(idIndex) instanceof NullValue);
+    }
+
+    private InsertOperatorParameter createInsertParameter(
+        UpsertOperatorParameter parameter,
+        int idIndex) {
+        InsertOperatorParameter insertParameter = new InsertOperatorParameter();
+        boolean keepRuntimeDefaultId = useRuntimeDefaultId();
+        if (idIndex < 0 && keepRuntimeDefaultId) {
+            insertParameter.getColumns().add(InsertColumn.of(idColumn.getName()));
+        }
+        int index = 0;
+        for (UpsertColumn column : parameter.getColumns()) {
+            if (index++ == idIndex && !keepRuntimeDefaultId) {
+                continue;
+            }
+            insertParameter.getColumns().add(column);
+        }
+        return insertParameter;
+    }
+
+    private List<Object> createInsertValues(List<Object> values, int idIndex) {
+        if (!useRuntimeDefaultId()) {
+            return removeValue(values, idIndex);
+        }
+        if (idIndex >= 0) {
+            List<Object> newValues = new ArrayList<>(Math.max(values.size(), idIndex + 1));
+            newValues.addAll(values);
+            while (newValues.size() <= idIndex) {
+                newValues.add(null);
+            }
+            if (newValues.get(idIndex) == null || newValues.get(idIndex) instanceof NullValue) {
+                newValues.set(idIndex, createRuntimeDefaultId());
+            }
+            return newValues;
+        }
+        List<Object> newValues = new ArrayList<>(values.size() + 1);
+        newValues.add(createRuntimeDefaultId());
+        newValues.addAll(values);
+        return newValues;
+    }
+
+    private boolean useRuntimeDefaultId() {
+        return idColumn != null && idColumn.getDefaultValue() instanceof RuntimeDefaultValue;
+    }
+
+    private Object createRuntimeDefaultId() {
+        return ((RuntimeDefaultValue) idColumn.getDefaultValue()).get();
+    }
+
+    private List<Object> removeValue(List<Object> values, int idIndex) {
+        if (idIndex < 0 || values.size() <= idIndex) {
+            return values;
+        }
+        List<Object> newValues = new ArrayList<>(values.size() - 1);
+        for (int i = 0; i < values.size(); i++) {
+            if (i != idIndex) {
+                newValues.add(values.get(i));
+            }
+        }
+        return newValues;
+    }
+
+    private SqlRequest createInsertSql(InsertOperatorParameter insertParameter) {
+        return table
+            .findFeatureNow(InsertSqlBuilder.ID)
+            .build(insertParameter);
+    }
+
+    @AllArgsConstructor
+    private class UpsertParameterSplit {
+
+        private InsertOperatorParameter insertParameter;
+
+        private UpsertOperatorParameter upsertParameter;
     }
 
     class OracleUpsertOperatorParameter extends InsertOperatorParameter {
@@ -84,7 +213,7 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
     }
 
     @AllArgsConstructor
-    private class PostgresqlSaveResultOperator implements SaveResultOperator {
+    private class OracleSaveResultOperator implements SaveResultOperator {
 
         Supplier<SqlRequest> sqlRequest;
 
@@ -103,6 +232,61 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                 .fromSupplier(sqlRequest)
                 .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
                 .map(i -> SaveResult.of(0, i))
+                .as(ExceptionUtils.translation(table));
+        }
+    }
+
+    @AllArgsConstructor
+    private class InsertResultOperatorImpl implements SaveResultOperator {
+
+        Supplier<SqlRequest> sqlRequest;
+
+        @Override
+        public SaveResult sync() {
+            return ExceptionUtils.translation(() -> {
+                SyncSqlExecutor sqlExecutor = table.findFeatureNow(SyncSqlExecutor.ID);
+                int inserted = sqlExecutor.update(sqlRequest.get());
+                return SaveResult.of(inserted, 0);
+            }, table);
+        }
+
+        @Override
+        public Mono<SaveResult> reactive() {
+            return Mono
+                .fromSupplier(sqlRequest)
+                .as(table.findFeatureNow(ReactiveSqlExecutor.ID)::update)
+                .map(i -> SaveResult.of(i, 0))
+                .as(ExceptionUtils.translation(table));
+        }
+    }
+
+    @AllArgsConstructor
+    private class InsertAndUpsertResultOperatorImpl implements SaveResultOperator {
+
+        Supplier<SqlRequest> insertRequest;
+
+        Supplier<SqlRequest> upsertRequest;
+
+        @Override
+        public SaveResult sync() {
+            return ExceptionUtils.translation(() -> {
+                SyncSqlExecutor sqlExecutor = table.findFeatureNow(SyncSqlExecutor.ID);
+                int inserted = sqlExecutor.update(insertRequest.get());
+                int updated = sqlExecutor.update(upsertRequest.get());
+                return SaveResult.of(inserted, updated);
+            }, table);
+        }
+
+        @Override
+        public Mono<SaveResult> reactive() {
+            ReactiveSqlExecutor sqlExecutor = table.findFeatureNow(ReactiveSqlExecutor.ID);
+            return Mono
+                .fromSupplier(insertRequest)
+                .as(sqlExecutor::update)
+                .flatMap(inserted -> Mono
+                    .fromSupplier(upsertRequest)
+                    .as(sqlExecutor::update)
+                    .map(updated -> SaveResult.of(inserted, updated)))
                 .as(ExceptionUtils.translation(table));
         }
     }
@@ -188,9 +372,15 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                             value = NullValue.of(column.getType());
                         }
                     }
-
+                    value = column.encode(value);
+                    // 适配 clob字段 不支持设置null
+                    if (valueSize > 1 && (value == null || value instanceof NullValue)) {
+                        if (ClobValueCodec.isClobType(column.getType())) {
+                            value = new LongCharSequence("");
+                        }
+                    }
                     fragments.addSql("? as ", column.getQuoteName())
-                             .addParameter(column.encode(value));
+                             .addParameter(value);
                     valueIndex++;
                 }
 
@@ -276,7 +466,7 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                 }
             }
 
-            if (update.isNotEmpty() || upsertParameter.doNoThingOnConflict) {
+            if (update.isNotEmpty() && !upsertParameter.doNoThingOnConflict) {
                 fragments.addSql("when matched then update set");
                 fragments.addFragments(update);
             }

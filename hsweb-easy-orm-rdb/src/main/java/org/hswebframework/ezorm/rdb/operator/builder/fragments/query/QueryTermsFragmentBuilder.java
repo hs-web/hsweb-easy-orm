@@ -50,11 +50,18 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
 
     protected SqlFragments createByColumn(RDBColumnMetadata column, String owner, Term term) {
+        return createByColumn(column, owner, term, false);
+    }
+
+    protected SqlFragments createByColumn(RDBColumnMetadata column, String owner, Term term, boolean strict) {
         if (column != null) {
             TermFragmentBuilder builder = column.findFeature(createFeatureId(term.getTermType())).orElse(null);
             if (builder != null) {
                 return builder
                     .createFragments(createColumnFullName(column, owner), column, term);
+            }
+            if (strict) {
+                throw unsupportedTerm(column, term);
             }
         }
         return EmptySqlFragments.INSTANCE;
@@ -68,7 +75,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                 .getSchema()
                 .getTableOrView(join.getTarget())
                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
-                .map(column -> createByColumn(column, join.getAlias(), term)))
+                .map(column -> createByColumn(column, join.getAlias(), term, parameter.isStrictTerm())))
             .orElseGet(() -> {//外键关联查询
                 return metaData
                     .getForeignKey(arr[0])
@@ -76,7 +83,9 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                         .getSource()
                         .findFeature(ForeignKeyTermFragmentBuilder.ID)
                         .map(builder -> builder.createFragments(parameter.getFromAlias(), key, createForeignKeyTerm(key, term))))
-                    .orElse(EmptySqlFragments.INSTANCE);
+                    .orElseGet(() -> strictOrEmpty(parameter,
+                                                   "Unsupported term " + term.getTermType() +
+                                                       " for join or foreign key " + arr[0] + "." + arr[1]));
             });
     }
 
@@ -97,7 +106,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
         RDBColumnMetadata column = metaData.getColumn(columnName).orElse(null);
         if (column != null) {
-            return createByColumn(column, parameter.getFromAlias(), term);
+            return createByColumn(column, parameter.getFromAlias(), term, parameter.isStrictTerm());
         }
 
         List<SelectColumn> cols = parameter.getSelect();
@@ -112,9 +121,9 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                 if (selectColumnName.contains(".")) {
                     return createByJoin(selectColumnName.split("[.]"), parameter, term);
                 }
-                column = metaData.getColumn(columnName).orElse(null);
+                column = metaData.getColumn(selectColumnName).orElse(null);
                 if (column != null) {
-                    return createByColumn(column, parameter.getFromAlias(), term);
+                    return createByColumn(column, parameter.getFromAlias(), term, parameter.isStrictTerm());
                 }
             }
         }
@@ -128,11 +137,13 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
                 .flatMap(joinTable -> joinTable.getColumn(cname))
                 .orElse(null);
             if (joinColumn != null) {
-                return createByColumn(joinColumn, join.getAlias(), term);
+                return createByColumn(joinColumn, join.getAlias(), term, parameter.isStrictTerm());
             }
         }
 
-        return EmptySqlFragments.INSTANCE;
+        return strictOrEmpty(parameter,
+                             "Unsupported term " + term.getTermType() +
+                                 " for column " + metaData.getName() + "." + columnName);
 
     }
 
@@ -151,5 +162,20 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
     protected String createColumnFullName(RDBColumnMetadata column, String owner) {
         return column.getFullName(owner);
+    }
+
+    private SqlFragments strictOrEmpty(QueryOperatorParameter parameter, String message) {
+        if (parameter.isStrictTerm()) {
+            throw new UnsupportedOperationException(message);
+        }
+        return EmptySqlFragments.INSTANCE;
+    }
+
+    private UnsupportedOperationException unsupportedTerm(RDBColumnMetadata column, Term term) {
+        return new UnsupportedOperationException(
+            "Unsupported term " + term.getTermType() +
+                " for column " + column.getOwner().getName() + "." + column.getName() +
+                "(" + (column.getType() == null ? "unknown" : column.getType().getId()) + ")"
+        );
     }
 }

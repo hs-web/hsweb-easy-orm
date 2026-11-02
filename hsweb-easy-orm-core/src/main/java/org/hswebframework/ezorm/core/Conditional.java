@@ -31,6 +31,20 @@ import java.util.function.Supplier;
 public interface Conditional<T extends Conditional<?>> extends LogicalOperation<T>, TermTypeConditionalSupport {
 
     /**
+     * 将已有条件整体分组，返回当前构造器。空条件和单个条件不额外增加嵌套层级。
+     * <p>例如 {@code is("a", 1).or("b", 2).group().and("c", 3)}
+     * 表示 {@code (a = 1 OR b = 2) AND c = 3}；不改变 {@link #nest()} 追加新分组的语义。
+     * <p>自定义实现须覆写本方法；默认明确拒绝，不能静默跳过分组。
+     *
+     * @return 当前条件构造器
+     * @throws UnsupportedOperationException 当前实现不支持已有条件分组
+     * @since 4.2.3
+     */
+    default T group() {
+        throw new UnsupportedOperationException("Grouping existing conditions is not supported");
+    }
+
+    /**
      * 创建一个嵌套条件，使用AND连接符。
      * <p>
      * 嵌套构造结束后请调用{@link NestConditional#end()}结束嵌套
@@ -867,6 +881,194 @@ public interface Conditional<T extends Conditional<?>> extends LogicalOperation<
      */
     default <B> T notIn(StaticMethodReferenceColumn<B> column, Collection<?> values) {
         return accept(column, TermType.nin, values);
+    }
+
+    /**
+     * 追加包含条件（静态方法引用方式）: column contains ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T contains(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.contains, value);
+    }
+
+    /**
+     * 追加包含条件（方法引用方式）: column contains ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T contains(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.contains);
+    }
+
+    /**
+     * 追加不包含条件（静态方法引用方式）: column not contains ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T notContains(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.ncontains, value);
+    }
+
+    /**
+     * 追加不包含条件（方法引用方式）: column not contains ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T notContains(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.ncontains);
+    }
+
+    /**
+     * 追加被包含条件（静态方法引用方式）: column contained by ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T contained(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.contained, value);
+    }
+
+    /**
+     * 追加被包含条件（方法引用方式）: column contained by ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T contained(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.contained);
+    }
+
+    /**
+     * 追加不被包含条件（静态方法引用方式）: column not contained by ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T notContained(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.ncontained, value);
+    }
+
+    /**
+     * 追加不被包含条件（方法引用方式）: column not contained by ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T notContained(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.ncontained);
+    }
+
+    /**
+     * 追加相交条件（静态方法引用方式）: column overlap ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T overlap(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.overlap, value);
+    }
+
+    /**
+     * 追加相交条件（方法引用方式）: column overlap ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T overlap(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.overlap);
+    }
+
+    /**
+     * 追加不相交条件（静态方法引用方式）: column not overlap ?
+     *
+     * @param column 列引用
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default <B> T notOverlap(StaticMethodReferenceColumn<B> column, Object value) {
+        return accept(column, TermType.noverlap, value);
+    }
+
+    /**
+     * 追加不相交条件（方法引用方式）: column not overlap ?
+     *
+     * @param column 列引用
+     * @return 当前条件构造器
+     */
+    default <B> T notOverlap(MethodReferenceColumn<B> column) {
+        return accept(column, TermType.noverlap);
+    }
+
+    /**
+     * 追加 JSON 路径存在条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @return 当前条件构造器
+     */
+    default T jsonExists(String column, Object path) {
+        return accept(column, "json_exists", path);
+    }
+
+    /**
+     * 追加 JSON 包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonContains(String column, Object value) {
+        return accept(column, "json_contains", value);
+    }
+
+    /**
+     * 追加 JSON 被包含条件
+     *
+     * @param column 列名
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonContained(String column, Object value) {
+        return accept(column, "json_contained", value);
+    }
+
+    /**
+     * 追加 JSON 值条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param termType 条件类型
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonValue(String column, Object path, String termType, Object value) {
+        java.util.Map<String, Object> condition = new java.util.LinkedHashMap<>();
+        condition.put("path", path);
+        condition.put("termType", termType);
+        condition.put("value", value);
+        return accept(column, "json_value", condition);
+    }
+
+    /**
+     * 追加 JSON 值等于条件
+     *
+     * @param column 列名
+     * @param path   JSON path
+     * @param value  条件值
+     * @return 当前条件构造器
+     */
+    default T jsonValue(String column, Object path, Object value) {
+        return jsonValue(column, path, TermType.eq, value);
     }
 
     /**

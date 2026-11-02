@@ -34,6 +34,7 @@ public class MysqlSchemaMetadata extends RDBSchemaMetadata {
                 column.addFeature(MysqlEnumInFragmentBuilder.in);
                 column.addFeature(MysqlEnumInFragmentBuilder.notIn);
             }
+            MysqlJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }

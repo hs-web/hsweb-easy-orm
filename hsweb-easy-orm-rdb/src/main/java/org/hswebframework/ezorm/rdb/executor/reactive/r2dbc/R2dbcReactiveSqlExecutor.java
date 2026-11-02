@@ -5,10 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.CastUtil;
-import org.hswebframework.ezorm.rdb.codec.ClobValue;
+import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
+import org.hswebframework.ezorm.rdb.executor.R2dbcParameterBinder;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
@@ -81,7 +82,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                                     SqlRequest request,
                                     Function<Result, Publisher<T>> mapper) {
         return Flux
-            .from(this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
+            .defer(() -> this.prepareStatement(connection.createStatement(request.getSql()), request).execute())
             .flatMap(mapper)
             .doOnSubscribe(subscription -> printSql(logger, request))
             .doOnError(err -> logger.error("==>      Error: {}", request.toNativeSql(), err));
@@ -251,11 +252,20 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         for (Object parameter : request.getParameters()) {
             if (parameter == null) {
                 bindNull(statement, index, String.class);
-            } else if (parameter instanceof NullValue) {
-                bindNull(statement, index, ((NullValue) parameter).getDataType().getJavaType());
+            } else if (parameter instanceof R2dbcParameterBinder binder) {
+                binder.bind(statement, getBindSymbol() + (index + getBindFirstIndex()));
+            } else if (parameter instanceof NullValue nullValue) {
+                Class<?> javaType = nullValue.getType();
+                if (javaType == LongCharSequence.class) {
+                    // 空字符,批量保存时,有的数据库不同行不能有的设置null有的不设置.
+                    bindNull(statement, index, Clob.class);
+                }else {
+                    bindNull(statement, index, javaType);
+                }
+
             } else {
                 // convert clob
-                if (parameter instanceof ClobValue cb) {
+                if (parameter instanceof LongCharSequence cb) {
                     parameter = Clob.from(Mono.just(cb.source()));
                 }
                 bind(statement, index, parameter);

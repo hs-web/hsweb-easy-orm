@@ -33,7 +33,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
 
     @Override
     public List<T> fetch() {
-        return ContextHolder.doInContext(context,this::fetch0);
+        return ContextHolder.doInContext(context, this::fetch0);
     }
 
     public List<T> fetch0() {
@@ -60,7 +60,7 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
 
     @Override
     public Optional<T> fetchOne() {
-        return ContextHolder.doInContext(context,this::fetchOne0);
+        return ContextHolder.doInContext(context, this::fetchOne0);
     }
 
     public Optional<T> fetchOne0() {
@@ -86,10 +86,15 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
 
     @Override
     public int count() {
-        return ContextHolder.doInContext(context,this::count0);
+        return (int) countLong();
     }
 
-    public int count0() {
+    @Override
+    public long countLong() {
+        return ContextHolder.doInContext(context, this::count0);
+    }
+
+    public long count0() {
         return operator
             .query(tableMetadata)
             .context(param.getContext())
@@ -106,8 +111,8 @@ public class DefaultSyncQuery<T> extends DefaultQuery<T, SyncQuery<T>> implement
                         ))
             .fetch(optional(single(column("_total", Number.class::cast))))
             .sync()
-            .map(Number::intValue)
-            .orElse(0);
+            .map(Number::longValue)
+            .orElse(0L);
     }
 
 

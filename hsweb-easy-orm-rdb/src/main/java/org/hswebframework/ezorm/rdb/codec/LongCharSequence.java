@@ -1,18 +1,16 @@
 package org.hswebframework.ezorm.rdb.codec;
 
-import org.reactivestreams.Publisher;
 import reactor.util.annotation.NonNull;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.stream.IntStream;
 
-public class ClobValue implements CharSequence {
+public class LongCharSequence implements CharSequence {
 
     private final CharSequence charSequence;
 
-    public ClobValue(CharSequence charSequence) {
+    public LongCharSequence(CharSequence charSequence) {
         this.charSequence = charSequence;
     }
 

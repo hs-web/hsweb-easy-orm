@@ -8,7 +8,7 @@ import org.hswebframework.ezorm.core.DefaultValueGenerator;
 import org.hswebframework.ezorm.core.RuntimeDefaultValue;
 import org.hswebframework.ezorm.rdb.R2dbcConnectionProvider;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
-import org.hswebframework.ezorm.rdb.codec.ClobValue;
+import org.hswebframework.ezorm.rdb.codec.LongCharSequence;
 import org.hswebframework.ezorm.rdb.codec.ClobValueCodec;
 import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
 import org.hswebframework.ezorm.rdb.codec.JsonValueCodec;
@@ -1886,8 +1886,8 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             table.getColumn("json_content").orElseThrow(AssertionError::new)
         );
 
-        Assert.assertTrue(content instanceof ClobValue);
-        Assert.assertTrue(json instanceof ClobValue);
+        Assert.assertTrue(content instanceof LongCharSequence);
+        Assert.assertTrue(json instanceof LongCharSequence);
 
         Integer inserted = operator.dml()
                                    .insert(tableName)

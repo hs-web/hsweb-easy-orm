@@ -305,7 +305,8 @@ public class JpaEntityTableMetadataParserProcessor {
 
         getAnnotation(annotations, DefaultValue.class)
             .map(gen -> {
-                if (gen.value().isEmpty()) {
+                // 指定了generator
+                if (!gen.generator().isEmpty()) {
                     return LazyDefaultValueGenerator
                         .of(() -> tableMetadata.findFeatureNow(DefaultValueGenerator.createId(gen.generator())))
                         .generate(metadata);

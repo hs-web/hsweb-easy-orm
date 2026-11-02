@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.core.utils.StringUtils;
+import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 
 import java.sql.JDBCType;
 
@@ -29,11 +30,13 @@ public class H2Dialect extends DefaultDialect {
 
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.LONGVARBINARY, (meta) -> "blob");
+        addDataTypeBuilder("json", meta -> "json");
 
         registerDataType("character varying",
                          DataType.builder(JdbcDataType.of(JDBCType.VARCHAR, String.class), column -> {
                              return "varchar(" + column.getLength() + ")";
                          }));
+        registerDataType("json", JsonType.INSTANCE);
     }
 
     @Override

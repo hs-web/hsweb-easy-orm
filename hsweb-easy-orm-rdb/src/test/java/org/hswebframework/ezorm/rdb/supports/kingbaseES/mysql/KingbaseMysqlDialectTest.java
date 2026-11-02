@@ -64,17 +64,23 @@ public class KingbaseMysqlDialectTest {
     }
 
     @Test
-    public void shouldRejectInvalidTypeLength() {
+    public void shouldUseRegisteredTypeForNonNumericArguments() {
         KingbaseMysqlDialect dialect = new KingbaseMysqlDialect();
-        String typeName = "character varying(abc)";
-        System.out.println("[类型转换异常] 输入=" + typeName + "，长度参数应为整数");
+        DataType type = dialect.convertDataType("character varying(abc)");
+        Assert.assertEquals(JDBCType.VARCHAR, type.getSqlType());
+        Assert.assertEquals(String.class, type.getJavaType());
+        System.out.println("[类型参数] 非数字参数按官方参数化类型规则处理，仍识别 character varying");
+    }
 
+    @Test
+    public void shouldRejectOverflowingTypeLength() {
+        KingbaseMysqlDialect dialect = new KingbaseMysqlDialect();
+        String length = "999999999999999999999999";
         NumberFormatException exception = Assert.assertThrows(
             NumberFormatException.class,
-            () -> dialect.convertDataType(typeName)
+            () -> dialect.convertDataType("character varying(" + length + ")")
         );
-        System.out.println("[实际异常] " + exception.getClass().getName() + ": " + exception.getMessage());
-        Assert.assertTrue(exception.getMessage().contains("abc"));
-        System.out.println("[验证结果] 非法长度参数触发 NumberFormatException，测试通过");
+        Assert.assertTrue(exception.getMessage().contains(length));
+        System.out.println("[类型转换异常] 超出整数范围的长度触发 NumberFormatException");
     }
 }
