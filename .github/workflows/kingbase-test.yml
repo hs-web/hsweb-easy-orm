@@ -1,0 +1,53 @@
+name: Kingbase ORM tests
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  kingbase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Run Kingbase tests with Testcontainers
+        run: >-
+          mvn -U -B -pl hsweb-easy-orm-rdb -am
+          '-Dtest=Kingbase*Test,Kingbase*Tests'
+          -DfailIfNoTests=false
+          -Dsurefire.failIfNoSpecifiedTests=false
+          -Dkingbase.testcontainers=true
+          -Duser.timezone=Asia/Shanghai
+          test
+      - name: Verify both Kingbase integration suites ran
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          reports = Path('hsweb-easy-orm-rdb/target/surefire-reports')
+          for mode, name in [('mysql', 'Mysql'), ('oracle', 'Oracle')]:
+              suite = f'org.hswebframework.ezorm.rdb.supports.kingbaseES.{mode}.Kingbase{name}R2dbcIntegrationTests'
+              report = reports / f'TEST-{suite}.xml'
+              if not report.is_file():
+                  raise SystemExit(f'Missing integration test report: {report}')
+              result = ET.parse(report).getroot()
+              tests = int(result.get('tests', '0'))
+              skipped = int(result.get('skipped', '0'))
+              if tests == 0 or skipped or int(result.get('failures', '0')) or int(result.get('errors', '0')):
+                  raise SystemExit(f'Integration suite did not pass completely: {suite}, tests={tests}, skipped={skipped}')
+              print(f'{suite}: {tests} tests passed')
+          PY
+      - name: Upload Kingbase test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: kingbase-test-reports
+          path: hsweb-easy-orm-rdb/target/surefire-reports/
+          if-no-files-found: ignore
