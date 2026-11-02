@@ -47,6 +47,16 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.hswebframework.ezorm.rdb.supports.Address;
 import org.hswebframework.ezorm.rdb.supports.BasicTestEntity;
 import org.hswebframework.ezorm.rdb.supports.StateEnum;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql.KingbaseMysqlCreateTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql.KingbaseMysqlDialect;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql.KingbaseMysqlIndexMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql.KingbaseMysqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql.KingbaseMysqlTableMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleCreateTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleDialect;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleIndexMetadataParser;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleTableMetadataParser;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.junit.After;
@@ -169,6 +179,21 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
         database.addSchema(schema);
         database.setCurrentSchema(schema);
         database.addFeature(executor);
+
+        boolean mysqlMode = "mysql".equals(mode());
+        Object tableParser = schema.findFeatureNow(TableMetadataParser.id);
+        Object indexParser = schema.findFeatureNow(IndexMetadataParser.ID);
+        Object createTableBuilder = schema.findFeatureNow(CreateTableSqlBuilder.ID);
+        Assert.assertEquals(mysqlMode ? KingbaseMysqlSchemaMetadata.class : KingbaseOracleSchemaMetadata.class, schema.getClass());
+        Assert.assertEquals(mysqlMode ? KingbaseMysqlDialect.class : KingbaseOracleDialect.class, schema.getDialect().getClass());
+        Assert.assertEquals(mysqlMode ? KingbaseMysqlTableMetadataParser.class : KingbaseOracleTableMetadataParser.class, tableParser.getClass());
+        Assert.assertEquals(mysqlMode ? KingbaseMysqlIndexMetadataParser.class : KingbaseOracleIndexMetadataParser.class, indexParser.getClass());
+        Assert.assertEquals(mysqlMode ? KingbaseMysqlCreateTableSqlBuilder.class : KingbaseOracleCreateTableSqlBuilder.class, createTableBuilder.getClass());
+        System.out.println("[方言装配] 模式=" + mode() + "，Schema=" + schema.getClass().getName()
+            + "，Dialect=" + schema.getDialect().getClass().getName()
+            + "，表解析器=" + tableParser.getClass().getName()
+            + "，索引解析器=" + indexParser.getClass().getName()
+            + "，建表构造器=" + createTableBuilder.getClass().getName());
         operator = DefaultDatabaseOperator.of(database);
 
         String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
