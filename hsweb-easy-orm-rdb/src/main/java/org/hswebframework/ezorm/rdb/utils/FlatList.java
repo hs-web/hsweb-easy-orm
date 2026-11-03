@@ -96,23 +96,32 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
 
     private static class FlatListIterator<T> implements Iterator<T> {
         private final Iterator<List<T>> outerIterator;
+        private List<T> innerList;
         private Iterator<T> innerIterator;
+        private int innerIndex;
 
         public FlatListIterator(List<List<T>> nestedList) {
             this.outerIterator = nestedList.iterator();
-            this.innerIterator = outerIterator.hasNext() ? outerIterator.next().iterator() : null;
+            advance();
+        }
+
+        private void advance() {
+            innerList = outerIterator.hasNext() ? Objects.requireNonNull(outerIterator.next()) : null;
+            innerIndex = 0;
+            // 顺序列表保留迭代器，避免按索引访问退化为平方复杂度。
+            innerIterator = innerList != null && !(innerList instanceof RandomAccess)
+                ? innerList.iterator() : null;
         }
 
         @Override
         public boolean hasNext() {
-            while (innerIterator != null && !innerIterator.hasNext()) {
-                if (outerIterator.hasNext()) {
-                    innerIterator = outerIterator.next().iterator();
-                } else {
-                    innerIterator = null;
+            while (innerList != null) {
+                if (innerIterator == null ? innerIndex < innerList.size() : innerIterator.hasNext()) {
+                    return true;
                 }
+                advance();
             }
-            return innerIterator != null;
+            return false;
         }
 
         @Override
@@ -120,7 +129,7 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            return innerIterator.next();
+            return innerIterator == null ? innerList.get(innerIndex++) : innerIterator.next();
         }
     }
 

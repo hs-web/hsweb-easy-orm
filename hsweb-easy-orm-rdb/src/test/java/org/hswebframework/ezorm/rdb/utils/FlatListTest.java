@@ -1,13 +1,41 @@
 package org.hswebframework.ezorm.rdb.utils;
 
+import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class FlatListTest {
+
+    @Test
+    public void shouldTraverseNestedAndSequentialListsInOrder() {
+        FlatList<String> inner = new FlatList<>(Arrays.asList(
+            Collections.emptyList(), Collections.singletonList(""), Arrays.asList(null, "a")));
+        FlatList<String> list = new FlatList<>(Arrays.asList(
+            Collections.emptyList(), inner, new LinkedList<>(Arrays.asList("b", "c")),
+            Collections.emptyList()));
+        List<String> values = new ArrayList<>();
+        list.forEach(values::add);
+        assertEquals(Arrays.asList("", null, "a", "b", "c"), values);
+        assertEquals(" null a b c", StringUtils.join(" ", list));
+        assertEquals(" null a b c", StringUtils.join(" ", list));
+        java.util.Iterator<String> iterator = list.iterator();
+        for (String value : values) {
+            assertTrue(iterator.hasNext());
+            assertTrue(iterator.hasNext());
+            assertEquals(value, iterator.next());
+        }
+        assertFalse(iterator.hasNext());
+        assertThrows(java.util.NoSuchElementException.class, iterator::next);
+        assertThrows(NullPointerException.class,
+                     () -> new FlatList<>(Collections.emptyList()).forEach(null));
+    }
 
 
     @Test

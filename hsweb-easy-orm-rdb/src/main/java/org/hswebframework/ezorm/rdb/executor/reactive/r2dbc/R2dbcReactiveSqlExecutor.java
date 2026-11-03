@@ -230,7 +230,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         if (type == Date.class) {
             type = LocalDateTime.class;
         }
-        statement.bindNull(getBindSymbol() + (index + getBindFirstIndex()), type);
+        // SPI 绑定索引固定从 0 开始，与 SQL 占位符的符号及起始编号无关。
+        statement.bindNull(index, type);
     }
 
     protected void bind(Statement statement, int index, Object value) {
@@ -241,7 +242,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .atZone(ZoneOffset.systemDefault())
                 .toLocalDateTime();
         }
-        statement.bind(getBindSymbol() + (index + getBindFirstIndex()), value);
+        statement.bind(index, value);
     }
 
     protected Statement prepareStatement(Statement statement, SqlRequest request) {
