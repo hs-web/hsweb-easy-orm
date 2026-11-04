@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,12 +29,17 @@ import static org.hswebframework.ezorm.rdb.utils.SqlUtils.*;
 
 /**
  * 基于r2dbc的响应式sql执行器
+ * 默认按配置的参数名称绑定，保留原生具名 SQL 的参数编号和重复引用语义。
  *
  * @author zhouhao
  * @since 4.0
  */
 @Slf4j
 public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
+
+    private static final int BIND_NAME_CACHE_SIZE = 1 << 16;
+
+    private volatile BindNameCache bindNameCache;
 
     @Getter
     @Setter
@@ -226,11 +232,44 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         return 1;
     }
 
+    private String getBindName(int index) {
+        String symbol = getBindSymbol();
+        int firstIndex = getBindFirstIndex();
+        if (index < 0 || index >= BIND_NAME_CACHE_SIZE) {
+            return symbol + (index + firstIndex);
+        }
+        BindNameCache cache = bindNameCache;
+        if (cache == null || cache.firstIndex != firstIndex || !Objects.equals(cache.symbol, symbol)) {
+            // 配置与数组一起发布，配置变化或并发初始化不会混用不同布局的名称。
+            cache = new BindNameCache(symbol, firstIndex);
+            bindNameCache = cache;
+        }
+        String name = cache.names[index];
+        if (name == null) {
+            name = symbol + (index + firstIndex);
+            // String 不可变；并发首次访问允许计算相同内容，不在每次绑定时加锁。
+            cache.names[index] = name;
+        }
+        return name;
+    }
+
+    private static final class BindNameCache {
+        private final String symbol;
+        private final int firstIndex;
+        private final String[] names = new String[BIND_NAME_CACHE_SIZE];
+
+        private BindNameCache(String symbol, int firstIndex) {
+            this.symbol = symbol;
+            this.firstIndex = firstIndex;
+        }
+    }
+
     protected void bindNull(Statement statement, int index, Class<?> type) {
         if (type == Date.class) {
             type = LocalDateTime.class;
         }
-        statement.bindNull(getBindSymbol() + (index + getBindFirstIndex()), type);
+        // 原生命名参数的出现顺序及重复次数不一定等于参数编号。
+        statement.bindNull(getBindName(index), type);
     }
 
     protected void bind(Statement statement, int index, Object value) {
@@ -241,7 +280,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .atZone(ZoneOffset.systemDefault())
                 .toLocalDateTime();
         }
-        statement.bind(getBindSymbol() + (index + getBindFirstIndex()), value);
+        statement.bind(getBindName(index), value);
     }
 
     protected Statement prepareStatement(Statement statement, SqlRequest request) {
@@ -253,7 +292,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
             if (parameter == null) {
                 bindNull(statement, index, String.class);
             } else if (parameter instanceof R2dbcParameterBinder binder) {
-                binder.bind(statement, getBindSymbol() + (index + getBindFirstIndex()));
+                binder.bind(statement, getBindName(index));
             } else if (parameter instanceof NullValue nullValue) {
                 Class<?> javaType = nullValue.getType();
                 if (javaType == LongCharSequence.class) {

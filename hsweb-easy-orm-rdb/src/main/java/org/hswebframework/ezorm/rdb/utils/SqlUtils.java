@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 
 public class SqlUtils {
 
@@ -172,6 +173,17 @@ public class SqlUtils {
     public static StringBuilder replaceSqlParameter(String sql,
                                                     StringBuilder builder,
                                                     BiConsumer<Integer, StringBuilder> replacer) {
+        return replaceSqlParameterIndexed(sql, builder, (target, index) -> replacer.accept(index, target));
+    }
+
+    /**
+     * 使用 primitive 参数编号的回调改写占位符，与原入口共用词法扫描，避免逐参数装箱。
+     *
+     * @see #replaceSqlParameter(String, StringBuilder, BiConsumer)
+     */
+    public static StringBuilder replaceSqlParameterIndexed(String sql,
+                                                           StringBuilder builder,
+                                                           ObjIntConsumer<StringBuilder> replacer) {
         int index = 0;
         boolean inSingleQuote = false;
         boolean inDoubleQuote = false;
@@ -272,7 +284,7 @@ public class SqlUtils {
 
             // --- 在这里替换 '?' 参数 -------------------------------------------
             if (c == '?') {
-                replacer.accept(index++, builder);
+                replacer.accept(builder, index++);
                 continue;
             }
 

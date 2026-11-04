@@ -42,13 +42,15 @@ class R2dbcSqlRequest extends PrepareSqlRequest {
         R2dbcSqlRequest sqlRequest = new R2dbcSqlRequest();
         sqlRequest.nativeSql = request;
         String sql = request.getSql();
-        int sl = symbol.length() + 1;
+        int indexLength = Math.max(decimalLength(firstIndex), decimalLength(firstIndex + parameter.length - 1));
+        // 原问号被前缀和多位编号替换，预留扩展后的字符数，避免宽批次反复扩容复制。
+        int extraLength = parameter.length * (symbol.length() + indexLength - 1);
 
         sqlRequest.sql = SqlUtils
-            .replaceSqlParameter(
+            .replaceSqlParameterIndexed(
                 sql,
-                new StringBuilder(sql.length() + (parameter.length * sl)),
-                (parameterIndex, builder) -> {
+                new StringBuilder(sql.length() + extraLength),
+                (builder, parameterIndex) -> {
                     builder
                         .append(symbol)
                         .append((firstIndex + parameterIndex));
@@ -58,6 +60,15 @@ class R2dbcSqlRequest extends PrepareSqlRequest {
         sqlRequest.parameters = parameter;
 
         return sqlRequest;
+    }
+
+    private static int decimalLength(int value) {
+        int length = value < 0 ? 1 : 0;
+        do {
+            length++;
+            value /= 10;
+        } while (value != 0);
+        return length;
     }
 
 }

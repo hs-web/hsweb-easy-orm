@@ -157,6 +157,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
             fragments.add(SqlFragments.LEFT_BRACKET);
             int valueLen = values.size();
             int vIndex = 0;
+            Object[] rowParameters = new Object[indexMapping.size()];
+            int parameterSize = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 int valueIndex = entry.getKey();
                 if (vIndex++ != 0) {
@@ -164,6 +166,8 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                 }
                 SqlFragments function = functionValues.get(valueIndex);
                 if (null != function) {
+                    addParameters(fragments, rowParameters, parameterSize);
+                    parameterSize = 0;
                     fragments.add(function);
                 } else {
                     RDBColumnMetadata column = entry.getValue();
@@ -174,34 +178,38 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                         value = column.getDefaultValue().get();
                     }
-                    if (value instanceof NativeSql) {
-                        fragments
-                            .addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
-
-                    } else {
+                    if (!(value instanceof NativeSql)) {
                         if (value == null) {
                             value = NullValue.of(column.getType());
                         }
                         value = column.encode(value);
-                        if (value instanceof NativeSql) {
-                            fragments
-                                .addSql(((NativeSql) value).getSql())
-                                .addParameter(((NativeSql) value).getParameters());
-
-                        } else {
-                            fragments.add(SqlFragments.QUESTION_MARK)
-                                     .addParameter(value);
-                        }
+                    }
+                    if (value instanceof NativeSql) {
+                        addParameters(fragments, rowParameters, parameterSize);
+                        parameterSize = 0;
+                        fragments
+                            .addSql(((NativeSql) value).getSql())
+                            .addParameter(((NativeSql) value).getParameters());
+                    } else {
+                        fragments.add(SqlFragments.QUESTION_MARK);
+                        rowParameters[parameterSize++] = value;
                     }
                 }
             }
 
+            addParameters(fragments, rowParameters, parameterSize);
             fragments.add(SqlFragments.RIGHT_BRACKET);
             afterValues(columns, values, fragments);
         }
 
         return afterBuild(columns, parameter, fragments).toRequest();
+    }
+
+    private void addParameters(AppendableSqlFragments fragments, Object[] parameters, int size) {
+        if (size != 0) {
+            // 满数组只会在行末追加；表达式前的短前缀复制后再复用行数组，保留参数顺序与所有权。
+            fragments.addParameter(size == parameters.length ? parameters : Arrays.copyOf(parameters, size));
+        }
     }
 
     protected static SqlFragments INSERT_INTO = SqlFragments.single("insert into");

@@ -6,7 +6,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
+/**
+ * 通用字符串、SQL 标识符和动态参数辅助方法。
+ * 拼接同步执行，复用的线程缓冲在完成或失败后清空。
+ */
 public class StringUtils {
 
     private static final FastThreadLocal<StringBuilder> SHARE = new FastThreadLocal<StringBuilder>() {
@@ -42,13 +47,18 @@ public class StringUtils {
     public static String join(CharSequence delimiter, Iterable<?> args) {
         StringBuilder builder = SHARE.get();
         try {
-            int idx = 0;
-            for (Object arg : args) {
-                if (idx++ > 0) {
-                    builder.append(delimiter);
+            // 使用 Iterable 的批量遍历入口，让扁平视图复用子列表遍历而不逐片段创建迭代器。
+            args.forEach(new Consumer<Object>() {
+                private int index;
+
+                @Override
+                public void accept(Object arg) {
+                    if (index++ > 0) {
+                        builder.append(delimiter);
+                    }
+                    builder.append(arg);
                 }
-                builder.append(arg);
-            }
+            });
             return builder.toString();
         } finally {
             builder.setLength(0);
