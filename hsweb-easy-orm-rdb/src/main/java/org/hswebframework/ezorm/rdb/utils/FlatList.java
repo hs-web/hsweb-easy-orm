@@ -2,7 +2,12 @@ package org.hswebframework.ezorm.rdb.utils;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Consumer;
 
+/**
+ * 多个子列表的有序扁平视图，保留各子列表的遍历语义。
+ * 子列表仍由调用方持有；整体快照和并发修改由调用方管理。
+ */
 public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
     private final List<List<T>> nestedList;
     private int size = -1; // Cache size
@@ -82,18 +87,22 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
     }
 
     private void copyToArray(Object[] target) {
-        int index = 0;
-        for (List<T> list : nestedList) {
-            if (list instanceof RandomAccess) {
-                for (int i = 0; i < list.size(); i++) {
-                    target[index++] = list.get(i);
-                }
-            } else {
-                // 顺序列表保留迭代器，避免按索引访问退化为平方复杂度。
-                for (T value : list) {
-                    target[index++] = value;
-                }
+        forEach(new Consumer<T>() {
+            private int index;
+
+            @Override
+            public void accept(T value) {
+                target[index++] = value;
             }
+        });
+    }
+
+    @Override
+    public void forEach(Consumer<? super T> action) {
+        Objects.requireNonNull(action);
+        // 委托子列表自身的批量遍历，兼顾无迭代器实现与快照语义，不按具体列表类型分支。
+        for (List<T> list : nestedList) {
+            list.forEach(action);
         }
     }
 
@@ -105,9 +114,7 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
 
     private static class FlatListIterator<T> implements Iterator<T> {
         private final Iterator<List<T>> outerIterator;
-        private List<T> innerList;
         private Iterator<T> innerIterator;
-        private int innerIndex;
 
         public FlatListIterator(List<List<T>> nestedList) {
             this.outerIterator = nestedList.iterator();
@@ -115,17 +122,14 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
         }
 
         private void advance() {
-            innerList = outerIterator.hasNext() ? Objects.requireNonNull(outerIterator.next()) : null;
-            innerIndex = 0;
-            // 顺序列表保留迭代器，避免按索引访问退化为平方复杂度。
-            innerIterator = innerList != null && !(innerList instanceof RandomAccess)
-                ? innerList.iterator() : null;
+            // RandomAccess 只描述索引访问成本，不能替代子列表自身的迭代快照。
+            innerIterator = outerIterator.hasNext() ? outerIterator.next().iterator() : null;
         }
 
         @Override
         public boolean hasNext() {
-            while (innerList != null) {
-                if (innerIterator == null ? innerIndex < innerList.size() : innerIterator.hasNext()) {
+            while (innerIterator != null) {
+                if (innerIterator.hasNext()) {
                     return true;
                 }
                 advance();
@@ -138,7 +142,7 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            return innerIterator == null ? innerList.get(innerIndex++) : innerIterator.next();
+            return innerIterator.next();
         }
     }
 

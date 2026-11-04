@@ -12,6 +12,32 @@ import java.util.*;
 public class CoreUtilityBehaviorTest {
 
     @Test
+    public void testJoinPreservesEmptyNullAndDelimiterRules() {
+        Assert.assertEquals("", StringUtils.join(",", Collections.emptyList()));
+        Assert.assertEquals("", StringUtils.join(",", Collections.singletonList("")));
+        Assert.assertEquals(",null,,x", StringUtils.join(",", Arrays.asList("", null, "", "x")));
+        Assert.assertEquals("firstnulllast", StringUtils.join(null, Arrays.asList("first", "last")));
+        Iterable<String> source = () -> Arrays.asList("a", "b", "c").iterator();
+        Assert.assertEquals("a::b::c", StringUtils.join("::", source));
+        Assert.assertThrows(NullPointerException.class, () -> StringUtils.join(",", null));
+        Assert.assertEquals("after", StringUtils.join(",", Collections.singletonList("after")));
+    }
+
+    @Test
+    public void testJoinClearsThreadBufferAfterTraversalFailure() {
+        IllegalStateException failure = new IllegalStateException("failed element");
+        Object bad = new Object() {
+            @Override
+            public String toString() {
+                throw failure;
+            }
+        };
+        Assert.assertSame(failure, Assert.assertThrows(IllegalStateException.class,
+            () -> StringUtils.join(",", Arrays.asList("before", bad))));
+        Assert.assertEquals("after", StringUtils.join(",", Collections.singletonList("after")));
+    }
+
+    @Test
     public void testStringUtilsForSqlNameAndDynamicParams() {
         Assert.assertTrue(StringUtils.isNullOrEmpty(null));
         Assert.assertTrue(StringUtils.isNullOrEmpty(""));

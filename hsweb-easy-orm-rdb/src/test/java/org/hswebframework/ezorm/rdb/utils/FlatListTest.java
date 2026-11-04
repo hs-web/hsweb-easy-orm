@@ -6,12 +6,78 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.junit.Assert.*;
 
 public class FlatListTest {
+
+    @Test
+    public void shouldPreserveSnapshotIteratorsForRandomAccessViews() {
+        for (boolean wrapped : new boolean[]{false, true}) {
+            List<String> source = new CopyOnWriteArrayList<>(Arrays.asList("before", "second"));
+            List<String> input = wrapped ? Collections.unmodifiableList(source) : source;
+            Iterator<String> iterator = new FlatList<>(Collections.singletonList(input)).iterator();
+            source.set(0, "after");
+            source.remove(1);
+            List<String> result = new ArrayList<>();
+            iterator.forEachRemaining(result::add);
+            assertEquals(Arrays.asList("before", "second"), result);
+
+            source.clear();
+            Iterator<String> empty = new FlatList<>(Collections.singletonList(input)).iterator();
+            source.add("later");
+            assertFalse(empty.hasNext());
+        }
+    }
+
+    @Test
+    public void shouldPreserveChildSnapshotWhenForEachMutatesItsSource() {
+        for (boolean wrapped : new boolean[]{false, true}) {
+            List<String> source = new CopyOnWriteArrayList<>(Arrays.asList("first", "second"));
+            List<String> input = wrapped ? Collections.unmodifiableList(source) : source;
+            List<String> result = new ArrayList<>();
+            new FlatList<>(Collections.singletonList(input)).forEach(value -> {
+                result.add(value);
+                source.clear();
+            });
+            assertEquals(Arrays.asList("first", "second"), result);
+        }
+    }
+
+    @Test
+    public void shouldPreserveChildSnapshotWhileJoiningSqlFragments() {
+        for (boolean wrapped : new boolean[]{false, true}) {
+            List<Object> source = new CopyOnWriteArrayList<>();
+            Object first = new Object() {
+                @Override
+                public String toString() {
+                    source.set(1, "changed");
+                    source.remove(2);
+                    return "first";
+                }
+            };
+            source.addAll(Arrays.asList(first, "second", "third"));
+            List<Object> input = wrapped ? Collections.unmodifiableList(source) : source;
+            assertEquals("first second third", StringUtils.join(" ", new FlatList<>(Collections.singletonList(input))));
+        }
+    }
+
+    @Test
+    public void shouldPreserveChildTraversalWhenConvertingToArray() {
+        List<Integer> source = new ArrayList<Integer>(Arrays.asList(1, 2, 3)) {
+            @Override
+            public Integer get(int index) {
+                throw new AssertionError("RandomAccess must not bypass child traversal");
+            }
+        };
+        FlatList<Integer> list = new FlatList<>(Collections.singletonList(source));
+        assertArrayEquals(new Object[]{1, 2, 3}, list.toArray());
+        assertArrayEquals(new Integer[]{1, 2, 3}, list.toArray(new Integer[0]));
+    }
 
     @Test
     public void shouldConvertMixedListsAndNullsToIndependentArrays() {
