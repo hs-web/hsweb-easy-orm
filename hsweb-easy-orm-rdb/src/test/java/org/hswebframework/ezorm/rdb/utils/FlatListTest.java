@@ -14,6 +14,43 @@ import static org.junit.Assert.*;
 public class FlatListTest {
 
     @Test
+    public void shouldConvertMixedListsAndNullsToIndependentArrays() {
+        List<String> source = new ArrayList<>(Arrays.asList("a", null));
+        FlatList<String> list = new FlatList<>(Arrays.asList(
+            Collections.emptyList(), source, new LinkedList<>(Arrays.asList("b", "c")),
+            new FlatList<>(Arrays.asList(Collections.emptyList(), Collections.singletonList("d")))));
+        Object[] expected = {"a", null, "b", "c", "d"};
+        Object[] actual = list.toArray();
+        assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, list.toArray(new String[0]));
+        String[] exact = new String[list.size()];
+        assertSame(exact, list.toArray(exact));
+        assertArrayEquals(expected, exact);
+        String[] larger = {"old", "old", "old", "old", "old", "old", "untouched"};
+        assertSame(larger, list.toArray(larger));
+        assertArrayEquals(new String[]{"a", null, "b", "c", "d", null, "untouched"}, larger);
+        actual[0] = "changed";
+        assertEquals("a", source.get(0));
+        assertThrows(ArrayStoreException.class, () -> list.toArray(new Integer[0]));
+        String[] empty = {"old", "untouched"};
+        assertSame(empty, new FlatList<String>(Collections.emptyList()).toArray(empty));
+        assertArrayEquals(new String[]{null, "untouched"}, empty);
+    }
+
+    @Test
+    public void shouldNotIndexSequentialListsWhenConvertingToArray() {
+        LinkedList<Integer> sequential = new LinkedList<Integer>(Arrays.asList(1, 2, 3)) {
+            @Override
+            public Integer get(int index) {
+                throw new AssertionError("sequential list must use its iterator");
+            }
+        };
+        FlatList<Integer> list = new FlatList<>(Collections.singletonList(sequential));
+        assertArrayEquals(new Integer[]{1, 2, 3}, list.toArray());
+        assertArrayEquals(new Integer[]{1, 2, 3}, list.toArray(new Integer[0]));
+    }
+
+    @Test
     public void shouldTraverseNestedAndSequentialListsInOrder() {
         FlatList<String> inner = new FlatList<>(Arrays.asList(
             Collections.emptyList(), Collections.singletonList(""), Arrays.asList(null, "a")));

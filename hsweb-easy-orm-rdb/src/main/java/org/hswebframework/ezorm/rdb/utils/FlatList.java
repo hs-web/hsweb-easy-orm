@@ -63,12 +63,7 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
     @reactor.util.annotation.NonNull
     public Object[] toArray() {
         Object[] arr = new Object[size()];
-        int index = 0;
-        for (List<T> ts : nestedList) {
-            for (T t : ts) {
-                arr[index++] = t;
-            }
-        }
+        copyToArray(arr);
         return arr;
     }
 
@@ -79,13 +74,27 @@ public class FlatList<T> extends AbstractList<T> implements Iterable<T> {
         @SuppressWarnings("all")
         T1[] r = a.length >= size ? a :
             (T1[]) Array.newInstance(a.getClass().getComponentType(), size);
-        int index = 0;
-        for (List<T> ts : nestedList) {
-            for (T t : ts) {
-                r[index++] = (T1) t;
-            }
+        copyToArray(r);
+        if (r.length > size) {
+            r[size] = null;
         }
         return r;
+    }
+
+    private void copyToArray(Object[] target) {
+        int index = 0;
+        for (List<T> list : nestedList) {
+            if (list instanceof RandomAccess) {
+                for (int i = 0; i < list.size(); i++) {
+                    target[index++] = list.get(i);
+                }
+            } else {
+                // 顺序列表保留迭代器，避免按索引访问退化为平方复杂度。
+                for (T value : list) {
+                    target[index++] = value;
+                }
+            }
+        }
     }
 
     @Override

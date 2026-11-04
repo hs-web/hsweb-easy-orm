@@ -78,9 +78,12 @@ public class DefaultUpsertOperator extends UpsertOperator {
         columns(keys.toArray(new String[0]));
 
         for (Map<String, Object> value : values) {
-            values(keys.stream()
-                       .map(value::get)
-                       .toArray());
+            Object[] row = new Object[keys.size()];
+            int index = 0;
+            for (String key : keys) {
+                row[index++] = value.get(key);
+            }
+            values(row);
         }
 
         return this;
