@@ -44,15 +44,15 @@ public class R2dbcParameterBindingTest {
         SqlRequest converted = executor.convertRequest(request);
         assertEquals("insert into data values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)", converted.getSql());
         assertSame(statement, executor.prepareStatement(statement, converted));
-        assertEquals(Arrays.asList("bind", 0, 42), calls.get(0));
-        assertEquals(Arrays.asList("bind", 1, 12.5D), calls.get(1));
-        assertEquals(Arrays.asList("bind", 2, true), calls.get(2));
-        assertEquals(Arrays.asList("bind", 3, "text"), calls.get(3));
-        assertEquals(Arrays.asList("bind", 4, LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault())), calls.get(4));
-        assertEquals(Arrays.asList("bindNull", 5, String.class), calls.get(5));
-        assertEquals(Arrays.asList("bindNull", 6, LocalDateTime.class), calls.get(6));
-        assertEquals(Arrays.asList("bindNull", 7, Clob.class), calls.get(7));
-        assertEquals(8, calls.get(8).get(1));
+        assertEquals(Arrays.asList("bind", "$1", 42), calls.get(0));
+        assertEquals(Arrays.asList("bind", "$2", 12.5D), calls.get(1));
+        assertEquals(Arrays.asList("bind", "$3", true), calls.get(2));
+        assertEquals(Arrays.asList("bind", "$4", "text"), calls.get(3));
+        assertEquals(Arrays.asList("bind", "$5", LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault())), calls.get(4));
+        assertEquals(Arrays.asList("bindNull", "$6", String.class), calls.get(5));
+        assertEquals(Arrays.asList("bindNull", "$7", LocalDateTime.class), calls.get(6));
+        assertEquals(Arrays.asList("bindNull", "$8", Clob.class), calls.get(7));
+        assertEquals("$9", calls.get(8).get(1));
         Clob clob = (Clob) calls.get(8).get(2);
         try {
             assertEquals("large", Flux.from(clob.stream()).collectList().block().get(0).toString());

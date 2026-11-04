@@ -28,6 +28,7 @@ import static org.hswebframework.ezorm.rdb.utils.SqlUtils.*;
 
 /**
  * 基于r2dbc的响应式sql执行器
+ * 默认按配置的参数名称绑定，保留原生具名 SQL 的参数编号和重复引用语义。
  *
  * @author zhouhao
  * @since 4.0
@@ -230,8 +231,8 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
         if (type == Date.class) {
             type = LocalDateTime.class;
         }
-        // SPI 绑定索引固定从 0 开始，与 SQL 占位符的符号及起始编号无关。
-        statement.bindNull(index, type);
+        // 原生命名参数的出现顺序及重复次数不一定等于参数编号。
+        statement.bindNull(getBindSymbol() + (index + getBindFirstIndex()), type);
     }
 
     protected void bind(Statement statement, int index, Object value) {
@@ -242,7 +243,7 @@ public abstract class R2dbcReactiveSqlExecutor implements ReactiveSqlExecutor {
                 .atZone(ZoneOffset.systemDefault())
                 .toLocalDateTime();
         }
-        statement.bind(index, value);
+        statement.bind(getBindSymbol() + (index + getBindFirstIndex()), value);
     }
 
     protected Statement prepareStatement(Statement statement, SqlRequest request) {
