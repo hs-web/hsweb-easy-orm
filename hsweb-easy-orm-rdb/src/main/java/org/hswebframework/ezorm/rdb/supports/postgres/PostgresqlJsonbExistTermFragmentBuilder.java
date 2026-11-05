@@ -3,7 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.param.Term;
-import org.hswebframework.ezorm.rdb.codec.JsonValueCodec;
+import org.hswebframework.ezorm.rdb.supports.json.JsonCodecSupport;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.*;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.AbstractTermFragmentBuilder;
@@ -108,7 +108,7 @@ public class PostgresqlJsonbExistTermFragmentBuilder extends AbstractTermFragmen
         if (value instanceof CharSequence) {
             obj = value.toString();
         } else {
-            obj = JsonValueCodec.defaultMapper.writeValueAsString(value);
+            obj = JsonCodecSupport.toJson(value);
         }
         return NativeSql.of("?::jsonb", obj);
     }

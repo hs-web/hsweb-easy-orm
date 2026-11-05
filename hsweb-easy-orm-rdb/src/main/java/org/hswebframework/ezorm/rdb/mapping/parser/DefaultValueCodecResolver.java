@@ -33,6 +33,7 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
     static {
         COMMONS.register(DateTimeCodec.class, (field, ann) -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec(ann.format(), field.getPropertyType()));
 
+        // 兼容启动阶段对 defaultMapper 的配置；中立配置通过 register 显式绑定到字段。
         COMMONS.register(JsonCodec.class, (field, jsonCodec) -> JsonValueCodec.ofField(field.getField()));
 
         COMMONS.register(EnumCodec.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.property(), jsonCodec.toMask()));

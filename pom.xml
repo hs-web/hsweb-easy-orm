@@ -52,6 +52,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.25</logback.version>
         <fastjson.version>1.2.83_noneautotype</fastjson.version>
+        <json-facade.version>1.0.0-SNAPSHOT</json-facade.version>
         <hsweb.expands.version>3.0.2</hsweb.expands.version>
         <reactor.version>2024.0.18</reactor.version>
         <r2dbc.version>Borca-SR2</r2dbc.version>
@@ -226,6 +227,21 @@
     <dependencyManagement>
 
         <dependencies>
+            <dependency>
+                <groupId>org.jetlinks</groupId>
+                <artifactId>json-facade-api</artifactId>
+                <version>${json-facade.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetlinks</groupId>
+                <artifactId>json-facade-jackson2</artifactId>
+                <version>${json-facade.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetlinks</groupId>
+                <artifactId>json-facade-reactor</artifactId>
+                <version>${json-facade.version}</version>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>

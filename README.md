@@ -40,6 +40,48 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 建议配合[hsweb4](https://github.com/hs-web/hsweb-framework/tree/4.0.x)使用.
 
+## JSON 转换与持久化
+
+`SimplePropertyWrapper` 的 JSON 绑定及 JSON 列的中立入口使用 json-facade。
+已有目标类型及 List 直接返回，文本按 JSON 读取，Map/POJO 交由 Provider 转换。
+默认 mapper 延迟创建，不依赖 Spring，也不注册应用 `Json.global()`；可通过
+`new SimplePropertyWrapper(value, mapper)` 显式提供业务配置。
+
+中立入口使用独立的 `JsonValueCodec.defaultJsonMapper`，默认 Jackson2、省略 null、
+忽略未知字段并使用本地时区。字段解析保留完整泛型，Publisher 字段只展开一层：
+`Mono<List<Item>>` 的一个列值绑定为一份 List，Flux 字段也只发出一个完整列值。
+
+```java
+JsonValueCodec codec = JsonValueCodec.of(new JsonType<Map<String, List<Item>>>() {});
+// 自定义持久化配置时复用已构建好的 mapper：
+JsonValueCodec custom = JsonValueCodec.of(JsonType.of(Item.class), mapper);
+
+// 在 JPA 解析器装配时为 @JsonCodec 指定持久化配置，复用已有 resolver 扩展：
+DefaultValueCodecResolver customResolver = new DefaultValueCodecResolver();
+customResolver.register(JsonCodec.class,
+    (field, annotation) -> JsonValueCodec.ofField(field.getField(), mapper));
+parser.setValueCodecResolver(field -> customResolver.resolve(field)
+    .or(() -> DefaultValueCodecResolver.COMMONS.resolve(field)));
+```
+
+默认 `@JsonCodec` 和 JSON SQL 参数继续跟随旧 `defaultMapper`，保留已有启动配置。
+该可变配置须在并发使用前完成；中立入口使用独立快照，不跟踪后续原生配置变更。
+`@JsonCodec` 只负责值绑定，列类型仍通过原有 `@ColumnType` 声明，例如
+`@ColumnType(javaType = String.class, jdbcType = JDBCType.CLOB)`。
+
+写入已序列化 String 时保持透传。中立入口借用调用方传入的流，不关闭流或改变 ByteBuffer 游标；
+从 JDBC LOB 创建的流由 codec 关闭。中立 codec 的响应式 LOB 在订阅时读取完整列值，取消及原始错误向上传递。
+BLOB 使用 Provider 增量读取并遵循 mapper 的单值大小限制，CLOB 拼接字符后绑定；结果对象仍整体驻留内存，
+不属于数组元素逐条导出接口。旧原生入口保留同步 LOB 行为；非阻塞场景需通过 resolver
+显式安装中立 codec，并使用 Mono/Flux/Publisher 字段。同步字段读取响应式 LOB 仍须等待。
+同步解码错误保留历史的日志加 null 行为，响应式 LOB 的异步错误由 Publisher 传递。
+
+原 `of(Class)`、`ofCollection`、`ofMap`、`ofField(Field)` 保留旧原生配置路径。
+暴露 Jackson 的 `defaultMapper`、`setMapper(ObjectMapper)` 和 `JsonValueCodec(Class, JavaType)`
+保留并弃用，外部原生 mapper 的后续配置仍生效；新入口使用稳定配置快照，避免与 HTTP 配置互相影响。
+已有 `protected doRead` 扩展点继续保留。兼容期不移除真实 fastjson，不引入同包名兼容类。
+普通 Jackson 注解仍由 Provider 处理，fastjson 专用注解不会自动迁移。
+
 ## 已有条件分组
 
 `Conditional.group()` 将已有条件整体分组，随后可继续追加条件。例如
