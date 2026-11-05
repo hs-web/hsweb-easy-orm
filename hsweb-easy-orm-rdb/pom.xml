@@ -16,6 +16,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jetlinks</groupId>
+            <artifactId>json-facade-jackson2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetlinks</groupId>
+            <artifactId>json-facade-reactor</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.oracle.database.r2dbc</groupId>
             <artifactId>oracle-r2dbc</artifactId>
             <version>1.3.0</version>

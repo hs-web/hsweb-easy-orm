@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.supports.json;
 
 import lombok.SneakyThrows;
+import org.jetlinks.json.JsonMapper;
 import org.hswebframework.ezorm.rdb.codec.JsonValueCodec;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
 
@@ -71,6 +72,23 @@ public final class JsonCodecSupport {
             return toJson(value);
         } catch (Throwable e) {
             throw new IllegalArgumentException("Unsupported json value: " + value, e);
+        }
+    }
+
+    /** 按指定的稳定配置写 JSON 参数；已有 JSON 文本保持透传。 */
+    public static String toJson(Object value, JsonMapper mapper) {
+        if (value == null) {
+            return null;
+        }
+        return value instanceof CharSequence ? value.toString() : mapper.write(value);
+    }
+
+    /** 与旧入口保持相同的参数错误包装，新代码显式传入持久化 mapper。 */
+    public static String toJsonSilently(Object value, JsonMapper mapper) {
+        try {
+            return toJson(value, mapper);
+        } catch (RuntimeException error) {
+            throw new IllegalArgumentException("Unsupported json value: " + value, error);
         }
     }
 
