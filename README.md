@@ -81,6 +81,8 @@ JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型�
 
 实现应组合并返回 Mono/Flux，保留订阅者 Reactor Context、权限条件、取消和错误，不自行 `subscribe()`。查询变换应保持行数、顺序和分页含义，并使用有界批次补充数据；聚合、自定义 SQL 和缺少实体标识的投影需使用独立的显式处理入口。CRUD SPI 不自动启动事务或补充权限，原始集合的批量边界也不代表上游 Publisher 自动流式分批；这些策略由注册方实现。
 
+`save(Publisher)` 的输入流保留调用方 Context；Repository 的日志等 Context 扩展只应用于内部拦截器及原生持久化链，保留调用方已有的其他 key，拦截器也可在此基础上继续扩展。
+
 接口位于 `hsweb-easy-orm-rdb` 的 `mapping` 包。`ReactiveQueryResultContext` 和 `ReactiveCrudExecutionContext` 均通过 `attributes` 保存单次执行状态；不要将请求状态保存在共享 Feature 实例中。
 
 ## MySQL 原生批量冲突更新

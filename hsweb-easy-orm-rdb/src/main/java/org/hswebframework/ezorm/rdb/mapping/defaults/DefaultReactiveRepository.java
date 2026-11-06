@@ -96,9 +96,10 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
             .from(data)
             .collectList()
             .filter(CollectionUtils::isNotEmpty)
+            // Keep repository context local to persistence; the input retains caller context.
             .flatMap(list -> executeCrud(ReactiveCrudExecutionContext.Operation.SAVE, list,
-                                         SaveResult.class, () -> doSave(list).reactive()))
-            .contextWrite(this::applyContext)
+                                         SaveResult.class, () -> doSave(list).reactive())
+                .contextWrite(this::applyContext))
             .defaultIfEmpty(SaveResult.of(0, 0));
     }
 

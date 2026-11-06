@@ -29,9 +29,12 @@ import org.hswebframework.ezorm.rdb.supports.h2.H2SchemaMetadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import reactor.util.context.ContextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -291,6 +295,112 @@ public class ReactiveExecutionExtensionTest {
         assertEquals(1, save.block().getTotal());
         assertEquals(ReactiveCrudExecutionContext.Operation.SAVE, executions.get(0).getOperation());
         assertEquals("kept", repository.findById("duplicate").block().getName());
+    }
+
+    @Test
+    public void savePublisherRetainsCallerContextWithoutInterceptor() {
+        assertSaveContextBoundary(false);
+    }
+
+    @Test
+    public void savePublisherSeparatesInputContextFromInterceptorAndLifecycleContext() {
+        assertSaveContextBoundary(true);
+    }
+
+    private void assertSaveContextBoundary(boolean intercepted) {
+        Logger callerLogger = LoggerFactory.getLogger("save-publisher-caller");
+        Logger repositoryLogger = LoggerFactory.getLogger(TestEntity.class);
+        assertNotSame(callerLogger, repositoryLogger);
+        Object sentinelKey = new Object();
+        Object sentinel = new Object();
+        Object authentication = new Object();
+        Object transaction = new Object();
+        Object interceptorKey = new Object();
+        Object interceptorValue = new Object();
+        List<String> stages = new ArrayList<>();
+        Consumer<ContextView> assertCallerKeys = context -> {
+            assertSame(sentinel, context.get(sentinelKey));
+            assertSame(authentication, context.get("authentication"));
+            assertSame(transaction, context.get("transaction"));
+        };
+        Consumer<ContextView> assertRepositoryContext = context -> {
+            assertCallerKeys.accept(context);
+            assertSame(repositoryLogger, context.get(Logger.class));
+        };
+        if (intercepted) {
+            table.addFeature(new ReactiveCrudExecutionInterceptor() {
+                @Override
+                public <R> Mono<R> intercept(ReactiveCrudExecutionContext execution, Supplier<Mono<R>> proceed) {
+                    assertEquals(ReactiveCrudExecutionContext.Operation.SAVE, execution.getOperation());
+                    return Mono.deferContextual(context -> {
+                        assertRepositoryContext.accept(context);
+                        assertFalse(context.hasKey(interceptorKey));
+                        stages.add("interceptor");
+                        return Mono.deferContextual(augmented -> {
+                            assertRepositoryContext.accept(augmented);
+                            assertSame(interceptorValue, augmented.get(interceptorKey));
+                            stages.add("continuation");
+                            return proceed.get();
+                        }).contextWrite(current -> current.put(interceptorKey, interceptorValue));
+                    });
+                }
+            });
+        }
+        table.addFeature((EventListener) (type, event) -> {
+            if (type == MappingEventTypes.save_before) {
+                Consumer<ContextView> assertLifecycleContext = context -> {
+                    assertRepositoryContext.accept(context);
+                    assertEquals(intercepted, context.hasKey(interceptorKey));
+                    if (intercepted) {
+                        assertSame(interceptorValue, context.get(interceptorKey));
+                    }
+                };
+                event.get(MappingContextKeys.reactiveResultHolder).orElseThrow(AssertionError::new)
+                     .before(Mono.deferContextual(context -> {
+                         assertLifecycleContext.accept(context);
+                         stages.add("before");
+                         return Mono.empty();
+                     }));
+                event.get(MappingContextKeys.reactiveResultHolder).orElseThrow(AssertionError::new)
+                     .invoke(Mono.deferContextual(context -> {
+                         assertLifecycleContext.accept(context);
+                         stages.add("invoke");
+                         return Mono.empty();
+                     }));
+                event.get(MappingContextKeys.reactiveResultHolder).orElseThrow(AssertionError::new)
+                     .after(result -> Mono.deferContextual(context -> {
+                         assertLifecycleContext.accept(context);
+                         assertEquals(1, ((SaveResult) result).getTotal());
+                         stages.add("after");
+                         return Mono.empty();
+                     }));
+            }
+        });
+        Mono<TestEntity> input = Mono.deferContextual(context -> {
+            assertCallerKeys.accept(context);
+            assertSame(callerLogger, context.get(Logger.class));
+            assertFalse(context.hasKey(interceptorKey));
+            stages.add("input");
+            return Mono.just(entity("context-save", "persisted"));
+        });
+        Mono<SaveResult> save = repository.save(input)
+            .flatMap(result -> Mono.deferContextual(context -> {
+                assertCallerKeys.accept(context);
+                assertSame(callerLogger, context.get(Logger.class));
+                assertFalse(context.hasKey(interceptorKey));
+                stages.add("result");
+                return Mono.just(result);
+            }))
+            .contextWrite(context -> context.put(Logger.class, callerLogger)
+                                            .put(sentinelKey, sentinel)
+                                            .put("authentication", authentication)
+                                            .put("transaction", transaction));
+        assertTrue(stages.isEmpty());
+        StepVerifier.create(save).assertNext(result -> assertEquals(1, result.getTotal())).verifyComplete();
+        assertEquals(intercepted
+                         ? Arrays.asList("input", "interceptor", "continuation", "before", "invoke", "after", "result")
+                         : Arrays.asList("input", "before", "invoke", "after", "result"), stages);
+        assertEquals("persisted", repository.findById("context-save").block().getName());
     }
 
     @Test
