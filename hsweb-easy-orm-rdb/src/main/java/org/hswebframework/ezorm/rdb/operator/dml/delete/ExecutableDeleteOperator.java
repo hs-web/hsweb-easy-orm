@@ -11,6 +11,11 @@ public class ExecutableDeleteOperator extends BuildParameterDeleteOperator {
     private RDBTableMetadata table;
 
     @Override
+    public DeleteOperator copy() {
+        return copyTo(ExecutableDeleteOperator.of(table));
+    }
+
+    @Override
     public SqlRequest getSql() {
         return table.findFeatureNow(DeleteSqlBuilder.ID).build(getParameter());
     }

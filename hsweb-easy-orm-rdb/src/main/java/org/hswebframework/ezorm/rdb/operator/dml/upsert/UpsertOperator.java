@@ -78,6 +78,23 @@ public abstract class UpsertOperator {
     public abstract UpsertOperator doNothingOnConflict(boolean doNothing);
 
     /**
+     * Explicitly select native database conflict handling when the dialect normally uses a
+     * conservative fallback. MySQL can then use a multi-row INSERT with secondary unique
+     * indexes, but a conflict on ANY unique key can update an existing row; this is not a
+     * promise to match only the primary key. Existing fallback behavior is retained by default.
+     *
+     * @param enabled whether the caller accepts the dialect's native conflict semantics
+     * @return this operator
+     * @since 4.2.3
+     */
+    public UpsertOperator nativeConflict(boolean enabled) {
+        if (enabled) {
+            throw new UnsupportedOperationException("native conflict strategy is not supported by this operator");
+        }
+        return this;
+    }
+
+    /**
      * 使用静态方法引用来描述列名,与{@link UpsertOperator#columns(String...)}一样的效果.
      * 例如:
      * <pre>

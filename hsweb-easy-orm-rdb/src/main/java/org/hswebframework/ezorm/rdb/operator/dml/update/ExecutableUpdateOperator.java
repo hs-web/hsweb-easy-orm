@@ -11,6 +11,11 @@ public class ExecutableUpdateOperator extends BuildParameterUpdateOperator {
     private final RDBTableMetadata table;
 
     @Override
+    public UpdateOperator copy() {
+        return copyTo(ExecutableUpdateOperator.of(table));
+    }
+
+    @Override
     public SqlRequest getSql() {
         return table.<UpdateSqlBuilder>findFeatureNow(UpdateSqlBuilder.ID_VALUE)
                 .build(getParameter());

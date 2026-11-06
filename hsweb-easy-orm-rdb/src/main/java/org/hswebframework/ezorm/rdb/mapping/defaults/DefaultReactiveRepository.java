@@ -8,6 +8,8 @@ import org.hswebframework.ezorm.rdb.mapping.ReactiveDelete;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveQuery;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveUpdate;
+import org.hswebframework.ezorm.rdb.mapping.ReactiveCrudExecutionContext;
+import org.hswebframework.ezorm.rdb.mapping.ReactiveCrudExecutionInterceptor;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
@@ -94,7 +96,9 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
             .from(data)
             .collectList()
             .filter(CollectionUtils::isNotEmpty)
-            .flatMap(list -> doSave(list).reactive().contextWrite(this::applyContext))
+            .flatMap(list -> executeCrud(ReactiveCrudExecutionContext.Operation.SAVE, list,
+                                         SaveResult.class, () -> doSave(list).reactive()))
+            .contextWrite(this::applyContext)
             .defaultIfEmpty(SaveResult.of(0, 0));
     }
 
@@ -108,13 +112,32 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public Mono<Integer> insertBatch(Publisher<? extends Collection<E>> data) {
-        return Flux
-            .from(data)
-            .filter(CollectionUtils::isNotEmpty)
-            .flatMap(e -> doInsert(e).reactive())
+        return Flux.defer(() -> {
+            Flux<? extends Collection<E>> batches = Flux.from(data).filter(CollectionUtils::isNotEmpty);
+            Function<Collection<E>, Mono<Integer>> execute = batch -> executeCrud(
+                ReactiveCrudExecutionContext.Operation.INSERT, batch,
+                Integer.class, () -> doInsert(batch).reactive());
+            // Intercepted batches can own a single transaction and must preserve input order.
+            return getTable().getFeature(ReactiveCrudExecutionInterceptor.ID).isPresent()
+                ? batches.concatMap(execute)
+                : batches.flatMap(execute);
+        })
             .reduce(Math::addExact)
             .defaultIfEmpty(0)
             .contextWrite(this::applyContext);
+    }
+
+    private <R> Mono<R> executeCrud(ReactiveCrudExecutionContext.Operation operation,
+                                     Collection<E> input,
+                                     Class<?> resultType,
+                                     Supplier<Mono<R>> proceed) {
+        return Mono.defer(() -> {
+            RDBTableMetadata table = getTable();
+            return table.getFeature(ReactiveCrudExecutionInterceptor.ID)
+                        .map(interceptor -> interceptor.intercept(new ReactiveCrudExecutionContext(
+                            table, mapping, operation, input, null, null, this, resultType, null), proceed))
+                        .orElseGet(proceed);
+        });
     }
 
     @Override

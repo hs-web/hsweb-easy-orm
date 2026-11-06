@@ -40,6 +40,10 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 建议配合[hsweb4](https://github.com/hs-web/hsweb-framework/tree/4.0.x)使用.
 
+## 实体字段类型
+
+JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型解析 Java 类型；`Object` 属性保持 `Object`，支持只有 getter 或 setter 的属性。通过 `@ColumnType(type = ...)` 指定且实现 `ValueCodec` 的自定义数据类型可提供默认编解码器，显式 `@JsonCodec` 等编解码注解仍按现有规则优先生效。
+
 ## 已有条件分组
 
 `Conditional.group()` 将已有条件整体分组，随后可继续追加条件。例如
@@ -67,3 +71,18 @@ List<Map<String,Object>> dataList= operator.dml().query()
 ## 聚合计数
 
 内置 `count` 函数默认生成 `count(列)`。查询方可通过 `SelectColumn.option("countRows", true)` 显式请求行数计数；表元数据确认目标列非空时生成 `count(*)`，此时 `countRows` 优先于 `distinct`、`arg` 等选项，其他情况沿用原有生成逻辑。调用方需确保关联查询不会将目标列扩展为 NULL。自定义 `count` 函数仍按其自身实现处理该选项；旧版本不识别 `countRows` 时继续按原有选项生成 SQL。实际性能取决于索引和执行计划。
+
+## 响应式实体执行扩展
+
+通过实体表元数据的 `addFeature(...)` 可按表注册以下可选 SPI，未注册的表保留已有 CRUD 行为及 before 事件触发时机：
+
+- `ReactiveQueryResultTransformer` 在普通实体 `fetch` / `fetchOne` 的异步查询准备完成后变换结果流。每次订阅隔离查询参数和准备状态，`select_before` 监听器通过 `MappingContextKeys.reactiveQueryResultContext` 取得同次执行上下文，并可使用 `reactiveResultHolder.before(...)` 等待异步准备。该私有上下文的 `queryParam.sorts` 按原顺序包含参数排序和 DSL `orderBy(...)` 排序，保留函数、指定值及选项；准备阶段可统一校验、消费或改写，原查询不受影响。准备结果存入上下文的 `attributes`，供结果变换使用。`count` / `countLong` 参与准备但不变换聚合值；`fetchOne` 仍只消费一行且不应用列表分页偏移。
+- `ReactiveCrudExecutionInterceptor` 在 INSERT/SAVE 的重复主键合并及 UPDATE/DELETE 的 SQL 构造前提供原始输入、修改值快照和执行条件。`proceed` 是保留正常 SQL 与生命周期事件的延迟调用，最多调用一次；拦截器可组合本地事务。UPDATE 的 `context.omitColumns(...)` 从物理更新中移除已消费的虚拟属性，不修改调用方实体；`context.executeVirtualUpdate(mutation)` 让仅虚拟字段的更新复用同一 prepare/before/after 事件链，等待 mutation 返回真实匹配行数，并避免主表 SQL。原生和虚拟 continuation 每次执行只能订阅其中一个一次，外层 UPDATE 重新订阅会创建新的执行上下文。启用拦截器的 UPDATE 事件通过 `MappingContextKeys.submittedValues` 保留移除虚拟字段前的只读提交值快照，`instance` 继续提供原实体引用。INSERT/UPDATE/DELETE 返回 `Integer`，SAVE 返回 `SaveResult`；集合输入是原始有序批次的只读快照，元素仍为调用方对象引用。
+
+实现应组合并返回 Mono/Flux，保留订阅者 Reactor Context、权限条件、取消和错误，不自行 `subscribe()`。查询变换应保持行数、顺序和分页含义，并使用有界批次补充数据；聚合、自定义 SQL 和缺少实体标识的投影需使用独立的显式处理入口。CRUD SPI 不自动启动事务或补充权限，原始集合的批量边界也不代表上游 Publisher 自动流式分批；这些策略由注册方实现。
+
+接口位于 `hsweb-easy-orm-rdb` 的 `mapping` 包。`ReactiveQueryResultContext` 和 `ReactiveCrudExecutionContext` 均通过 `attributes` 保存单次执行状态；不要将请求状态保存在共享 Feature 实例中。
+
+## MySQL 原生批量冲突更新
+
+`operator.dml().upsert(table).nativeConflict(true)` 显式请求 MySQL 的多行 `INSERT ... ON DUPLICATE KEY UPDATE`。默认 `false` 保留额外唯一索引场景下的保守回退。MySQL 会响应任一唯一键冲突，因此仅在所有唯一键冲突都应更新同一业务记录时启用；此选项不提供 PostgreSQL 式的冲突目标选择。显式原生模式不支持 UPDATE WHERE 条件，存在条件时直接报错。更新列、主键保留及传入 null 时的已有处理语义保持不变。
