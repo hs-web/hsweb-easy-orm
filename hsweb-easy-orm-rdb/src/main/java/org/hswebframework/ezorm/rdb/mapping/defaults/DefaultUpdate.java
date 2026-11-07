@@ -81,29 +81,34 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
     }
 
     protected UpdateResultOperator doExecute() {
-        return EventResultOperator.create(
-            () -> {
-                if (null != instance) {
-                    applyColumns(instance);
-                }
-                for (Map.Entry<String, Object> entry : tempInstance.entrySet()) {
-                    if (entry.getValue() != null) {
-                        String column = mapping
-                            .getColumnByName(entry.getKey())
-                            .map(RDBColumnMetadata::getName)
-                            .orElse(entry.getKey());
-                        if (excludes.contains(column)) {
-                            //忽略修改
-                            operator.set(column, null);
-                        } else {
-                            operator.set(column, entry.getValue());
-                        }
+        return doExecute(() -> {
+            if (null != instance) {
+                applyColumns(instance);
+            }
+            for (Map.Entry<String, Object> entry : tempInstance.entrySet()) {
+                if (entry.getValue() != null) {
+                    String column = mapping
+                        .getColumnByName(entry.getKey())
+                        .map(RDBColumnMetadata::getName)
+                        .orElse(entry.getKey());
+                    if (excludes.contains(column)) {
+                        //忽略修改
+                        operator.set(column, null);
+                    } else {
+                        operator.set(column, entry.getValue());
                     }
                 }
-                return operator
-                    .where(dsl -> terms.forEach(dsl::accept))
-                    .execute();
-            },
+            }
+            return operator
+                .where(dsl -> terms.forEach(dsl::accept))
+                .execute();
+        });
+    }
+
+    /** Use the same lifecycle and event context for native and alternative update mutations. */
+    protected UpdateResultOperator doExecute(Supplier<UpdateResultOperator> mutation) {
+        return EventResultOperator.create(
+            mutation,
             UpdateResultOperator.class,
             table,
             MappingEventTypes.update_before,
@@ -122,6 +127,23 @@ public class DefaultUpdate<E, ME extends DSLUpdate<?, ?>> implements DSLUpdate<E
             .forEach(e -> PropertyUtils
                 .getProperty(instance, e.getValue(), mapping)
                 .ifPresent(val -> this.set(e.getKey(), val)));
+    }
+
+    protected void omitColumns(String... columns) {
+        Set<String> omitted = new HashSet<>();
+        for (String column : columns) {
+            omitted.add(column);
+            mapping.getColumnByName(column).ifPresent(metadata -> {
+                omitted.add(metadata.getName());
+                String property = mapping.getColumnPropertyMapping().get(metadata.getName());
+                if (property != null) {
+                    omitted.add(property);
+                }
+            });
+        }
+        excludes.addAll(omitted);
+        omitted.forEach(tempInstance::remove);
+        operator.removeColumns(omitted.toArray(new String[0]));
     }
 
 

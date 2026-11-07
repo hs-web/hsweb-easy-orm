@@ -23,6 +23,8 @@ public class UpsertOperatorParameter {
 
     private boolean doNothingOnConflict = false;
 
+    private boolean nativeConflict = false;
+
     @SuppressWarnings("all")
     public Set<InsertColumn> toInsertColumns() {
         return (Set) columns;

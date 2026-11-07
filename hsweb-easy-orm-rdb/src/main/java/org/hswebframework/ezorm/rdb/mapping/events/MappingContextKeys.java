@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.events.ContextKey;
 import org.hswebframework.ezorm.rdb.events.ContextKeyValue;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
+import org.hswebframework.ezorm.rdb.mapping.ReactiveQueryResultContext;
 import org.hswebframework.ezorm.rdb.operator.DMLOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import org.hswebframework.ezorm.rdb.operator.dml.delete.DeleteOperator;
@@ -24,6 +25,9 @@ public interface MappingContextKeys {
 
     ContextKey<Map<String,Object>> updateColumnInstance = ContextKey.of("updateColumnInstance");
 
+    /** Immutable submitted update values, before virtual-column omission or lifecycle mutation. */
+    ContextKey<Map<String,Object>> submittedValues = ContextKey.of("submittedValues");
+
     ContextKey<?> context = ContextKey.of("context");
     ContextKey<String> type = ContextKey.of("type");
     ContextKey<String> executorType = ContextKey.of("executorType");
@@ -31,6 +35,9 @@ public interface MappingContextKeys {
     ContextKey<Boolean> reactive = ContextKey.of("reactive");
 
     ContextKey<ReactiveResultHolder> reactiveResultHolder = ContextKey.of("reactive-holder");
+
+    /** Subscription-local query preparation and result-transformation state. */
+    ContextKey<ReactiveQueryResultContext> reactiveQueryResultContext = ContextKey.of("reactive-query-result-context");
 
 
     ContextKey<DMLOperator> dml = ContextKey.of("dml");

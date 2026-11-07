@@ -12,6 +12,15 @@ public abstract class DeleteOperator {
 
     public abstract DeleteOperator where(Term term);
 
+    /**
+     * Copy a delete builder for subscription-local execution.
+     * @return an independent builder with the same predicates
+     * @since 4.2.3
+     */
+    public DeleteOperator copy() {
+        throw new UnsupportedOperationException("this delete operator cannot be copied");
+    }
+
     @SafeVarargs
     public final DeleteOperator where(Supplier<Term>... condition) {
         for (Supplier<Term> operator : condition) {
