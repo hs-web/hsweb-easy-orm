@@ -130,6 +130,46 @@ public class ReactiveExecutionExtensionTest {
     }
 
     @Test
+    public void batchedEnrichmentRetainsPagingOrderPreparationAndCancellation() {
+        repository.createUpdate().set("name", "same").in("id", Arrays.asList("1", "2", "3")).execute().block();
+        repository.insert(Arrays.asList(entity("4", "same"), entity("5", "same"), entity("6", "same"),
+            entity("7", "same"), entity("8", "same"))).block();
+        AtomicInteger preparations = new AtomicInteger();
+        List<ReactiveQueryResultContext> segments = new ArrayList<>();
+        table.addFeature((EventListener) (type, event) -> {
+            if (type == MappingEventTypes.select_before) preparations.incrementAndGet();
+        });
+        table.addFeature(new ReactiveQueryResultTransformer() {
+            @Override public int getBatchSize(ReactiveQueryResultContext context) { return 2; }
+            @Override public <T> Flux<T> transform(Flux<T> rows, ReactiveQueryResultContext context) {
+                segments.add(context);
+                return rows.collectList().flatMapMany(batch -> {
+                    assertTrue(batch.size() <= 2);
+                    return Flux.fromIterable(batch);
+                });
+            }
+        });
+        assertEquals(Arrays.asList("4", "5", "6"), repository.createQuery().orderBy(SortOrder.asc("name"))
+            .paging(1, 3).fetch().map(TestEntity::getId).collectList().block());
+        assertEquals(1, preparations.get());
+        assertEquals(2, segments.size());
+        assertSame(segments.get(0), segments.get(1));
+        segments.clear();
+        assertEquals(Arrays.asList("7", "8"), repository.createQuery().paging(2, 3).fetch()
+            .map(TestEntity::getId).collectList().block());
+        assertEquals("8", repository.createQuery().orderBy(SortOrder.desc("id")).paging(99, 2)
+            .fetchOne().block().getId());
+        segments.clear();
+        assertEquals(Integer.valueOf(8), repository.createQuery().count().block());
+        assertTrue(segments.isEmpty());
+        assertTrue(repository.createQuery().paging(0, 0).fetch().collectList().block().isEmpty());
+        segments.clear();
+        assertEquals(Arrays.asList("1"), repository.createQuery().fetch().take(1)
+            .map(TestEntity::getId).collectList().block());
+        assertEquals("cancellation must not fetch/transform another segment", 1, segments.size());
+    }
+
+    @Test
     public void unregisteredTableRetainsExistingBeforeEventTiming() {
         AtomicInteger preparations = new AtomicInteger();
         table.addFeature((EventListener) (type, context) -> {

@@ -19,7 +19,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.hswebframework.ezorm.rdb.events.ContextKeys.source;
@@ -100,19 +103,60 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
 
     private Flux<T> fetchRows(boolean one) {
         String operation = one ? "fetchOne" : "fetch";
-        return this
-            .doFetch(operator.query(tableMetadata),
-                     operation,
-                     (_queryOperator) -> _queryOperator
-                         .context(param.getContext())
-                         .select(getSelectColumn())
-                         .where(param.getTerms())
-                         .orderBy(getSortOrder())
-                         .when(!one && param.isPaging(), query -> query.paging(param.getPageIndex(), param.getPageSize()))
-                         .when(param.isForUpdate(), QueryOperator::forUpdate)
-                         .fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type(operation)))
-                         .reactive()
-                         .transform(rows -> one ? rows.take(1) : rows));
+        return doFetch(operator.query(tableMetadata), operation,
+            (query, resultContext) -> executeRows(query, resultContext, one));
+    }
+
+    private Flux<T> executeRows(QueryOperator query, ReactiveQueryResultContext resultContext, boolean one) {
+        query.context(param.getContext()).select(getSelectColumn()).where(param.getTerms())
+            .orderBy(getSortOrder()).when(param.isForUpdate(), QueryOperator::forUpdate);
+        ReactiveQueryResultTransformer transformer = tableMetadata.getFeature(ReactiveQueryResultTransformer.ID).orElse(null);
+        int batchSize = transformer == null ? 0 : transformer.getBatchSize(resultContext);
+        if (batchSize > 0 && (one || !param.isPaging() || param.getPageSize() > 0)) {
+            appendStableOrder(query);
+            int size = one ? 1 : param.isPaging() ? Math.min(batchSize, param.getPageSize()) : batchSize;
+            long offset = !one && param.isPaging() ? (long) param.getPageIndex() * param.getPageSize() : 0;
+            long remaining = one ? 1 : param.isPaging() ? param.getPageSize() : Long.MAX_VALUE;
+            return fetchBatches(query, resultContext, transformer, size,
+                Math.toIntExact(offset / size), (int) (offset % size), remaining);
+        }
+        query.when(!one && param.isPaging(), operator -> operator.paging(param.getPageIndex(), param.getPageSize()));
+        Flux<T> rows = readRows(query, resultContext.getOperation()).transform(source -> one ? source.take(1) : source);
+        return transformer == null ? rows : transformer.transform(rows, resultContext);
+    }
+
+    private Flux<T> readRows(QueryOperator query, String operation) {
+        return query.fetch(eventWrapper(tableMetadata, wrapper, executorType("reactive"), type(operation))).reactive();
+    }
+
+    private void appendStableOrder(QueryOperator query) {
+        List<SortOrder> requested = Arrays.asList(getSortOrder());
+        tableMetadata.getColumns().stream().filter(column -> column.isPrimaryKey()).forEach(column -> {
+            String property = columnMapping.getPropertyByColumnName(column.getName()).orElse(column.getName());
+            if (requested.stream().noneMatch(sort -> sort.getFunction() == null
+                && (column.getName().equals(sort.getColumn()) || property.equals(sort.getColumn())))) {
+                query.orderBy(SortOrder.asc(column.getName()));
+            }
+        });
+    }
+
+    private Flux<T> fetchBatches(QueryOperator query, ReactiveQueryResultContext context,
+                                  ReactiveQueryResultTransformer transformer, int size, int page,
+                                  int skip, long remaining) {
+        // Collect only one SQL-sized segment. The Result completes before enrichment subscribes;
+        // the next segment is deferred until this transformation completes or is cancelled.
+        return readRows(query.clone().paging(page, size), context.getOperation()).collectList().flatMapMany(rows -> {
+            if (rows.isEmpty()) {
+                return Flux.empty();
+            }
+            int start = Math.min(skip, rows.size());
+            int end = start + (int) Math.min(remaining, rows.size() - start);
+            Flux<T> transformed = transformer.transform(Flux.fromIterable(rows.subList(start, end)), context);
+            long nextRemaining = remaining - (end - start);
+            return rows.size() < size || nextRemaining == 0 ? transformed
+                : transformed.concatWith(Flux.defer(() -> fetchBatches(query, context, transformer, size,
+                    Math.addExact(page, 1), 0, nextRemaining)));
+        });
     }
 
     @Override
@@ -123,7 +167,8 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
         return rows.contextWrite(context).singleOrEmpty();
     }
 
-    private <O> Flux<O> doFetch(QueryOperator queryOperator, String type, Function<QueryOperator, Publisher<O>> executor) {
+    private <O> Flux<O> doFetch(QueryOperator queryOperator, String type,
+                               BiFunction<QueryOperator, ReactiveQueryResultContext, Publisher<O>> executor) {
         DefaultReactiveResultHolder holder = new DefaultReactiveResultHolder();
         ReactiveQueryResultContext resultContext = new ReactiveQueryResultContext(
             tableMetadata, columnMapping, type, param);
@@ -141,16 +186,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
                     executorType("reactive"),
                     type(type)
                 ));
-        return holder.doBefore().thenMany(Flux.defer(() -> {
-            Flux<O> rows = Flux.from(executor.apply(queryOperator.clone()));
-            if (!"fetch".equals(type) && !"fetchOne".equals(type)) {
-                return rows;
-            }
-            // Count paths share async preparation but never expose aggregate values to this SPI.
-            return tableMetadata.getFeature(ReactiveQueryResultTransformer.ID)
-                                .map(transformer -> transformer.transform(rows, resultContext))
-                                .orElse(rows);
-        }));
+        return holder.doBefore().thenMany(Flux.defer(() -> Flux.from(executor.apply(queryOperator.clone(), resultContext))));
     }
 
     @Override
@@ -166,7 +202,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
             .query(tableMetadata)
             .select(count1().as("_total"));
         return this
-            .doFetch(queryOperator, "count", _opt -> _opt
+            .doFetch(queryOperator, "count", (_opt, ignored) -> _opt
                 .context(param.getContext())
                 .where(param.getTerms())
                 .fetch(column("_total", Number.class::cast))
@@ -190,7 +226,7 @@ public class DefaultReactiveQuery<T> extends DefaultQuery<T, ReactiveQuery<T>> i
             .query(tableMetadata)
             .select(count1().as("_total"));
         return this
-            .doFetch(queryOperator, "count", _opt -> _opt
+            .doFetch(queryOperator, "count", (_opt, ignored) -> _opt
                 .context(param.getContext())
                 .where(param.getTerms())
                 .fetch(column("_total", Number.class::cast))
