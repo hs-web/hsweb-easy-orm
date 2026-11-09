@@ -11,6 +11,11 @@ import java.sql.Date;
 import java.sql.JDBCType;
 
 public class MysqlDialect extends DefaultDialect {
+    @Override
+    protected String buildExactStringType(String dataType) {
+        return dataType + " character set utf8mb4 collate utf8mb4_0900_bin";
+    }
+
     public MysqlDialect() {
         super();
         addDataTypeBuilder(JDBCType.CHAR, (meta) -> StringUtils.concat("char(", meta.getLength(), ")"));

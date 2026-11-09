@@ -10,6 +10,11 @@ import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 import java.sql.JDBCType;
 
 public class H2Dialect extends DefaultDialect {
+    @Override
+    protected String buildExactStringType(String dataType) {
+        return dataType;
+    }
+
     public H2Dialect() {
         super();
         addDataTypeBuilder(JDBCType.VARCHAR, (meta) -> StringUtils.concat("varchar(", meta.getLength(), ")"));

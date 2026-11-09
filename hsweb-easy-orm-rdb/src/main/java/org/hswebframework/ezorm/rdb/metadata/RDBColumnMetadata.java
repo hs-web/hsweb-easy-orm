@@ -31,6 +31,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
      */
     private String dataType;
 
+    /** Column-level exact string identity, independent of the JDBC type and value codec. */
+    private boolean exactString;
+
     /**
      * 长度
      *

@@ -44,6 +44,12 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型解析 Java 类型；`Object` 属性保持 `Object`，支持只有 getter 或 setter 的属性。通过 `@ColumnType(type = ...)` 指定且实现 `ValueCodec` 的自定义数据类型可提供默认编解码器，显式 `@JsonCodec` 等编解码注解仍按现有规则优先生效。
 
+`@ColumnType(exactString = true)` 显式要求字符串按大小写、重音及尾空格精确比较，方言负责列级 DDL：PostgreSQL 使用 `COLLATE "C"`，MySQL 8.0+ 使用 `utf8mb4_0900_bin`，H2 沿用其 VARCHAR 比较。其他方言若未实现则明确拒绝。默认 false 不改变已有列；它是建表 / 迁移元数据，不会在查询中插入 LOWER 或临时 CAST，也不会自动迁移已有列排序规则。
+
+`@JsonCodec(includeNulls = true)` 为当前列保留显式嵌套 null；配置使用当前 codec 的独立 mapper，不修改共享默认配置。默认 false 保持原行为。JSON 编解码与物理列类型独立，可组合标准 LONGVARCHAR。
+
+枚举位集合的 `in$any` 判断 `(M & Q) <> 0`，新增 `in$all` 判断 `(M & Q) = Q`（存储集合包含全部查询项），`nin` 使用对应否定。没有 any/all 的原 `in` 仍是 `(M & Q) = M`（存储集合是查询集合的子集）。通用 EnumInFragmentBuilder 同时接受枚举和已编码的 BIGINT mask，不要求业务选项映射到 Java ordinal。
+
 ## 已有条件分组
 
 `Conditional.group()` 将已有条件整体分组，随后可继续追加条件。例如

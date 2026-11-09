@@ -17,6 +17,13 @@ import java.sql.JDBCType;
 public @interface ColumnType {
 
     /**
+     * Requests case-, accent- and trailing-space-sensitive string identity. The dialect chooses
+     * the column collation; unsupported dialects fail instead of weakening equality.
+     * @since 4.2.3
+     */
+    boolean exactString() default false;
+
+    /**
      * @return 类型标识
      * @see DataType#getId()
      */

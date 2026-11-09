@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
@@ -50,6 +51,10 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
         if (any) {
             // arr & 10 != 0
             _sql.add(not ? IS_ZERO : NOT_ZERO);
+        } else if (term.getOptions().contains("all")) {
+            // Superset: the stored value contains every requested bit. Keep the historical
+            // optionless subset comparison below unchanged for existing callers.
+            _sql.add(PrepareSqlFragments.of(not ? "<> ?" : "= ?").addParameter(mask));
         } else {
             // arr & 10 = arr
             _sql.addSql(not ? "!=" : "=", columnFullName);
