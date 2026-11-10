@@ -19,6 +19,18 @@ import java.util.Collection;
 public interface ReactiveRepository<T, K> {
 
     /**
+     * Whether complete entity results may be shared between subscribers in an identity-only cache.
+     * Repositories applying subscriber authorization or result enrichment must return false.
+     * This does not control database caching or a caller's explicitly scoped caches.
+     *
+     * @return true for context-independent entity results
+     * @since 4.2.3
+     */
+    default boolean isResultCacheable() {
+        return true;
+    }
+
+    /**
      * 创建实体类实例
      *
      * @return 实体类实例

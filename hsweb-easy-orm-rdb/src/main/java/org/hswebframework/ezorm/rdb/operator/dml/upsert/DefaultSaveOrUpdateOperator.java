@@ -6,14 +6,18 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
+import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.InsertSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.update.UpdateSqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
+import org.hswebframework.ezorm.rdb.operator.dml.query.QueryOperatorParameter;
+import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.update.UpdateOperatorParameter;
 import org.hswebframework.ezorm.rdb.utils.ExceptionUtils;
@@ -65,6 +69,11 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
     protected static class UpdateOrInsert {
         SqlRequest updateSql;
         Supplier<SqlRequest> insertSql;
+        boolean queryOnly;
+
+        public UpdateOrInsert(SqlRequest updateSql, Supplier<SqlRequest> insertSql) {
+            this(updateSql, insertSql, false);
+        }
     }
 
     @Override
@@ -118,6 +127,11 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                                 index++;
                                 continue;
                             }
+                            // Null means an omitted assignment; explicit SQL NULL uses NullValue.
+                            if (value.get(index) == null) {
+                                index++;
+                                continue;
+                            }
                             UpdateColumn updateColumn = new UpdateColumn();
                             updateColumn.setValue(value.get(index));
                             updateColumn.setColumn(column.getColumn());
@@ -126,13 +140,26 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                         }
                         index++;
                     }
-                    uoi.add(new UpdateOrInsert(updateSqlBuilder.build(updateParameter),
+                    boolean queryOnly = updateParameter.getColumns().isEmpty();
+                    SqlRequest updateSql;
+                    if (queryOnly) {
+                        // Saving an identity-only patch is a no-op for an existing row. Probe the
+                        // original predicates instead of inventing an UPDATE that fires DB triggers.
+                        QueryOperatorParameter query = new QueryOperatorParameter();
+                        query.setFrom(table.getName());
+                        query.setWhere(where);
+                        query.getSelect().add(SelectColumn.of(idColumn.getName()));
+                        updateSql = table.findFeatureNow(QuerySqlBuilder.ID).build(query);
+                    } else {
+                        updateSql = updateSqlBuilder.build(updateParameter);
+                    }
+                    uoi.add(new UpdateOrInsert(updateSql,
                                                () -> {
                                                    InsertOperatorParameter insertOperatorParameter = new InsertOperatorParameter();
                                                    insertOperatorParameter.getColumns().addAll(columns);
                                                    insertOperatorParameter.getValues().add(value);
                                                    return insertSqlBuilder.build(insertOperatorParameter);
-                                               }));
+                                               }, queryOnly));
                 }
             } else {
                 insertParameter.getColumns().add(InsertColumn.of(idColumn.getName()));
@@ -174,7 +201,9 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                     inserted += sqlExecutor.update(sqlRequest);
                 }
                 for (UpdateOrInsert updateOrInsert : upsert.upserts) {
-                    int tmp = sqlExecutor.update(updateOrInsert.updateSql);
+                    int tmp = updateOrInsert.queryOnly
+                        ? sqlExecutor.select(updateOrInsert.updateSql, ResultWrappers.mapList()).size()
+                        : sqlExecutor.update(updateOrInsert.updateSql);
                     updated += tmp;
                     if (tmp == 0) {
                         inserted += sqlExecutor.update(updateOrInsert.insertSql.get());
@@ -194,8 +223,9 @@ public class DefaultSaveOrUpdateOperator implements SaveOrUpdateOperator {
                         .update(Flux.fromIterable(upsert.insert))
                         .flatMap(inserted -> Flux
                                 .fromIterable(upsert.upserts)
-                                .flatMap(updateOrInsert -> sqlExecutor
-                                        .update(Mono.just(updateOrInsert.updateSql))
+                                .flatMap(updateOrInsert -> (updateOrInsert.queryOnly
+                                        ? sqlExecutor.select(updateOrInsert.updateSql, ResultWrappers.map()).count().map(Math::toIntExact)
+                                        : sqlExecutor.update(Mono.just(updateOrInsert.updateSql)))
                                         .flatMap(updated -> {
                                             if (updated == 0) {
                                                 return sqlExecutor

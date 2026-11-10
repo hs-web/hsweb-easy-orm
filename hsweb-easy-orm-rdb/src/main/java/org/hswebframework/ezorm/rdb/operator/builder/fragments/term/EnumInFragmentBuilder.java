@@ -8,6 +8,8 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
+import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
+import org.hswebframework.ezorm.rdb.supports.h2.H2EnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerDialect;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
@@ -66,6 +68,9 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
     public abstract SqlFragments bitAnd(String column, long value);
 
     public static EnumInFragmentBuilder of(Dialect dialect) {
+        if (dialect instanceof H2Dialect) {
+            return H2EnumInFragmentBuilder.in;
+        }
         if (dialect instanceof MysqlDialect) {
             return MysqlEnumInFragmentBuilder.in;
         }
@@ -87,6 +92,9 @@ public abstract class EnumInFragmentBuilder extends AbstractTermFragmentBuilder 
     }
 
     public static EnumInFragmentBuilder ofNot(Dialect dialect) {
+        if (dialect instanceof H2Dialect) {
+            return H2EnumInFragmentBuilder.notIn;
+        }
         if (dialect instanceof MysqlDialect) {
             return MysqlEnumInFragmentBuilder.notIn;
         }

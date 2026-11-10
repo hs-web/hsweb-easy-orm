@@ -8,6 +8,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
+import org.hswebframework.ezorm.rdb.supports.h2.H2EnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mssql.SqlServerEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleEnumInFragmentBuilder;
@@ -48,7 +49,8 @@ public class EnumInFragmentBuilderTest {
         Assert.assertSame(SqlServerEnumInFragmentBuilder.notIn, EnumInFragmentBuilder.ofNot(Dialect.MSSQL));
         Assert.assertSame(OracleEnumInFragmentBuilder.in, EnumInFragmentBuilder.of(Dialect.ORACLE));
         Assert.assertSame(OracleEnumInFragmentBuilder.notIn, EnumInFragmentBuilder.ofNot(Dialect.ORACLE));
-        Assert.assertNotSame(EnumInFragmentBuilder.of(Dialect.H2), EnumInFragmentBuilder.of(Dialect.H2));
+        Assert.assertSame(H2EnumInFragmentBuilder.in, EnumInFragmentBuilder.of(Dialect.H2));
+        Assert.assertSame(H2EnumInFragmentBuilder.notIn, EnumInFragmentBuilder.ofNot(Dialect.H2));
     }
 
     @Test
@@ -60,26 +62,30 @@ public class EnumInFragmentBuilderTest {
         SqlRequest anyRequest = EnumInFragmentBuilder.of(Dialect.H2)
             .createFragments("t.STATE", column, any)
             .toRequest();
-        Assert.assertEquals("t.STATE & 13 != 0", anyRequest.getSql());
+        Assert.assertEquals("BITAND( t.STATE ,CAST(? AS BIGINT) ) != 0", anyRequest.getSql());
+        Assert.assertArrayEquals(new Object[]{13L}, anyRequest.getParameters());
 
         Term all = Term.of("state", "in", new Object[]{1L, 4L});
         SqlRequest allRequest = EnumInFragmentBuilder.of(Dialect.H2)
             .createFragments("t.STATE", column, all)
             .toRequest();
-        Assert.assertEquals("t.STATE & 5 = t.STATE", allRequest.getSql());
+        Assert.assertEquals("BITAND( t.STATE ,CAST(? AS BIGINT) ) = t.STATE", allRequest.getSql());
+        Assert.assertArrayEquals(new Object[]{5L}, allRequest.getParameters());
 
         Term notAny = Term.of("state", "nin", Collections.singletonList(State.disabled));
         notAny.getOptions().add("any");
         SqlRequest notAnyRequest = EnumInFragmentBuilder.ofNot(Dialect.H2)
             .createFragments("t.STATE", column, notAny)
             .toRequest();
-        Assert.assertEquals("t.STATE & 2 = 0", notAnyRequest.getSql());
+        Assert.assertEquals("BITAND( t.STATE ,CAST(? AS BIGINT) ) = 0", notAnyRequest.getSql());
+        Assert.assertArrayEquals(new Object[]{2L}, notAnyRequest.getParameters());
 
         Term notAll = Term.of("state", "nin", new Object[]{State.enabled, State.disabled});
         SqlRequest notAllRequest = EnumInFragmentBuilder.ofNot(Dialect.H2)
             .createFragments("t.STATE", column, notAll)
             .toRequest();
-        Assert.assertEquals("t.STATE & 3 != t.STATE", notAllRequest.getSql());
+        Assert.assertEquals("BITAND( t.STATE ,CAST(? AS BIGINT) ) != t.STATE", notAllRequest.getSql());
+        Assert.assertArrayEquals(new Object[]{3L}, notAllRequest.getParameters());
     }
 
     @Test

@@ -34,7 +34,8 @@ public class DefaultValueCodecResolver implements ValueCodecResolver {
         COMMONS.register(DateTimeCodec.class, (field, ann) -> new org.hswebframework.ezorm.rdb.codec.DateTimeCodec(ann.format(), field.getPropertyType()));
 
         COMMONS.register(JsonCodec.class, (field, jsonCodec) -> JsonValueCodec.ofField(field.getField())
-            .includeNulls(jsonCodec.includeNulls()));
+            .includeNulls(jsonCodec.includeNulls())
+            .useBigDecimalForFloats(jsonCodec.useBigDecimalForFloats()));
 
         COMMONS.register(EnumCodec.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.property(), jsonCodec.toMask()));
         COMMONS.register(Enumerated.class, (field, jsonCodec) -> new EnumValueCodec(field.getPropertyType(), jsonCodec.value()== EnumType.ORDINAL));

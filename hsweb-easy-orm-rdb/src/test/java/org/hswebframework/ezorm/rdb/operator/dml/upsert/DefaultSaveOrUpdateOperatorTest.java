@@ -47,6 +47,39 @@ public class DefaultSaveOrUpdateOperatorTest {
 
 
     @Test
+    public void identityOnlySaveUsesExistenceWithoutPhysicalUpdates() {
+        for (boolean reactive : Arrays.asList(false, true)) {
+            // The existing JDBC and R2DBC providers use separate in-memory databases.
+            String table = "identity_save_" + UUID.randomUUID().toString().replace("-", "");
+            var ddl = databaseOperator.ddl().createOrAlter(table)
+                .addColumn("id").primaryKey().varchar(32).commit()
+                .addColumn("name").varchar(32).commit().commit();
+            if (reactive) { ddl.reactive().block(); } else { ddl.sync(); }
+            String id = reactive ? "reactive" : "sync";
+            SaveResult first = identitySave(table, id, reactive);
+            assertEquals(1, first.getAdded());
+            assertEquals(0, first.getUpdated());
+            SaveResult second = identitySave(table, id, reactive);
+            assertEquals(0, second.getAdded());
+            assertEquals(1, second.getUpdated());
+            // Additional conditions must still constrain the existence probe.
+            try {
+                var result = databaseOperator.dml().upsert(table).columns("id", "name")
+                    .values(id, null).where(where -> where.is("name", "unmatched")).execute();
+                if (reactive) { result.reactive().block(); } else { result.sync(); }
+                fail("An existing primary key excluded by the predicate must not be treated as matched");
+            } catch (org.hswebframework.ezorm.rdb.exception.DuplicateKeyException expected) {
+                // INSERT retains the existing upsert conflict behavior for an unmatched predicate.
+            }
+        }
+    }
+
+    private SaveResult identitySave(String table, String id, boolean reactive) {
+        var result = databaseOperator.dml().upsert(table).columns("id", "name").values(id, null).execute();
+        return reactive ? result.reactive().block() : result.sync();
+    }
+
+    @Test
     public void testSync() {
         databaseOperator.ddl()
                 .createOrAlter("upsert_test")

@@ -23,6 +23,18 @@ import static org.junit.Assert.*;
 public class JsonValueCodecTest {
 
     @Test
+    public void untypedDecimalPrecisionIsOptInAndKeepsNestedNulls() {
+        var decimal = new java.math.BigDecimal("12345678901234567890.123456789012345678");
+        Map<String, Object> nested = new java.util.LinkedHashMap<>();
+        nested.put("number", decimal);
+        nested.put("empty", null);
+        var codec = JsonValueCodec.of(Object.class).includeNulls(true).useBigDecimalForFloats(true);
+        assertEquals(nested, codec.decode(codec.encode(nested)));
+        var defaults = JsonValueCodec.of(Object.class);
+        assertTrue(((Map<?, ?>) defaults.decode(defaults.encode(nested))).get("number") instanceof Double);
+    }
+
+    @Test
     public void preservesNestedNullsOnlyForConfiguredCodec() {
         Map<String, Object> nested = new java.util.LinkedHashMap<>();
         nested.put("empty", null);

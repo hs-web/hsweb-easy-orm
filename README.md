@@ -47,8 +47,14 @@ JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型�
 `@ColumnType(exactString = true)` 显式要求字符串按大小写、重音及尾空格精确比较，方言负责列级 DDL：PostgreSQL 使用 `COLLATE "C"`，MySQL 8.0+ 使用 `utf8mb4_0900_bin`，H2 沿用其 VARCHAR 比较。其他方言若未实现则明确拒绝。默认 false 不改变已有列；它是建表 / 迁移元数据，不会在查询中插入 LOWER 或临时 CAST，也不会自动迁移已有列排序规则。
 
 `@JsonCodec(includeNulls = true)` 为当前列保留显式嵌套 null；配置使用当前 codec 的独立 mapper，不修改共享默认配置。默认 false 保持原行为。JSON 编解码与物理列类型独立，可组合标准 LONGVARCHAR。
+`@JsonCodec(useBigDecimalForFloats = true)` 将无具体 Java 数字类型的 JSON 小数解码为 BigDecimal，避免高精度正文读回时变成 Double；默认 false 保留原解码行为，可与 includeNulls 组合。
 
 枚举位集合的 `in$any` 判断 `(M & Q) <> 0`，新增 `in$all` 判断 `(M & Q) = Q`（存储集合包含全部查询项），`nin` 使用对应否定。没有 any/all 的原 `in` 仍是 `(M & Q) = M`（存储集合是查询集合的子集）。通用 EnumInFragmentBuilder 同时接受枚举和已编码的 BIGINT mask，不要求业务选项映射到 Java ordinal。
+`EnumInFragmentBuilder.of/ofNot` 统一选择数据库实现，包括 H2 的参数化 `BITAND`；调用方无需自行判断方言。
+
+## 无有效更新列的保存
+
+默认 UPDATE-then-INSERT 保存器对只有主键、不可更新列或省略值的输入，使用主键与原有 WHERE 条件查询存在性：匹配则作为已有记录完成保存，计入 `SaveResult.updated`，不发出物理 UPDATE；未匹配则沿用 INSERT 和唯一键冲突行为。Java null 仍表示省略，`NullValue` 仍表示显式清空。同步与响应式执行一致，不改变普通 UPDATE 的空列保护、原生数据库 upsert 或默认回退的并发保证。
 
 ## 已有条件分组
 
@@ -90,6 +96,8 @@ JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型�
 `save(Publisher)` 的输入流保留调用方 Context；Repository 的日志等 Context 扩展只应用于内部拦截器及原生持久化链，保留调用方已有的其他 key，拦截器也可在此基础上继续扩展。
 
 接口位于 `hsweb-easy-orm-rdb` 的 `mapping` 包。`ReactiveQueryResultContext` 和 `ReactiveCrudExecutionContext` 均通过 `attributes` 保存单次执行状态；不要将请求状态保存在共享 Feature 实例中。
+
+`ReactiveRepository.isResultCacheable()` 声明完整实体结果能否跨订阅进入仅按实体身份索引的共享缓存，默认 true。默认仓库注册结果 transformer 时返回 false；施加订阅者权限或其他上下文转换的仓库装饰器也应返回 false。上层缓存服务必须尊重该能力，它不控制数据库缓存或调用方显式划分范围的缓存。
 
 ## MySQL 原生批量冲突更新
 
