@@ -107,6 +107,12 @@ public class DefaultUpsertOperator extends UpsertOperator {
     }
 
     @Override
+    public UpsertOperator nativeConflict(boolean enabled) {
+        parameter.setNativeConflict(enabled);
+        return this;
+    }
+
+    @Override
     public UpsertOperator value(String column, Object value, boolean ignoreUpdate) {
         if (columnValueModel) {
             throw new UnsupportedOperationException("columns or values already set");

@@ -12,5 +12,6 @@ import java.lang.annotation.*;
 @Documented
 @Codec
 public @interface JsonCodec {
-
+    /** Preserve explicit nested null values for this column without changing other codecs. */
+    boolean includeNulls() default false;
 }

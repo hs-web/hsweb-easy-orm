@@ -52,6 +52,18 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
     @Setter
     private ObjectMapper mapper = defaultMapper;
 
+    /**
+     * Configures this codec at mapping time. A private mapper configuration preserves the shared
+     * codec defaults; encoding and decoding never mutate that configuration.
+     * @since 4.2.3
+     */
+    public JsonValueCodec includeNulls(boolean include) {
+        if (include) {
+            mapper = mapper.copy().setDefaultPropertyInclusion(JsonInclude.Include.ALWAYS);
+        }
+        return this;
+    }
+
     public static JsonValueCodec of(Class<?> targetType) {
         return new JsonValueCodec(targetType, defaultMapper.getTypeFactory().constructType(targetType));
     }

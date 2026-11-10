@@ -22,6 +22,17 @@ import static org.junit.Assert.*;
 
 public class JsonValueCodecTest {
 
+    @Test
+    public void preservesNestedNullsOnlyForConfiguredCodec() {
+        Map<String, Object> nested = new java.util.LinkedHashMap<>();
+        nested.put("empty", null);
+        Map<String, Object> value = Map.of("nested", nested);
+        JsonValueCodec configured = JsonValueCodec.of(Object.class).includeNulls(true);
+        assertEquals(value, configured.decode(configured.encode(value)));
+        JsonValueCodec defaults = JsonValueCodec.of(Object.class);
+        assertEquals(Map.of("nested", Map.of()), defaults.decode(defaults.encode(value)));
+    }
+
 
     @Test
     public void testList() {

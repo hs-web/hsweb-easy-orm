@@ -22,6 +22,18 @@ import java.util.HashSet;
 
 public class EnumInFragmentBuilderTest {
 
+    @Test
+    public void explicitAllComparesWithRequestedMaskAndWorksOnNumericColumns() {
+        Term all = Term.of("state", "in$all", new Object[]{1L, 4L});
+        SqlRequest request = EnumInFragmentBuilder.of(Dialect.MYSQL)
+            .createFragments("t.state", column(), all).toRequest();
+        Assert.assertTrue(request.getSql(), request.getSql().endsWith("= ?"));
+        Assert.assertEquals(5L, request.getParameters()[request.getParameters().length - 1]);
+        Term notAll = Term.of("state", "nin$all", new Object[]{1L, 4L});
+        Assert.assertTrue(EnumInFragmentBuilder.ofNot(Dialect.POSTGRES)
+            .createFragments("t.state", column(), notAll).toRequest().getSql().endsWith("<> ?"));
+    }
+
     private enum State {
         enabled, disabled, offline
     }

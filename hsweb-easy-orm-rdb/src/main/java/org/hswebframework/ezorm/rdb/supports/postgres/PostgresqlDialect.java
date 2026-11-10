@@ -16,6 +16,11 @@ import java.time.ZonedDateTime;
  * @since 3.0
  */
 public class PostgresqlDialect extends DefaultDialect {
+    @Override
+    protected String buildExactStringType(String dataType) {
+        return dataType + " collate \"C\"";
+    }
+
 
 
     public PostgresqlDialect() {

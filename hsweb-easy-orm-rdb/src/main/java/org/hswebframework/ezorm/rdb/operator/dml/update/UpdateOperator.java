@@ -42,6 +42,25 @@ public abstract class UpdateOperator {
     public abstract UpdateOperator set(String column, Object value);
     public abstract UpdateOperator set(UpdateColumn column);
 
+    /**
+     * Copy an update builder for subscription-local execution.
+     * @return an independent builder with the same columns and predicates
+     * @since 4.2.3
+     */
+    public UpdateOperator copy() {
+        throw new UnsupportedOperationException("this update operator cannot be copied");
+    }
+
+    /**
+     * Remove columns consumed by a non-column execution interceptor.
+     * @param columns physical column names
+     * @return this builder
+     * @since 4.2.3
+     */
+    public UpdateOperator removeColumns(String... columns) {
+        throw new UnsupportedOperationException("this update operator cannot remove columns");
+    }
+
     @Deprecated
     public abstract UpdateOperator set(Object entity);
 

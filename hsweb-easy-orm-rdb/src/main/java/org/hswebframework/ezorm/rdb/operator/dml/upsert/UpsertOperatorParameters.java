@@ -34,6 +34,7 @@ public final class UpsertOperatorParameters {
 
         UpsertOperatorParameter copy = new UpsertOperatorParameter();
         copy.setDoNothingOnConflict(parameter.isDoNothingOnConflict());
+        copy.setNativeConflict(parameter.isNativeConflict());
         copy.getWhere().addAll(parameter.getWhere());
         copy.getColumns().addAll(parameter.getColumns());
         copy.getColumns().add(UpsertColumn.of(primaryKey.getName(), false));

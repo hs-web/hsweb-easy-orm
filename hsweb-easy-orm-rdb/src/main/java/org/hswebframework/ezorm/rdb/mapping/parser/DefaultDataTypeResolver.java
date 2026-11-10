@@ -26,6 +26,9 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
         return descriptor.findAnnotation(ColumnType.class)
                 .map(type -> {
                     RDBColumnMetadata column = descriptor.getColumn();
+                    if (column != null) {
+                        column.setExactString(type.exactString());
+                    }
                     Class<?> javaType = type.javaType() == Void.class ? descriptor.getPropertyType() : type.javaType();
 
                     if (!type.typeId().isEmpty()) {

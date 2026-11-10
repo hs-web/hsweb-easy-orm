@@ -18,6 +18,18 @@ public class BuildParameterDeleteOperator extends DeleteOperator {
 
     private final DeleteOperatorParameter parameter = new DeleteOperatorParameter();
 
+    @Override
+    public DeleteOperator copy() {
+        return copyTo(new BuildParameterDeleteOperator());
+    }
+
+    protected <T extends BuildParameterDeleteOperator> T copyTo(T target) {
+        for (Term term : parameter.getWhere()) {
+            target.getParameter().getWhere().add(term.clone());
+        }
+        return target;
+    }
+
 
     @Override
     public DeleteOperator where(Consumer<Conditional<?>> dsl) {

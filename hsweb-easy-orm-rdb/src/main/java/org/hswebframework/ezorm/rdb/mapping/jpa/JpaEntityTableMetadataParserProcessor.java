@@ -269,11 +269,12 @@ public class JpaEntityTableMetadataParserProcessor {
         }
         Class<?> javaType = descriptor.getPropertyType();
 
-        if (javaType == Object.class) {
+        if (javaType == Object.class && descriptor.getReadMethod() != null) {
             javaType = descriptor.getReadMethod().getReturnType();
         }
-        if (javaType == Object.class) {
-            javaType = descriptor.getWriteMethod().getReturnType();
+        if (javaType == Object.class && descriptor.getWriteMethod() != null) {
+            // The setter parameter describes the property value; ordinary setters return void.
+            javaType = descriptor.getWriteMethod().getParameterTypes()[0];
         }
         mapping.addMapping(columnName, field.getName());
         RDBColumnMetadata metadata = tableMetadata.getColumn(columnName).orElseGet(tableMetadata::newColumn);

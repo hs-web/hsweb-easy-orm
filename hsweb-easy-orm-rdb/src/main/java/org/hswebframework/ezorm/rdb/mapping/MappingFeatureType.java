@@ -22,7 +22,17 @@ public enum MappingFeatureType implements FeatureType {
     /**
      * @see EntityPropertyDescriptor
      */
-    propertyDescriptor("属性描述器")
+    propertyDescriptor("属性描述器"),
+
+    /**
+     * @see ReactiveQueryResultTransformer
+     */
+    reactiveQueryResultTransformer("响应式实体查询结果变换"),
+
+    /**
+     * @see ReactiveCrudExecutionInterceptor
+     */
+    reactiveCrudExecutionInterceptor("响应式CRUD执行拦截")
     ;
 
     private final String name;

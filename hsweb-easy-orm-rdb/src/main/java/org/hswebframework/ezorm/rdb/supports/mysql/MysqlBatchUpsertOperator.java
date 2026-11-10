@@ -74,7 +74,10 @@ public class MysqlBatchUpsertOperator implements SaveOrUpdateOperator {
     @Override
     public SaveResultOperator execute(UpsertOperatorParameter parameter) {
         UpsertOperatorParameter upsertParameter = UpsertOperatorParameters.ensureRuntimeDefaultPrimaryKey(parameter, table);
-        if (doFallback()) {
+        if (upsertParameter.isNativeConflict() && CollectionUtils.isNotEmpty(upsertParameter.getWhere())) {
+            throw new UnsupportedOperationException("MySQL native upsert does not support update predicates");
+        }
+        if (!upsertParameter.isNativeConflict() && doFallback()) {
             return fallback.execute(upsertParameter);
         }
         return new MysqlSaveResultOperator(() -> builder

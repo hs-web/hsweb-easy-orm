@@ -124,13 +124,20 @@ public abstract class DefaultDialect implements Dialect {
         }
         DataType dataType = columnMetaData.getType();
         if (dataType instanceof DataTypeBuilder) {
-            return ((DataTypeBuilder) dataType).createColumnDataType(columnMetaData);
+            String result = ((DataTypeBuilder) dataType).createColumnDataType(columnMetaData);
+            return columnMetaData.isExactString() ? buildExactStringType(result) : result;
         }
         DataTypeBuilder mapper = dataTypeMappers.get(dataType.getId().toLowerCase());
         if (null == mapper) {
             mapper = defaultDataTypeBuilder;
         }
-        return mapper.createColumnDataType(columnMetaData);
+        String result = mapper.createColumnDataType(columnMetaData);
+        return columnMetaData.isExactString() ? buildExactStringType(result) : result;
+    }
+
+    /** Dialects opt in to exact column comparison rather than inheriting database defaults. */
+    protected String buildExactStringType(String dataType) {
+        throw new UnsupportedOperationException("exact string comparison is unsupported by " + getId());
     }
 
     @Override

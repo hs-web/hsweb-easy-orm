@@ -8,6 +8,9 @@ import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 
 import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class BuildParameterUpdateOperator extends UpdateOperator {
@@ -31,6 +34,26 @@ public class BuildParameterUpdateOperator extends UpdateOperator {
     public UpdateOperator set(UpdateColumn column) {
         parameter.getColumns().remove(column);
         parameter.getColumns().add(column);
+        return this;
+    }
+
+    @Override
+    public UpdateOperator copy() {
+        return copyTo(new BuildParameterUpdateOperator());
+    }
+
+    protected <T extends BuildParameterUpdateOperator> T copyTo(T target) {
+        target.getParameter().getColumns().addAll(parameter.getColumns());
+        for (Term term : parameter.getWhere()) {
+            target.getParameter().getWhere().add(term.clone());
+        }
+        return target;
+    }
+
+    @Override
+    public UpdateOperator removeColumns(String... columns) {
+        Set<String> omitted = new HashSet<>(Arrays.asList(columns));
+        parameter.getColumns().removeIf(column -> omitted.contains(column.getColumn()));
         return this;
     }
 

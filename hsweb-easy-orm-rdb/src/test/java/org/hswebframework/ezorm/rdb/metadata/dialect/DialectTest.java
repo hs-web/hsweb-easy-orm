@@ -17,6 +17,19 @@ import java.util.Arrays;
 public class DialectTest {
 
     @Test
+    public void exactStringIsColumnLocalAndDialectOwned() {
+        RDBColumnMetadata column = new RDBColumnMetadata();
+        column.setType(DataType.jdbc(JDBCType.VARCHAR, String.class));
+        column.setLength(64);
+        Assert.assertEquals("varchar(64)", Dialect.MYSQL.buildColumnDataType(column));
+        column.setExactString(true);
+        Assert.assertEquals("varchar(64) character set utf8mb4 collate utf8mb4_0900_bin",
+                            Dialect.MYSQL.buildColumnDataType(column));
+        Assert.assertEquals("varchar(64) collate \"C\"", Dialect.POSTGRES.buildColumnDataType(column));
+        Assert.assertTrue(column.clone().isExactString());
+    }
+
+    @Test
     public void test() {
         Dialect dialect = Dialect.H2;
 
