@@ -7,6 +7,11 @@
 
 # 场景
 
+查询可通过 `QueryTableBindings` 在服务端显式绑定本次操作的表映射和 JOIN，并放入
+`QueryParam.context` 的 `QueryTableBindings.CONTEXT_KEY`。JOIN、条件、投影和排序共用该映射，
+不替换共享 schema；没有绑定时沿用原查找行为。只有实际的绑定实例会生效，JSON 上下文 map
+不能安装元数据或 JOIN。绑定不授权访问、不执行 DDL，调用方负责权限及映射生命周期。
+
 1. 轻SQL,重java.
 2. 动态表单: 动态维护表结构,增删改查.
 3. 参数驱动动态条件, 前端也能透传动态条件,无SQL注入.

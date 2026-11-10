@@ -13,6 +13,10 @@ import java.util.List;
 
 import static java.util.Optional.*;
 
+/**
+ * Builds JOIN clauses for one query. Table resolution uses the parameter's explicit bindings
+ * before the shared schema; this builder neither registers mappings nor authorizes access.
+ */
 @AllArgsConstructor(staticName = "of")
 public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
 
@@ -26,8 +30,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
         List<Join> joins = parameter.getJoins();
 
         for (Join join : joins) {
-            metadata.getSchema()
-                    .findTableOrView(join.getTarget())
+            parameter.findTable(metadata, join.getTarget())
                     .ifPresent(target -> {
                         ofNullable(join.getType())
                                 .map(JoinType::name)
@@ -45,6 +48,7 @@ public class JoinFragmentBuilder implements QuerySqlFragmentBuilder {
                                             QueryOperatorParameter joinOnParameter = new QueryOperatorParameter();
                                             joinOnParameter.setFrom(target.getName());
                                             joinOnParameter.setFromAlias(join.getAlias());
+                                            joinOnParameter.setContext(parameter.getContext());
                                             if(join.getTerms()!=null) {
                                                 joinOnParameter.getWhere().addAll(join.getTerms());
                                             }

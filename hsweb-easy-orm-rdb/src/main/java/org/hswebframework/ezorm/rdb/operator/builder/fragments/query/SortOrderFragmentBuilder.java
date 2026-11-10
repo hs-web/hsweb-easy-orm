@@ -13,6 +13,10 @@ import reactor.function.Function3;
 
 import static java.util.Optional.*;
 
+/**
+ * Builds ordering for the current query, resolving joined columns through the parameter's
+ * table bindings and schema fallback. It does not add joins or modify shared metadata.
+ */
 @AllArgsConstructor(staticName = "of")
 public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {
 
@@ -95,9 +99,7 @@ public class SortOrderFragmentBuilder implements QuerySqlFragmentBuilder {
                 //关联表
                 return parameter
                         .findJoin(arr[0])
-                        .flatMap(join -> metadata
-                                .getSchema()
-                                .getTableOrView(join.getTarget())
+                        .flatMap(join -> parameter.findTable(metadata, join.getTarget())
                                 .flatMap(table -> table.getColumn(arr[1]))
                                 .map(joinColumn -> builder.apply(joinColumn.getFullName(join.getAlias()), joinColumn, order))
                         )

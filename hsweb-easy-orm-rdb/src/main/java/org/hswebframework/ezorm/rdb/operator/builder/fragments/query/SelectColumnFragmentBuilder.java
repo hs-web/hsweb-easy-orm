@@ -20,6 +20,10 @@ import java.util.*;
 import static java.util.Optional.ofNullable;
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder.createFeatureId;
 
+/**
+ * Builds projections using the query's table and JOIN mappings. Explicit bindings remain local
+ * to the parameter; column conversion and ordinary schema lookup retain their existing roles.
+ */
 public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
 
     private final TableOrViewMetadata metadata;
@@ -101,7 +105,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
                         //join的表
                         parameter
                             .findJoin(arr[0])
-                            .flatMap(join -> metadata.getSchema().findTableOrView(join.getTarget()))
+                            .flatMap(join -> parameter.findTable(metadata, join.getTarget()))
                             .map(tar -> getAllSelectColumn(arr[0], excludes, tar))
                             .map(Optional::of)
                             .orElseGet(() -> {
@@ -232,9 +236,7 @@ public class SelectColumnFragmentBuilder implements QuerySqlFragmentBuilder {
             String[] arr = StringUtils.split(columnStr,'.');
             return parameter
                 .findJoin(arr[0])
-                .flatMap(join -> metadata
-                    .getSchema()
-                    .getTableOrView(join.getTarget())
+                .flatMap(join -> parameter.findTable(metadata, join.getTarget())
                     .flatMap(table -> table.getColumn(arr[1]))
                     .flatMap(joinColumn -> this
                         .createFragments(getColumnFullName(joinColumn, join.getAlias()), joinColumn, selectColumn)

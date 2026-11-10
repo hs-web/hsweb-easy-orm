@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.*;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.*;
 
@@ -47,7 +48,31 @@ public class QueryOperatorParameter {
 
     private Map<String, Object> context;
 
+    private List<Join> boundJoins = new ArrayList<>();
+
     public QueryOperatorParameter() {
+    }
+
+    /** Attach trusted operation-local joins without changing ordinary explicit join behavior. */
+    public void setContext(Map<String, Object> context) {
+        joins.removeAll(boundJoins);
+        this.context = context;
+        Object bindings = context == null ? null : context.get(QueryTableBindings.CONTEXT_KEY);
+        boundJoins = bindings instanceof QueryTableBindings
+            ? ((QueryTableBindings) bindings).joins() : new ArrayList<>();
+        joins.addAll(boundJoins);
+    }
+
+    /** Resolves explicit per-operation tables first, retaining the normal schema fallback. */
+    public Optional<TableOrViewMetadata> findTable(TableOrViewMetadata owner, String name) {
+        Object bindings = context == null ? null : context.get(QueryTableBindings.CONTEXT_KEY);
+        if (bindings instanceof QueryTableBindings) {
+            Optional<TableOrViewMetadata> selected = ((QueryTableBindings) bindings).find(name);
+            if (selected.isPresent()) {
+                return selected;
+            }
+        }
+        return owner.getSchema().findTableOrView(name);
     }
 
     public Optional<Join> findJoin(String targetName) {
@@ -89,6 +114,7 @@ public class QueryOperatorParameter {
         parameter.alias.addAll(this.alias);
         parameter.where.addAll(this.where);
         parameter.joins.addAll(this.joins);
+        parameter.boundJoins.addAll(this.boundJoins);
         parameter.orderBy.addAll(this.orderBy);
         parameter.groupBy.addAll(this.groupBy);
         parameter.having.addAll(this.having);
