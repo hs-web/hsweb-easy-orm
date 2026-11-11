@@ -5,14 +5,13 @@ import lombok.Getter;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 
 import java.sql.JDBCType;
 import java.sql.SQLType;
 
 /**
  * JSON 列类型及其默认值编解码器，可由方言覆盖非空值的 SQL 表达式。
- * SQL NULL 编码为无参数表达式，与内容为 {@code "null"} 的 JSON 文档区分；
+ * 默认沿用空参数绑定，原生 JSON 方言可覆盖其 SQL NULL 编码。
  * 解码结果保持 JSON 文本，结构化对象转换由显式 JSON codec 负责。
  */
 @Getter
@@ -46,12 +45,6 @@ public class JsonType implements JsonDataType, DataTypeBuilder, ValueCodec<Objec
     @Override
     public Object encode(Object value) {
         return JsonCodecSupport.toJsonSilently(value);
-    }
-
-    @Override
-    public Object encodeNull() {
-        // SQL NULL 不绑定为 String，避免原生 JSON 列收到 VARCHAR 类型的空参数。
-        return NativeSql.of("null");
     }
 
     @Override

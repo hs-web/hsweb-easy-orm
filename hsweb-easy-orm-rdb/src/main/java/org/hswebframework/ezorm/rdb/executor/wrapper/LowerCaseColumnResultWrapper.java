@@ -29,7 +29,7 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
                                 : context.getColumnLabel().toLowerCase(),
                         context.getResult(),
                         context.getRowInstance(),
-                        context.isValueConverted()
+                        context.getDecodedColumn()
                 )
         );
 

@@ -8,11 +8,13 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapperContext;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
+import java.util.Objects;
+
 /**
  * 查询操作器添加的列转换包装器，解码后标记上下文并委派给目标包装器。
  * 保留自定义包装器和查询事件接收已解码值的契约，已转换的列不再解码。
  *
- * @see ColumnWrapperContext#isValueConverted()
+ * @see ColumnWrapperContext#getDecodedColumn()
  */
 @AllArgsConstructor(staticName = "of")
 public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
@@ -39,15 +41,22 @@ public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
     @Override
     public void wrapColumn(ColumnWrapperContext<E> context) {
         RDBColumnMetadata column = metadata.getColumn(context.getColumnLabel()).orElse(null);
-        if (column != null && !context.isValueConverted()) {
-            Object result = column.decode(context.getResult());
+        if (column != null && context.getDecodedColumn() != column) {
+            Object origin = context.getResult();
+            Object result = column.decode(origin);
+
+            // 普通无 codec 列复用上下文；有效 codec 即使返回原值也必须记录，避免重复解码。
+            if (column.getValueCodec() == null && column.getDictionaryCodec() == null && Objects.equals(origin, result)) {
+                wrapper.wrapColumn(context);
+                return;
+            }
 
             DefaultColumnWrapperContext<E> ctx = new DefaultColumnWrapperContext<>(
                     context.getColumnIndex(),
                     context.getColumnLabel(),
                     result,
                     context.getRowInstance(),
-                    true
+                    column
             );
 
             wrapper.wrapColumn(ctx);

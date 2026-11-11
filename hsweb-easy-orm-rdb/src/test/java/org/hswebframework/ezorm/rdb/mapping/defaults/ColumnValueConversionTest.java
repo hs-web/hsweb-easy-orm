@@ -5,13 +5,17 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import lombok.Getter;
 import lombok.Setter;
+import org.hswebframework.ezorm.core.DictionaryCodec;
 import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.rdb.R2dbcConnectionProvider;
 import org.hswebframework.ezorm.rdb.TestReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.TestSyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
+import org.hswebframework.ezorm.rdb.executor.DefaultColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.events.EventListener;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
+import org.hswebframework.ezorm.rdb.executor.wrapper.MapResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrappers;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
 import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
@@ -45,6 +49,8 @@ import java.sql.JDBCType;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -70,6 +76,13 @@ public class ColumnValueConversionTest {
     public static class Parent extends Row {
         @Column(name = "child_id") private String childId;
         @JoinColumn(name = "child_id") private Row child;
+    }
+
+    @Getter
+    @Setter
+    @Table(name = "decode_view")
+    public static class View {
+        @Column private String label;
     }
 
     private DatabaseOperator database;
@@ -203,7 +216,7 @@ public class ColumnValueConversionTest {
             if (type == MappingEventTypes.select_wrapper_column) {
                 ColumnWrapperContext<?> column = (ColumnWrapperContext<?>) context.get(MappingContextKeys.context).orElseThrow(AssertionError::new);
                 if ("label".equals(column.getColumnLabel())) {
-                    assertTrue(column.isValueConverted());
+                    assertSame(table.getColumnNow("label"), column.getDecodedColumn());
                     value.set(column.getResult());
                 }
             }
@@ -221,6 +234,105 @@ public class ColumnValueConversionTest {
         });
         Row result = database.dml().query(table).fetch(ResultWrappers.single(ResultWrappers.lowerCase(entity()))).sync();
         assertEquals("raw", result.getLabel());
+        assertEquals(1, decoded.get());
+    }
+
+    private RDBTableMetadata viewTable() {
+        JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
+        parser.setDatabaseMetadata(table.getSchema().getDatabase());
+        RDBTableMetadata view = parser.parseTableMetadata(View.class).orElseThrow(AssertionError::new);
+        EntityColumnMapping viewMapping = view.getFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(View.class));
+        viewMapping.reload();
+        return view;
+    }
+
+    private void assertProjection(RDBTableMetadata view, String expected) {
+        EntityColumnMapping viewMapping = view.getFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(View.class));
+        View entity = database.dml().query(table).select("label")
+            .fetch(ResultWrappers.single(new EntityResultWrapper<>(View::new, viewMapping))).sync();
+        assertEquals(expected, entity.getLabel());
+        Record record = database.dml().query(table).select("label")
+            .fetch(ResultWrappers.single(RecordResultWrapper.of(viewMapping))).sync();
+        assertEquals(expected, record.getString("label").orElseThrow(AssertionError::new));
+    }
+
+    @Test
+    public void plainSourceStillAppliesTargetEntityAndRecordCodec() {
+        RDBTableMetadata view = viewTable();
+        view.getColumnNow("label").setValueCodec(table.getColumnNow("label").getValueCodec());
+        table.getColumnNow("label").setValueCodec(null);
+        assertProjection(view, "raw!");
+        assertEquals(2, decoded.get());
+    }
+
+    @Test
+    public void sourceAndDifferentTargetCodecsBothRun() {
+        RDBTableMetadata view = viewTable();
+        view.getColumnNow("label").setValueCodec(new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) { return value; }
+            @Override public Object decode(Object value) { return value + "?"; }
+        });
+        assertProjection(view, "raw!?");
+        assertEquals(2, decoded.get());
+    }
+
+    @Test
+    public void sharedCodecStillUsesEachColumnMetadata() {
+        RDBTableMetadata view = viewTable();
+        ValueCodec<Object, Object> codec = new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) { return value; }
+            @Override public Object decode(Object value) { throw new AssertionError("column metadata required"); }
+            @Override public Object decode(Object value, ColumnMetadata column) { return value + column.getComment(); }
+        };
+        table.getColumnNow("label").setValueCodec(codec);
+        table.getColumnNow("label").setComment("-source");
+        view.getColumnNow("label").setValueCodec(codec);
+        view.getColumnNow("label").setComment("-target");
+        assertProjection(view, "raw-source-target");
+    }
+
+    @Test
+    public void dictionaryOnlyColumnIsDecodedOnce() {
+        table.getColumnNow("label").setValueCodec(null);
+        table.getColumnNow("label").setDictionaryCodec(new DictionaryCodec() {
+            @Override public Collection<Object> getItems() { return Collections.emptyList(); }
+            @Override public String getFieldName() { return "labelText"; }
+            @Override public Object encode(Object value) { return value; }
+            @Override public Object decode(Object value) { decoded.incrementAndGet(); return value + "!"; }
+        });
+        Row result = database.dml().query(table).fetch(ResultWrappers.single(entity())).sync();
+        assertEquals("raw!", result.getLabel());
+        assertEquals(1, decoded.get());
+    }
+
+    @Test
+    public void plainColumnReusesOriginalContext() {
+        table.getColumnNow("id").setValueCodec(null);
+        AtomicReference<ColumnWrapperContext<?>> received = new AtomicReference<>();
+        MapResultWrapper capture = new MapResultWrapper() {
+            @Override public void wrapColumn(ColumnWrapperContext<Map<String, Object>> context) {
+                received.set(context);
+                super.wrapColumn(context);
+            }
+        };
+        DefaultColumnWrapperContext<Map<String, Object>> context =
+            new DefaultColumnWrapperContext<>(0, "id", "one", capture.newRowInstance());
+        ValueConverterResultWrapper.of(capture, table).wrapColumn(context);
+        assertSame(context, received.get());
+        assertNull(received.get().getDecodedColumn());
+    }
+
+    @Test
+    public void copiedContextPreservesDecodedColumn() {
+        EntityResultWrapper<Row> target = entity();
+        EntityResultWrapper<Row> copying = new EntityResultWrapper<Row>(Row::new) {
+            @Override public void wrapColumn(ColumnWrapperContext<Row> context) {
+                target.wrapColumn(new DefaultColumnWrapperContext<>(context.getColumnIndex(), context.getColumnLabel(),
+                    context.getResult(), context.getRowInstance(), context.getDecodedColumn()));
+            }
+        };
+        Row result = database.dml().query(table).fetch(ResultWrappers.single(copying)).sync();
+        assertEquals("raw!", result.getLabel());
         assertEquals(1, decoded.get());
     }
 

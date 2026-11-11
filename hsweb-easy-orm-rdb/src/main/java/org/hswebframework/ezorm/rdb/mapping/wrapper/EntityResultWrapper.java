@@ -12,9 +12,9 @@ import java.util.function.Supplier;
 
 /**
  * 实体行包装器，按映射定位属性；直接 executor 传入原始值时自行解码，
- * 查询操作器传入已解码值时直接赋值，避免重复调用列 codec。
+ * 查询操作器已按同一列映射解码时直接赋值，不同目标映射仍执行其 codec。
  *
- * @see ColumnWrapperContext#isValueConverted()
+ * @see ColumnWrapperContext#getDecodedColumn()
  */
 public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
@@ -46,7 +46,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
         Object value = Optional.ofNullable(mapping)
                 .flatMap(mapping -> mapping.getColumnByProperty(property))
-                .map(columnMetadata -> context.isValueConverted()
+                .map(columnMetadata -> context.getDecodedColumn() == columnMetadata
                     ? context.getResult()
                     : columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);

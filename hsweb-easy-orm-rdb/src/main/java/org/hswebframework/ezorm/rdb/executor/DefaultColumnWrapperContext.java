@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 
 /**
  * executor 和查询包装器创建的单列上下文，包含当前值、行实例及解码状态。
@@ -22,10 +23,10 @@ public class DefaultColumnWrapperContext<T> implements ColumnWrapperContext<T> {
 
     private T rowInstance;
 
-    private boolean valueConverted;
+    private RDBColumnMetadata decodedColumn;
 
     public DefaultColumnWrapperContext(int columnIndex, String columnLabel, Object result, T rowInstance) {
-        this(columnIndex, columnLabel, result, rowInstance, false);
+        this(columnIndex, columnLabel, result, rowInstance, null);
     }
 
 }
