@@ -19,6 +19,12 @@ import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.MultiInsertSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertColumn;
+import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperatorParameter;
 import org.hswebframework.ezorm.rdb.operator.dml.insert.InsertOperator;
 import org.hswebframework.ezorm.rdb.supports.mysql.Mysql8ConnectionProvider;
 import org.hswebframework.ezorm.rdb.supports.mysql.MysqlSchemaMetadata;
@@ -179,6 +185,32 @@ public class NativeJsonWriteIntegrationTest {
         database.dml().delete(table).where(q -> q.notNull("id")).execute().sync();
         insert.execute().reactive().block();
         assertBatch();
+    }
+
+    @Test
+    public void multiInsertCombinesSkippedColumnFunctionAndJsonInBothExecutors() {
+        RDBTableMetadata metadata = database.getMetadata().getTable(table).orElseThrow(AssertionError::new);
+        metadata.getColumnNow("id").addFeature(new FunctionFragmentBuilder() {
+            @Override public String getFunction() { return "testUpper"; }
+            @Override public String getName() { return "testUpper"; }
+            @Override public SqlFragments create(String name, RDBColumnMetadata column, Map<String, Object> options) {
+                return SimpleSqlFragments.of(Collections.singletonList("upper(?)"), Collections.singletonList("function-id"));
+            }
+        });
+        InsertOperatorParameter parameter = new InsertOperatorParameter();
+        parameter.getColumns().add(InsertColumn.of("unknown"));
+        InsertColumn id = InsertColumn.of("id");
+        id.setFunction("testUpper");
+        parameter.getColumns().add(id);
+        parameter.getColumns().add(InsertColumn.of("data"));
+        parameter.getValues().add(Arrays.asList("ignored", "replaced-id", Collections.singletonMap("name", "object")));
+        SqlRequest request = MultiInsertSqlBuilder.of(metadata).build(parameter);
+
+        database.sql().sync().execute(request);
+        assertTrue(String.valueOf(row("FUNCTION-ID").get("data")).contains("object"));
+        database.dml().delete(table).where(q -> q.notNull("id")).execute().sync();
+        database.sql().reactive().execute(request).block();
+        assertTrue(String.valueOf(row("FUNCTION-ID").get("data")).contains("object"));
     }
 
     private void assertBatch() {

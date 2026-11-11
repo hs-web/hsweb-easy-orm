@@ -70,14 +70,6 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
-                SqlFragments function = functionValues.get(vIndex);
-
-                if (null != function) {
-                    valuesSql.addFragments(function);
-                }
-
-                Object value = valueLen <= vIndex ? null : values.get(vIndex);
-
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
@@ -85,6 +77,15 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
 
                 intoSql.addSql(column.getQuoteName());
 
+                // 过滤列后仍按输入位置取值；函数片段完整替代该列的普通值。
+                int valueIndex = entry.getKey();
+                SqlFragments function = functionValues.get(valueIndex);
+                if (null != function) {
+                    valuesSql.addFragments(function);
+                    continue;
+                }
+
+                Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
                 if ((value == null || value instanceof NullValue)
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).get();

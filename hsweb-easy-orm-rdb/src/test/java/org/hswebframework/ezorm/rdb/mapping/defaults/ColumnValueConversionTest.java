@@ -373,4 +373,88 @@ public class ColumnValueConversionTest {
         assertArrayEquals(new State[] {State.pending, State.completed}, result.getChild().getFlags());
         assertEquals(2, decoded.get());
     }
+
+    @Test
+    public void absentAssociationKeepsChildNullWithoutDecodingMissingValues() {
+        JpaEntityTableMetadataParser parser = new JpaEntityTableMetadataParser();
+        parser.setDatabaseMetadata(table.getSchema().getDatabase());
+        RDBTableMetadata parent = parser.parseTableMetadata(Parent.class).orElseThrow(AssertionError::new);
+        database.ddl().createOrAlter(parent).commit().sync();
+        parent.getColumnNow("label").setValueCodec(table.getColumnNow("label").getValueCodec());
+        EntityColumnMapping parentMapping = parent.getFeatureNow(MappingFeatureType.columnPropertyMapping.createFeatureId(Parent.class));
+        parentMapping.reload();
+        database.sql().sync().execute(SqlRequests.of("insert into nested_decode_once(id, flags, label) values ('parent', 3, 'root')"));
+
+        Parent result = database.dml().query(parent)
+            .leftJoin("decode_once", join -> join.as("child").on("nested_decode_once.child_id = child.id"))
+            .select("id", "label", "child.label", "child.flags")
+            .fetch(ResultWrappers.single(new NestedEntityResultWrapper<Parent>(parentMapping))).sync();
+        assertEquals("root!", result.getLabel());
+        assertNull(result.getChild());
+        assertEquals(1, decoded.get());
+    }
+
+    @Test
+    public void unmappedRecordRetainsUnknownProjectionWhileMappedRecordIgnoresIt() {
+        Record unmapped = database.sql().sync().select(
+            SqlRequests.of("select id as \"id\", label as \"label\", 'extra' as \"extra\" from decode_once"),
+            ResultWrappers.single(ValueConverterResultWrapper.of(RecordResultWrapper.INSTANCE, table)));
+        assertEquals("raw!", unmapped.getString("label").orElseThrow(AssertionError::new));
+        assertEquals("extra", unmapped.getString("extra").orElseThrow(AssertionError::new));
+        assertEquals(1, decoded.get());
+        decoded.set(0);
+        Record mapped = database.sql().sync().select(
+            SqlRequests.of("select id as \"id\", label as \"label\", 'extra' as \"extra\" from decode_once"),
+            ResultWrappers.single(ValueConverterResultWrapper.of(RecordResultWrapper.of(mapping), table)));
+        assertEquals("raw!", mapped.getString("label").orElseThrow(AssertionError::new));
+        assertFalse(mapped.containsKey("extra"));
+        assertEquals(1, decoded.get());
+    }
+
+    @Test
+    public void nullCodecResultIsNotDecodedAgainByMappedWrappers() {
+        table.getColumnNow("label").setValueCodec(new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) { return value; }
+            @Override public Object decode(Object value) {
+                assertNotNull("Decoded null must not be decoded again", value);
+                decoded.incrementAndGet();
+                return null;
+            }
+        });
+        Row row = database.dml().query(table).fetch(ResultWrappers.single(entity())).sync();
+        assertNull(row.getLabel());
+        assertEquals(1, decoded.get());
+        decoded.set(0);
+        Record record = database.dml().query(table).fetch(RecordResultWrapper.of(mapping)).reactive().single().block();
+        assertTrue(record.containsKey("label"));
+        assertFalse(record.getString("label").isPresent());
+        assertEquals(1, decoded.get());
+    }
+
+    @Test
+    public void codecFailurePropagatesFromSyncAndReactiveQueries() {
+        IllegalStateException failure = new IllegalStateException("decode failed");
+        table.getColumnNow("label").setValueCodec(new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) { return value; }
+            @Override public Object decode(Object value) { decoded.incrementAndGet(); throw failure; }
+        });
+        RuntimeException sync = assertThrows(RuntimeException.class,
+            () -> database.dml().query(table).fetch(ResultWrappers.single(entity())).sync());
+        assertTrue(hasCause(sync, failure));
+        assertEquals(1, decoded.get());
+        decoded.set(0);
+        RuntimeException reactive = assertThrows(RuntimeException.class,
+            () -> database.dml().query(table).fetch(entity()).reactive().single().block());
+        assertTrue(hasCause(reactive, failure));
+        assertEquals(1, decoded.get());
+    }
+
+    private boolean hasCause(Throwable error, Throwable expected) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
