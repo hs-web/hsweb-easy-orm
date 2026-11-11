@@ -8,7 +8,7 @@
 # 场景
 
 查询可通过 `query.bindTables(new QueryTableBindings(tables))` 在服务端显式绑定本次操作的表映射，
-JOIN 继续通过 `query.join(...)` 声明。JOIN、条件、投影和排序共用该映射，不替换共享 schema；
+JOIN 继续通过 `query.join(...)` 声明。FROM、JOIN、条件、投影和排序共用该映射，不替换共享 schema；
 没有绑定时沿用原查找行为。绑定只保留在查询操作和其 clone 中，不进入 `QueryParam.context`，
 普通 context 赋值不会安装映射或改变 JOIN。绑定不授权访问、不执行 DDL，调用方负责权限及映射生命周期。
 

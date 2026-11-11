@@ -18,5 +18,6 @@ public final class QueryTableBindings {
         this.tables = Map.copyOf(tables);
     }
 
-    Optional<TableOrViewMetadata> find(String name) { return Optional.ofNullable(tables.get(name)); }
+    /** 按查询引用名称解析显式绑定，适用于 FROM 和 JOIN；未绑定时由原 schema 解析。 */
+    public Optional<TableOrViewMetadata> find(String name) { return Optional.ofNullable(tables.get(name)); }
 }

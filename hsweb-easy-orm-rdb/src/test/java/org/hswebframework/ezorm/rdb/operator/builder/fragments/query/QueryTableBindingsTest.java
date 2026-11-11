@@ -24,6 +24,41 @@ import static org.junit.Assert.*;
 
 public class QueryTableBindingsTest {
     @Test
+    public void explicitFromBindingWorksForSyncAsyncAndCloneWithoutRegisteringSnapshot() {
+        RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        RDBTableMetadata remote = schema.newTable("remote");
+        column(remote, "remote_value", "value");
+        ExecutableQueryOperator query = new ExecutableQueryOperator(remote);
+        query.bindTables(new QueryTableBindings(Collections.singletonMap("remote", remote)))
+            .select("value").where(Term.of("value", "eq", "expected"));
+        String sql = query.getSql().getSql();
+        assertTrue(sql, sql.toLowerCase().contains("remote_value"));
+        assertEquals(sql, query.getSqlAsync().block().getSql());
+        assertEquals(sql, query.clone().getSql().getSql());
+        assertFalse(schema.getTable("remote", false).isPresent());
+        ExecutableQueryOperator unbound = new ExecutableQueryOperator(remote);
+        assertThrows(UnsupportedOperationException.class, unbound::getSql);
+        assertThrows(UnsupportedOperationException.class, () -> unbound.getSqlAsync().block());
+
+        // Explicit mappings also take precedence over an independently registered mapping.
+        RDBTableMetadata registered = schema.newTable("remote");
+        column(registered, "registered_value", "value");
+        schema.addTable(registered);
+        assertEquals(sql, query.getSql().getSql());
+        assertEquals(sql, query.getSqlAsync().block().getSql());
+        assertSame(registered, schema.getTable("remote", false).orElse(null));
+
+        ExecutableQueryOperator ordinary = new ExecutableQueryOperator(registered);
+        ordinary.select("value");
+        assertTrue(ordinary.getSql().getSql().toLowerCase().contains("registered_value"));
+        assertEquals(ordinary.getSql().getSql(), ordinary.getSqlAsync().block().getSql());
+        // A binding for a different table keeps the normal FROM fallback.
+        ordinary.bindTables(new QueryTableBindings(Collections.singletonMap("other", remote)));
+        assertTrue(ordinary.getSql().getSql().toLowerCase().contains("registered_value"));
+        assertEquals(ordinary.getSql().getSql(), ordinary.getSqlAsync().block().getSql());
+    }
+
+    @Test
     public void detachedSnapshotResolvesJoinProjectionFilterAndSortWithoutMutatingSchema() {
         RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
         RDBTableMetadata main = schema.getTable("test").orElseThrow(IllegalStateException::new);
