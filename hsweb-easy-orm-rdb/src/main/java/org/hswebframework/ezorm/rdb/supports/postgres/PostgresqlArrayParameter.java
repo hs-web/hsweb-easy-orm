@@ -13,9 +13,10 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.StringJoiner;
 
+/** PostgreSQL 类型数组参数，共用 JDBC 与 R2DBC 绑定，保留空数组及 null 元素。 */
 @Getter
 @RequiredArgsConstructor(staticName = "of")
-class PostgresqlArrayParameter implements JdbcParameterBinder, R2dbcParameterBinder {
+public class PostgresqlArrayParameter implements JdbcParameterBinder, R2dbcParameterBinder {
 
     private final PostgresqlArrayType type;
 

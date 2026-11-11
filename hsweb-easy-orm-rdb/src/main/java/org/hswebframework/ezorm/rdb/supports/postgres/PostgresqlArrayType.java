@@ -34,6 +34,14 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
 
     public static final PostgresqlArrayType BIGINT_ARRAY = PostgresqlArrayType.of("bigint[]", "int8", PostgresqlObjectId.INT8_ARRAY, Long.class, Long[].class);
 
+    public static final PostgresqlArrayType NUMERIC_ARRAY = PostgresqlArrayType.of("numeric[]", "numeric", PostgresqlObjectId.NUMERIC_ARRAY, BigDecimal.class, BigDecimal[].class);
+
+    public static final PostgresqlArrayType BOOLEAN_ARRAY = PostgresqlArrayType.of("boolean[]", "bool", PostgresqlObjectId.BOOL_ARRAY, Boolean.class, Boolean[].class);
+
+    public static final PostgresqlArrayType REAL_ARRAY = PostgresqlArrayType.of("real[]", "float4", PostgresqlObjectId.FLOAT4_ARRAY, Float.class, Float[].class);
+
+    public static final PostgresqlArrayType DOUBLE_ARRAY = PostgresqlArrayType.of("double precision[]", "float8", PostgresqlObjectId.FLOAT8_ARRAY, Double.class, Double[].class);
+
     private final String name;
 
     private final String jdbcElementType;
@@ -247,6 +255,16 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
         if (componentType == Long.class) {
             return new BigDecimal(value).longValue();
         }
+        if (componentType == BigDecimal.class) return new BigDecimal(value);
+        if (componentType == Float.class) return Float.valueOf(value);
+        if (componentType == Double.class) return Double.valueOf(value);
+        if (componentType == Boolean.class) {
+            return switch (value.toLowerCase(java.util.Locale.ROOT)) {
+                case "true", "t" -> true;
+                case "false", "f" -> false;
+                default -> throw new IllegalArgumentException("Invalid PostgreSQL boolean: " + value);
+            };
+        }
         return value;
     }
 
@@ -260,6 +278,9 @@ public class PostgresqlArrayType implements DataType, ValueCodec<Object, Object>
         if (componentType == Long.class) {
             return number.longValue();
         }
+        if (componentType == BigDecimal.class) return new BigDecimal(number.toString());
+        if (componentType == Float.class) return number.floatValue();
+        if (componentType == Double.class) return number.doubleValue();
         return String.valueOf(number);
     }
 
