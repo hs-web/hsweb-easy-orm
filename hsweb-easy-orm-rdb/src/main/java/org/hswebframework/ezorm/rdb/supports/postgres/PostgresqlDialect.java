@@ -2,14 +2,22 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
 
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.time.ZonedDateTime;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
+import java.util.StringJoiner;
 
 /**
  * @author zhouhao
@@ -98,6 +106,55 @@ public class PostgresqlDialect extends DefaultDialect {
         registerDataType("datetime", JdbcDataType.of(JDBCType.TIMESTAMP, String.class));
         registerDataType("text", JdbcDataType.of(JDBCType.LONGVARCHAR, String.class));
 
+    }
+
+    @Override
+    public SqlFragments buildValues(List<RDBColumnMetadata> columns, List<Object[]> rows) {
+        if (rows.isEmpty() || columns.isEmpty()) return super.buildValues(columns, rows);
+        PostgresqlArrayType[] types = new PostgresqlArrayType[columns.size()];
+        for (int col = 0; col < columns.size(); col++) {
+            types[col] = arrayType(columns.get(col));
+            if (types[col] == null) return super.buildValues(columns, rows);
+        }
+        // 不再次调用 codec 或求默认值；表达式、自定义 binder 和未知编码保留原 VALUES 语义。
+        for (Object[] row : rows) {
+            if (row.length != columns.size()) throw new IllegalArgumentException("Value count does not match columns");
+            for (int col = 0; col < row.length; col++) {
+                Object value = row[col];
+                if (value != null && !(value instanceof NullValue) && !types[col].getComponentType().isInstance(value)) {
+                    return super.buildValues(columns, rows);
+                }
+            }
+        }
+        StringJoiner placeholders = new StringJoiner(",", "select * from unnest(", ")");
+        List<Object> parameters = new ArrayList<>(columns.size());
+        for (int col = 0; col < columns.size(); col++) {
+            PostgresqlArrayType type = types[col];
+            Object[] values = (Object[]) Array.newInstance(type.getComponentType(), rows.size());
+            for (int row = 0; row < rows.size(); row++) {
+                Object value = rows.get(row)[col];
+                values[row] = value instanceof NullValue ? null : value;
+            }
+            placeholders.add("?::" + type.getId());
+            parameters.add(PostgresqlArrayParameter.of(type, values));
+        }
+        return SimpleSqlFragments.of(Collections.singletonList(placeholders.toString()), parameters);
+    }
+
+    private PostgresqlArrayType arrayType(RDBColumnMetadata column) {
+        if (!(column.getSqlType() instanceof JDBCType jdbcType)) return null;
+        return switch (jdbcType) {
+            case CHAR, VARCHAR -> PostgresqlArrayType.VARCHAR_ARRAY;
+            case LONGVARCHAR, CLOB -> PostgresqlArrayType.TEXT_ARRAY;
+            case TINYINT, SMALLINT -> PostgresqlArrayType.SMALLINT_ARRAY;
+            case INTEGER -> PostgresqlArrayType.INTEGER_ARRAY;
+            case BIGINT -> PostgresqlArrayType.BIGINT_ARRAY;
+            case NUMERIC, DECIMAL -> PostgresqlArrayType.NUMERIC_ARRAY;
+            case BOOLEAN -> PostgresqlArrayType.BOOLEAN_ARRAY;
+            case REAL, FLOAT -> PostgresqlArrayType.REAL_ARRAY;
+            case DOUBLE -> PostgresqlArrayType.DOUBLE_ARRAY;
+            default -> null;
+        };
     }
 
     @Override

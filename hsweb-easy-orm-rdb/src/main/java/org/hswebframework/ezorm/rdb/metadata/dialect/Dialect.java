@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.RDBFeatureType;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ValuesSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.EnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.h2.H2Dialect;
 import org.hswebframework.ezorm.rdb.supports.kingbase.mysql.KingbaseMysqlDialect;
@@ -18,6 +19,7 @@ import org.hswebframework.ezorm.core.utils.StringUtils;
 
 import java.sql.SQLType;
 import java.util.Optional;
+import java.util.List;
 
 /**
  * 数据库方言
@@ -51,6 +53,19 @@ public interface Dialect extends Feature {
     Optional<SQLType> convertSqlType(Class<?> type);
 
     DataType convertDataType(String dataType);
+
+    /**
+     * 构造有限批次的值集，可接在 INSERT 列表后；支持值表构造器的方言也可用作关联数据源。
+     * 调用方负责列选择、默认值及 codec 编码；本方法只处理已编码值与显式 null，
+     * 不去重、不改变行序，也不拼入业务条件。空批返回空片段，调用方应跳过对应 DML。
+     *
+     * @param columns 与每行值一一对应的列
+     * @param rows 已编码的完整行；每行长度必须与列数一致
+     * @return VALUES 或方言等价的 SELECT 值集，业务值均参数绑定
+     */
+    default SqlFragments buildValues(List<RDBColumnMetadata> columns, List<Object[]> rows) {
+        return ValuesSqlFragments.of(columns, rows);
+    }
 
     default String quote(String keyword, boolean changeCase) {
         if (keyword.startsWith(getQuoteStart()) && keyword.endsWith(getQuoteEnd())) {
