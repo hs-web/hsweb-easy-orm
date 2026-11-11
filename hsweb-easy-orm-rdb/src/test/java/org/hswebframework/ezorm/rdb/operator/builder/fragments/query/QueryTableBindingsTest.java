@@ -1,9 +1,12 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.query;
 
 import org.hswebframework.ezorm.core.param.Term;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
+import org.hswebframework.ezorm.rdb.operator.builder.DefaultQuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.builder.MetadataHelper;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.dml.Join;
@@ -15,6 +18,7 @@ import org.hswebframework.ezorm.rdb.operator.dml.query.QueryTableBindings;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SelectColumn;
 import org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder;
 import org.junit.Test;
+import reactor.core.publisher.Mono;
 
 import java.sql.JDBCType;
 import java.util.Collections;
@@ -23,6 +27,24 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class QueryTableBindingsTest {
+    @Test
+    public void boundSqlBuildFailuresAreDeferredUntilSubscription() {
+        RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        RDBTableMetadata remote = schema.newTable("remote");
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setFrom("remote");
+        parameter.setTableBindings(new QueryTableBindings(Collections.singletonMap("remote", remote)));
+        IllegalStateException failure = new IllegalStateException("SQL build failed");
+        DefaultQuerySqlBuilder builder = new DefaultQuerySqlBuilder(schema) {
+            @Override
+            protected SqlRequest build(TableOrViewMetadata metadata, QueryOperatorParameter parameter) {
+                throw failure;
+            }
+        };
+        Mono<SqlRequest> request = builder.buildAsync(parameter);
+        assertSame(failure, assertThrows(IllegalStateException.class, request::block));
+    }
+
     @Test
     public void explicitFromBindingWorksForSyncAsyncAndCloneWithoutRegisteringSnapshot() {
         RDBSchemaMetadata schema = MetadataHelper.createMockSchema();

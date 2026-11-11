@@ -168,9 +168,12 @@ public class DefaultQuerySqlBuilder implements QuerySqlBuilder {
         if (from == null || from.isEmpty()) {
             throw new UnsupportedOperationException("from table or view not set");
         }
-        return Mono.justOrEmpty(parameter.getTableBindings())
-            .flatMap(bindings -> Mono.justOrEmpty(bindings.find(from)))
-            .switchIfEmpty(Mono.defer(() -> schema.findTableOrViewReactive(from)))
+        TableOrViewMetadata bound = parameter.getTableBindings() == null
+            ? null : parameter.getTableBindings().find(from).orElse(null);
+        if (bound != null) {
+            return Mono.fromSupplier(() -> this.build(bound, parameter));
+        }
+        return schema.findTableOrViewReactive(from)
             .switchIfEmpty(Mono.error(() -> new UnsupportedOperationException("table or view [" + from + "] doesn't exist ")))
             .map(metadata -> this.build(metadata, parameter));
 
