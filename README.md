@@ -102,7 +102,7 @@ JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型�
 
 接口位于 `hsweb-easy-orm-rdb` 的 `mapping` 包。`ReactiveQueryResultContext` 和 `ReactiveCrudExecutionContext` 均通过 `attributes` 保存单次执行状态；不要将请求状态保存在共享 Feature 实例中。
 
-`ReactiveRepository.isResultCacheable()` 声明完整实体结果能否跨订阅进入仅按实体身份索引的共享缓存，默认 true。默认仓库注册结果 transformer 时返回 false；施加订阅者权限或其他上下文转换的仓库装饰器也应返回 false。上层缓存服务必须尊重该能力，它不控制数据库缓存或调用方显式划分范围的缓存。
+`ReactiveRepository.isResultCacheable()` 声明完整实体结果能否跨订阅进入仅按实体身份索引的共享缓存，默认 true。默认仓库委托已注册的 `ReactiveQueryResultTransformer.isResultCacheable()`，未注册时保留 true。转换器默认 false；仅当转换不依赖订阅者上下文，且其依赖数据更新能由既有缓存失效机制覆盖时，才可显式返回 true。缓存命中会跳过查询准备和转换；施加订阅者权限的仓库装饰器仍应返回 false，不能因目标仓库可缓存而放行。上层缓存服务负责缓存策略，不识别业务类型；该声明不控制数据库缓存或调用方显式划分范围的缓存。`GenericReactiveCacheSupportCrudServiceTest` 在下游 framework 验证纯转换的缓存命中、写后失效和上下文转换绕过缓存。
 
 ## MySQL 原生批量冲突更新
 

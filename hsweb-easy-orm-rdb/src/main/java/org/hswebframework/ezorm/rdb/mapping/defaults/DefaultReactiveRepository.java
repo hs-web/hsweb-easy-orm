@@ -52,8 +52,9 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     @Override
     public boolean isResultCacheable() {
-        // A transformed entity can contain values selected by the subscribing context.
-        return getTable().getFeature(ReactiveQueryResultTransformer.ID).isEmpty();
+        return getTable().getFeature(ReactiveQueryResultTransformer.ID)
+            .map(ReactiveQueryResultTransformer::isResultCacheable)
+            .orElse(true);
     }
 
     @Override

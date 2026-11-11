@@ -20,7 +20,8 @@ public interface ReactiveRepository<T, K> {
 
     /**
      * Whether complete entity results may be shared between subscribers in an identity-only cache.
-     * Repositories applying subscriber authorization or result enrichment must return false.
+     * Repositories applying subscriber authorization, context-dependent enrichment, or dependencies
+     * not covered by the caller's cache invalidation must return false.
      * This does not control database caching or a caller's explicitly scoped caches.
      *
      * @return true for context-independent entity results
