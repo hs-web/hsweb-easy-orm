@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.dml.*;
+import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 import java.util.*;
 
@@ -47,7 +48,21 @@ public class QueryOperatorParameter {
 
     private Map<String, Object> context;
 
+    /** 服务端显式绑定的本次查询映射，不从 QueryParam/context 解析。 */
+    private QueryTableBindings tableBindings;
+
     public QueryOperatorParameter() {
+    }
+
+    /** 优先使用本次查询的映射；未绑定的表仍由原 schema 解析。 */
+    public Optional<TableOrViewMetadata> findTable(TableOrViewMetadata owner, String name) {
+        if (tableBindings != null) {
+            Optional<TableOrViewMetadata> selected = tableBindings.find(name);
+            if (selected.isPresent()) {
+                return selected;
+            }
+        }
+        return owner.getSchema().findTableOrView(name);
     }
 
     public Optional<Join> findJoin(String targetName) {
@@ -89,6 +104,7 @@ public class QueryOperatorParameter {
         parameter.alias.addAll(this.alias);
         parameter.where.addAll(this.where);
         parameter.joins.addAll(this.joins);
+        parameter.tableBindings = tableBindings;
         parameter.orderBy.addAll(this.orderBy);
         parameter.groupBy.addAll(this.groupBy);
         parameter.having.addAll(this.having);

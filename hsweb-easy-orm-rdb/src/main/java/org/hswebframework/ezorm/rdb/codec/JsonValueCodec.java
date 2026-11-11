@@ -64,6 +64,14 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
         return this;
     }
 
+    /** Preserves decimal precision for untyped JSON without changing the shared mapper. */
+    public JsonValueCodec useBigDecimalForFloats(boolean use) {
+        if (use) {
+            mapper = mapper.copy().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        }
+        return this;
+    }
+
     public static JsonValueCodec of(Class<?> targetType) {
         return new JsonValueCodec(targetType, defaultMapper.getTypeFactory().constructType(targetType));
     }

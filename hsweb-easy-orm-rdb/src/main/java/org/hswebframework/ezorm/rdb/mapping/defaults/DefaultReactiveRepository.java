@@ -6,6 +6,7 @@ import org.hswebframework.ezorm.rdb.events.ContextKeys;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveDelete;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveQuery;
+import org.hswebframework.ezorm.rdb.mapping.ReactiveQueryResultTransformer;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveRepository;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveUpdate;
 import org.hswebframework.ezorm.rdb.mapping.ReactiveCrudExecutionContext;
@@ -47,6 +48,13 @@ public class DefaultReactiveRepository<E, K> extends DefaultRepository<E> implem
 
     private static Logger getLogger(Class<?> type) {
         return org.slf4j.LoggerFactory.getLogger(type);
+    }
+
+    @Override
+    public boolean isResultCacheable() {
+        return getTable().getFeature(ReactiveQueryResultTransformer.ID)
+            .map(ReactiveQueryResultTransformer::isResultCacheable)
+            .orElse(true);
     }
 
     @Override

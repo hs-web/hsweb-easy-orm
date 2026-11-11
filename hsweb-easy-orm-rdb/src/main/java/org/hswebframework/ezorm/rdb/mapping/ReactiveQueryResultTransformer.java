@@ -24,6 +24,18 @@ public interface ReactiveQueryResultTransformer extends Feature {
     FeatureId<ReactiveQueryResultTransformer> ID = FeatureId.of(ID_VALUE);
 
     /**
+     * 声明转换后的完整实体能否进入仅按实体身份索引的共享缓存。
+     * 默认不允许；仅当结果不依赖订阅者上下文，且依赖数据更新能由既有缓存失效机制覆盖时返回 true。
+     * 缓存命中会跳过查询准备与转换；仓储装饰器仍负责自身权限或其他上下文约束。
+     *
+     * @return 是否允许共享缓存转换后的结果
+     * @since 4.2.3
+     */
+    default boolean isResultCacheable() {
+        return false;
+    }
+
+    /**
      * Opts into bounded SQL result consumption before each transformation. A positive size makes
      * the query owner finish each SQL Result before invoking {@link #transform}, allowing enrichment
      * on the same transaction connection without waiting on an unconsumed outer Result. Original

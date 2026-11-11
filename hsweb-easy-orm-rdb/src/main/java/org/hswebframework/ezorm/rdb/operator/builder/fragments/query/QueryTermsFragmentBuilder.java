@@ -19,6 +19,10 @@ import java.util.*;
 
 import static org.hswebframework.ezorm.rdb.operator.builder.fragments.TermFragmentBuilder.createFeatureId;
 
+/**
+ * Compiles query conditions against the owning table and its joins. Joined table mappings use
+ * the same operation-local resolution as projection and sorting, retaining schema fallback.
+ */
 public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<QueryOperatorParameter> implements QuerySqlFragmentBuilder {
 
     private final TableOrViewMetadata metaData;
@@ -71,9 +75,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
     private SqlFragments createByJoin(String[] arr, QueryOperatorParameter parameter, Term term) {
         return parameter
             .findJoin(arr[0]) //先找join的表
-            .flatMap(join -> metaData
-                .getSchema()
-                .getTableOrView(join.getTarget())
+            .flatMap(join -> parameter.findTable(metaData, join.getTarget())
                 .flatMap(tableOrView -> tableOrView.getColumn(arr[1]))
                 .map(column -> createByColumn(column, join.getAlias(), term, parameter.isStrictTerm())))
             .orElseGet(() -> {//外键关联查询
@@ -131,9 +133,7 @@ public class QueryTermsFragmentBuilder extends AbstractTermsFragmentBuilder<Quer
 
         //匹配join
         for (Join join : parameter.getJoins()) {
-            RDBColumnMetadata joinColumn = metaData
-                .getSchema()
-                .getTableOrView(join.getTarget())
+            RDBColumnMetadata joinColumn = parameter.findTable(metaData, join.getTarget())
                 .flatMap(joinTable -> joinTable.getColumn(cname))
                 .orElse(null);
             if (joinColumn != null) {
