@@ -9,6 +9,10 @@ import org.hswebframework.ezorm.rdb.mapping.EntityPropertyDescriptor;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.key.ForeignKeyMetadata;
 
+/**
+ * 嵌套实体行包装器，按实体映射处理根列和关联列的解码与属性赋值。
+ * 通过上下文识别已解码值，直接 SQL executor 传入的原始列仍自行解码。
+ */
 public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
 
 
@@ -42,15 +46,18 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
             if (null != metadata) {
                 RDBColumnMetadata col = metadata.getTarget().getColumn(column).orElse(null);
 
-                Object val = col == null ? context.getResult() : col.decode(context.getResult());
+                Object val = col == null || context.isValueConverted()
+                    ? context.getResult() : col.decode(context.getResult());
 
                 setProperty(col, context.getRowInstance(), label, val);
             }
         } else {
-            setProperty(mapping.getColumnByProperty(label).orElse(null),
+            RDBColumnMetadata column = mapping.getColumnByProperty(label).orElse(null);
+            setProperty(column,
                         context.getRowInstance(),
                         label,
-                        context.getResult());
+                        column == null || context.isValueConverted()
+                            ? context.getResult() : column.decode(context.getResult()));
         }
     }
 

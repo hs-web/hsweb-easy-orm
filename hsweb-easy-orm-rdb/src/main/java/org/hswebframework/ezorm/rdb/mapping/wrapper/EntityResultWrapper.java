@@ -2,18 +2,20 @@ package org.hswebframework.ezorm.rdb.mapping.wrapper;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.utils.PropertyUtils;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * 实体行包装器，按映射定位属性；直接 executor 传入原始值时自行解码，
+ * 查询操作器传入已解码值时直接赋值，避免重复调用列 codec。
+ *
+ * @see ColumnWrapperContext#isValueConverted()
+ */
 public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
     private final Supplier<E> entityInstanceSupplier;
@@ -44,7 +46,9 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
         Object value = Optional.ofNullable(mapping)
                 .flatMap(mapping -> mapping.getColumnByProperty(property))
-                .map(columnMetadata -> columnMetadata.decode(context.getResult()))
+                .map(columnMetadata -> context.isValueConverted()
+                    ? context.getResult()
+                    : columnMetadata.decode(context.getResult()))
                 .orElseGet(context::getResult);
         if (value != null) {
            PropertyUtils.setProperty(context.getRowInstance(), property, value,mapping);

@@ -90,16 +90,20 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
                 }
+                if (!(value instanceof NativeSql)) {
+                    if (value == null) {
+                        value = NullValue.of(column.getType());
+                    }
+                    value = column.encode(value);
+                }
+                // 显式 SQL 与 codec 生成的 SQL 表达式使用相同的片段和参数路径。
                 if (value instanceof NativeSql) {
                     valuesSql
                             .addSql(((NativeSql) value).getSql())
                             .addParameter(((NativeSql) value).getParameters());
                     continue;
                 }
-                if (value == null) {
-                    value = NullValue.of(column.getType());
-                }
-                valuesSql.addSql("?").addParameter(column.encode(value));
+                valuesSql.addSql("?").addParameter(value);
             }
             intoSql.addSql(")");
             valuesSql.addSql(")");

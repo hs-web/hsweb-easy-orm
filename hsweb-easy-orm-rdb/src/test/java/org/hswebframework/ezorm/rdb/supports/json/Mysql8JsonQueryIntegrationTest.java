@@ -12,7 +12,7 @@ public class Mysql8JsonQueryIntegrationTest extends AbstractJsonQueryIntegration
 
     @Override
     protected RDBSchemaMetadata getSchema() {
-        return new MysqlSchemaMetadata("ezorm");
+        return new MysqlSchemaMetadata(System.getProperty("mysql8.db", "ezorm"));
     }
 
     @Override

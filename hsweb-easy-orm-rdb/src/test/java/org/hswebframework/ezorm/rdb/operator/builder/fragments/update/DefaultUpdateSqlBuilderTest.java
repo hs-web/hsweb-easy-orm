@@ -1,6 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.builder.fragments.update;
 
 import org.hswebframework.ezorm.core.dsl.Query;
+import org.hswebframework.ezorm.core.ValueCodec;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
@@ -49,6 +51,43 @@ public class DefaultUpdateSqlBuilderTest {
         assertEquals(request.getSql(), "update \"PUBLIC\".test set \"NAME\" = ? where \"ID\" = ? and \"NAME\" is not null");
         assertArrayEquals(request.getParameters(), new Object[]{"admin", "1234"});
 
+    }
+
+    @Test
+    public void codecGeneratedNativeSqlUsesEncodedExpressionAndParameters() {
+        builder.getTable().getColumnNow("name").setValueCodec(new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) { return NativeSql.of("upper(?)", value); }
+            @Override public Object decode(Object value) { return value; }
+        });
+        UpdateOperatorParameter parameter = new UpdateOperatorParameter();
+        UpdateColumn column = new UpdateColumn();
+        column.setColumn("name");
+        column.setValue("safe-value");
+        parameter.getColumns().add(column);
+        parameter.getWhere().addAll(Query.of().where("id", "one").getParam().getTerms());
+        SqlRequest request = builder.build(parameter);
+        assertTrue(request.getSql(), request.getSql().contains("\"NAME\" = upper(?)"));
+        assertArrayEquals(new Object[] {"safe-value", "one"}, request.getParameters());
+        assertEquals("safe-value", column.getValue());
+    }
+
+    @Test
+    public void explicitNativeSqlBypassesColumnCodec() {
+        builder.getTable().getColumnNow("name").setValueCodec(new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) { throw new AssertionError("explicit SQL must not be encoded"); }
+            @Override public Object decode(Object value) { return value; }
+        });
+        UpdateOperatorParameter parameter = new UpdateOperatorParameter();
+        NativeSql sql = NativeSql.of("upper(?)", "explicit");
+        UpdateColumn column = new UpdateColumn();
+        column.setColumn("name");
+        column.setValue(sql);
+        parameter.getColumns().add(column);
+        parameter.getWhere().addAll(Query.of().where("id", "one").getParam().getTerms());
+        SqlRequest request = builder.build(parameter);
+        assertTrue(request.getSql(), request.getSql().contains("\"NAME\" = upper(?)"));
+        assertArrayEquals(new Object[] {"explicit", "one"}, request.getParameters());
+        assertSame(sql, column.getValue());
     }
 
     @Test

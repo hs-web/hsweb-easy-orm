@@ -28,7 +28,8 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
                                 ? null
                                 : context.getColumnLabel().toLowerCase(),
                         context.getResult(),
-                        context.getRowInstance()
+                        context.getRowInstance(),
+                        context.isValueConverted()
                 )
         );
 

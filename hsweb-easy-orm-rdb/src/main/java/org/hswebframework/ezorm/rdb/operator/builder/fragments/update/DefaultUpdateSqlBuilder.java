@@ -80,22 +80,16 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                                     .create(columnMetadata.getName(), columnMetadata, column)
                             );
                     }
-                    //原生SQL
-                    else if (value instanceof NativeSql) {
-                        columnFragments = SimpleSqlFragments
-                            .of(
-                                Arrays.asList(columnMetadata.getQuoteName(), "=", ((NativeSql) column.getValue()).getSql()),
-                                Arrays.asList(((NativeSql) column.getValue()).getParameters())
-                            );
-                    }
-                    //  = ?
                     else {
-                        value = columnMetadata.encode(value);
+                        // 显式 SQL 不再编码；codec 也可以将普通值编码成 SQL 表达式。
+                        if (!(value instanceof NativeSql)) {
+                            value = columnMetadata.encode(value);
+                        }
                         if (value instanceof NativeSql) {
                             columnFragments = SimpleSqlFragments
                                 .of(
-                                    Arrays.asList(columnMetadata.getQuoteName(), "=", ((NativeSql) column.getValue()).getSql()),
-                                    Arrays.asList(((NativeSql) column.getValue()).getParameters())
+                                    Arrays.asList(columnMetadata.getQuoteName(), "=", ((NativeSql) value).getSql()),
+                                    Arrays.asList(((NativeSql) value).getParameters())
                                 );
                         } else {
                             columnFragments = SimpleSqlFragments

@@ -8,8 +8,12 @@ import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapperContext;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
-import java.util.Objects;
-
+/**
+ * 查询操作器添加的列转换包装器，解码后标记上下文并委派给目标包装器。
+ * 保留自定义包装器和查询事件接收已解码值的契约，已转换的列不再解码。
+ *
+ * @see ColumnWrapperContext#isValueConverted()
+ */
 @AllArgsConstructor(staticName = "of")
 public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
 
@@ -35,21 +39,15 @@ public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
     @Override
     public void wrapColumn(ColumnWrapperContext<E> context) {
         RDBColumnMetadata column = metadata.getColumn(context.getColumnLabel()).orElse(null);
-        if (column != null) {
-            Object origin = context.getResult();
-            Object result = column.decode(origin);
-
-            //值相同则不需要转换
-            if (Objects.equals(origin, result)) {
-                wrapper.wrapColumn(context);
-                return;
-            }
+        if (column != null && !context.isValueConverted()) {
+            Object result = column.decode(context.getResult());
 
             DefaultColumnWrapperContext<E> ctx = new DefaultColumnWrapperContext<>(
                     context.getColumnIndex(),
                     context.getColumnLabel(),
                     result,
-                    context.getRowInstance()
+                    context.getRowInstance(),
+                    true
             );
 
             wrapper.wrapColumn(ctx);

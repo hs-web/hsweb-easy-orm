@@ -16,9 +16,11 @@ public class PostgresqlConnectionProvider implements ConnectionProvider {
 
     static {
         Assert.assertTrue(Driver.isRegistered());
-        GenericContainer<?> container = Containers.newPostgresql("11");
-        container.start();
-        port = container.getMappedPort(5432);
+        if (System.getProperty("postgres.url") == null) {
+            GenericContainer<?> container = Containers.newPostgresql("11");
+            container.start();
+            port = container.getMappedPort(5432);
+        }
     }
 
     @SneakyThrows
