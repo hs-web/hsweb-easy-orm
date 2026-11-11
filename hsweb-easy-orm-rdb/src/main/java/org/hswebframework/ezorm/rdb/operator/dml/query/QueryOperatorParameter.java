@@ -48,26 +48,16 @@ public class QueryOperatorParameter {
 
     private Map<String, Object> context;
 
-    private List<Join> boundJoins = new ArrayList<>();
+    /** 服务端显式绑定的本次查询映射，不从 QueryParam/context 解析。 */
+    private QueryTableBindings tableBindings;
 
     public QueryOperatorParameter() {
     }
 
-    /** Attach trusted operation-local joins without changing ordinary explicit join behavior. */
-    public void setContext(Map<String, Object> context) {
-        joins.removeAll(boundJoins);
-        this.context = context;
-        Object bindings = context == null ? null : context.get(QueryTableBindings.CONTEXT_KEY);
-        boundJoins = bindings instanceof QueryTableBindings
-            ? ((QueryTableBindings) bindings).joins() : new ArrayList<>();
-        joins.addAll(boundJoins);
-    }
-
-    /** Resolves explicit per-operation tables first, retaining the normal schema fallback. */
+    /** 优先使用本次查询的映射；未绑定的表仍由原 schema 解析。 */
     public Optional<TableOrViewMetadata> findTable(TableOrViewMetadata owner, String name) {
-        Object bindings = context == null ? null : context.get(QueryTableBindings.CONTEXT_KEY);
-        if (bindings instanceof QueryTableBindings) {
-            Optional<TableOrViewMetadata> selected = ((QueryTableBindings) bindings).find(name);
+        if (tableBindings != null) {
+            Optional<TableOrViewMetadata> selected = tableBindings.find(name);
             if (selected.isPresent()) {
                 return selected;
             }
@@ -114,7 +104,7 @@ public class QueryOperatorParameter {
         parameter.alias.addAll(this.alias);
         parameter.where.addAll(this.where);
         parameter.joins.addAll(this.joins);
-        parameter.boundJoins.addAll(this.boundJoins);
+        parameter.tableBindings = tableBindings;
         parameter.orderBy.addAll(this.orderBy);
         parameter.groupBy.addAll(this.groupBy);
         parameter.having.addAll(this.having);

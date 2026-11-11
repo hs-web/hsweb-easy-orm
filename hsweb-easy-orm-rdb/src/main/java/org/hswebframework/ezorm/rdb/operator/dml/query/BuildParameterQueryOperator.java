@@ -167,6 +167,12 @@ public class BuildParameterQueryOperator extends QueryOperator {
     }
 
     @Override
+    public QueryOperator bindTables(QueryTableBindings bindings) {
+        parameter.setTableBindings(bindings);
+        return this;
+    }
+
+    @Override
     public SqlRequest getSql() {
         throw new UnsupportedOperationException();
     }

@@ -274,6 +274,20 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
     public abstract QueryOperator context(Map<String, Object> context);
 
     /**
+     * 显式绑定本次查询的表映射，用于动态表或独立元数据快照；JOIN 仍通过 {@link #join(Join...)} 指定。
+     * 不修改共享 schema，不执行 DDL 或权限检查，也不从请求 context 安装映射。
+     *
+     * @param bindings 服务端已确认的表映射；null 清除绑定，恢复普通 schema 解析
+     * @return 当前查询操作
+     * @throws UnsupportedOperationException 自定义查询实现未提供显式绑定能力时
+     * @since 4.2.3
+     * @see QueryTableBindings
+     */
+    public QueryOperator bindTables(QueryTableBindings bindings) {
+        throw new UnsupportedOperationException("query table bindings are not supported");
+    }
+
+    /**
      * 获取SQL请求
      *
      * @return 获取SQL请求

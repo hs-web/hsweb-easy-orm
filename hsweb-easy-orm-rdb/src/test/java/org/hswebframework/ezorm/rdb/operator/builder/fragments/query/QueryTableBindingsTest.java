@@ -36,8 +36,7 @@ public class QueryTableBindingsTest {
         join.setAlias("ext");
         join.setType(JoinType.left);
         join.setTerms(Collections.singletonList(Term.of("ownerId", "eq", (NativeSql) () -> "test.id")));
-        query.context(Collections.singletonMap(QueryTableBindings.CONTEXT_KEY,
-                      new QueryTableBindings(Collections.singletonMap("remote", remote))))
+        query.bindTables(new QueryTableBindings(Collections.singletonMap("remote", remote)))
             .join(join).select(SelectColumn.of("ext.value", "extensionValue"))
             .where(Term.of("ext.value", "eq", "expected"))
             .orderBy(SortOrder.desc("ext.value"));
@@ -60,31 +59,37 @@ public class QueryTableBindingsTest {
         RDBTableMetadata main = schema.getTable("test").orElseThrow(IllegalStateException::new);
         QueryOperatorParameter parameter = new QueryOperatorParameter();
         assertSame(main, parameter.findTable(main, "test").orElse(null));
-        parameter.setContext(Collections.singletonMap(QueryTableBindings.CONTEXT_KEY,
+        parameter.setContext(Collections.singletonMap("easyorm.query.table-bindings",
             Collections.singletonMap("test", Collections.singletonMap("name", "other"))));
         assertSame(main, parameter.findTable(main, "test").orElse(null));
     }
 
     @Test
-    public void trustedContextJoinsAreCopiedAndReplacingContextDoesNotDuplicateOrRemoveExplicitJoins() {
-        Join join = new Join();
-        join.setTarget("remote");
-        join.setAlias("retained");
-        QueryTableBindings bindings = new QueryTableBindings(Collections.emptyMap(), Collections.singletonList(join));
-        join.setAlias("mutated");
+    public void explicitBindingsSurviveContextChangesAndCloneWithoutInstallingJoins() {
+        RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        RDBTableMetadata main = schema.getTable("test").orElseThrow(IllegalStateException::new);
+        RDBTableMetadata remote = schema.newTable("remote");
+        QueryTableBindings bindings = new QueryTableBindings(Collections.singletonMap("remote", remote));
         QueryOperatorParameter parameter = new QueryOperatorParameter();
         Join explicit = new Join();
         explicit.setTarget("ordinary");
         parameter.getJoins().add(explicit);
-        parameter.setContext(Collections.singletonMap(QueryTableBindings.CONTEXT_KEY, bindings));
-        assertTrue(parameter.findJoin("retained").isPresent());
-        assertFalse(parameter.findJoin("mutated").isPresent());
-        parameter.setContext(Collections.singletonMap(QueryTableBindings.CONTEXT_KEY, bindings));
-        assertEquals(2, parameter.getJoins().size());
+        parameter.setTableBindings(bindings);
+        assertSame(remote, parameter.findTable(main, "remote").orElse(null));
+        parameter.setContext(Collections.singletonMap("easyorm.query.table-bindings", bindings));
+        parameter.setContext(null);
+        assertSame(remote, parameter.findTable(main, "remote").orElse(null));
+        assertEquals(1, parameter.getJoins().size());
         QueryOperatorParameter copy = parameter.clone();
-        copy.setContext(Collections.emptyMap());
+        assertSame(remote, copy.findTable(main, "remote").orElse(null));
+        copy.setTableBindings(null);
+        assertFalse(copy.findTable(main, "remote").isPresent());
         assertEquals(1, copy.getJoins().size());
-        assertEquals(2, parameter.getJoins().size());
+        assertSame(remote, parameter.findTable(main, "remote").orElse(null));
+        assertEquals(1, parameter.getJoins().size());
+        parameter.setTableBindings(null);
+        parameter.setContext(Collections.singletonMap("easyorm.query.table-bindings", bindings));
+        assertFalse(parameter.findTable(main, "remote").isPresent());
     }
 
     private static void column(RDBTableMetadata table, String name, String alias) {
