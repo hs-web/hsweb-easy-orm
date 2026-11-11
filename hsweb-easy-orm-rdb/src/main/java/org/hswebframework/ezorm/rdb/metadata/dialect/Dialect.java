@@ -58,6 +58,7 @@ public interface Dialect extends Feature {
      * 构造有限批次的值集，可接在 INSERT 列表后；支持值表构造器的方言也可用作关联数据源。
      * 调用方负责列选择、默认值及 codec 编码；本方法只处理已编码值与显式 null，
      * 不去重、不改变行序，也不拼入业务条件。空批返回空片段，调用方应跳过对应 DML。
+     * 默认实现要求数据库支持对应行数的 VALUES 语法，不替代各方言既有的 Insert/Upsert 构造器。
      *
      * @param columns 与每行值一一对应的列
      * @param rows 已编码的完整行；每行长度必须与列数一致

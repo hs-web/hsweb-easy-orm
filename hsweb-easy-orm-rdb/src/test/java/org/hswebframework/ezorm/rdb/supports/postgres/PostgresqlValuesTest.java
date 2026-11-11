@@ -7,6 +7,7 @@ import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
+import org.hswebframework.ezorm.rdb.supports.opengauss.OpengaussDialect;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -80,6 +81,17 @@ public class PostgresqlValuesTest {
             assertEquals("values (?),(?)", request.getSql());
             assertEquals(2, request.getParameters().length);
         }
+    }
+
+    @Test
+    public void opengaussKeepsStandardValuesForScalarBatches() {
+        SqlRequest request = OpengaussDialect.global.buildValues(
+            List.of(column(JDBCType.VARCHAR, String.class), column(JDBCType.BIGINT, Long.class)),
+            Arrays.asList(new Object[]{"first", 1L}, new Object[]{"second", null})).toRequest();
+        assertEquals("values (?,?),(?,?)", request.getSql());
+        assertArrayEquals(new Object[]{"first", 1L, "second"},
+            Arrays.copyOf(request.getParameters(), 3));
+        assertEquals(Long.class, ((NullValue) request.getParameters()[3]).getType());
     }
 
     @Test
