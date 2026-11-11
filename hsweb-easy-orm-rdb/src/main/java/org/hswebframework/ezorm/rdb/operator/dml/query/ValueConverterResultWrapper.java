@@ -43,7 +43,7 @@ public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
         RDBColumnMetadata column = metadata.getColumn(context.getColumnLabel()).orElse(null);
         if (column != null && context.getDecodedColumn() != column) {
             Object origin = context.getResult();
-            Object result = column.decode(origin);
+            Object result = context.decode(column);
 
             // 普通无 codec 列复用上下文；有效 codec 即使返回原值也必须记录，避免重复解码。
             if (column.getValueCodec() == null && column.getDictionaryCodec() == null && Objects.equals(origin, result)) {
@@ -51,13 +51,9 @@ public class ValueConverterResultWrapper<E, R> implements ResultWrapper<E, R> {
                 return;
             }
 
-            DefaultColumnWrapperContext<E> ctx = new DefaultColumnWrapperContext<>(
-                    context.getColumnIndex(),
-                    context.getColumnLabel(),
-                    result,
-                    context.getRowInstance(),
-                    column
-            );
+            DefaultColumnWrapperContext<E> ctx = DefaultColumnWrapperContext.copyOf(context);
+            ctx.setResult(result);
+            ctx.setDecodedColumn(column);
 
             wrapper.wrapColumn(ctx);
             context.setRowInstance(ctx.getRowInstance());

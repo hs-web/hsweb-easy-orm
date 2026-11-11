@@ -20,19 +20,10 @@ public class LowerCaseColumnResultWrapper<E, R> implements ResultWrapper<E, R> {
 
     @Override
     public void wrapColumn(ColumnWrapperContext<E> context) {
-
-        wrapper.wrapColumn(
-                new DefaultColumnWrapperContext<>(
-                        context.getColumnIndex(),
-                        context.getColumnLabel() == null
-                                ? null
-                                : context.getColumnLabel().toLowerCase(),
-                        context.getResult(),
-                        context.getRowInstance(),
-                        context.getDecodedColumn()
-                )
-        );
-
+        DefaultColumnWrapperContext<E> derived = DefaultColumnWrapperContext.copyOf(context);
+        derived.setColumnLabel(context.getColumnLabel() == null ? null : context.getColumnLabel().toLowerCase());
+        wrapper.wrapColumn(derived);
+        context.setRowInstance(derived.getRowInstance());
     }
 
     @Override

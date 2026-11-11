@@ -30,6 +30,19 @@ public interface ColumnWrapperContext<T> {
         return null;
     }
 
+    /**
+     * 按目标列映射读取当前值，仅同一列已经完成解码时复用结果。
+     * 目标列为空时返回当前值；此方法不修改上下文或缓存新的转换结果。
+     *
+     * @param targetColumn 目标映射列
+     * @return 目标列解码后的值
+     * @since 4.2.3
+     */
+    default Object decode(RDBColumnMetadata targetColumn) {
+        return targetColumn == null || getDecodedColumn() == targetColumn
+            ? getResult() : targetColumn.decode(getResult());
+    }
+
     T getRowInstance();
 
     void setRowInstance(T instance);

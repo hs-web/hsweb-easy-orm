@@ -358,7 +358,7 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
                         }
                     }
 
-                    fragments.add(SqlFragments.QUESTION_MARK).addParameter(column.encode(value));
+                    fragments.addValue(SqlFragments.encodeValue(column, value));
                     valueIndex++;
                 }
 
@@ -369,13 +369,7 @@ public class SqlServerBatchUpsertOperator implements SaveOrUpdateOperator {
                     Object value = idColumn.getDefaultValue().get();
                     fragments.add(SqlFragments.COMMA);
 
-                    if (value instanceof NativeSql) {
-                        fragments
-                            .addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
-                    } else {
-                        fragments.add(SqlFragments.QUESTION_MARK).addParameter(value);
-                    }
+                    fragments.addValue(value);
                 }
                 fragments.add(SqlFragments.RIGHT_BRACKET);
                 rowIndex++;

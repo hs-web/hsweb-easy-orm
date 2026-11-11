@@ -81,21 +81,13 @@ public class DefaultUpdateSqlBuilder extends AbstractTermsFragmentBuilder<Update
                             );
                     }
                     else {
-                        // 显式 SQL 不再编码；codec 也可以将普通值编码成 SQL 表达式。
-                        if (!(value instanceof NativeSql)) {
-                            value = columnMetadata.encode(value);
+                        // 普通赋值直接追加，避免为每列创建独立的片段容器。
+                        if (index++ != 0) {
+                            fragments.add(SqlFragments.COMMA);
                         }
-                        if (value instanceof NativeSql) {
-                            columnFragments = SimpleSqlFragments
-                                .of(
-                                    Arrays.asList(columnMetadata.getQuoteName(), "=", ((NativeSql) value).getSql()),
-                                    Arrays.asList(((NativeSql) value).getParameters())
-                                );
-                        } else {
-                            columnFragments = SimpleSqlFragments
-                                .of(Arrays.asList(columnMetadata.getQuoteName(), "= ?"),
-                                    Collections.singletonList(value));
-                        }
+                        fragments.addSql(columnMetadata.getQuoteName(), "=")
+                            .addValue(SqlFragments.encodeValue(columnMetadata, value));
+                        continue;
                     }
 
                 }

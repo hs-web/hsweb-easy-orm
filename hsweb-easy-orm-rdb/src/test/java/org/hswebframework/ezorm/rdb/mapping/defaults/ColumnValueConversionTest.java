@@ -327,13 +327,32 @@ public class ColumnValueConversionTest {
         EntityResultWrapper<Row> target = entity();
         EntityResultWrapper<Row> copying = new EntityResultWrapper<Row>(Row::new) {
             @Override public void wrapColumn(ColumnWrapperContext<Row> context) {
-                target.wrapColumn(new DefaultColumnWrapperContext<>(context.getColumnIndex(), context.getColumnLabel(),
-                    context.getResult(), context.getRowInstance(), context.getDecodedColumn()));
+                target.wrapColumn(DefaultColumnWrapperContext.copyOf(context));
             }
         };
         Row result = database.dml().query(table).fetch(ResultWrappers.single(copying)).sync();
         assertEquals("raw!", result.getLabel());
         assertEquals(1, decoded.get());
+    }
+
+    @Test
+    public void lowerCaseWrapperPropagatesReplacementRowAndDecodedColumn() {
+        EntityResultWrapper<Row> replacing = new EntityResultWrapper<Row>(Row::new, mapping) {
+            @Override public void wrapColumn(ColumnWrapperContext<Row> context) {
+                assertEquals("label", context.getColumnLabel());
+                assertSame(table.getColumnNow("label"), context.getDecodedColumn());
+                context.setRowInstance(new Row());
+                super.wrapColumn(context);
+            }
+        };
+        Row original = new Row();
+        DefaultColumnWrapperContext<Row> context = new DefaultColumnWrapperContext<>(
+            0, "LABEL", "raw!", original, table.getColumnNow("label"));
+        ResultWrappers.lowerCase(replacing).wrapColumn(context);
+        assertNotSame(original, context.getRowInstance());
+        assertEquals("raw!", context.getRowInstance().getLabel());
+        assertEquals("LABEL", context.getColumnLabel());
+        assertEquals(0, decoded.get());
     }
 
     @Test

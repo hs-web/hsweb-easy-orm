@@ -29,4 +29,18 @@ public class DefaultColumnWrapperContext<T> implements ColumnWrapperContext<T> {
         this(columnIndex, columnLabel, result, rowInstance, null);
     }
 
+    /**
+     * 派生当前列的上下文，保留值、行实例与已解码的列身份。
+     * 派生实例的字段修改相互独立；包装器替换行实例后应回传给来源上下文。
+     *
+     * @param context 来源列上下文
+     * @param <T> 行类型
+     * @return 可独立修改的列上下文
+     * @since 4.2.3
+     */
+    public static <T> DefaultColumnWrapperContext<T> copyOf(ColumnWrapperContext<T> context) {
+        return new DefaultColumnWrapperContext<>(context.getColumnIndex(), context.getColumnLabel(),
+            context.getResult(), context.getRowInstance(), context.getDecodedColumn());
+    }
+
 }

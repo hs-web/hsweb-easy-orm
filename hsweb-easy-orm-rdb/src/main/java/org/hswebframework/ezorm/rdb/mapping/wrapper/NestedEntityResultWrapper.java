@@ -46,8 +46,7 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
             if (null != metadata) {
                 RDBColumnMetadata col = metadata.getTarget().getColumn(column).orElse(null);
 
-                Object val = col == null || context.getDecodedColumn() == col
-                    ? context.getResult() : col.decode(context.getResult());
+                Object val = context.decode(col);
 
                 setProperty(col, context.getRowInstance(), label, val);
             }
@@ -56,8 +55,7 @@ public class NestedEntityResultWrapper<E> implements ResultWrapper<E, E> {
             setProperty(column,
                         context.getRowInstance(),
                         label,
-                        column == null || context.getDecodedColumn() == column
-                            ? context.getResult() : column.decode(context.getResult()));
+                        context.decode(column));
         }
     }
 

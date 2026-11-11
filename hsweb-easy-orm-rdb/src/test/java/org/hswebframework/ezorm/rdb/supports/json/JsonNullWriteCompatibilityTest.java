@@ -1,5 +1,6 @@
 package org.hswebframework.ezorm.rdb.supports.json;
 
+import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.rdb.executor.BatchSqlRequest;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
@@ -19,9 +20,12 @@ import org.hswebframework.ezorm.rdb.supports.mysql.MysqlSaveOrUpdateOperator;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleBatchUpsertOperator;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleInsertSqlBuilder;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlBatchUpsertOperator;
+import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlSaveOrUpdateOperator;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
 
@@ -57,7 +61,7 @@ public class JsonNullWriteCompatibilityTest {
         }
     }
 
-    private void verifyUpsert(RDBTableMetadata table, SaveOrUpdateOperator operator, Object value) {
+    private SqlRequest verifyUpsert(RDBTableMetadata table, SaveOrUpdateOperator operator, Object value) {
         Capture capture = new Capture();
         table.addFeature(capture);
         UpsertOperatorParameter parameter = new UpsertOperatorParameter();
@@ -69,6 +73,7 @@ public class JsonNullWriteCompatibilityTest {
         parameter.getValues().add(Arrays.asList("one", value));
         operator.execute(parameter).sync();
         assertBindable(capture.request);
+        return capture.request;
     }
 
     @Test
@@ -121,6 +126,86 @@ public class JsonNullWriteCompatibilityTest {
             RDBTableMetadata table = table(type);
             verifyUpsert(table, new PostgresqlBatchUpsertOperator(table), NullValue.of(type));
             verifyUpsert(table, new PostgresqlBatchUpsertOperator(table), "{\"ok\":true}");
+        }
+    }
+
+    @Test
+    public void legacyPostgresUpsertRendersEncodedJsonInInsertAndUpdate() {
+        JsonType type = org.hswebframework.ezorm.rdb.supports.postgres.JsonbType.INSTANCE;
+        RDBTableMetadata table = table(type);
+        SqlRequest request = verifyUpsert(table, new PostgresqlSaveOrUpdateOperator(table), "{\"ok\":true}");
+        assertArrayEquals(new Object[] {"one", "{\"ok\":true}", "{\"ok\":true}"}, request.getParameters());
+        assertEquals(2, request.getSql().split("::jsonb", -1).length - 1);
+    }
+
+    private ValueCodec<Object, Object> expressionCodec(AtomicInteger encoded) {
+        return new ValueCodec<Object, Object>() {
+            @Override public Object encode(Object value) {
+                encoded.incrementAndGet();
+                return NativeSql.of("upper(?)", value);
+            }
+            @Override public Object decode(Object value) { return value; }
+        };
+    }
+
+    @Test
+    public void oracleInsertRendersEncodedExpressionsWithMixedParameterOrder() {
+        RDBTableMetadata table = table(JsonType.CLOB);
+        AtomicInteger encoded = new AtomicInteger();
+        table.getColumnNow("name").setValueCodec(expressionCodec(encoded));
+        InsertOperatorParameter parameter = new InsertOperatorParameter();
+        for (String name : Arrays.asList("id", "name", "comment")) {
+            InsertColumn column = new InsertColumn();
+            column.setColumn(name);
+            parameter.getColumns().add(column);
+        }
+        parameter.getValues().add(Arrays.asList("one", "first", "tail-1"));
+        parameter.getValues().add(Arrays.asList("two", "second", "tail-2"));
+        SqlRequest request = OracleInsertSqlBuilder.of(table).build(parameter);
+        assertBindable(request);
+        assertArrayEquals(new Object[] {"one", "first", "tail-1", "two", "second", "tail-2"}, request.getParameters());
+        assertEquals(2, request.getSql().split("upper", -1).length - 1);
+        assertEquals(2, encoded.get());
+    }
+
+    @Test
+    public void mergeRendersCodecGeneratedExpressions() {
+        for (Function<RDBTableMetadata, SaveOrUpdateOperator> factory : Arrays.<Function<RDBTableMetadata, SaveOrUpdateOperator>>asList(
+            OracleBatchUpsertOperator::new, SqlServerBatchUpsertOperator::new)) {
+            RDBTableMetadata table = table(JsonType.CLOB);
+            AtomicInteger encoded = new AtomicInteger();
+            table.getColumnNow("name").setValueCodec(expressionCodec(encoded));
+            SqlRequest request = verifyUpsert(table, factory.apply(table), "raw");
+            assertTrue(request.getSql().contains("upper(?)"));
+            assertArrayEquals(new Object[] {"one", "raw"}, request.getParameters());
+            assertEquals(1, encoded.get());
+        }
+    }
+
+    @Test
+    public void mergeKeepsExplicitSqlRestriction() {
+        for (Function<RDBTableMetadata, SaveOrUpdateOperator> factory : Arrays.<Function<RDBTableMetadata, SaveOrUpdateOperator>>asList(
+            OracleBatchUpsertOperator::new, SqlServerBatchUpsertOperator::new)) {
+            RDBTableMetadata table = table(JsonType.CLOB);
+            try {
+                verifyUpsert(table, factory.apply(table), NativeSql.of("upper(?)", "raw"));
+                fail("MERGE must retain its explicit SQL restriction");
+            } catch (UnsupportedOperationException expected) {
+                assertTrue(expected.getMessage().contains("NativeSql"));
+            }
+        }
+    }
+
+    @Test
+    public void legacyUpsertsPreserveExplicitSqlWithoutCodecCalls() {
+        for (Function<RDBTableMetadata, SaveOrUpdateOperator> factory : Arrays.<Function<RDBTableMetadata, SaveOrUpdateOperator>>asList(
+            MysqlSaveOrUpdateOperator::new, PostgresqlSaveOrUpdateOperator::new)) {
+            RDBTableMetadata table = table(JsonType.INSTANCE);
+            AtomicInteger encoded = new AtomicInteger();
+            table.getColumnNow("name").setValueCodec(expressionCodec(encoded));
+            SqlRequest request = verifyUpsert(table, factory.apply(table), NativeSql.of("upper(?)", "raw"));
+            assertArrayEquals(new Object[] {"one", "raw", "raw"}, request.getParameters());
+            assertEquals(0, encoded.get());
         }
     }
 }

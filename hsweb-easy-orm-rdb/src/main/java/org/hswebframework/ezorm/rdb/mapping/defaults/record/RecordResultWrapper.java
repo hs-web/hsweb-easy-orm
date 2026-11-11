@@ -40,9 +40,7 @@ public class RecordResultWrapper extends AbstractMapResultWrapper<Record> {
             }
             Object value = mapping
                 .getColumnByProperty(property)
-                .map(columnMetadata -> context.getDecodedColumn() == columnMetadata
-                    ? context.getResult()
-                    : columnMetadata.decode(context.getResult()))
+                .map(context::decode)
                 .orElseGet(context::getResult);
 
             super.doWrap(record, property, value);

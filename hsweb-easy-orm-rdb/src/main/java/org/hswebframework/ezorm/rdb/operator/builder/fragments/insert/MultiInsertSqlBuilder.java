@@ -8,7 +8,6 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
@@ -90,20 +89,10 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
                 }
-                if (!(value instanceof NativeSql)) {
-                    if (value == null) {
-                        value = NullValue.of(column.getType());
-                    }
-                    value = column.encode(value);
+                if (value == null) {
+                    value = NullValue.of(column.getType());
                 }
-                // 显式 SQL 与 codec 生成的 SQL 表达式使用相同的片段和参数路径。
-                if (value instanceof NativeSql) {
-                    valuesSql
-                            .addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
-                    continue;
-                }
-                valuesSql.addSql("?").addParameter(value);
+                valuesSql.addValue(SqlFragments.encodeValue(column, value));
             }
             intoSql.addSql(")");
             valuesSql.addSql(")");
