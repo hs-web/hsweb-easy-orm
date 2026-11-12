@@ -45,6 +45,12 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 建议配合[hsweb4](https://github.com/hs-web/hsweb-framework/tree/4.0.x)使用.
 
+## 版本分支
+
+`4.2.3` 维护 `4.2.3-SNAPSHOT`，`4.2` 继续开发后续补丁版本。根 POM 和 core、RDB 的父版本需同步更新；模块间依赖使用 `${project.version}`。
+
+自动发布工作流仅监听 `4.2` 和 `4.2.3` 的 push，使用分支 POM 中的版本部署到 Maven 仓库；Pull Request 沿用全量测试工作流。切分维护分支时，应先保留当前版本和对应发布触发，再升级开发分支版本。
+
 ## 实体字段类型
 
 JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型解析 Java 类型；`Object` 属性保持 `Object`，支持只有 getter 或 setter 的属性。通过 `@ColumnType(type = ...)` 指定且实现 `ValueCodec` 的自定义数据类型可提供默认编解码器，显式 `@JsonCodec` 等编解码注解仍按现有规则优先生效。
