@@ -53,6 +53,12 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 ## 实体字段类型
 
+列 codec 可以将值编码为 `NativeSql`：DML 写入器通过 `SqlFragments.encodeValue(column, value)` 编码普通值、保留显式 SQL，再由 `AppendableSqlFragments.addValue(value)` 统一追加表达式及参数或普通占位符。列参与、默认值、方言语法和更新策略由各写入器负责；批量 INSERT 保留行参数数组复用，Oracle 保留 CLOB 空值处理，MERGE 保留显式 SQL 能力限制。PostgreSQL 原生 JSON/JSONB 将 SQL NULL 编码为 `null` 表达式，避免 R2DBC 按 String 绑定空值；其他 JSON 类型保留原有空参数绑定，JSON 文档 `"null"` 仍是非空文本。Java null 在 UPDATE 中仍表示省略，显式清空使用 `NullValue`；原生 upsert 的 COALESCE 保留旧值语义保持不变，不能替代 UPDATE 的显式清空。
+
+逐行 INSERT（`MultiInsertSqlBuilder`）按输入列的原始位置读取行值和函数配置，过滤未知或不可插入列不改变其他列的对应关系。函数片段替代该列的原值，不再执行普通值编码或运行时默认值；普通列继续处理缺少的行值、默认值和显式 SQL。回归验证覆盖过滤列、函数位置及短行与表达式的组合，集中运行 INSERT、UPDATE、结果映射和原生 JSON 用例。
+
+查询操作器按列元数据解码后，通过 `ColumnWrapperContext.getDecodedColumn()` 记录完成解码的列映射；`decode(targetColumn)` 统一判断实体、嵌套实体和 Record 的解码身份，仅跳过同一列映射，目标 DTO 使用不同列映射时仍执行其 codec。无 codec 且结果未变化时直接复用上下文。自定义结果包装器、Map 和查询列事件继续收到查询层解码后的值。直接 SQL executor 不自动补充元数据转换，带映射的包装器仍自行解码。原四参数上下文构造器保留；包装器派生上下文可使用 `DefaultColumnWrapperContext.copyOf(context)` 保留列身份和值，修改派生上下文的行实例后应回传给来源上下文。手工构造时通过第五参数透传 `getDecodedColumn()`。单列 decoder 的直接查询及组合包装行为保持原有规则。
+
 JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型解析 Java 类型；`Object` 属性保持 `Object`，支持只有 getter 或 setter 的属性。通过 `@ColumnType(type = ...)` 指定且实现 `ValueCodec` 的自定义数据类型可提供默认编解码器，显式 `@JsonCodec` 等编解码注解仍按现有规则优先生效。
 
 `@ColumnType(exactString = true)` 显式要求字符串按大小写、重音及尾空格精确比较，方言负责列级 DDL：PostgreSQL 使用 `COLLATE "C"`，MySQL 8.0+ 使用 `utf8mb4_0900_bin`，H2 沿用其 VARCHAR 比较。其他方言若未实现则明确拒绝。默认 false 不改变已有列；它是建表 / 迁移元数据，不会在查询中插入 LOWER 或临时 CAST，也不会自动迁移已有列排序规则。

@@ -372,15 +372,14 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                             value = NullValue.of(column.getType());
                         }
                     }
-                    value = column.encode(value);
+                    value = SqlFragments.encodeValue(column, value);
                     // 适配 clob字段 不支持设置null
                     if (valueSize > 1 && (value == null || value instanceof NullValue)) {
                         if (ClobValueCodec.isClobType(column.getType())) {
                             value = new LongCharSequence("");
                         }
                     }
-                    fragments.addSql("? as ", column.getQuoteName())
-                             .addParameter(value);
+                    fragments.addValue(value).addSql("as", column.getQuoteName());
                     valueIndex++;
                 }
 
@@ -391,12 +390,7 @@ public class OracleBatchUpsertOperator implements SaveOrUpdateOperator {
                     Object value = idColumn.getDefaultValue().get();
                     fragments.add(SqlFragments.COMMA);
 
-                    if (value instanceof NativeSql) {
-                        fragments.addSql(((NativeSql) value).getSql()).addParameter(((NativeSql) value).getParameters())
-                                 .addSql("as", idColumn.getQuoteName());
-                    } else {
-                        fragments.addSql("? as", idColumn.getQuoteName()).addParameter(value);
-                    }
+                    fragments.addValue(value).addSql("as", idColumn.getQuoteName());
                 }
                 fragments.add(FROM_DUAL_R);
                 rowIndex++;

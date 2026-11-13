@@ -120,22 +120,17 @@ public class OracleInsertSqlBuilder implements InsertSqlBuilder {
                 }
                 intoSql.addSql(column.getQuoteName());
 
-                if (value instanceof NativeSql) {
-                    valuesSql.addSql(((NativeSql) value).getSql())
-                             .addParameter(((NativeSql) value).getParameters());
-                    continue;
-                }
                 if (value == null) {
                     value = NullValue.of(column.getType());
                 }
-                value = column.encode(value);
+                value = SqlFragments.encodeValue(column, value);
                 // 适配 clob字段 不支持设置null
                 if (valueSize > 1 && (value == null || value instanceof NullValue)) {
                     if (ClobValueCodec.isClobType(column.getType())) {
                         value = new LongCharSequence("");
                     }
                 }
-                valuesSql.add(SqlFragments.QUESTION_MARK).addParameter(value);
+                valuesSql.addValue(value);
             }
             intoSql.add(SqlFragments.RIGHT_BRACKET);
             valuesSql.add(SqlFragments.RIGHT_BRACKET);

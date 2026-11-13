@@ -8,7 +8,6 @@ import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.EmptySqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.function.FunctionFragmentBuilder;
@@ -71,14 +70,6 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
             int vIndex = 0;
             for (Map.Entry<Integer, RDBColumnMetadata> entry : indexMapping.entrySet()) {
                 RDBColumnMetadata column = entry.getValue();
-                SqlFragments function = functionValues.get(vIndex);
-
-                if (null != function) {
-                    valuesSql.addFragments(function);
-                }
-
-                Object value = valueLen <= vIndex ? null : values.get(vIndex);
-
                 if (vIndex++ != 0) {
                     intoSql.addSql(",");
                     valuesSql.addSql(",");
@@ -86,20 +77,23 @@ public class MultiInsertSqlBuilder implements InsertSqlBuilder {
 
                 intoSql.addSql(column.getQuoteName());
 
+                // 过滤列后仍按输入位置取值；函数片段完整替代该列的普通值。
+                int valueIndex = entry.getKey();
+                SqlFragments function = functionValues.get(valueIndex);
+                if (null != function) {
+                    valuesSql.addFragments(function);
+                    continue;
+                }
+
+                Object value = valueLen <= valueIndex ? null : values.get(valueIndex);
                 if ((value == null || value instanceof NullValue)
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                     value = ((RuntimeDefaultValue) column.getDefaultValue()).get();
                 }
-                if (value instanceof NativeSql) {
-                    valuesSql
-                            .addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
-                    continue;
-                }
                 if (value == null) {
                     value = NullValue.of(column.getType());
                 }
-                valuesSql.addSql("?").addParameter(column.encode(value));
+                valuesSql.addValue(SqlFragments.encodeValue(column, value));
             }
             intoSql.addSql(")");
             valuesSql.addSql(")");

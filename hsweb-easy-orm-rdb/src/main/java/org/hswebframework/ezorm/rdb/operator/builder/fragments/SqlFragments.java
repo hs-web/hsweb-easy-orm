@@ -4,6 +4,7 @@ import org.hswebframework.ezorm.rdb.executor.EmptySqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SqlRequests;
 import org.hswebframework.ezorm.core.utils.StringUtils;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,6 +81,20 @@ public interface SqlFragments {
             return EmptySqlRequest.INSTANCE;
         }
         return SqlRequests.prepare(StringUtils.join(" ", getSql()), getParameters().toArray());
+    }
+
+    /**
+     * 编码一个已由写入器选定的值；显式 SQL 保留原表达式，其他值只编码一次。
+     * 列省略、默认值和方言限制由调用方处理，编码结果交给
+     * {@link AppendableSqlFragments#addValue(Object)} 追加，不能直接当绑定参数使用。
+     *
+     * @param column 列元数据
+     * @param value 原始值或显式 SQL
+     * @return 绑定值或编码后的 SQL 表达式
+     * @since 4.2.3
+     */
+    static Object encodeValue(RDBColumnMetadata column, Object value) {
+        return value instanceof NativeSql ? value : column.encode(value);
     }
 
     /**

@@ -2,18 +2,20 @@ package org.hswebframework.ezorm.rdb.mapping.wrapper;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hswebframework.ezorm.core.ObjectPropertyOperator;
-import org.hswebframework.ezorm.core.GlobalConfig;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.mapping.EntityColumnMapping;
-import org.hswebframework.ezorm.rdb.mapping.MappingFeatureType;
-import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.utils.PropertyUtils;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * 实体行包装器，按映射定位属性；直接 executor 传入原始值时自行解码，
+ * 查询操作器已按同一列映射解码时直接赋值，不同目标映射仍执行其 codec。
+ *
+ * @see ColumnWrapperContext#getDecodedColumn()
+ */
 public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
     private final Supplier<E> entityInstanceSupplier;
@@ -44,7 +46,7 @@ public class EntityResultWrapper<E> implements ResultWrapper<E, E> {
 
         Object value = Optional.ofNullable(mapping)
                 .flatMap(mapping -> mapping.getColumnByProperty(property))
-                .map(columnMetadata -> columnMetadata.decode(context.getResult()))
+                .map(context::decode)
                 .orElseGet(context::getResult);
         if (value != null) {
            PropertyUtils.setProperty(context.getRowInstance(), property, value,mapping);

@@ -178,18 +178,15 @@ public class BatchInsertSqlBuilder implements InsertSqlBuilder {
                         && column.getDefaultValue() instanceof RuntimeDefaultValue) {
                         value = column.getDefaultValue().get();
                     }
-                    if (!(value instanceof NativeSql)) {
-                        if (value == null) {
-                            value = NullValue.of(column.getType());
-                        }
-                        value = column.encode(value);
+                    if (value == null) {
+                        value = NullValue.of(column.getType());
                     }
+                    value = SqlFragments.encodeValue(column, value);
                     if (value instanceof NativeSql) {
+                        // 表达式前刷新普通参数；保留行数组复用及表达式参数顺序。
                         addParameters(fragments, rowParameters, parameterSize);
                         parameterSize = 0;
-                        fragments
-                            .addSql(((NativeSql) value).getSql())
-                            .addParameter(((NativeSql) value).getParameters());
+                        fragments.addValue(value);
                     } else {
                         fragments.add(SqlFragments.QUESTION_MARK);
                         rowParameters[parameterSize++] = value;

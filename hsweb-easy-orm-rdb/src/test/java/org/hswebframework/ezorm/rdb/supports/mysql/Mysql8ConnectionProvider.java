@@ -22,14 +22,17 @@ public class Mysql8ConnectionProvider implements ConnectionProvider {
     static {
         Driver.getPlatform();
 
-        GenericContainer<?> container = Containers.newMysql("8");
-        container.start();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (System.getProperty("mysql8.url") == null) {
+            GenericContainer<?> container = Containers.newMysql("8");
+            container.start();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+            port = container.getMappedPort(3306);
         }
-        port = container.getMappedPort(3306);
 
     }
 

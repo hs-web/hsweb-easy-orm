@@ -1,10 +1,8 @@
 package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import org.hswebframework.ezorm.rdb.executor.SqlRequest;
-import org.hswebframework.ezorm.rdb.executor.wrapper.ConvertResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ResultWrapper;
 import org.hswebframework.ezorm.rdb.executor.wrapper.SingleColumnResultWrapper;
-import org.hswebframework.ezorm.rdb.executor.wrapper.SingleResultWrapper;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.query.QuerySqlBuilder;
 import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;

@@ -9,7 +9,6 @@ import org.hswebframework.ezorm.rdb.mapping.defaults.SaveResult;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.AppendableSqlFragments;
-import org.hswebframework.ezorm.rdb.operator.builder.fragments.NativeSql;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.PrepareSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.insert.BatchInsertSqlBuilder;
@@ -149,12 +148,7 @@ public class PostgresqlSaveOrUpdateOperator implements SaveOrUpdateOperator {
                 more = true;
                 sql.addSql(columnMetadata.getQuoteName())
                    .add(SqlFragments.EQUAL);
-                if (value instanceof NativeSql) {
-                    sql.addSql(((NativeSql) value).getSql())
-                       .addParameter(((NativeSql) value).getParameters());
-                    continue;
-                }
-                sql.add(SqlFragments.QUESTION_MARK).addParameter(columnMetadata.encode(value));
+                sql.addValue(SqlFragments.encodeValue(columnMetadata, value));
             }
         }
     }

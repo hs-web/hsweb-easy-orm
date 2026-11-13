@@ -9,6 +9,11 @@ import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import java.sql.JDBCType;
 import java.sql.SQLType;
 
+/**
+ * JSON 列类型及其默认值编解码器，可由方言覆盖非空值的 SQL 表达式。
+ * 默认沿用空参数绑定，原生 JSON 方言可覆盖其 SQL NULL 编码。
+ * 解码结果保持 JSON 文本，结构化对象转换由显式 JSON codec 负责。
+ */
 @Getter
 @AllArgsConstructor
 public class JsonType implements JsonDataType, DataTypeBuilder, ValueCodec<Object, Object> {
