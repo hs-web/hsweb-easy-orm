@@ -15,6 +15,8 @@ import org.hswebframework.ezorm.rdb.operator.dml.QueryOperator;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.function.Consumer;
 
 import static org.hswebframework.ezorm.rdb.operator.dml.query.SortOrder.asc;
@@ -170,6 +172,27 @@ public class BuildParameterQueryOperator extends QueryOperator {
     public QueryOperator bindTables(QueryTableBindings bindings) {
         parameter.setTableBindings(bindings);
         return this;
+    }
+
+    @Override
+    public QueryTableBindings getTableBindings() {
+        QueryTableBindings bindings = parameter.getTableBindings();
+        return bindings == null ? QueryTableBindings.EMPTY : bindings;
+    }
+
+    @Override
+    public Set<String> getTableReferences() {
+        Set<String> names = new LinkedHashSet<>(getTableBindings().getTableNames());
+        names.add(parameter.getFrom());
+        names.add(parameter.getFromAlias());
+        if (parameter.getJoins() != null) {
+            for (Join join : parameter.getJoins()) {
+                names.add(join.getTarget());
+                names.add(join.getAlias());
+            }
+        }
+        names.remove(null);
+        return Set.copyOf(names);
     }
 
     @Override

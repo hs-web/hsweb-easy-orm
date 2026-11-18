@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.hswebframework.ezorm.core.ValueCodec;
 
 import java.sql.JDBCType;
@@ -9,6 +10,7 @@ import java.sql.SQLType;
 @AllArgsConstructor
 public class BooleanValueCodec implements ValueCodec<Object, Boolean> {
 
+    @Getter
     private SQLType sqlType;
 
     @Override

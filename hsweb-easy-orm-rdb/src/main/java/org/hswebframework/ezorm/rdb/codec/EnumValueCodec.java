@@ -26,6 +26,7 @@ public class EnumValueCodec implements ValueCodec<Object, Object> {
         PROPERTY_ORDINAL = EnumCodec.ORDINAL;
 
     @SuppressWarnings("all")
+    @Getter
     private final Class type;
     @SuppressWarnings("all")
     private final Object[] values;
@@ -36,6 +37,7 @@ public class EnumValueCodec implements ValueCodec<Object, Object> {
     @Getter
     private boolean toMask;
 
+    @Getter
     private final String property;
 
     public EnumValueCodec(Class<?> type) {

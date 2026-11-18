@@ -12,6 +12,10 @@ JOIN 继续通过 `query.join(...)` 声明。FROM、JOIN、条件、投影和排
 没有绑定时沿用原查找行为。绑定只保留在查询操作和其 clone 中，不进入 `QueryParam.context`，
 普通 context 赋值不会安装映射或改变 JOIN。绑定不授权访问、不执行 DDL，调用方负责权限及映射生命周期。
 
+追加查询结构时，可通过 `query.getTableReferences()` 的不可变快照避让 FROM、JOIN 和已有绑定的引用名，
+使用 `query.getTableBindings().merge(additional)` 保留已有映射；同名不同映射的合并明确失败。
+`bindTables(...)` 仍是显式替换，传 null 仍清除绑定，不修改既有查询参数或共享 schema。
+
 1. 轻SQL,重java.
 2. 动态表单: 动态维护表结构,增删改查.
 3. 参数驱动动态条件, 前端也能透传动态条件,无SQL注入.
@@ -65,6 +69,8 @@ JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型�
 
 `@JsonCodec(includeNulls = true)` 为当前列保留显式嵌套 null；配置使用当前 codec 的独立 mapper，不修改共享默认配置。默认 false 保持原行为。JSON 编解码与物理列类型独立，可组合标准 LONGVARCHAR。
 `@JsonCodec(useBigDecimalForFloats = true)` 将无具体 Java 数字类型的 JSON 小数解码为 BigDecimal，避免高精度正文读回时变成 Double；默认 false 保留原解码行为，可与 includeNulls 组合。
+
+标准列 codec 提供只读配置，供映射检查或描述工具读取实际安装的实例：日期格式/目标类型、数字目标类型、布尔 SQL 类型、枚举类型/属性，以及 JSON 泛型/目标类型/null 与小数选项。数字函数构造器的 `getJavaType()` 为 null；JSON 的 `isCustomMapper()` 标明显式设置的外部 mapper，标准选项派生副本仍继承共享默认配置。这些配置不包含可执行函数、任意 Jackson 模块或共享 mapper 的完整状态，不能替代调用方对可重建范围的判断。
 
 枚举位集合的 `in$any` 判断 `(M & Q) <> 0`，新增 `in$all` 判断 `(M & Q) = Q`（存储集合包含全部查询项），`nin` 使用对应否定。没有 any/all 的原 `in` 仍是 `(M & Q) = M`（存储集合是查询集合的子集）。通用 EnumInFragmentBuilder 同时接受枚举和已编码的 BIGINT mask，不要求业务选项映射到 Java ordinal。
 `EnumInFragmentBuilder.of/ofNot` 统一选择数据库实现，包括 H2 的参数化 `BITAND`；调用方无需自行判断方言。
