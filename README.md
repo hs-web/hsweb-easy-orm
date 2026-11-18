@@ -66,6 +66,8 @@ JPA 实体属性从属性描述符、getter 返回类型和 setter 参数类型�
 `@JsonCodec(includeNulls = true)` 为当前列保留显式嵌套 null；配置使用当前 codec 的独立 mapper，不修改共享默认配置。默认 false 保持原行为。JSON 编解码与物理列类型独立，可组合标准 LONGVARCHAR。
 `@JsonCodec(useBigDecimalForFloats = true)` 将无具体 Java 数字类型的 JSON 小数解码为 BigDecimal，避免高精度正文读回时变成 Double；默认 false 保留原解码行为，可与 includeNulls 组合。
 
+标准列 codec 提供只读配置，供映射检查或描述工具读取实际安装的实例：日期格式/目标类型、数字目标类型、布尔 SQL 类型、枚举类型/属性，以及 JSON 泛型/目标类型/null 与小数选项。数字函数构造器的 `getJavaType()` 为 null；JSON 的 `isCustomMapper()` 标明显式设置的外部 mapper，标准选项派生副本仍继承共享默认配置。这些配置不包含可执行函数、任意 Jackson 模块或共享 mapper 的完整状态，不能替代调用方对可重建范围的判断。
+
 枚举位集合的 `in$any` 判断 `(M & Q) <> 0`，新增 `in$all` 判断 `(M & Q) = Q`（存储集合包含全部查询项），`nin` 使用对应否定。没有 any/all 的原 `in` 仍是 `(M & Q) = M`（存储集合是查询集合的子集）。通用 EnumInFragmentBuilder 同时接受枚举和已编码的 BIGINT mask，不要求业务选项映射到 Java ordinal。
 `EnumInFragmentBuilder.of/ofNot` 统一选择数据库实现，包括 H2 的参数化 `BITAND`；调用方无需自行判断方言。
 
