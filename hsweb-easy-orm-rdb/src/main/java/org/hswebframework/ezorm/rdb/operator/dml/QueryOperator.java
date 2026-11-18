@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -285,6 +286,16 @@ public abstract class QueryOperator implements LogicalOperation<QueryOperator> {
      */
     public QueryOperator bindTables(QueryTableBindings bindings) {
         throw new UnsupportedOperationException("query table bindings are not supported");
+    }
+
+    /** 当前显式绑定的不可变配置；未绑定时返回空配置，供查询贡献者安全合并映射。 */
+    public QueryTableBindings getTableBindings() {
+        throw new UnsupportedOperationException("query table binding inspection is not supported");
+    }
+
+    /** FROM、JOIN 目标/别名及显式绑定已使用的引用名快照，供追加查询结构时避让名称。 */
+    public Set<String> getTableReferences() {
+        throw new UnsupportedOperationException("query table reference inspection is not supported");
     }
 
     /**

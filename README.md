@@ -12,6 +12,10 @@ JOIN 继续通过 `query.join(...)` 声明。FROM、JOIN、条件、投影和排
 没有绑定时沿用原查找行为。绑定只保留在查询操作和其 clone 中，不进入 `QueryParam.context`，
 普通 context 赋值不会安装映射或改变 JOIN。绑定不授权访问、不执行 DDL，调用方负责权限及映射生命周期。
 
+追加查询结构时，可通过 `query.getTableReferences()` 的不可变快照避让 FROM、JOIN 和已有绑定的引用名，
+使用 `query.getTableBindings().merge(additional)` 保留已有映射；同名不同映射的合并明确失败。
+`bindTables(...)` 仍是显式替换，传 null 仍清除绑定，不修改既有查询参数或共享 schema。
+
 1. 轻SQL,重java.
 2. 动态表单: 动态维护表结构,增删改查.
 3. 参数驱动动态条件, 前端也能透传动态条件,无SQL注入.
