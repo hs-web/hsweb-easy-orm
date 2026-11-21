@@ -6,9 +6,13 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBDatabaseMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CreateTableSqlBuilder;
+import org.hswebframework.ezorm.rdb.operator.builder.fragments.ddl.CommonCreateTableSqlBuilder;
 import org.hswebframework.ezorm.core.param.Term;
 import org.hswebframework.ezorm.rdb.operator.DefaultDatabaseOperator;
 import org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql.KingbaseMysqlSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleSchemaMetadata;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleJsonTermFragmentBuilder;
+import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,6 +23,23 @@ import java.sql.JDBCType;
  * public schema metadata API.
  */
 public class KingbaseOracleSchemaMetadataTest {
+
+    @Test
+    public void shouldRegisterNativeOracleJsonConditions() {
+        RDBTableMetadata table = new KingbaseOracleSchemaMetadata("public").newTable("json_test");
+        RDBColumnMetadata column = table.newColumn();
+        column.setName("data");
+        column.setType(JsonType.CLOB);
+        table.addColumn(column);
+
+        for (OracleJsonTermFragmentBuilder builder : new OracleJsonTermFragmentBuilder[]{
+            OracleJsonTermFragmentBuilder.exists, OracleJsonTermFragmentBuilder.notExists,
+            OracleJsonTermFragmentBuilder.contains, OracleJsonTermFragmentBuilder.notContains,
+            OracleJsonTermFragmentBuilder.value
+        }) {
+            Assert.assertSame(builder, column.findFeatureNow(builder.getId()));
+        }
+    }
 
     @Test
     public void shouldUseNullPredicatesForOracleEmptyStringConditions() {
@@ -111,7 +132,7 @@ public class KingbaseOracleSchemaMetadataTest {
     }
 
     @Test
-    public void shouldRetainAllCommentsAfterCreateTableStatement() {
+    public void shouldMatchNativeOracleCreateTableAndCommentRequests() {
         KingbaseOracleSchemaMetadata schema = new KingbaseOracleSchemaMetadata("public");
         RDBDatabaseMetadata database = new RDBDatabaseMetadata(schema.getDialect());
         database.addSchema(schema);
@@ -120,20 +141,32 @@ public class KingbaseOracleSchemaMetadataTest {
         RDBTableMetadata table = schema.newTable("ACCOUNT");
         table.setComment("Account table");
 
-        RDBColumnMetadata name = new RDBColumnMetadata();
-        name.setName("NAME");
-        name.setJdbcType(JDBCType.VARCHAR, String.class);
-        name.setLength(64);
-        name.setComment("Account name");
-        table.addColumn(name);
+        for (String columnName : new String[]{"ID", "NAME"}) {
+            RDBColumnMetadata column = table.newColumn();
+            column.setName(columnName);
+            column.setJdbcType(JDBCType.VARCHAR, String.class);
+            column.setLength(64);
+            column.setComment("Account " + columnName);
+            table.addColumn(column);
+        }
 
-        BatchSqlRequest request = (BatchSqlRequest) schema
-            .findFeatureNow(CreateTableSqlBuilder.ID)
-            .build(table);
+        CreateTableSqlBuilder builder = schema.findFeatureNow(CreateTableSqlBuilder.ID);
+        CreateTableSqlBuilder nativeBuilder = new OracleSchemaMetadata("public")
+            .findFeatureNow(CreateTableSqlBuilder.ID);
+        Assert.assertTrue(builder instanceof CommonCreateTableSqlBuilder);
 
-        Assert.assertTrue(request.getSql().startsWith("create table"));
-        Assert.assertEquals(2, request.getBatch().size());
-        Assert.assertTrue(request.getBatch().get(0).getSql().startsWith("comment on column"));
-        Assert.assertTrue(request.getBatch().get(1).getSql().startsWith("comment on table"));
+        // Match native Oracle for ordinary comments and comments containing quotes.
+        for (String comment : new String[]{"Account name", "Owner's name"}) {
+            table.getColumnNow("NAME").setComment(comment);
+            table.setComment(comment + " table");
+            BatchSqlRequest expected = (BatchSqlRequest) nativeBuilder.build(table);
+            BatchSqlRequest actual = (BatchSqlRequest) builder.build(table);
+
+            Assert.assertEquals(expected.getSql(), actual.getSql());
+            Assert.assertEquals(expected.getBatch().size(), actual.getBatch().size());
+            for (int i = 0; i < expected.getBatch().size(); i++) {
+                Assert.assertEquals(expected.getBatch().get(i).getSql(), actual.getBatch().get(i).getSql());
+            }
+        }
     }
 }

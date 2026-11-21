@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle;
 
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
-import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,42 +13,57 @@ import java.sql.JDBCType;
 public class KingbaseOracleDialectTest {
 
     @Test
-    public void shouldReuseOracleTypeMappingsAndCustomTypeFallback() {
-        OracleDialect original = new OracleDialect();
-        KingbaseOracleDialect kingbase = new KingbaseOracleDialect();
-        for (String name : new String[]{"smallint", "integer", "bigint", "real", "numeric",
-            "varchar", "varchar2", "char", "character varying", "character", "timestamp", "time", "json", "unknown_type"}) {
-            DataType expected = original.convertDataType(name);
-            DataType actual = kingbase.convertDataType(name);
-            Assert.assertEquals(name, expected.getSqlType(), actual.getSqlType());
-            Assert.assertEquals(name, expected.getJavaType(), actual.getJavaType());
+    public void shouldRecognizeCatalogQualifiedVarchar() {
+        KingbaseOracleDialect dialect = new KingbaseOracleDialect();
+        for (String name : new String[]{"pg_catalog.varchar", " PG_CATALOG.VARCHAR(64) ",
+            "varchar", " VARCHAR(64) ", "varchar2", "VARCHAR2(64)"}) {
+            DataType type = dialect.convertDataType(name);
+            Assert.assertEquals(name, JDBCType.VARCHAR, type.getSqlType());
+            Assert.assertEquals(name, String.class, type.getJavaType());
             RDBColumnMetadata column = new RDBColumnMetadata();
-            column.setPrecision(12);
-            column.setScale(2);
-            column.setType(expected);
-            String expectedSql = original.buildColumnDataType(column);
-            column.setType(actual);
-            Assert.assertEquals(name, expectedSql, kingbase.buildColumnDataType(column));
-            System.out.println("[类型映射对比] Oracle/Kingbase Oracle，类型=" + name
-                + "，JDBC=" + actual.getSqlType() + "，Java=" + actual.getJavaType().getName()
-                + "，DDL=" + expectedSql);
+            column.setType(type);
+            if (!name.contains("(")) {
+                column.setLength(64);
+            }
+            Assert.assertEquals(name, 64, column.getLength());
+            // VARCHAR2 rendering contract from upstream OracleTableMetaParserTest.testParse.
+            Assert.assertEquals(name, "varchar2(64 char)", dialect.buildColumnDataType(column));
+        }
+        DataType custom = dialect.convertDataType("business.varchar");
+        Assert.assertEquals(JDBCType.OTHER, custom.getSqlType());
+        Assert.assertEquals("business.varchar", custom.getName());
+    }
+
+    // Fixed contracts from upstream OracleTableMetaParserTest.testParse at 96b61b0b.
+    @Test
+    public void shouldMatchOfficialOracleNumberAndVarchar2Contracts() {
+        KingbaseOracleDialect dialect = new KingbaseOracleDialect();
+        Object[][] cases = {
+            {"varchar2(32)", JDBCType.VARCHAR, String.class, "varchar2(32 char)"},
+            {"varchar2(128)", JDBCType.VARCHAR, String.class, "varchar2(128 char)"},
+            {"number(10,0)", JDBCType.NUMERIC, java.math.BigDecimal.class, "number(10,0)"},
+            {"numeric(10,0)", JDBCType.NUMERIC, java.math.BigDecimal.class, "number(10,0)"},
+            {" NUMERIC(12,2) ", JDBCType.NUMERIC, java.math.BigDecimal.class, "number(12,2)"}
+        };
+        for (Object[] testCase : cases) {
+            RDBColumnMetadata column = new RDBColumnMetadata();
+            column.setType(dialect.convertDataType((String) testCase[0]));
+            Assert.assertEquals(testCase[0].toString(), testCase[1], column.getSqlType());
+            Assert.assertEquals(testCase[0].toString(), testCase[2], column.getJavaType());
+            Assert.assertEquals(testCase[0].toString(), testCase[3], dialect.buildColumnDataType(column));
         }
     }
 
     @Test
     public void shouldReuseOracleBooleanMapping() {
-        OracleDialect original = new OracleDialect();
         KingbaseOracleDialect kingbase = new KingbaseOracleDialect();
-        Assert.assertEquals(JDBCType.TINYINT, original.convertSqlType(Boolean.class).get());
         Assert.assertEquals(JDBCType.TINYINT, kingbase.convertSqlType(Boolean.class).get());
         Assert.assertEquals(JDBCType.BOOLEAN, kingbase.convertSqlType(boolean.class).get());
-        DataType expected = original.convertDataType("boolean");
         DataType actual = kingbase.convertDataType("boolean");
-        Assert.assertEquals(expected.getSqlType(), actual.getSqlType());
-        Assert.assertEquals(expected.getJavaType(), actual.getJavaType());
+        Assert.assertEquals(JDBCType.BOOLEAN, actual.getSqlType());
+        Assert.assertEquals(String.class, actual.getJavaType());
         RDBColumnMetadata column = new RDBColumnMetadata();
         column.setType(actual);
-        Assert.assertEquals("number(1)", original.buildColumnDataType(column));
         Assert.assertEquals("number(1)", kingbase.buildColumnDataType(column));
         column.setJdbcType(kingbase.convertSqlType(Boolean.class).get(), Boolean.class);
         Assert.assertEquals("number(1)", kingbase.buildColumnDataType(column));
@@ -57,17 +71,37 @@ public class KingbaseOracleDialectTest {
     }
 
     @Test
-    public void shouldUseOracleCustomTypeFallbackForCatalogNames() {
+    public void shouldReuseOracleMappingsForObservedDatabaseTypeNames() {
         KingbaseOracleDialect dialect = new KingbaseOracleDialect();
-        OracleDialect original = new OracleDialect();
-        for (String name : new String[]{"text", "bytea", "bpchar", "double precision",
-            "timestamp without time zone", "time without time zone"}) {
+        // Compatibility supplements use fixed contracts, not the implementation as an oracle.
+        Object[][] mappings = {
+            {"pg_catalog.varchar", JDBCType.VARCHAR, String.class, "varchar2(32 char)"},
+            {"timestamp without time zone", JDBCType.TIMESTAMP, java.sql.Timestamp.class, "timestamp"},
+            {"text", JDBCType.LONGVARCHAR, String.class, "clob"},
+            {"bytea", JDBCType.LONGVARBINARY, byte[].class, "blob"},
+            // Upstream DefaultDialect registers the type name "double" with its own builder.
+            // OracleDialect's "binary_double" builder applies to JDBC DOUBLE, a separate path.
+            {"double precision", JDBCType.DOUBLE, Double.class, "double"}
+        };
+        for (Object[] mapping : mappings) {
+            DataType actual = dialect.convertDataType((String) mapping[0]);
+            Assert.assertEquals(mapping[0].toString(), mapping[1], actual.getSqlType());
+            Assert.assertEquals(mapping[0].toString(), mapping[2], actual.getJavaType());
+            RDBColumnMetadata column = new RDBColumnMetadata();
+            column.setLength(32);
+            column.setType(actual);
+            Assert.assertEquals(mapping[0].toString(), mapping[3], dialect.buildColumnDataType(column));
+        }
+    }
+
+    @Test
+    public void shouldPreserveUnknownAndUserDefinedTypes() {
+        KingbaseOracleDialect dialect = new KingbaseOracleDialect();
+        for (String name : new String[]{"bpchar", "time without time zone", "business.varchar",
+            "business.numeric", "business.numeric(10,0)", "unknown_type"}) {
             DataType actual = dialect.convertDataType(name);
-            DataType expected = original.convertDataType(name);
             Assert.assertEquals(name, JDBCType.OTHER, actual.getSqlType());
             Assert.assertEquals(name, String.class, actual.getJavaType());
-            Assert.assertEquals(name, expected.getSqlType(), actual.getSqlType());
-            Assert.assertEquals(name, expected.getJavaType(), actual.getJavaType());
             Assert.assertEquals(name, name, actual.getName());
             RDBColumnMetadata column = new RDBColumnMetadata();
             column.setLength(32);

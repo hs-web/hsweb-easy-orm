@@ -2,6 +2,7 @@ package org.hswebframework.ezorm.rdb.supports.kingbaseES;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hswebframework.ezorm.rdb.executor.SqlRequest;
 import org.hswebframework.ezorm.rdb.executor.SyncSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.reactive.ReactiveSqlExecutor;
 import org.hswebframework.ezorm.rdb.executor.wrapper.ColumnWrapperContext;
@@ -92,12 +93,12 @@ public class KingbaseIndexMetadataParser implements IndexMetadataParser {
 
     @Override
     public List<RDBIndexMetadata> parseTableIndex(String tableName) {
-        return select(INDEX_SQL, PRIMARY_KEY_INDEX_SQL, tableName);
+        return select(indexSql(false), primaryKeySql(false), tableName);
     }
 
     @Override
     public Optional<RDBIndexMetadata> parseByName(String name) {
-        return select(INDEX_BY_NAME_SQL, PRIMARY_KEY_INDEX_BY_NAME_SQL, name).stream().findFirst();
+        return select(indexSql(true), primaryKeySql(true), name).stream().findFirst();
     }
 
     @Override
@@ -112,21 +113,32 @@ public class KingbaseIndexMetadataParser implements IndexMetadataParser {
 
     @Override
     public Mono<RDBIndexMetadata> parseByNameReactive(String name) {
-        return selectReactive(INDEX_BY_NAME_SQL, PRIMARY_KEY_INDEX_BY_NAME_SQL, name).singleOrEmpty();
+        return selectReactive(indexSql(true), primaryKeySql(true), name).singleOrEmpty();
     }
 
     @Override
     public Flux<RDBIndexMetadata> parseTableIndexReactive(String tableName) {
-        return selectReactive(INDEX_SQL, PRIMARY_KEY_INDEX_SQL, tableName);
+        return selectReactive(indexSql(false), primaryKeySql(false), tableName);
+    }
+
+    protected String indexSql(boolean byName) {
+        return byName ? INDEX_BY_NAME_SQL : INDEX_SQL;
+    }
+
+    protected String primaryKeySql(boolean byName) {
+        return byName ? PRIMARY_KEY_INDEX_BY_NAME_SQL : PRIMARY_KEY_INDEX_SQL;
+    }
+
+    protected SqlRequest request(String sql, String name) {
+        return prepare(sql, schema.getName(), name);
     }
 
     private List<RDBIndexMetadata> select(String indexSql, String primaryKeySql, String value) {
-        String schemaName = schema.getName();
         return schema.<SyncSqlExecutor>findFeature(SyncSqlExecutor.ID)
             .map(executor -> executor.select(
-                prepare(indexSql, schemaName, value),
+                request(indexSql, value),
                 new IndexWrapper(executor.select(
-                    prepare(primaryKeySql, schemaName, value),
+                    request(primaryKeySql, value),
                     stream(column("index_name", String::valueOf))
                 ).collect(Collectors.toSet()))
             ))
@@ -138,12 +150,11 @@ public class KingbaseIndexMetadataParser implements IndexMetadataParser {
 
     private Flux<RDBIndexMetadata> selectReactive(String indexSql, String primaryKeySql, String value) {
         ReactiveSqlExecutor executor = schema.findFeatureNow(ReactiveSqlExecutor.ID);
-        String schemaName = schema.getName();
-        return executor.select(prepare(primaryKeySql, schemaName, value), column("index_name", String::valueOf))
+        return executor.select(request(primaryKeySql, value), column("index_name", String::valueOf))
             .collect(Collectors.toSet())
             .flatMap(primaryKeys -> {
                 IndexWrapper wrapper = new IndexWrapper(primaryKeys);
-                return executor.select(prepare(indexSql, schemaName, value), wrapper)
+                return executor.select(request(indexSql, value), wrapper)
                     .then(Mono.fromSupplier(wrapper::getResult));
             })
             .flatMapIterable(Function.identity());

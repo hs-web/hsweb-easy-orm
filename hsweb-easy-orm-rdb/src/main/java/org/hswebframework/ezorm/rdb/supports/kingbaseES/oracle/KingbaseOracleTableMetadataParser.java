@@ -21,27 +21,29 @@ public class KingbaseOracleTableMetadataParser extends RDBTableMetadataParser {
         ", case when cols.is_nullable = 'YES' then 0 else 1 end as \"not_null\"",
         ", col_description(c.oid, a.attnum) as \"comment\"",
         ", cols.table_name as \"table_name\"",
-        ", cols.data_type as \"column_type\"",
+        // The information_schema view reports DATE and TIMESTAMP with the same type name.
+        ", case when a.atttypid = cast('date' as regtype) then 'date' else cols.data_type end as \"column_type\"",
         "from information_schema.columns cols",
         "join pg_namespace n on n.nspname = cols.table_schema",
         "join pg_class c on c.relnamespace = n.oid and c.relname = cols.table_name",
         "join pg_attribute a on a.attrelid = c.oid and a.attname = cols.column_name",
-        "where cols.table_schema = #{schema}",
-        "and cols.table_name like #{table}");
+        "where upper(cols.table_schema) = upper(#{schema})",
+        "and upper(cols.table_name) like upper(#{table})");
 
     private static final String TABLE_COMMENT_SQL = String.join(" ",
         "select c.relname as \"table_name\"",
         ", obj_description(c.oid, 'pg_class') as \"comment\"",
         "from pg_class c",
         "join pg_namespace n on n.oid = c.relnamespace",
-        "where n.nspname = #{schema}",
-        "and c.relname like #{table}");
+        "where upper(n.nspname) = upper(#{schema})",
+        "and upper(c.relname) like upper(#{table})");
 
     private static final String ALL_TABLE_SQL =
-        "select table_name as \"name\" from information_schema.tables where table_schema = #{schema}";
+        "select table_name as \"name\" from information_schema.tables where upper(table_schema) = upper(#{schema})";
 
     private static final String TABLE_EXISTS_SQL =
-        "select count(1) as \"total\" from information_schema.tables where table_schema = #{schema} and table_name = #{table}";
+        "select count(1) as \"total\" from information_schema.tables"
+            + " where upper(table_schema) = upper(#{schema}) and upper(table_name) = upper(#{table})";
 
     public KingbaseOracleTableMetadataParser(RDBSchemaMetadata schema) {
         super(schema);

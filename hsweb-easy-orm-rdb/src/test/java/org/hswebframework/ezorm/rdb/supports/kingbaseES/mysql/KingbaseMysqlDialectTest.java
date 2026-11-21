@@ -2,7 +2,6 @@ package org.hswebframework.ezorm.rdb.supports.kingbaseES.mysql;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
-import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,28 +12,31 @@ import java.sql.JDBCType;
  */
 public class KingbaseMysqlDialectTest {
 
+    // Assertion contracts from upstream metadata/dialect/DialectTest at 96b61b0b.
     @Test
-    public void shouldReuseMysqlTypeMappingsAndCustomTypeFallback() {
-        MysqlDialect original = new MysqlDialect();
-        KingbaseMysqlDialect kingbase = new KingbaseMysqlDialect();
-        for (String name : new String[]{"smallint", "integer", "bigint", "boolean", "real", "numeric",
-            "varchar", "varchar(64)", "character", "character(32)",
-            "double precision", "timestamp", "datetime", "time", "timestamp without time zone", "time without time zone", "json", "unknown_type"}) {
-            DataType expected = original.convertDataType(name);
-            DataType actual = kingbase.convertDataType(name);
-            Assert.assertEquals(name, expected.getSqlType(), actual.getSqlType());
-            Assert.assertEquals(name, expected.getJavaType(), actual.getJavaType());
-            RDBColumnMetadata column = new RDBColumnMetadata();
-            column.setPrecision(12);
-            column.setScale(2);
-            column.setType(expected);
-            String expectedSql = original.buildColumnDataType(column);
-            column.setType(actual);
-            Assert.assertEquals(name, expectedSql, kingbase.buildColumnDataType(column));
-            System.out.println("[类型映射对比] MySQL/Kingbase MySQL，类型=" + name
-                + "，JDBC=" + actual.getSqlType() + "，Java=" + actual.getJavaType().getName()
-                + "，DDL=" + expectedSql);
-        }
+    public void testMysqlEnumDataType() {
+        KingbaseMysqlSchemaMetadata schema = new KingbaseMysqlSchemaMetadata("test");
+        RDBColumnMetadata column = schema.newTable("test").newColumn();
+        column.setName("status");
+        column.setType(new KingbaseMysqlDialect().convertDataType("enum('Day','Month')"));
+
+        Assert.assertEquals("enum('Day','Month')", column.getDataType());
+        Assert.assertEquals(JDBCType.VARCHAR, column.getSqlType());
+        Assert.assertEquals(String.class, column.getJavaType());
+        Assert.assertFalse(column.getType().isLengthSupport());
+    }
+
+    @Test
+    public void testMysqlNumericDataTypeCaseInsensitive() {
+        KingbaseMysqlSchemaMetadata schema = new KingbaseMysqlSchemaMetadata("test");
+        RDBColumnMetadata column = schema.newTable("test").newColumn();
+        column.setName("amount");
+        column.setType(new KingbaseMysqlDialect().convertDataType("DECIMAL(10,2)"));
+
+        Assert.assertEquals("decimal(10,2)", column.getDataType());
+        Assert.assertEquals(10, column.getPrecision());
+        Assert.assertEquals(2, column.getScale());
+        Assert.assertEquals(JDBCType.DECIMAL, column.getSqlType());
     }
 
     @Test

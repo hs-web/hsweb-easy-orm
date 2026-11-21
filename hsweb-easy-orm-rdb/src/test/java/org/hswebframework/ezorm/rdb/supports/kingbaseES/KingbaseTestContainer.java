@@ -29,7 +29,7 @@ public class KingbaseTestContainer extends ExternalResource {
     private GenericContainer<?> container;
 
     public KingbaseTestContainer(String mode) {
-        if (!"mysql".equals(mode) && !"oracle".equals(mode)) {
+        if (!"mysql".equals(mode) && !"oracle".equals(mode) && !"sqlserver".equals(mode)) {
             throw new IllegalArgumentException("Unsupported Kingbase compatibility mode: " + mode);
         }
         this.mode = mode;
@@ -39,6 +39,9 @@ public class KingbaseTestContainer extends ExternalResource {
     protected void before() {
         if (!Boolean.getBoolean("kingbase.testcontainers")) {
             return;
+        }
+        if ("sqlserver".equals(mode)) {
+            throw new IllegalStateException("SQL Server mode requires an external Kingbase SQL Server instance; the bundled container image supports MySQL/Oracle only");
         }
         container = new GenericContainer<>(DockerImageName.parse(IMAGE))
             .withPrivilegedMode(true)

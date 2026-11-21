@@ -7,6 +7,16 @@ import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
  */
 public class KingbaseOracleDialect extends OracleDialect {
 
+    public KingbaseOracleDialect() {
+        registerDataType("varchar", convertDataType("varchar2"));
+        registerDataType("pg_catalog.varchar", convertDataType("varchar2"));
+        registerDataType("numeric", convertDataType("number"));
+        registerDataType("timestamp without time zone", convertDataType("timestamp"));
+        registerDataType("text", convertDataType("clob"));
+        registerDataType("bytea", convertDataType("blob"));
+        registerDataType("double precision", convertDataType("double"));
+    }
+
     @Override
     public String getId() {
         return "kingbase-oracle";

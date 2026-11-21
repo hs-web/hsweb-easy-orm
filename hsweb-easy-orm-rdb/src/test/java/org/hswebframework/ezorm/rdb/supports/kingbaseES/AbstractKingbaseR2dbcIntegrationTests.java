@@ -33,8 +33,6 @@ import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBIndexMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
-import org.hswebframework.ezorm.rdb.metadata.DataType;
-import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.metadata.parser.IndexMetadataParser;
 import org.hswebframework.ezorm.rdb.metadata.parser.TableMetadataParser;
 import org.hswebframework.ezorm.rdb.operator.DatabaseOperator;
@@ -57,8 +55,6 @@ import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleDia
 import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleIndexMetadataParser;
 import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleSchemaMetadata;
 import org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle.KingbaseOracleTableMetadataParser;
-import org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect;
-import org.hswebframework.ezorm.rdb.supports.oracle.OracleDialect;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -344,18 +340,23 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             Assert.assertTrue(name.isNotNull());
 
             Assert.assertEquals(oracleMode ? JDBCType.NUMERIC : JDBCType.INTEGER, age.getSqlType());
-            // MySQL 的 integer 沿用原生自定义类型回退，Java 类型为 String。
-            Assert.assertEquals(oracleMode ? BigDecimal.class : String.class, age.getJavaType());
-            Assert.assertEquals(oracleMode ? "numeric(10,0)" : "int", age.getDataType());
-            // KES MySQL 兼容视图未提供 integer 的精度，当前 ORM 使用 0 表示未获取到精度。
-            Assert.assertEquals(oracleMode ? 10 : 0, age.getPrecision());
+            Assert.assertEquals(oracleMode ? BigDecimal.class : Integer.class, age.getJavaType());
+            Assert.assertEquals(oracleMode ? "number(10,0)" : "int", age.getDataType());
+            if (oracleMode) {
+                Assert.assertEquals(10, age.getPrecision());
+            } else {
+                // Preserve reported INT precision; SQL NULL defaults to 0, as in the MySQL parser.
+                Object precision = value(readDatabaseColumn(reloaded, age.getName()), "numeric_precision");
+                Assert.assertEquals(precision == null ? 0 : Integer.parseInt(String.valueOf(precision)),
+                    age.getPrecision());
+            }
             Assert.assertEquals(0, age.getScale());
             Assert.assertFalse(age.isNotNull());
 
             // 显式指定定点数精度和小数位，避免仅用 integer 的缺省值验证数值属性。
-            Assert.assertEquals(JDBCType.NUMERIC, amount.getSqlType());
+            Assert.assertEquals(oracleMode ? JDBCType.NUMERIC : JDBCType.DECIMAL, amount.getSqlType());
             Assert.assertEquals(BigDecimal.class, amount.getJavaType());
-            Assert.assertEquals(oracleMode ? "numeric(12,2)" : "decimal(12,2)", amount.getDataType());
+            Assert.assertEquals(oracleMode ? "number(12,2)" : "decimal(12,2)", amount.getDataType());
             Assert.assertEquals(12, amount.getPrecision());
             Assert.assertEquals(2, amount.getScale());
             Assert.assertFalse(amount.isNotNull());
@@ -1206,16 +1207,31 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
         expectedReadTypes.put("id", JDBCType.VARCHAR);
         expectedReadTypes.put("name", JDBCType.VARCHAR);
         expectedReadTypes.put("comment", JDBCType.VARCHAR);
-        expectedReadTypes.put("number_test", JDBCType.NUMERIC);
-        expectedReadTypes.put("datetime_test", oracleMode ? JDBCType.OTHER : JDBCType.TIMESTAMP);
+        expectedReadTypes.put("number_test", oracleMode ? JDBCType.NUMERIC : JDBCType.DECIMAL);
+        expectedReadTypes.put("datetime_test", JDBCType.TIMESTAMP);
         expectedReadTypes.put("int_test", oracleMode ? JDBCType.NUMERIC : JDBCType.INTEGER);
         expectedReadTypes.put("bigint_test", oracleMode ? JDBCType.NUMERIC : JDBCType.BIGINT);
-        expectedReadTypes.put("clob_test", oracleMode ? JDBCType.OTHER : JDBCType.CLOB);
+        expectedReadTypes.put("clob_test", oracleMode ? JDBCType.LONGVARCHAR : JDBCType.CLOB);
         expectedReadTypes.put("tinyint_test", oracleMode ? JDBCType.NUMERIC : JDBCType.TINYINT);
-        expectedReadTypes.put("blob_test", oracleMode ? JDBCType.OTHER : JDBCType.BLOB);
+        expectedReadTypes.put("blob_test", oracleMode ? JDBCType.LONGVARBINARY : JDBCType.BLOB);
         expectedReadTypes.put("char_test", JDBCType.OTHER);
-        expectedReadTypes.put("time_test", oracleMode ? JDBCType.OTHER : JDBCType.TIME);
-        expectedReadTypes.put("date_test", oracleMode ? JDBCType.OTHER : JDBCType.DATE);
+        expectedReadTypes.put("time_test", oracleMode ? JDBCType.TIMESTAMP : JDBCType.TIME);
+        expectedReadTypes.put("date_test", oracleMode ? JDBCType.TIMESTAMP : JDBCType.DATE);
+        // Fixed type contracts; do not calculate expected values with a dialect.
+        Map<String, Class<?>> expectedJavaTypes = new LinkedHashMap<>();
+        expectedJavaTypes.put("id", String.class);
+        expectedJavaTypes.put("name", String.class);
+        expectedJavaTypes.put("comment", String.class);
+        expectedJavaTypes.put("number_test", BigDecimal.class);
+        expectedJavaTypes.put("datetime_test", oracleMode ? java.sql.Timestamp.class : java.sql.Date.class);
+        expectedJavaTypes.put("int_test", oracleMode ? BigDecimal.class : Integer.class);
+        expectedJavaTypes.put("bigint_test", oracleMode ? BigDecimal.class : Long.class);
+        expectedJavaTypes.put("clob_test", String.class);
+        expectedJavaTypes.put("tinyint_test", oracleMode ? BigDecimal.class : Byte.class);
+        expectedJavaTypes.put("blob_test", oracleMode ? byte[].class : String.class);
+        expectedJavaTypes.put("char_test", String.class);
+        expectedJavaTypes.put("time_test", oracleMode ? java.sql.Timestamp.class : LocalTime.class);
+        expectedJavaTypes.put("date_test", oracleMode ? java.sql.Date.class : LocalDate.class);
 
         System.out.println("[完整 DDL 类型集合] 模式=" + mode() + "，临时 Schema=" + ddlSchemaName);
         executor.execute(SqlRequests.of("create schema " + quotedSchema)).block(TIMEOUT);
@@ -1268,23 +1284,21 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             RDBTableMetadata reloaded = reloadedSchema.getTableReactive(ddlTableName, true).block(TIMEOUT);
             Assert.assertNotNull(reloaded);
             Assert.assertEquals(13, reloaded.getColumns().size());
-            Dialect originalDialect = oracleMode ? new OracleDialect() : new MysqlDialect();
             for (String name : expectedTypes.keySet()) {
                 RDBColumnMetadata column = reloaded.getColumnNow(name);
                 System.out.println("[DDL 实库回读] 模式=" + mode() + "，字段=" + name
                     + "，类型描述=" + column.getDataType() + "，JDBC=" + column.getSqlType()
                     + "，长度=" + column.getLength() + "，精度=" + column.getPrecision()
                     + "，小数位=" + column.getScale());
-                Assert.assertEquals(name, expectedReadTypes.get(name), column.getSqlType());
                 Map<String, Object> raw = readDatabaseColumn(reloaded, column.getName());
                 String databaseType = String.valueOf(value(raw, oracleMode ? "data_type" : "column_type"));
-                String originalTypeName = databaseType.toLowerCase(Locale.ROOT);
-                if (!oracleMode && originalTypeName.startsWith("character varying(")) {
-                    originalTypeName = "varchar" + originalTypeName.substring("character varying".length());
+                JDBCType expectedReadType = expectedReadTypes.get(name);
+                // 新版 KES 将 CHAR 报告为 char，旧版为 bpchar；保持各自的原生类型映射。
+                if (oracleMode && "char_test".equals(name) && "char".equals(databaseType)) {
+                    expectedReadType = JDBCType.CHAR;
                 }
-                DataType originalType = originalDialect.convertDataType(originalTypeName);
-                Assert.assertEquals(name, originalType.getSqlType(), column.getSqlType());
-                Assert.assertEquals(name, originalType.getJavaType(), column.getJavaType());
+                Assert.assertEquals(name, expectedReadType, column.getSqlType());
+                Assert.assertEquals(name, expectedJavaTypes.get(name), column.getJavaType());
                 System.out.println("[类型回读] 模式=" + mode() + "，字段=" + name
                     + "，数据库类型=" + databaseType + "，JDBC=" + column.getSqlType()
                     + "，Java=" + column.getJavaType().getSimpleName());
@@ -1297,12 +1311,14 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
             Assert.assertEquals(0, reloaded.getColumnNow("number_test").getScale());
             Map<String, Object> charDefinition = readDatabaseColumn(reloaded, reloaded.getColumnNow("char_test").getName());
             if (oracleMode) {
-                Assert.assertEquals("bpchar", value(charDefinition, "data_type"));
-                Assert.assertEquals(32, Integer.parseInt(String.valueOf(value(charDefinition, "character_maximum_length"))));
+                Object charType = value(charDefinition, "data_type");
+                Assert.assertTrue("Unexpected char metadata type: " + charType,
+                    "bpchar".equals(charType) || "char".equals(charType));
             } else {
                 Assert.assertEquals("character(32)", value(charDefinition, "column_type"));
             }
-            Assert.assertEquals(oracleMode ? 32 : -1, reloaded.getColumnNow("char_test").getLength());
+            Assert.assertEquals(32, Integer.parseInt(String.valueOf(value(charDefinition, "character_maximum_length"))));
+            Assert.assertEquals(32, reloaded.getColumnNow("char_test").getLength());
             Assert.assertTrue(reloaded.getIndexes().stream()
                 .anyMatch(index -> "index_types".equals(index.getName())));
         } finally {
@@ -1429,19 +1445,19 @@ public abstract class AbstractKingbaseR2dbcIntegrationTests {
         RDBColumnMetadata column = metadata.getColumnNow(columnName);
         Map<String, Object> raw = readDatabaseColumn(metadata, column.getName());
         Assert.assertNotNull(raw);
-        Assert.assertEquals("varchar", value(raw, "data_type"));
-        if (oracleMode) {
-            Assert.assertEquals(databaseLength,
-                Integer.parseInt(String.valueOf(value(raw, "character_maximum_length"))));
-        } else {
-            // MySQL 兼容视图将实际长度保存在 column_type 中。
+        Object rawType = value(raw, "data_type");
+        Assert.assertTrue("Unexpected varchar metadata type: " + rawType,
+            "varchar".equals(rawType) || (oracleMode && "pg_catalog.varchar".equals(rawType)));
+        Assert.assertEquals(databaseLength,
+            Integer.parseInt(String.valueOf(value(raw, "character_maximum_length"))));
+        if (!oracleMode) {
             Assert.assertEquals("character varying(" + databaseLength + ")", value(raw, "column_type"));
-            Assert.assertEquals(-1, Integer.parseInt(String.valueOf(value(raw, "character_maximum_length"))));
         }
         Assert.assertEquals(JDBCType.VARCHAR, column.getSqlType());
         Assert.assertEquals(String.class, column.getJavaType());
         Assert.assertEquals(databaseLength, column.getLength());
-        Assert.assertEquals("varchar(" + databaseLength + ")", column.getDataType());
+        Assert.assertEquals(oracleMode ? "varchar2(" + databaseLength + " char)" : "varchar(" + databaseLength + ")",
+            column.getDataType());
         System.out.println("[字符字段核验] 模式=" + mode() + "，字段=" + columnName
             + "，数据库定义=" + (oracleMode ? "varchar(" + databaseLength + ")" : value(raw, "column_type"))
             + "，ORM类型=" + column.getDataType() + "，JDBC=" + column.getSqlType()

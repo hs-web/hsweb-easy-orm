@@ -1,7 +1,11 @@
 package org.hswebframework.ezorm.rdb.supports.kingbaseES.oracle;
 
+import org.hswebframework.ezorm.core.meta.ColumnMetadata;
 import org.hswebframework.ezorm.core.param.TermType;
+import org.hswebframework.ezorm.rdb.codec.BooleanValueCodec;
 import org.hswebframework.ezorm.rdb.codec.EnumValueCodec;
+import org.hswebframework.ezorm.rdb.executor.NullValue;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
 import org.hswebframework.ezorm.rdb.operator.CompositeExceptionTranslation;
@@ -9,6 +13,7 @@ import org.hswebframework.ezorm.rdb.operator.builder.fragments.term.NullTermFrag
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleBatchUpsertOperator;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleEnumInFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.oracle.OracleInsertSqlBuilder;
+import org.hswebframework.ezorm.rdb.supports.oracle.OracleJsonTermFragmentBuilder;
 import org.hswebframework.ezorm.rdb.supports.oracle.OraclePaginator;
 import org.hswebframework.ezorm.rdb.supports.postgres.PostgresqlDropIndexSqlBuilder;
 import org.hswebframework.ezorm.rdb.utils.FeatureUtils;
@@ -49,11 +54,24 @@ public class KingbaseOracleSchemaMetadata extends RDBSchemaMetadata {
         metadata.addFeature(OracleInsertSqlBuilder.of(metadata));
         metadata.addFeature(new OracleBatchUpsertOperator(metadata));
         metadata.setOnColumnAdded(column -> {
+            if (column.getValueCodec() != null
+                && column.getValueCodec().getClass() == BooleanValueCodec.class
+                && column.getType() != null
+                && column.getType().sqlTypeIsNumber()) {
+                column.setValueCodec(new BooleanValueCodec(column.getSqlType()) {
+                    @Override
+                    public Object encodeNull(ColumnMetadata metadata) {
+                        // NUMBER-backed booleans must bind NULL with the same numeric type as 1/0.
+                        return NullValue.of(Integer.class, ((RDBColumnMetadata) metadata).getType());
+                    }
+                });
+            }
             if (column.getValueCodec() instanceof EnumValueCodec
                 && ((EnumValueCodec) column.getValueCodec()).isToMask()) {
                 column.addFeature(OracleEnumInFragmentBuilder.in);
                 column.addFeature(OracleEnumInFragmentBuilder.notIn);
             }
+            OracleJsonTermFragmentBuilder.addJsonFeatures(column);
         });
         return metadata;
     }
