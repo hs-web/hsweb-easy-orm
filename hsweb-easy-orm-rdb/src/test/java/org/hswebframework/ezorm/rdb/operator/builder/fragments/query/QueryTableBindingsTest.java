@@ -23,10 +23,49 @@ import reactor.core.publisher.Mono;
 import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
 public class QueryTableBindingsTest {
+    @Test
+    public void compositionKeepsExistingBindingsAndReadOnlyReferenceSnapshots() {
+        RDBSchemaMetadata schema = MetadataHelper.createMockSchema();
+        RDBTableMetadata main = schema.getTable("test").orElseThrow(IllegalStateException::new);
+        RDBTableMetadata remote = schema.newTable("remote");
+        RDBTableMetadata additional = schema.newTable("additional");
+        QueryOperatorParameter parameter = new QueryOperatorParameter();
+        parameter.setFrom("test");
+        parameter.setFromAlias("main");
+        Join join = new Join();
+        join.setTarget("remote");
+        join.setAlias("ext");
+        parameter.getJoins().add(join);
+        QueryOperator query = new org.hswebframework.ezorm.rdb.operator.dml.query.BuildParameterQueryOperator(parameter);
+        assertSame(QueryTableBindings.EMPTY, query.getTableBindings());
+        query.bindTables(new QueryTableBindings(Map.of("test", main, "remote", remote)));
+        Set<String> original = query.getTableReferences();
+        assertEquals(Set.of("test", "main", "remote", "ext"), original);
+        assertThrows(UnsupportedOperationException.class, original::clear);
+        assertThrows(UnsupportedOperationException.class, query.getTableBindings().getTableNames()::clear);
+        query.bindTables(query.getTableBindings().merge(new QueryTableBindings(Map.of("additional", additional))));
+        assertSame(main, query.getTableBindings().find("test").orElse(null));
+        assertSame(remote, query.getTableBindings().find("remote").orElse(null));
+        assertTrue(query.getTableReferences().contains("additional"));
+        assertFalse(original.contains("additional"));
+        QueryOperator copy = query.clone();
+        assertEquals(query.getTableReferences(), copy.getTableReferences());
+        copy.bindTables(null);
+        assertFalse(copy.getTableReferences().contains("additional"));
+        assertTrue(query.getTableReferences().contains("additional"));
+        assertThrows(IllegalArgumentException.class, () -> query.getTableBindings()
+            .merge(new QueryTableBindings(Map.of("remote", additional))));
+        assertSame(remote, query.getTableBindings().find("remote").orElse(null));
+        parameter.setJoins(null);
+        assertFalse(query.getTableReferences().contains("ext"));
+        assertTrue(original.contains("ext"));
+    }
+
     @Test
     public void boundSqlBuildFailuresAreDeferredUntilSubscription() {
         RDBSchemaMetadata schema = MetadataHelper.createMockSchema();

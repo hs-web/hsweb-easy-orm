@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.utils.DateTimeUtils;
 import org.hswebframework.utils.time.DateFormatter;
@@ -21,8 +22,10 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class DateTimeCodec implements ValueCodec {
 
+    @Getter
     private String format;
 
+    @Getter
     private Class<?> toType;
 
     public DateTimeCodec(String format, Class<?> toType) {

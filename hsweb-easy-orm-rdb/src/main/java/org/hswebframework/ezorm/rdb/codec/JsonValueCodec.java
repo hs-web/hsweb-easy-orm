@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
-import lombok.Setter;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hswebframework.ezorm.core.ValueCodec;
@@ -45,12 +45,31 @@ public class JsonValueCodec implements ValueCodec<Object, Object> {
             .setTimeZone(TimeZone.getDefault());
     }
 
+    @Getter
     private final JavaType jacksonType;
 
+    @Getter
     private final Class<?> targetType;
 
-    @Setter
     private ObjectMapper mapper = defaultMapper;
+
+    /** 是否显式使用了共享默认配置之外的 mapper；标准选项派生的副本不属于自定义 mapper。 */
+    @Getter
+    private boolean customMapper;
+
+    public void setMapper(ObjectMapper mapper) {
+        this.mapper = mapper;
+        this.customMapper = mapper != defaultMapper;
+    }
+
+    /** 当前 mapper 是否使用 ALWAYS 作为默认值包含策略。 */
+    public boolean isIncludeNulls() {
+        return mapper.getSerializationConfig().getDefaultPropertyInclusion().getValueInclusion() == JsonInclude.Include.ALWAYS;
+    }
+
+    public boolean isUseBigDecimalForFloats() {
+        return mapper.isEnabled(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+    }
 
     /**
      * Configures this codec at mapping time. A private mapper configuration preserves the shared

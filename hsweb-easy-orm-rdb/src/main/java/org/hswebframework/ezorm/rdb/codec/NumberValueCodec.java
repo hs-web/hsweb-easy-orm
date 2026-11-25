@@ -1,6 +1,7 @@
 package org.hswebframework.ezorm.rdb.codec;
 
 import lombok.SneakyThrows;
+import lombok.Getter;
 import org.hswebframework.ezorm.core.ValueCodec;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
@@ -19,12 +20,18 @@ public class NumberValueCodec implements ValueCodec<Object, Object> {
 
     private final Function<Number, Object> converter;
 
+    /** 标准类型转换的目标；通过任意函数构造时为 null，不能据此重建转换行为。 */
+    @Getter
+    private final Class<?> javaType;
+
     public NumberValueCodec(Function<Number, Object> converter) {
         this.converter = converter;
+        this.javaType = null;
     }
 
     @SneakyThrows
     public NumberValueCodec(Class<?> javaType) {
+        this.javaType = javaType;
         if (javaType == int.class || javaType == Integer.class) {
             converter = Number::intValue;
         } else if (javaType == double.class || javaType == Double.class) {

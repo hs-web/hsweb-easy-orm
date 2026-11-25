@@ -2,6 +2,8 @@ package org.hswebframework.ezorm.rdb.operator.dml.query;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.LinkedHashMap;
 import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
 
 /**
@@ -12,6 +14,7 @@ import org.hswebframework.ezorm.rdb.metadata.TableOrViewMetadata;
  * @since 4.2.3
  */
 public final class QueryTableBindings {
+    public static final QueryTableBindings EMPTY = new QueryTableBindings(Map.of());
     private final Map<String, TableOrViewMetadata> tables;
 
     public QueryTableBindings(Map<String, TableOrViewMetadata> tables) {
@@ -20,4 +23,19 @@ public final class QueryTableBindings {
 
     /** 按查询引用名称解析显式绑定，适用于 FROM 和 JOIN；未绑定时由原 schema 解析。 */
     public Optional<TableOrViewMetadata> find(String name) { return Optional.ofNullable(tables.get(name)); }
+
+    /** 当前绑定引用名的不可变集合，不暴露可变映射。 */
+    public Set<String> getTableNames() { return tables.keySet(); }
+
+    /** 合并独立贡献的映射；同名不同映射明确拒绝，不能静默改变已有 FROM/JOIN。 */
+    public QueryTableBindings merge(QueryTableBindings other) {
+        Map<String, TableOrViewMetadata> merged = new LinkedHashMap<>(tables);
+        other.tables.forEach((name, table) -> {
+            TableOrViewMetadata previous = merged.putIfAbsent(name, table);
+            if (previous != null && previous != table) {
+                throw new IllegalArgumentException("conflicting query table binding: " + name);
+            }
+        });
+        return new QueryTableBindings(merged);
+    }
 }
