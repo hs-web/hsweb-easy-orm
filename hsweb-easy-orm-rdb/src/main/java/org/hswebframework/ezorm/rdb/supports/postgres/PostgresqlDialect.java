@@ -25,6 +25,11 @@ import java.util.StringJoiner;
  */
 public class PostgresqlDialect extends DefaultDialect {
     @Override
+    protected String buildUnconstrainedNumericType(RDBColumnMetadata column) {
+        return column.getSqlType() == JDBCType.DECIMAL ? "decimal" : "numeric";
+    }
+
+    @Override
     protected String buildExactStringType(String dataType) {
         return dataType + " collate \"C\"";
     }

@@ -123,6 +123,12 @@ public abstract class DefaultDialect implements Dialect {
             throw new UnsupportedOperationException("unknown column type : " + columnMetaData);
         }
         DataType dataType = columnMetaData.getType();
+        if (columnMetaData.isUnconstrainedNumeric()) {
+            if (dataType.getSqlType() != JDBCType.NUMERIC && dataType.getSqlType() != JDBCType.DECIMAL) {
+                throw new IllegalArgumentException("unconstrained numeric requires NUMERIC or DECIMAL");
+            }
+            return buildUnconstrainedNumericType(columnMetaData);
+        }
         if (dataType instanceof DataTypeBuilder) {
             String result = ((DataTypeBuilder) dataType).createColumnDataType(columnMetaData);
             return columnMetaData.isExactString() ? buildExactStringType(result) : result;
@@ -133,6 +139,11 @@ public abstract class DefaultDialect implements Dialect {
         }
         String result = mapper.createColumnDataType(columnMetaData);
         return columnMetaData.isExactString() ? buildExactStringType(result) : result;
+    }
+
+    /** Dialects explicitly opt in to precision/scale-free numeric storage. */
+    protected String buildUnconstrainedNumericType(RDBColumnMetadata column) {
+        throw new UnsupportedOperationException("unconstrained numeric is unsupported by " + getId());
     }
 
     /** Dialects opt in to exact column comparison rather than inheriting database defaults. */

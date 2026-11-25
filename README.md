@@ -53,6 +53,8 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 ## 实体字段类型
 
+数值列可通过 `RDBColumnMetadata.setUnconstrainedNumeric(true)` 或 `@ColumnType(jdbcType = JDBCType.NUMERIC, unconstrainedNumeric = true)` 声明不固定精度和小数位，Java 精确小数使用 `BigDecimal`。该声明由 ORM 方言生成 DDL：PostgreSQL 使用裸 `numeric`／`decimal`，表结构反读保留声明；不支持的方言明确拒绝。自动建表／变更支持从固定精度放宽为无约束数值，不自动将无约束列收窄为固定精度。默认关闭，原有 `numeric(p,s)` 和默认精度保持原语义。调用方只设置类型元数据，不需要自行拼接数值 DDL。
+
 列 codec 可以将值编码为 `NativeSql`：DML 写入器通过 `SqlFragments.encodeValue(column, value)` 编码普通值、保留显式 SQL，再由 `AppendableSqlFragments.addValue(value)` 统一追加表达式及参数或普通占位符。列参与、默认值、方言语法和更新策略由各写入器负责；批量 INSERT 保留行参数数组复用，Oracle 保留 CLOB 空值处理，MERGE 保留显式 SQL 能力限制。PostgreSQL 原生 JSON/JSONB 将 SQL NULL 编码为 `null` 表达式，避免 R2DBC 按 String 绑定空值；其他 JSON 类型保留原有空参数绑定，JSON 文档 `"null"` 仍是非空文本。Java null 在 UPDATE 中仍表示省略，显式清空使用 `NullValue`；原生 upsert 的 COALESCE 保留旧值语义保持不变，不能替代 UPDATE 的显式清空。
 
 逐行 INSERT（`MultiInsertSqlBuilder`）按输入列的原始位置读取行值和函数配置，过滤未知或不可插入列不改变其他列的对应关系。函数片段替代该列的原值，不再执行普通值编码或运行时默认值；普通列继续处理缺少的行值、默认值和显式 SQL。回归验证覆盖过滤列、函数位置及短行与表达式的组合，集中运行 INSERT、UPDATE、结果映射和原生 JSON 用例。
