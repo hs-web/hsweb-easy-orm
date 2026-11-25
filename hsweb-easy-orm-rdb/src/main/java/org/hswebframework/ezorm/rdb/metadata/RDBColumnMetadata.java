@@ -34,6 +34,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
     /** Column-level exact string identity, independent of the JDBC type and value codec. */
     private boolean exactString;
 
+    /** NUMERIC/DECIMAL without a declared precision or scale; the dialect owns support. */
+    private boolean unconstrainedNumeric;
+
     /**
      * 长度
      *
@@ -299,6 +302,9 @@ public class RDBColumnMetadata extends AbstractColumnMetadata implements ColumnM
         if (type != null) {
             if (getDialect().buildColumnDataType(this).equals(getDialect().buildColumnDataType(after))) {
                 return false;
+            }
+            if (isUnconstrainedNumeric() != after.isUnconstrainedNumeric()) {
+                return after.isUnconstrainedNumeric();
             }
             if (type.isLengthSupport()) {
                 return type.isNumber()

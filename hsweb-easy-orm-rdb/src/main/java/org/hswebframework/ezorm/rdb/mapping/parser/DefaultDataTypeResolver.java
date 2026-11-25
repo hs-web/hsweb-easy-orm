@@ -28,6 +28,7 @@ public class DefaultDataTypeResolver implements DataTypeResolver {
                     RDBColumnMetadata column = descriptor.getColumn();
                     if (column != null) {
                         column.setExactString(type.exactString());
+                        column.setUnconstrainedNumeric(type.unconstrainedNumeric());
                     }
                     Class<?> javaType = type.javaType() == Void.class ? descriptor.getPropertyType() : type.javaType();
 

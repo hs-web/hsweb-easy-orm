@@ -2,10 +2,13 @@ package org.hswebframework.ezorm.rdb.supports.postgres;
 
 import org.hswebframework.ezorm.rdb.metadata.RDBSchemaMetadata;
 import org.hswebframework.ezorm.rdb.metadata.RDBTableMetadata;
+import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
+import org.hswebframework.ezorm.rdb.mapping.defaults.record.Record;
 import org.hswebframework.ezorm.rdb.supports.commons.RDBTableMetadataParser;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.sql.JDBCType;
 
 public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
     /**
@@ -76,6 +79,13 @@ public class PostgresqlTableMetadataParser extends RDBTableMetadataParser {
 
     public PostgresqlTableMetadataParser(RDBSchemaMetadata schema) {
         super(schema);
+    }
+
+    @Override
+    protected void applyColumnInfo(RDBColumnMetadata column, Record record) {
+        super.applyColumnInfo(column, record);
+        column.setUnconstrainedNumeric((column.getSqlType() == JDBCType.NUMERIC || column.getSqlType() == JDBCType.DECIMAL)
+            && !record.get("data_precision").isPresent() && !record.get("data_scale").isPresent());
     }
 
     @Override

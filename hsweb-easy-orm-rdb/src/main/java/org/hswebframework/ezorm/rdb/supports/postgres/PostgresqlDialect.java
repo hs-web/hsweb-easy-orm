@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.RDBColumnMetadata;
 import org.hswebframework.ezorm.rdb.executor.NullValue;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.BatchSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
@@ -46,8 +47,8 @@ public class PostgresqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "float8");
         addDataTypeBuilder(JDBCType.FLOAT, (meta) -> "float4");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int4");
-        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
-        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.NUMERIC, DataTypeBuilder.numeric("numeric", 32, true));
+        addDataTypeBuilder(JDBCType.DECIMAL, DataTypeBuilder.numeric("decimal", 32, true));
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "int2");
         addDataTypeBuilder(JDBCType.SMALLINT, (meta) -> "int2");
 

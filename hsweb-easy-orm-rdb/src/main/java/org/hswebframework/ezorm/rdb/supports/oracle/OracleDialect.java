@@ -3,12 +3,12 @@ package org.hswebframework.ezorm.rdb.supports.oracle;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SimpleSqlFragments;
 import org.hswebframework.ezorm.rdb.operator.builder.fragments.SqlFragments;
 import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.util.Arrays;
@@ -32,8 +32,8 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.LONGNVARCHAR, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "blob");
         addDataTypeBuilder(JDBCType.BINARY, (meta) -> "blob");
-        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("number(", meta.getPrecision(38), ",", meta.getScale(), ")"));
-        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("number(", meta.getPrecision(38), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.NUMERIC, DataTypeBuilder.numeric("number", 38, false));
+        addDataTypeBuilder(JDBCType.DECIMAL, DataTypeBuilder.numeric("number", 38, false));
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "number(38,0)");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
         addDataTypeBuilder(JDBCType.BOOLEAN, (meta) -> "number(1)");
@@ -43,10 +43,6 @@ public class OracleDialect extends DefaultDialect {
         addDataTypeBuilder("json", meta -> "clob");
 
         classJDBCTypeMapping.put(Boolean.class,JDBCType.TINYINT);
-
-        registerDataType("number", DataType
-                .builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                         column -> StringUtils.concat("number(", column.getPrecision(38), ",", column.getScale(), ")")));
 
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "clob"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));

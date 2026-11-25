@@ -3,6 +3,7 @@ package org.hswebframework.ezorm.rdb.supports.mssql;
 import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.core.utils.StringUtils;
 import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 
@@ -32,8 +33,8 @@ public class SqlServerDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "float");
         addDataTypeBuilder(JDBCType.FLOAT, (meta) -> "float");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int");
-        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
-        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("numeric(", meta.getPrecision(32), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.NUMERIC, DataTypeBuilder.numeric("numeric", 32, false));
+        addDataTypeBuilder(JDBCType.DECIMAL, DataTypeBuilder.numeric("numeric", 32, false));
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");

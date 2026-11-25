@@ -24,6 +24,12 @@ public @interface ColumnType {
     boolean exactString() default false;
 
     /**
+     * Requests NUMERIC/DECIMAL without a fixed precision or scale. Unsupported dialects fail.
+     * @since 4.2.4
+     */
+    boolean unconstrainedNumeric() default false;
+
+    /**
      * @return 类型标识
      * @see DataType#getId()
      */
