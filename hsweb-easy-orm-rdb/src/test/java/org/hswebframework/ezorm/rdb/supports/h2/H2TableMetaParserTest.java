@@ -76,7 +76,7 @@ public class H2TableMetaParserTest {
                 Assert.assertNotNull(column);
                 Assert.assertEquals(column.getPrecision(), 4);
                 Assert.assertEquals(column.getScale(), 0);
-                Assert.assertEquals(column.getDataType(), "numeric(4,0)");
+                Assert.assertEquals(column.getDataType(), "decimal(4,0)");
                 Assert.assertEquals(column.getSqlType(), JDBCType.NUMERIC);
                 Assert.assertEquals(column.getJavaType(), BigDecimal.class);
             }

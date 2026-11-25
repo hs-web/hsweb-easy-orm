@@ -39,14 +39,12 @@ public abstract class DefaultDialect implements Dialect {
         registerDataType("nvarchar", DataType.builder(DataType.jdbc(JDBCType.NVARCHAR, String.class),
                                                       column -> "nvarchar(" + column.getLength(255) + ")"));
 
-        registerDataType("decimal", DataType.builder(DataType.jdbc(JDBCType.DECIMAL, BigDecimal.class),
-                                                     column -> "decimal(" + column.getPrecision(32) + "," + column.getScale() + ")"));
-
-        registerDataType("numeric", DataType.builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                                                     column -> "numeric(" + column.getPrecision(32) + "," + column.getScale() + ")"));
-
-        registerDataType("number", DataType.builder(DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class),
-                                                    column -> "number(" + column.getPrecision(32) + "," + column.getScale() + ")"));
+        // Standard numeric types must use the same dialect mapping as programmatic JDBC columns.
+        dataTypeMapping.put("decimal", DataType.jdbc(JDBCType.DECIMAL, BigDecimal.class));
+        dataTypeMapping.put("numeric", DataType.jdbc(JDBCType.NUMERIC, BigDecimal.class));
+        dataTypeMapping.put("number", dataTypeMapping.get("numeric"));
+        addDataTypeBuilder(JDBCType.DECIMAL, DataTypeBuilder.numeric("decimal", 32, false));
+        addDataTypeBuilder(JDBCType.NUMERIC, DataTypeBuilder.numeric("numeric", 32, false));
 
 
         registerDataType("bigint", JdbcDataType.of(JDBCType.BIGINT, Long.class));
@@ -123,11 +121,9 @@ public abstract class DefaultDialect implements Dialect {
             throw new UnsupportedOperationException("unknown column type : " + columnMetaData);
         }
         DataType dataType = columnMetaData.getType();
-        if (columnMetaData.isUnconstrainedNumeric()) {
-            if (dataType.getSqlType() != JDBCType.NUMERIC && dataType.getSqlType() != JDBCType.DECIMAL) {
-                throw new IllegalArgumentException("unconstrained numeric requires NUMERIC or DECIMAL");
-            }
-            return buildUnconstrainedNumericType(columnMetaData);
+        if (columnMetaData.isUnconstrainedNumeric()
+            && dataType.getSqlType() != JDBCType.NUMERIC && dataType.getSqlType() != JDBCType.DECIMAL) {
+            throw new IllegalArgumentException("unconstrained numeric requires NUMERIC or DECIMAL");
         }
         if (dataType instanceof DataTypeBuilder) {
             String result = ((DataTypeBuilder) dataType).createColumnDataType(columnMetaData);
@@ -139,11 +135,6 @@ public abstract class DefaultDialect implements Dialect {
         }
         String result = mapper.createColumnDataType(columnMetaData);
         return columnMetaData.isExactString() ? buildExactStringType(result) : result;
-    }
-
-    /** Dialects explicitly opt in to precision/scale-free numeric storage. */
-    protected String buildUnconstrainedNumericType(RDBColumnMetadata column) {
-        throw new UnsupportedOperationException("unconstrained numeric is unsupported by " + getId());
     }
 
     /** Dialects opt in to exact column comparison rather than inheriting database defaults. */

@@ -26,9 +26,9 @@ public class H2Dialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.CLOB, (meta) -> "clob");
         addDataTypeBuilder(JDBCType.BLOB, (meta) -> "blob");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int");
-        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.NUMERIC, DataTypeBuilder.numeric("decimal", 32, false));
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
-        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.DECIMAL, DataTypeBuilder.numeric("decimal", 32, false));
         addDataTypeBuilder(JDBCType.OTHER, (meta) -> "other");
         registerDataType("longnvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGNVARCHAR, String.class), c -> "clob"));
         registerDataType("longvarchar", DataType.builder(JdbcDataType.of(JDBCType.LONGVARCHAR, String.class), c -> "clob"));

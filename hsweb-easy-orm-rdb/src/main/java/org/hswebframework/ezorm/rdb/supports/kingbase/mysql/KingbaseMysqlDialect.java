@@ -5,6 +5,7 @@ import org.hswebframework.ezorm.rdb.metadata.DataType;
 import org.hswebframework.ezorm.rdb.metadata.JdbcDataType;
 import org.hswebframework.ezorm.rdb.metadata.LiteralDataType;
 import org.hswebframework.ezorm.rdb.metadata.dialect.DefaultDialect;
+import org.hswebframework.ezorm.rdb.metadata.dialect.DataTypeBuilder;
 import org.hswebframework.ezorm.rdb.metadata.dialect.Dialect;
 import org.hswebframework.ezorm.rdb.supports.json.JsonType;
 
@@ -44,8 +45,8 @@ public class KingbaseMysqlDialect extends DefaultDialect {
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
         addDataTypeBuilder(JDBCType.DOUBLE, (meta) -> "double");
         addDataTypeBuilder(JDBCType.INTEGER, (meta) -> "int");
-        addDataTypeBuilder(JDBCType.NUMERIC, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
-        addDataTypeBuilder(JDBCType.DECIMAL, (meta) -> StringUtils.concat("decimal(", meta.getPrecision(32), ",", meta.getScale(), ")"));
+        addDataTypeBuilder(JDBCType.NUMERIC, DataTypeBuilder.numeric("decimal", 32, false));
+        addDataTypeBuilder(JDBCType.DECIMAL, DataTypeBuilder.numeric("decimal", 32, false));
         addDataTypeBuilder(JDBCType.TINYINT, (meta) -> "tinyint");
         addDataTypeBuilder(JDBCType.BOOLEAN, (meta) -> "tinyint");
         addDataTypeBuilder(JDBCType.BIGINT, (meta) -> "bigint");
