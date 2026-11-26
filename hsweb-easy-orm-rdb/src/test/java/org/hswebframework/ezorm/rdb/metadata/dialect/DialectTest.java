@@ -17,6 +17,23 @@ import java.util.Arrays;
 public class DialectTest {
 
     @Test
+    public void parameterizedTypesKeepTheExistingDialectExtensionPoint() {
+        DefaultDialect dialect = new org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect() {
+            @Override
+            protected DataType convertDataType(String type, int length, int scale) {
+                Assert.assertEquals("vendor_number", type);
+                Assert.assertEquals(38, length);
+                Assert.assertEquals(18, scale);
+                return org.hswebframework.ezorm.rdb.metadata.CustomDataType.of(
+                    "mapped_number", "mapped_number", JDBCType.NUMERIC, java.math.BigDecimal.class);
+            }
+        };
+        Assert.assertEquals("mapped_number", dialect.convertDataType("vendor_number(38,18)").getId());
+        Assert.assertEquals("vendor_number(38,0)", new org.hswebframework.ezorm.rdb.supports.mysql.MysqlDialect()
+            .convertDataType("vendor_number(38,0)").getId());
+    }
+
+    @Test
     public void exactStringIsColumnLocalAndDialectOwned() {
         RDBColumnMetadata column = new RDBColumnMetadata();
         column.setType(DataType.jdbc(JDBCType.VARCHAR, String.class));

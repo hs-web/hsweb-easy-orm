@@ -164,13 +164,9 @@ public abstract class DefaultDialect implements Dialect {
     }
 
     protected DataType convertDataType(String type, int length, int scale) {
-        return convertDataType(type, normalizeType(type), length, scale);
-    }
-
-    protected DataType convertDataType(String dataType, String type, int length, int scale) {
-        DataType staticType = dataTypeMapping.get(type);
+        DataType staticType = dataTypeMapping.get(normalizeType(type));
         if (staticType == null) {
-            return convertUnknownDataType(dataType);
+            return convertUnknownDataType(type);
         } else {
             return new LengthSupportDataType(
                 staticType,
@@ -179,6 +175,12 @@ public abstract class DefaultDialect implements Dialect {
                 scale
             );
         }
+    }
+
+    protected DataType convertDataType(String dataType, String type, int length, int scale) {
+        DataType converted = convertDataType(type, length, scale);
+        return converted instanceof CustomDataType && type.equals(converted.getId())
+            ? convertUnknownDataType(dataType) : converted;
     }
 
     protected DataType convertParameterizedDataType(String dataType, String type) {
