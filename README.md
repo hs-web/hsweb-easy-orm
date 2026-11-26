@@ -57,6 +57,8 @@ List<Map<String,Object>> dataList= operator.dml().query()
 
 ## 实体字段类型
 
+带数值参数的类型声明继续经过既有 `convertDataType(type, length, scale)` 扩展点；解析入口在保留未知类型完整声明的同时，不能绕过方言对子类型、长度和精度的映射。通用方言回归覆盖旧扩展分派，提供方负责验证其原生数值支持域。
+
 数值列可通过 `RDBColumnMetadata.setUnconstrainedNumeric(true)` 或 `@ColumnType(jdbcType = JDBCType.NUMERIC, unconstrainedNumeric = true)` 声明不固定精度和小数位，Java 精确小数使用 `BigDecimal`。标准 NUMERIC／DECIMAL 类型及 number 别名只解析类型语义；注解、动态列及表结构反读共用方言注册的 `DataTypeBuilder`，在构造类型时读取列声明并补齐该方言的默认精度，不改写列元数据。PostgreSQL 使用裸 `numeric`／`decimal` 表示无约束，其他方言明确拒绝；不需要 columnDefinition 或专用方言方法。显式自定义类型构造器仍优先，由其负责解释列声明。自动建表／变更支持从固定精度放宽为无约束数值，不自动将无约束列收窄为固定精度。未开启时按固定精度构造；`precision=0` 保持由 ORM 推断的语义，不能代替显式无约束声明。
 
 列 codec 可以将值编码为 `NativeSql`：DML 写入器通过 `SqlFragments.encodeValue(column, value)` 编码普通值、保留显式 SQL，再由 `AppendableSqlFragments.addValue(value)` 统一追加表达式及参数或普通占位符。列参与、默认值、方言语法和更新策略由各写入器负责；批量 INSERT 保留行参数数组复用，Oracle 保留 CLOB 空值处理，MERGE 保留显式 SQL 能力限制。PostgreSQL 原生 JSON/JSONB 将 SQL NULL 编码为 `null` 表达式，避免 R2DBC 按 String 绑定空值；其他 JSON 类型保留原有空参数绑定，JSON 文档 `"null"` 仍是非空文本。Java null 在 UPDATE 中仍表示省略，显式清空使用 `NullValue`；原生 upsert 的 COALESCE 保留旧值语义保持不变，不能替代 UPDATE 的显式清空。
